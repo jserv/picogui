@@ -69,16 +69,16 @@ wish you were here
 
 is_posting = None
 
-def h_char(ev, w):
+def h_char(ev):
     print 'received %r' % ev
     if is_posting:
         print '(inserting)'
         w.stream(ev.char)
 
-def h_keydown(ev, w):
+def h_keydown(ev):
     print 'received %r' % ev
 
-def h_keyup(ev, w):
+def h_keyup(ev):
     print 'received %r' % ev
     global is_posting
     if ev.hasMod('ctrl'):
@@ -109,9 +109,13 @@ def h_keyup(ev, w):
         elif ev.char == ' ':
             print 'no status to display'
 
+def h_changed(ev):
+    print '-' * 80
+
 app.link(h_char, tb, 'kbd char')
 app.link(h_keyup, tb, 'kbd keyup')
 app.link(h_keydown, tb, 'kbd keydown')
+app.link(h_changed, tb, 'changed')
 
 app.run()
 print "Testing text readback:\n\n\"" + tb.text

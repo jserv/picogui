@@ -78,10 +78,10 @@ class Application(Widget.Widget):
         if handle:
             return Widget.Widget(self.server, handle, self)
 
-    def createWidget(self, wtype):
+    def createWidget(self, wtype, wrapper_class=Widget.Widget):
         'convenience method to create an unparented widget'
         new_id = self.server.createWidget(wtype)
-        new = Widget.Widget(self.server, new_id, self, type=wtype)
+        new = wrapper_class(self.server, new_id, self, type=wtype)
         self._notify_new_widget(new)
         return new
 
