@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.8 2000/10/30 11:35:22 bauermeister Exp $
+/* $Id: driverinfo.c,v 1.9 2000/12/16 20:08:45 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -41,8 +41,8 @@ struct vidinfo videodrivers[] = {
 #ifdef DRIVER_SVGA             
   {"svga",&svga_regfunc},
 #endif
-#ifdef DRIVER_SDLMIN
-  {"sdlmin",&sdlmin_regfunc},
+#ifdef DRIVER_SDLFB
+  {"sdlfb",&sdlfb_regfunc},
 #endif
 #ifdef DRIVER_EZ328_CHIPSLICE
 #  ifdef DRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H

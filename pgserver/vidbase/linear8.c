@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.1 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: linear8.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -35,8 +35,8 @@
  * used when an accumulator won't do, but it is a macro so a line address
  * lookup table might be implemented later if really needed.
  */
-#define LINE(y)    ((y)*vid->fb_bpl)
-#define PIXEL(x,y) (vid->fb_mem[(x)+LINE(y)])
+#define LINE(y)    ((y)*vid->fb_bpl+vid->fb_mem)
+#define PIXEL(x,y) (*((x)+LINE(y)))
 
 /* 2-3-3 RGB color quantization */
 hwrcolor linear8_color_pgtohwr(pgcolor c) {
@@ -52,7 +52,7 @@ pgcolor linear8_color_hwrtopg(hwrcolor c) {
 
 /* Simple enough... */
 void linear8_clear(void) {
-  memset(vid->fb_mem,0,vid->bpl*vid->yres);
+  memset(vid->fb_mem,0,vid->fb_bpl*vid->yres);
 }
 
 /* Add colors, truncating if we overflow */
@@ -274,8 +274,8 @@ void linear8_gradient(int x,int y,int w,int h,int angle,
 
 /* Bit-shift dimming */
 void linear8_dim(void) {
-  int w = vid->clip->x2 - vid->clip->x1 + 1;
-  int h = vid->clip->y2 - vid->clip->y1 + 1;
+  int w = vid->clip_x2 - vid->clip_x1 + 1;
+  int h = vid->clip_y2 - vid->clip_y1 + 1;
   unsigned char *p = LINE(vid->clip_y1) + vid->clip_x1;
   int i,offset = vid->fb_bpl - w;
 
@@ -382,10 +382,10 @@ void linear8_charblit_v(unsigned char *chardat,int dest_x,
   }
 }
 
-void linear8_tileblit(struct stdbitmap *src,
+void linear8_tileblit(struct stdbitmap *srcbit,
 		  int src_x,int src_y,int src_w,int src_h,
 		  int dest_x,int dest_y,int dest_w,int dest_h) {
-  unsigned char *src_top = LINE(src_y) + src_x;
+  unsigned char *src_top = srcbit->bits + src_y*srcbit->w + src_x;
   unsigned char *dest = LINE(dest_y) + dest_x;
   int offset = vid->fb_bpl - dest_w;
   int dw;
@@ -478,8 +478,6 @@ void setvbl_linear8(struct vidlib *vid) {
   vid->getpixel       = &linear8_getpixel;
   vid->blit           = &linear8_blit;
   vid->unblit         = &linear8_unblit;
-
-  return sucess;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.1 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -871,8 +871,6 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_update = &def_sprite_update;
   vid->sprite_showall = &def_sprite_showall;
   vid->sprite_hideall = &def_sprite_hideall;
-	
-  return sucess;
 }
 
 /* The End */

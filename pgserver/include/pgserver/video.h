@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.11 2000/12/16 18:37:46 micahjd Exp $
+/* $Id: video.h,v 1.12 2000/12/16 20:08:45 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -403,7 +403,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 		    int xres,int yres,int bpp,unsigned long flags);
 
 /* Registration functions */
-g_error sdlmin_regfunc(struct vidlib *v);
+g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdl_regfunc(struct vidlib *v);
 g_error svga_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);
@@ -471,12 +471,14 @@ void def_tileblit(struct stdbitmap *src,
 		  int src_x,int src_y,int src_w,int src_h,
 		  int dest_x,int dest_y,int dest_w,int dest_h);
 void def_sprite_show(struct sprite *spr);
+void def_sprite_hide(struct sprite *spr);
 void def_sprite_update(struct sprite *spr);
 void def_sprite_showall(void);
 void def_sprite_hideall(void);
 
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);
+void setvbl_linear8(struct vidlib *vid);
 
 #endif /* __H_VIDEO */
 

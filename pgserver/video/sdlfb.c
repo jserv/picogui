@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.1 2000/12/16 19:34:31 micahjd Exp $
+/* $Id: sdlfb.c,v 1.2 2000/12/16 20:08:46 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -37,7 +37,7 @@
 
 SDL_Surface *sdl_vidsurf;
 
-g_error sdl_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   unsigned long sdlflags = 0;
   char str[80];
 
@@ -90,15 +90,15 @@ g_error sdl_init(int xres,int yres,int bpp,unsigned long flags) {
   return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
 
-void sdl_close(void) {
+void sdlfb_close(void) {
   unload_inlib(inlib_main);   /* Take out our input driver */
   SDL_Quit();
 }
 
-g_error sdl_regfunc(struct vidlib *v) {
+g_error sdlfb_regfunc(struct vidlib *v) {
   setvbl_linear8(v);          /* For now just support 8bpp */
-  v->init = &sdl_init;
-  v->close = &sdl_close;    
+  v->init = &sdlfb_init;
+  v->close = &sdlfb_close;    
   return sucess;
 }
 
