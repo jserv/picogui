@@ -111,10 +111,13 @@ def applyColorTags(message):
         message = re.sub('{%s}' % color, irc_colors.COLOR_PREFIX + irc_colors.COLORS[color], message)
     return message
 
+logged = False
 def logCommand(cmd):
-    f = open(commandLog, "a")
-    f.write(cmd)
-    f.close()
+    if not logged:
+        f = open(commandLog, "a")
+        f.write(cmd)
+        f.close()
+        logged = True
 
 def setProjectURL(project, url):
     f = open(os.path.join(urlDir, project), "w")
@@ -192,7 +195,8 @@ if __name__ == '__main__':
             import glob
             channelFilesCurrentlyInExistance = glob.glob(channelFile + ".*");
             channelFilesCurrentlyInExistance.sort()
-            socketName = socketBaseName            
+            socketName = socketBaseName
+            lastBotID = -1
             for cf in channelFilesCurrentlyInExistance:
                 f = open(cf)
                 channelList = {}
@@ -205,24 +209,27 @@ if __name__ == '__main__':
                         #print "found socket = " + socketName
                 f.close()
 
-            # we did not find the channel
-            if socketName == socketBaseName:
-                # we always choose the last bot to be started for joining channels
-                socketName = socketBaseName + "." + lastBotID;
-            #print "socketName is " + socketName
+            if lastBotID != -1:
+                # we did not find the channel
+                if socketName == socketBaseName:
+                    # we always choose the last bot to be started for joining channels
+                    socketName = socketBaseName + "." + lastBotID;
+                #print "socketName is " + socketName
             
-            # now launch the client object for the channel-specific bot
-            f = AnnounceClientFactory()
-            reactor.connectUNIX(socketName, f)
-            reactor.run()
-
-            # and now if we are not the first bot, send there, so it goes into the main channels
-            if socketName != socketBaseName + ".1":
-                socketName = socketBaseName + ".1"
+                # now launch the client object for the channel-specific bot
                 f = AnnounceClientFactory()
                 reactor.connectUNIX(socketName, f)
                 reactor.run()
 
+                # and now if we are not the first bot, send there, so it goes into the main channels
+                if socketName != socketBaseName + ".1":
+                    socketName = socketBaseName + ".1"
+                    f = AnnounceClientFactory()
+                    reactor.connectUNIX(socketName, f)
+                    reactor.run()
+            else:
+                # no channel lists found?!?
+                pass
             
         except IndexError:
             # this command does not relate to a channel
