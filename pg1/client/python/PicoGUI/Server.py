@@ -1,12 +1,16 @@
 # Server class
 
-import network, requests, responses, constants
+import network, requests, responses, constants, os
 try:
     import thread
 except:
     thread = None
 
 debug_threads = 0
+
+PGDEBUG = os.environ.get('PGDEBUG', '')
+if PGDEBUG.find('thread') >= 0:
+    debug_threads = 1
 
 def PlatformIncompatibility(exception):
     pass
@@ -24,7 +28,10 @@ class Request(object):
         ns = self.ns
         for a in args:
             r, ns = constants.resolve(a, ns, self.server)
-            args_resolved.append(r)
+            if type(r) is tuple:
+                args_resolved.extend(r)
+            else:
+                args_resolved.append(r)
         return self.server.send_and_wait(self.handler, args_resolved, timeout)
 
 def noop(*a, **kw):
@@ -170,6 +177,8 @@ class Server(object):
     def send_and_wait(self, handler, args=(), timeout=None):
         req_id = self._counter
         self._counter += 1
+        if PGDEBUG:
+            print 'PGDEBUG:', handler, args
         return self._do_send_and_wait(self._mkrequest(handler, args, req_id), req_id, timeout)
 
     def getString(self, text):

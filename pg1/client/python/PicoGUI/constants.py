@@ -58,6 +58,15 @@ def _pairAt16bits(p, server, reverse=0):
     else:
         return (p[0] << 16) + p[1], {}
 
+
+def _gropseq(seq, server):
+    # not reversable
+    try:
+        seq = seq.all()
+    except:
+        pass
+    return tuple(seq), _stop
+
 #################################################################
 # unique values
 
@@ -530,6 +539,7 @@ _constants = {
             'center':		  (3, _stop),
         }),
         'gridsize':		(14, _stop),
+        'gropseq':		(15, _gropseq),
         _default:       _stop,
     },),
 }
@@ -552,19 +562,25 @@ def cmd_ns(name):
         return {}
     return t[1]
 
+def cmd_code(name):
+    t = _constants['writecmd'][0][name]
+    if t is _stop:
+        return None
+    return t[0]
+
 #################################################################
 # external API
 
 def resolve(name, namespace=_constants, server=None):
     if namespace is _stop:
         return name, namespace
-    if type(namespace) == type(()):
+    if type(namespace) is tuple:
         # for cases where the argument is really supposed to be a string, yet there are contstants after this
         return name, namespace[0]
     if callable(namespace):
         # for cases when we need even stranger processing
         return namespace(name, server)
-    if type(name) in (type(()), type([])):
+    if type(name) in (tuple, list):
         # multiple names are or'ed together; namespace returned is the last one
         value = 0
         ns = namespace
@@ -584,7 +600,7 @@ def resolve(name, namespace=_constants, server=None):
             r = namespace.get(_default, (name, namespace))
     if r is _stop:
         return name, _stop
-    if type(r) == type(()) and len(r) == 2:
+    if type(r) == tuple and len(r) == 2:
         if r[1]:
             return r
         else:

@@ -106,6 +106,7 @@ class Widget(object):
         return Widget(self.server,self.server.findwidget(name),self.parent)
 
     # This is write, so a widget can be used like a file object
+    # (even tough this doesn't always work... when it does it's useful)
     def write(self, data):
         self.server.writedata(self.handle,data)
 
@@ -123,6 +124,8 @@ for pname in constants.propnames:
         setattr(Widget, alt_name, descriptor)
 
 for cname in constants.cmdnames:
+    if hasattr(Widget, cname):
+        continue
     meth = CommandMethod(cname)
     setattr(Widget, cname, meth)
     alt_name = cname.replace(' ', '_')

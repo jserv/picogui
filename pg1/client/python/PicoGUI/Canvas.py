@@ -2,8 +2,7 @@
 # A layer around Widget that makes it easy to access the Canvas methods
 
 #
-# Consider this interface PRELIMINARY.
-# There's a good chance it will change relatively soon.
+# Consider this interface DEPRECATED.  It will be removed in the future.
 #
 
 class Canvas:
