@@ -62,7 +62,7 @@ def prepare (module, platform, project):
         ]
         
     if platform.platform == "ppc-linux" :
-        command += " --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']
+        command += [" --with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']]
 
     message ("running: %s" % string.join (command))
     sequence ("test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
