@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2 -*-
- * $Id: html.c,v 1.18 2002/09/15 10:51:46 micahjd Exp $
+ * $Id: html.c,v 1.19 2002/11/03 23:28:29 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -90,9 +90,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#ifdef DEBUG_HTML
-#include <unistd.h>
-#endif
 
 #if 0 /**** BROKE ****/
 
