@@ -36,7 +36,8 @@ include_HEADERS = \
 	os.h		\
 	os_posix.h	\
 	x11.h           \
-	requests.h
+	requests.h	\
+       	debug.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 
