@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.16 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.17 2002/11/06 08:03:51 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -611,7 +611,7 @@ void filepicker_setdir(struct filepickdata *dat) {
 const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 			 const char *deffile, int flags, const char *title) {
 
-  pghandle wTB, wOk, wCancel, wUp;
+  pghandle wTB, wOk, wCancel, wUp, wPopup;
   struct pgEvent evt;
   struct filepickdata dat;
   int w,h;
@@ -630,31 +630,16 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
   /********* Set up dialog box and top-level widgets */
 
   pgEnterContext();
+  wPopup = pgDialogBox(title);
 
-  /* Size the dialog box ourselves. On a handheld this should
-   * be basically as large as possible. Just forcing it to take
-   * the whole screen at 1280x1024 would be a little awkward.
-   * Since using absolute coordinates would be a Bad Thing, size
-   * it relative to the default font.
-   *
-   * Usually the letter 'a' is 6x10 pixels, so multiplying by 66x40 would
-   * make the dialog box about 400x400. That will suck up the whole
-   * screen on 320x240 or 240x320 or smaller handhelds, but on a
-   * desktop-sized screen it will look very reasonable.
-   * Measuring relative to a font is useful, but make sure to use the
-   * PG_FSTYLE_FLUSH flag!
+  /* Size the dialog box ourselves. FIXME: This sizing is crufty :P
    */
   pgEnterContext();
-  pgSizeText(&w,&h,pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_FLUSH),
-			     pgNewString("a"));  /* A good metric */
+  pgSizeText(&w,&h,pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_FLUSH),pgNewString("a"));
   pgLeaveContext();
-  pgNewPopup(w*66,h*40);
-  pgNewWidget(PG_WIDGET_LABEL,0,0);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT,pgNewString(title),
-	      PG_WP_TRANSPARENT,0,
-	      /* The PG_WP_STATE property is fun :) */
-	      PG_WP_STATE,PGTH_O_LABEL_DLGTITLE,
+  pgSetWidget(wPopup,
+	      PG_WP_WIDTH, w*40,
+	      PG_WP_HEIGHT, h*30,
 	      0);
 
   /* Special fonts for directories and links */
