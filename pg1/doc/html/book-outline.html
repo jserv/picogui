@@ -1,0 +1,178 @@
+<html><head><title>PicoGUI Book outline</title></head><body>
+<h1>Preliminary outline for the PicoGUI Book</h1>
+<hr>
+<p>
+<ul>
+<li>Motivation for PicoGUI</li>
+<li>Big picture - overview of PicoGUI's architecture</li>
+<li>Tutorial<ul>
+    <li>Using PicoGUI<ul>
+        <li>Obtaining a source distribution</li>
+        <li>Compile-time configuration</li>
+        <li>Themes</li>
+        <li>Runtime configuration</li>
+        <li>Client libraries</li>
+        <li>Applications</li>
+        </ul></li>
+    <li>Programming for PicoGUI<ul>
+        <li>PicoGUI's widget model</li>
+        <li>Annotated examples, at least in C and Python<ul>
+            <li>Hello World</li>
+            <li>Widget overview</li>
+            <li>Memory management</li>
+            <li>Layout</li>
+            <li>Managing events</li>
+            <li>Widget templates</li>
+            <li>Themes</li>
+            <li>Bitmaps</li>
+            <li>Fonts</li>
+            <li>Drawing on canvases and bitmaps</li>
+            <li>Shared memory</li>
+            <li>Input filters</li>
+            </ul</li>
+        <li>Where to get more information</li>
+        </ul></li>
+    </ul></li>
+<li>The PicoGUI protocol<ul>
+    <li>Comparison to other systems<ul>
+        <li>The X window system</li>
+        <li>Fresco</li>
+        <li>Qt</li>
+        </ul></li>
+    <li>Widget layer<ul>
+        <li>Reference for all widget properties, commands, and events</li>
+        </ul></li>
+    <li>Request layer<ul>
+        <li>Reference for requests and responses (from pgui-protocol document</li>
+        </ul></li>
+    <li>Transport layer<ul>
+        <li>Current TCP/IP transport</li>
+        <li>libpgserver transport</li>
+        <li>Future transports:<ul>
+            <li>Enhanced TCP/IP transport with fewer round-trips</li>
+            <li>Shared memory and semaphores</li>
+            <li>CORBA</li>
+            </ul></li>
+        </ul></li>
+    </ul></li>
+<li>Client libraries<ul>
+    <li>Theory of client library design</li>
+    <li>C client library<ul>
+        <li>Examples</li>
+        <li>Reference</li>
+        </ul></li>
+    <li>Python client library<ul>
+        <li>Examples</li>
+        <li>Reference</li>
+        </ul></li>
+    <li>waba, lua, tcl, perl...</li>
+    <li>Future client libraries:<ul>
+        <li>C++</li>
+        <li>cli_c2</li>
+        </ul></li>
+    </ul></li>
+<li>pgserver<ul>
+    <li>Coding conventions</li>
+    <li>Theory of pgserver's layout and rendering<ul>
+        <li>The divtree</li>
+        <li>gropnodes and groplists</li>
+        <li>Abstract video interface</li>
+        <li>The role of themes</li>
+        <li>PicoGUI from the widget's point of view</li>
+        </ul></li>
+    <li>Source tree organization</li>
+    <li>Widgets<ul>
+        <li>Widget object model and subclassing</li>
+        <li>Overview of how all existing widgets are implemented</li>
+        <li>How to write new widgets</li>
+        </ul></li>
+    <li>Video<ul>
+        <li>Intro to video drivers, video wrappers, and video base libraries<ul>
+            <li>Rotation support</li>
+            <li>Rootless support</li>
+            </ul></li>
+        <li>Overview of existing video drivers and video base libraries</li>
+        <li>How to write new video drivers and VBLs</li>
+        </ul></li>
+    <li>Input filters<ul>
+        <li>Writing server-side input filters and input drivers</li>
+        <li>Client side input filters and input drivers</li>
+        </ul></li>
+    <li>Application manager<ul>
+        <li>How the app manager communicates with the application and with widgets</li>
+        <li>Current app managers</li>
+        <li>Ideas for future app managers</li>
+        </ul></li>
+    <li>Network layer<ul>
+        <li>Overview of data flow from an application to an internal call</li>
+        <li>TCP/IP interface</li>
+        <li>The server's main loop</li>
+        </ul></li>
+    <li>Memory management<ul>
+        <li>Handles</li>
+        <li>The memory debugger</li>
+        </ul></li>
+    <li>Debugging<ul>
+        <li>Exception handling in pgserver</li>
+        <li>Compile-time debug options</li>
+        <li>Magic keys</li>
+        <li>guru() and DBG()</li>
+        <li>Benchmarking</li>
+        </ul></li>
+    <li>Text<ul>
+        <li>Fonts<ul>
+            <li>Common interface for font engines</li>
+            <li>The built-in BDF engine</li>
+            <li>The freetype engine</li>
+            <li>Support for text-mode video devices</li>
+            <li>Support for OpenGL</li>
+            </ul></li>
+        <li>pgstring<ul>
+            <li>Unicode support</li>
+            <li>Encodings</li>
+            </ul></li>
+        </ul></li>
+    <li>Format loaders<ul>
+        <li>Image formats<ul>
+            <li>Image format loader interface</li>
+            <li>Existing image format loaders</li>
+            </ul></li>
+        <li>Text formats<ul>
+            <li>Text format loader interface</li>
+            <li>Existing test format loaders</li>
+            </ul></li>
+        </ul></li>
+    <li>Configuration management<ul>
+        <li>Compile-time configuration</li>
+        <li>Runtime config variables</li>
+        </ul></li>
+    <li>Operating system interface<ul>
+        <li>Timers</li>
+        <li>Networking</li>
+        <li>Filesystem</li>
+        <li>Shared memory</li>
+        </ul></li>
+    <li>Theme system<ul>
+        <li>Theory behind PicoGUI themes</li>
+        <li>The theme file format</li>
+        <li>In-memory representation of themes</li>
+        <li>Themes from the widget's point of view</li>
+        <li>Theme compiler</li>
+        </ul></li>
+    <li>Widget templates<ul>
+        <li>Theory behind widget templates</li>
+        <li>Binary WT file format</li>
+        <li>In-memory representations</li>
+        <li>Loading WTs</li>
+        <li>Instantiating WTs</li>
+        <li>XML widget templates</li>
+        </ul></li>
+    </ul></li>
+</li></ul>
+</ul>
+<p>
+<hr>
+The End
+</body>
+</html>
+
