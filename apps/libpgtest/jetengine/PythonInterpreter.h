@@ -11,7 +11,6 @@ extern "C" {
 class PythonInterpreter {
  public:
   PythonInterpreter(int argc, char **argv);
-  ~PythonInterpreter();
 
   PyThreadState *mainThreadState;
 };

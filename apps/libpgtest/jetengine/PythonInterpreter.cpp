@@ -10,11 +10,6 @@ PythonInterpreter::PythonInterpreter(int argc, char **argv) {
   PyEval_ReleaseLock();
 };
 
-PythonInterpreter::~PythonInterpreter() {
-  PyEval_AcquireLock();
-  Py_Finalize();
-}
-
 void PythonException::show(void) {
   PyErr_Print();
 }
