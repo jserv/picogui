@@ -96,7 +96,7 @@ int gentrap(struct board *it)
   int temp;
 
 #ifdef FUNCTION_DEBUG
-  fprintf(stderr,"linetrapwin called\n");
+  fprintf(stderr,"gentrap called\n");
 #endif
   
   temp = gentrapwin(it);
@@ -108,10 +108,41 @@ int gentrap(struct board *it)
 
 int gentrapwin(struct board *it)
 {
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"gentrapwin called\n");
+#endif
+
   return -1;
 }
 
 int gentraplose(struct board *it)
 {
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"gentraplose called\n");
+#endif
+  
   return -1;
+}
+
+int spotwin(struct board *it, int x, int y, int player)
+{
+  int i;
+
+  for(i-0;i<3;i++)
+  {
+    /* Horizontal */
+    if((gmask(it,x,y+1,x-2+i,y) + gmask(it,x,y+1,x-1+i,y) + gmask(it,x,y+1,x+i,y)) == -2)
+      return -1;
+  }
+  return -1;
+}
+
+/*this masks an X and Y thing out of a board, so that the caller doesn't "see" it */
+int gmask(struct board *it, int maskx, int masky, int x, int y)
+{
+  if(x >= maskx) x++;
+  if(y >= masky) y++;
+  return glook(it,x,y);
 }

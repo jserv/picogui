@@ -30,7 +30,7 @@
 
 int wincheck(struct board *foo)
 {
-  int x, y;
+  int x, y, i;
 
   //zero slope
   for(x=0;x<4;x++)
@@ -59,6 +59,15 @@ int wincheck(struct board *foo)
       if(foo->grid[x][y] == foo->grid[x+1][y-1] && foo->grid[x][y] == foo->grid[x+2][y-2] &&
 	 foo->grid[x][y] == foo->grid[x+3][y-3] && foo->grid[x][y] != 0)
 	return 400 + x*10 +y;
-
+  
+  //check for a "cat's" game
+  for(x=0,i=0;x<7;x++)
+    for(y=0;y<6;y++)
+      if(foo -> grid[x][y])
+	i++;
+  
+  if(i == 42)
+    return 1;
+  
   return 0;
 }

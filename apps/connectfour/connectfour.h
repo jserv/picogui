@@ -43,6 +43,7 @@ int redraw();
 void drawpiece(int x, int y, int type);
 void win(int x, int y, int direction);
 void lose(int x, int y, int direction);
+void catsgame();
 void victoryline(int x, int y, int direction);
 
 

@@ -144,6 +144,8 @@ int glook(struct board *it,int x, int y)
 {
   if(y == -1)
     return 10;
+  if(y < 0 || y > 5 || x < 0 || x > 6)
+    return 10;
   return it->grid[x][y];
 }	
 

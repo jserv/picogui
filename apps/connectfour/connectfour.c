@@ -149,14 +149,16 @@ int piecedrop(struct pgEvent *evt)
   putpiece(loc,HUMAN,evt->extra);
   
   loc = wincheck(evt->extra);
-  if(loc)
+  if(loc == 1) catsgame();
+  else if(loc)
     {
       win((loc / 10)%10,loc%10,loc/100);
       return 0;
     }
   aicall(evt->extra);
   loc = wincheck(evt->extra);
-  if(loc)
+  if(loc == 1) catsgame();
+  else if(loc)
     lose((loc / 10)%10,loc%10,loc/100);
 }
 
@@ -202,6 +204,12 @@ void lose(int x, int y, int direction)
 {
   pgReplaceTextFmt(info,"Game Over... You Lose");
   victoryline(x,y,direction);
+  pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+}
+
+void catsgame()
+{
+  pgReplaceTextFmt(info,"Cat's game");
   pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
 }
 
