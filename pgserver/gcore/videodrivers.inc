@@ -6,10 +6,6 @@
  * (see driverinfo.c for more info)
  */
 
-#ifdef DRIVER_SDLACCEL
-  DRV("sdlaccel",&sdlaccel_regfunc)
-#endif
-
 #ifdef DRIVER_FBDEV
   DRV("fbdev",&fbdev_regfunc)
 #endif

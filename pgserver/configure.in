@@ -117,7 +117,7 @@ dnl Extra libraries depending on the selected profile
 dnl ==================================================
 
 dnl Eventually check for SDL
-AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDLACCEL, [ 
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB, [ 
 
   AM_PATH_SDL(1.0.0, , AC_MSG_WARN(cannot find SDL))
 
@@ -205,6 +205,16 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
 
   DRIVER_LIBS="-lgpm"
 ])
+
+dnl check for SDL_ttf
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_SDLACCEL_TTF, [
+
+  AC_CHECK_LIB(SDL_ttf, TTF_Init,, AC_MSG_WARN([can't find SDL_ttf]))
+
+  DRIVER_LIBS="-lSDL_ttf"
+])
+
 
 # More compiler flags...
 

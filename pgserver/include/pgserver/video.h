@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.59 2001/11/19 00:12:38 micahjd Exp $
+/* $Id: video.h,v 1.60 2001/11/19 02:05:23 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -551,7 +551,6 @@ struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
 /************* Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
-g_error sdlaccel_regfunc(struct vidlib *v);
 g_error svgagl_regfunc(struct vidlib *v);
 g_error svgafb_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);
