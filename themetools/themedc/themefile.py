@@ -11,6 +11,16 @@ class PM:
     self.prefix=prefix
     self.format=printfformat
 
+operatorprecedence=(('U', '!'), ('L', '*', '/'), ('L', '+', '-'),
+    ('L', '<<', '>>'), ('L', '>', '<'), ('L', '=='), ('L', '&'),
+    ('L', '|'), ('L', '&&'), ('L', '||'), ('R', 'questioncolon'))
+def precedence(operator):
+  i=0
+  while i<len(operatorprecedence):
+    if operator in operatorprecedence[i]:
+      return i
+    i=i+1
+  raise 'unknown operator %s'%operator
 fsoperators={constants['PGTH_OPCMD_PLUS']: '+',
     constants['PGTH_OPCMD_MINUS']: '-', constants['PGTH_OPCMD_MULTIPLY']: '*',
     constants['PGTH_OPCMD_SHIFTL']: '<<', constants['PGTH_OPCMD_SHIFTR']: '>>',
@@ -121,7 +131,7 @@ class PgFillstyle:
     for var in self.localvars[4:]:
       res=res+'\tvar '+var[0]+';\n'
     return res+self.source+'    }'
-  def formula(self, value):
+  def formula(self, value, prec=len(operatorprecedence), side='N'):
     if value[1] in ('int', 'literal', 'xsize', 'ysize', 'var',
         'bitmap', 'string', 'font'):
       return str(value[0])
@@ -130,10 +140,7 @@ class PgFillstyle:
     elif value[1]=='lgop':
       return lookup_constname('PG_LGOP_', value[0])
     elif value[1]=='color':
-      if type(value[0]) == StringType:
-        return value[0]
-      else:
-        return '0x%06x'%value[0]
+      return '0x%06x'%value[0]
     elif value[1]=='function':
       res=value[0]+'('
       for arg in value[2:]:
@@ -143,12 +150,25 @@ class PgFillstyle:
       else:
         return res[:-2]+')'
     elif value[1]=='unary':
-      return value[0]+self.formula(value[2])
+      prec=precedence(value[0])	# unary operator never needs parenthesis
+      return value[0]+self.formula(value[2], prec,
+          operatorprecedence[prec][0])
     elif value[1]=='operator':
-      return self.formula(value[2])+value[0]+self.formula(value[3])
+      pr=precedence(value[0])
+      ret=self.formula(value[2], pr, 'L')+value[0]+self.formula(value[3],
+          pr, 'R')
+      if (pr>prec) or (pr==prec and side!=operatorprecedence[prec][0]):
+        ret='('+ret+')'
+      return ret
     elif value[1]=='questioncolon':
-      return "%s?%s:%s"%(self.formula(value[0]), self.formula(value[2]),
-                self.formula(value[3]))
+      pr=precedence(value[1])	# not value[0] for ?:
+      # ? forces parentheses on nested ?:s for clarity
+      ret="%s?%s:%s"%(self.formula(value[0], pr, 'L'),
+	  self.formula(value[2], pr, '?'),
+	  self.formula(value[3], pr, '?'))
+      if (pr>prec) or (pr==prec and side!=operatorprecedence[prec][0]):
+        ret='('+ret+')'
+      return ret
     else:
       raise "don't know type %s"%value[1]
   def assigntype(self,where,type):
