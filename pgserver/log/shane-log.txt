@@ -1,0 +1,6 @@
+2001-05-14    Shane Nay <shane@minirl.com> 
+ 
+ Added sizing to text size to field widget. 
+  
+      * widget/field.c: added resizefield() routine, and calling it when 
+            the font changes, or when the text is changed. 

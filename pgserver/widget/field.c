@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.24 2001/04/29 17:28:40 micahjd Exp $
+/* $Id: field.c,v 1.25 2001/05/31 06:00:45 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -20,7 +20,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
+ * Shane R. Nay <shane@minirl.com> 
  * 
  * 
  */
@@ -39,6 +39,8 @@
 #define FLASHTIME_ON   250
 #define FLASHTIME_OFF  150
 
+void resizefield(struct widget *self); 
+ 
 struct fielddata {
   handle font;
   int focus,on,flash_on;
@@ -166,6 +168,7 @@ g_error field_set(struct widget *self,int property, glob data) {
     if (self->in->split != psplit) {
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
     }
+    resizefield(self); 
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -188,6 +191,7 @@ g_error field_set(struct widget *self,int property, glob data) {
      
      /* Update text */
      strcpy(DATA->buffer,str);
+     resizefield(self); 
 //     div_setstate(self->in->div,self->in->div->state);
      break;
 
@@ -378,6 +382,38 @@ g_error bufcheck_shrink(struct widget *self) {
   return rehandle(DATA->hbuffer,DATA->buffer);
 }
 
+/* Resize the field.  Mostly taken from label.c */ 
+void resizefield(struct widget *self) { 
+  s16 w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN); 
+  s16 osplit; 
+  struct fontdesc *fd; 
+  char *str; 
+  handle font = DATA->font ? DATA->font :  
+    theme_lookup(self->in->div->state, PGTH_P_FONT); 
+ 
+  /* Redraw the containing widget if we're transparent 
+  if (DATA->transparent || DATA->osplit!=self->in->split) 
+  redraw_bg(self); */ 
+ 
+  /* With PG_S_ALL we'll get ignored anyway... */ 
+  if (self->in->flags & PG_S_ALL) return; 
+  if (self->sizelock) return; 
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font)) 
+          || !fd) return; 
+  sizetext(fd,&w,&h,DATA->buffer); 
+ 
+  osplit = self->in->split; 
+  if ((self->in->flags & PG_S_TOP) || 
+      (self->in->flags & PG_S_BOTTOM)) 
+    self->in->split = h+m; 
+  else if ((self->in->flags & PG_S_LEFT) || 
+       (self->in->flags & PG_S_RIGHT)) 
+    self->in->split = w+m; 
+  if (osplit!=self->in->split) { 
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC; 
+    self->dt->flags |= DIVTREE_NEED_RECALC; 
+  } 
+} 
 /* The End */
 
 
