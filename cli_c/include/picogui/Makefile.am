@@ -10,5 +10,6 @@ include_HEADERS = \
         theme.h \
 	stddialog.h \
 	applet.h \
-	types.h
+	types.h \
+	opengl.h
 

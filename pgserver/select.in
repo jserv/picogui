@@ -75,6 +75,7 @@ add_if_true sdlgl_font.c         $DRIVER_SDLGL
 add_if_true sdlgl_init.c         $DRIVER_SDLGL
 add_if_true sdlgl_primitives.c   $DRIVER_SDLGL
 add_if_true sdlgl_util.c         $DRIVER_SDLGL
+add_if_true sdlgl_grop.c         $DRIVER_SDLGL
 
 close_section
 

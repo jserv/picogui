@@ -11,7 +11,7 @@ MKSYMTAB := perl $(srcdir)/mksymtab.pl
 
 LDADD = @LEXLIB@
 
-CONSTANTS := $(top_srcdir)/include/picogui/*.h
+CONSTANTS := $(top_srcdir)/include/picogui/*.h $(wildcard /usr/include/GL/gl.h)
 
 DISTCLEANFILES = symtab.c pgtheme.c pgtheme.h pglex.c
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.9 2002/03/04 21:58:24 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.10 2002/03/05 11:26:30 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -273,80 +273,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     }
 
     /* Make sure the bitmap has a corresponding texture */
-    if (!glsrc->texture) {
-      hwrbitmap tmpbit;
-      u32 *p;
-      u32 i;
-
-      glGenTextures(1,&glsrc->texture);
-      glBindTexture(GL_TEXTURE_2D, glsrc->texture);
-
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_global.texture_filtering);
-      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_global.texture_filtering);
-
-      /* We have to round up to the nearest power of two...
-       * FIXME: this is wasteful. We need a way to pack multiple
-       *        glbitmaps into one texture.
-       */
-      glsrc->tw = gl_power2_round(glsrc->sb->w);
-      glsrc->th = gl_power2_round(glsrc->sb->h);
-      glsrc->tx1 = 0;
-      glsrc->ty1 = 0;
-      glsrc->tx2 = ((float)glsrc->sb->w) / ((float)glsrc->tw);
-      glsrc->ty2 = ((float)glsrc->sb->h) / ((float)glsrc->th);
-      
-      /* Paste our image into it.
-       * Note that the linear filtering depends on the value of the pixel adjacent to
-       * the one being rendered as well, so to minimize rendering artifacts we copy
-       * strips of the original bitmap to the sides of the new texture.
-       */
-
-      if (iserror(vid->bitmap_new(&tmpbit, glsrc->tw, glsrc->th, vid->bpp))) return;
-      
-      /* Texture itself */
-      vid->blit(tmpbit, 0,0, glsrc->sb->w, glsrc->sb->h, src, 0,0, PG_LGOP_NONE);
-
-      /* Left and right edges */
-      if (glsrc->tw > glsrc->sb->w) {
-	vid->blit(tmpbit, glsrc->sb->w,0, 1, glsrc->sb->h, src, glsrc->sb->w-1,0, PG_LGOP_NONE);
-	vid->blit(tmpbit, glsrc->tw-1,0, 1,glsrc->sb->h, src, 0,0, PG_LGOP_NONE);
-      }
-
-      /* Top and bottom edges */
-      if (glsrc->th > glsrc->sb->h) {
-	vid->blit(tmpbit, 0,glsrc->sb->h, glsrc->sb->w, 1, src, 0,glsrc->sb->h-1, PG_LGOP_NONE);
-	vid->blit(tmpbit, 0,glsrc->th-1, glsrc->sb->w,1, src, 0,0, PG_LGOP_NONE);
-      }
-
-      /* Corners */
-      if (glsrc->tw > glsrc->sb->w && glsrc->th > glsrc->sb->h) {
-	vid->blit(tmpbit, glsrc->sb->w,glsrc->sb->h, 1, 1, src, 
-		  glsrc->sb->w-1,glsrc->sb->h-1, PG_LGOP_NONE);
-	vid->blit(tmpbit, glsrc->tw-1,glsrc->th-1, 1,1, src, 0,0, PG_LGOP_NONE);
-      }
-
-      /* Now convert the alpha channel in our temporary bitmap. Any colors with the
-       * PGCF_ALPHA flag need to have their alpha channels shifted over one bit,
-       * other pixels get an alpha of 0xFF. Note that the original bitmap will still
-       * have the PGCF_ALPHA-style colors, so detection of bitmaps with alpha channels
-       * will work as usual.
-       */
-      i = glsrc->tw * glsrc->th;
-      p = ((struct glbitmap*)tmpbit)->sb->bits;
-      for (;i;i--,p++)
-	if (*p & PGCF_ALPHA) {
-	  *p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);
-	}
-	else
-	  *p = *p | 0xFF000000;
-
-      /* Send it to opengl, ditch our temporary */
-      glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
-		   GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
-      vid->bitmap_free(tmpbit);
-
-      //  gl_showtexture(glsrc->texture, glsrc->tw, glsrc->th);
-    }      
+    gl_make_texture(glsrc);
     
     /* Calculate texture coordinates */
     tx1 = glsrc->tx1 + src_x * (glsrc->tx2 - glsrc->tx1) / glsrc->sb->w;

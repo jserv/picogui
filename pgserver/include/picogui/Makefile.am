@@ -4,4 +4,5 @@ noinst_HEADERS = \
 	network.h \
 	pgkeys.h \
 	theme.h \
-	types.h
+	types.h \
+	opengl.h

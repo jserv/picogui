@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.79 2002/03/03 18:26:42 micahjd Exp $
+/* $Id: video.h,v 1.80 2002/03/05 11:26:29 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -299,6 +299,12 @@ struct vidlib {
    *   Called for any picogui update(). Return nonzero to abort the update
    */
   int (*update_hook)(void);
+
+  /* Optional
+   *   This lets the video driver add its own gropnodes. It's called whenever
+   *   gropnode_draw finds an unknown grop type.
+   */
+  void (*grop_handler)(struct groprender *r, struct gropnode *n);
 
   /***************** Colors */
 

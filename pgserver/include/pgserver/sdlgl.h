@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.9 2002/03/04 21:58:23 micahjd Exp $
+/* $Id: sdlgl.h,v 1.10 2002/03/05 11:26:29 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -269,6 +269,8 @@ int sdlgl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***lis
 				    struct groprender *rend);
 hwrcolor sdlgl_color_pgtohwr(pgcolor c);
 pgcolor sdlgl_color_hwrtopg(pgcolor c);
+void sdlgl_grop_handler(struct groprender *r, struct gropnode *n);
+void gl_make_texture(struct glbitmap *glb);
 
 #endif /* _H_SDLGL */
 

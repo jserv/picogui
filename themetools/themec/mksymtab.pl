@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.10 2002/01/05 16:51:46 micahjd Exp $
+# $Id: mksymtab.pl,v 1.11 2002/03/05 11:26:30 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -46,7 +46,7 @@ while (<>) {
     # the C compiler sort that out. Just get a list of 'em
     # so we can make a table
 
-    next if (!/^\#define\s*(PG\S+)/);
+    next if (!/^\#define\s*([A-Z]\S+)/);
     $n = $1;
     next if ($n =~ /\(/);
 

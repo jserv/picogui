@@ -24,7 +24,8 @@ EXTRA_libvideo_a_SOURCES = \
 	sdlgl_font.c \
 	sdlgl_init.c \
 	sdlgl_primitives.c \
-	sdlgl_util.c
+	sdlgl_util.c \
+	sdlgl_grop.c
 
 libvideo_a_LIBADD       = $(DRIVER:%.c=%.o)
 libvideo_a_DEPENDENCIES = $(DRIVER:%.c=%.o)

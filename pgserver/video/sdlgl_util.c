@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.7 2002/03/03 20:05:29 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.8 2002/03/05 11:26:30 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -164,6 +164,8 @@ void gl_frame(void) {
 
   /***************** Background grid */
 
+  glClear(GL_DEPTH_BUFFER_BIT);
+
   if (gl_global.grid)
     gl_render_grid();
 
@@ -318,6 +320,83 @@ void gl_showtexture(GLuint tex, int w, int h) {
   glDisable(GL_TEXTURE_2D);
   SDL_GL_SwapBuffers();
   sleep(2);
+}
+
+void gl_make_texture(struct glbitmap *glb) {
+  if (!glb->texture) {
+    hwrbitmap tmpbit;
+    u32 *p;
+    u32 i;
+    
+    glGenTextures(1,&glb->texture);
+    glBindTexture(GL_TEXTURE_2D, glb->texture);
+    
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,gl_global.texture_filtering);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,gl_global.texture_filtering);
+    
+    /* We have to round up to the nearest power of two...
+     * FIXME: this is wasteful. We need a way to pack multiple
+     *        glbitmaps into one texture.
+     */
+    glb->tw = gl_power2_round(glb->sb->w);
+    glb->th = gl_power2_round(glb->sb->h);
+    glb->tx1 = 0;
+    glb->ty1 = 0;
+    glb->tx2 = ((float)glb->sb->w) / ((float)glb->tw);
+    glb->ty2 = ((float)glb->sb->h) / ((float)glb->th);
+    
+    /* Paste our image into it.
+     * Note that the linear filtering depends on the value of the pixel adjacent to
+     * the one being rendered as well, so to minimize rendering artifacts we copy
+     * strips of the original bitmap to the sides of the new texture.
+     */
+    
+    if (iserror(vid->bitmap_new(&tmpbit, glb->tw, glb->th, vid->bpp))) return;
+    
+    /* Texture itself */
+    vid->blit(tmpbit, 0,0, glb->sb->w, glb->sb->h, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
+    
+    /* Left and right edges */
+    if (glb->tw > glb->sb->w) {
+      vid->blit(tmpbit, glb->sb->w,0, 1, glb->sb->h, (hwrbitmap)glb, glb->sb->w-1,0, PG_LGOP_NONE);
+      vid->blit(tmpbit, glb->tw-1,0, 1,glb->sb->h, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
+    }
+    
+    /* Top and bottom edges */
+    if (glb->th > glb->sb->h) {
+      vid->blit(tmpbit, 0,glb->sb->h, glb->sb->w, 1, (hwrbitmap)glb, 0,glb->sb->h-1, PG_LGOP_NONE);
+      vid->blit(tmpbit, 0,glb->th-1, glb->sb->w,1, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
+    }
+    
+    /* Corners */
+    if (glb->tw > glb->sb->w && glb->th > glb->sb->h) {
+      vid->blit(tmpbit, glb->sb->w,glb->sb->h, 1, 1, (hwrbitmap)glb, 
+		glb->sb->w-1,glb->sb->h-1, PG_LGOP_NONE);
+      vid->blit(tmpbit, glb->tw-1,glb->th-1, 1,1, (hwrbitmap)glb, 0,0, PG_LGOP_NONE);
+    }
+    
+    /* Now convert the alpha channel in our temporary bitmap. Any colors with the
+     * PGCF_ALPHA flag need to have their alpha channels shifted over one bit,
+     * other pixels get an alpha of 0xFF. Note that the original bitmap will still
+     * have the PGCF_ALPHA-style colors, so detection of bitmaps with alpha channels
+     * will work as usual.
+     */
+    i = glb->tw * glb->th;
+    p = ((struct glbitmap*)tmpbit)->sb->bits;
+    for (;i;i--,p++)
+      if (*p & PGCF_ALPHA) {
+	*p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);
+      }
+      else
+	*p = *p | 0xFF000000;
+    
+    /* Send it to opengl, ditch our temporary */
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, glb->tw, glb->th, 0, 
+		 GL_BGRA_EXT, GL_UNSIGNED_BYTE, ((struct glbitmap*)tmpbit)->sb->bits);
+    vid->bitmap_free(tmpbit);
+    
+    //  gl_showtexture(glb->texture, glb->tw, glb->th);
+  }      
 }
 
 /* The End */

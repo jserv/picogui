@@ -1,0 +1,129 @@
+/*
+ * Spinning cube
+ *
+ * This is a demonstration of animation and using OpenGL gropnodes.
+ * Note that this ONLY works with the sdlgl driver, and this theme
+ * also requires the PNM, JPEG, and PNG image loaders.
+ *
+ * It draws on the background, so you can run it without any apps to
+ * see the effect. There should be an interlaced background with water
+ * blended and flowing across it, then a spinning cube in the middle with
+ * the "pG" logo on each face.
+ *
+ */
+
+/* Texture properties */
+prop tInterlace, tWater, tPanel;
+
+/************************************ default *******/
+
+object default name = "Spinning Cube Demo (OpenGL)";
+
+/************************************ background *******/
+
+object background {
+
+  /* Load textures */
+  tInterlace = LoadBitmap("data/fgl_interlace.pgm");
+  tWater = LoadBitmap("data/fgl_water.jpeg");
+  tPanel = LoadBitmap("data/fgl_panel.png");
+
+  /* Fillstyle */
+  bgfill = fillstyle {
+    var s, ts, cube_z, t;
+    t = ticks;  /* Get the current time for the animations */
+
+    /*** Background */
+
+    /* Water background */
+    Bitmap(x,y,w,h,tWater);
+
+    /* Use s as a temporary variable to compute the offset of the interlacing.
+     * Scale it to slow it down, then keep it under 6 (height of our texture)
+     * to avoid the whole texture disappearing later when things overflow.
+     *
+     * Since normally the sdlgl driver will reset blending functions to match the
+     * requested lgop at the beginning of each function, set a bogus lgop so we
+     * can control the blending ourselves.
+     */
+    s = t>>5;
+    s = s-(s/6*6);
+    SetLgop(-1);
+    Gl_enable(GL_BLEND);
+    Gl_blendfunc(GL_ZERO,GL_SRC_COLOR);
+    Bitmap(x,y-s,w,h+s+s,tInterlace);
+    
+    /*** OpenGL Setup */
+
+    s  = (w/4)<<16;    /* Size of the cube */
+    ts = 1<<16;        /* Size in texture coordinates */
+    cube_z = s;        /* Height it floats at */
+        
+    Gl_pushmatrix();
+    Gl_enable(GL_DEPTH_TEST);
+    Gl_depthfunc(GL_LESS);
+    Gl_color(0xFFFFFF);
+    Gl_bindtexture(tPanel);
+    Gl_enable(GL_TEXTURE_2D);
+    Gl_disable(GL_BLEND);
+
+    /*** Transformations */
+    
+    Gl_translatef(w<<15,h<<15,cube_z);              /* Float above the divnode */
+    Gl_rotatef(45,0,0,0, 1<<16,0,0);                /* Small vertical tilt */
+    Gl_rotatef(t>>4,t<<12,0,0, 0,1<<16,0);          /* Spin */
+    Gl_translatef(0-(s>>1),0-(s>>1),0-(s>>1));      /* Center the cube on the origin */
+    
+    /*** Cube */
+    
+    Gl_begin(GL_QUADS);
+    
+    /* Right */
+    Gl_texcoord2f(0,0);     Gl_vertex3f(s,0,0);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(s,0,s);
+    
+    /* Left */
+    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(0,s,0);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(0,s,s);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
+    
+    /* Bottom */
+    Gl_texcoord2f(0,0);     Gl_vertex3f(0,s,0);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,s,0);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,s);
+    
+    /* Top */
+    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,0,s);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,0,s);
+    
+    /* Front */
+    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,0);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,0);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,0);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,0);
+    
+    /* Back */
+    Gl_normal3f(0,s,0);
+    Gl_texcoord2f(0,0);     Gl_vertex3f(0,0,s);
+    Gl_texcoord2f(ts,0);    Gl_vertex3f(s,0,s);
+    Gl_texcoord2f(ts,ts);   Gl_vertex3f(s,s,s);
+    Gl_texcoord2f(0,ts);    Gl_vertex3f(0,s,s);
+    
+    Gl_end();
+
+    /*** Cleanup */
+    
+    Gl_disable(GL_TEXTURE_2D);
+    Gl_disable(GL_DEPTH_TEST);
+    Gl_disable(GL_POLYGON_SMOOTH);
+    Gl_popmatrix();
+  };
+}
+
+/* The End */

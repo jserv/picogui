@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.81 2002/03/03 18:26:42 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.82 2002/03/05 11:26:30 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -138,6 +138,9 @@ int def_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
 
 int def_update_hook(void) {
   return 0;
+}
+
+void def_grop_handler(struct groprender *r, struct gropnode *n) {
 }
 
 /******* colors */
@@ -2021,6 +2024,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->grop_render_end_hook = &def_grop_render_end_hook; 
   vid->grop_render_node_hook = &def_grop_render_node_hook;
   vid->update_hook = &def_update_hook;
+  vid->grop_handler = &def_grop_handler;
 }
 
 /* The End */
