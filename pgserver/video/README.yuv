@@ -25,13 +25,14 @@ describes a pixel as follows:
 When only Y is transmitted, the image can be seen in greyscales. This
 is a reminiscence of the b/w television.
 
-As for RGB, when we talk about YUV, there are two distinct topics to
-consider:
+When we talk about YUV, there are three distinct aspects to consider:
 
   - The electrical signal, made by the encoder, carried by the wires.
+  - The digital stream format as well as the file format.
   - The memory representation, subject to different organisations,
     that can save (or not) memory, and ease (or not) graphical
     operations, and reduce (or not) the complexity of the encoder.
+
 
 While RGB is commonly used in the computer world, YUV encoding is very
 much used in the world of video devices (digital cams, DVD players,
@@ -88,8 +89,19 @@ expected), following the so-called "4:2:2" scheme:
     V byte), each pair shared by two consecutively horizontal pixels.
 
 Due to the fact that UV sharing leads to a quality loss, especially
-when multiple pixel/getpixel operations are done, the full original
-RGB values are cached in a shadow buffer.
+when multiple pixel/getpixel operations are done. However, the
+spectrum of available colors is equivalent to a depth of 32 bpp. The
+16 bpp depth introduces a spatial loss (chroma dirty borders effect),
+rhather than a reduced color sensitivity.
+
+Implementation notes:
+
+Pgserver is set to 32 bpp so that offscreen bitmaps hold the full
+color information and not just 16 bpp RGB. The YUV conversion is done
+in pixel() when we write to the fb mem. A 32 bpp shadow buffer is used
+to a) compensate the spatial loss due to the fact that two pixels
+share the same UV pair and b) to avoid having to do a YUV -> RGB
+conversion in getpixel().
 
 
 Todo list
