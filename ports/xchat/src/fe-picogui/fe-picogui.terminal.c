@@ -33,7 +33,7 @@
 #include "../common/fe.h"
 
 #include <picogui.h>
-#include "fe-picogui.h"
+#include "fe-picogui.terminal.h"
 
 
 static GSList *tmr_list;		  /* timer list */

@@ -119,7 +119,6 @@ fe_new_window (struct session *sess)
 	sess->gui->input = pgNewWidget(PG_WIDGET_FIELD, 0, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_BOTTOM, 0);
 	pgBind(0, PG_WE_ACTIVATE, fieldActivate, sess);
-	pgFocus(0);
 	/* Chat area */
 	rightbox=pgNewWidget(PG_WIDGET_BOX, 0, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
@@ -159,7 +158,10 @@ fe_new_window (struct session *sess)
 	fe_buttons_update(sess);
 
 	if (!sess->server->front_session)
+	{
+		pgFocus(sess->gui->input);
 		sess->server->front_session = sess;
+	}
 	if (!current_tab)
 		current_tab = sess;
 
