@@ -1,4 +1,5 @@
-/* $Id: html.c,v 1.16 2002/01/16 19:47:25 lonetech Exp $
+/* -*- mode: c; c-basic-offset: 2 -*-
+ * $Id: html.c,v 1.17 2002/02/09 05:57:16 sdeerwester Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -148,6 +149,13 @@ struct html_param {
   int value_len;
 };
 
+/* Table to hold tag -> handler associations */
+
+struct html_taghandler {
+  const char *name;
+  g_error (*handler)(struct html_parse *hp, struct html_tag_params *tag);
+};
+
 /* Parsing modes */
 g_error html_parse_text(struct html_parse *hp,
 			   const u8 *start,const u8 *end);
@@ -169,144 +177,175 @@ pgcolor html_findcolor(const u8 *colorname, int namelen);
 
 /* This table is used to convert character names like &nbsp; to character
  * numbers, as defined by the HTML standard.
+ *
+ * NB: These tables are searched using bsearch, and must therefore be
+ * sorted by name.
  */
 
 struct html_charname {
-  const char *name;
+  const u8 *name;
   char ch;
 } html_chartable[] = {
-
-  { "nbsp",	' ' },	/* no-break space */
-  { "lt",       '<' },  /* less-than */
-  { "gt",       '>' },  /* greater-than */
-  { "quot",     '"' },  /* Quotation mark */
-  { "amp",      '&' },  /* Ampersand */
-  { "iexcl",	161 },	/* inverted exclamation mark */
-  { "cent",	162 },	/* cent sign */
-  { "pound",	163 },	/* pound sterling sign */
-  { "curren",	164 },	/* general currency sign */
-  { "yen",	165 },	/* yen sign */
-  { "brvbar",	166 },	/* broken (vertical) bar */
-  { "sect",	167 },	/* section sign */
-  { "uml",	168 },	/* umlaut (dieresis) */
-  { "copy",	169 },	/* copyright sign */
-  { "ordf",	170 },	/* ordinal indicator, feminine */
-  { "laquo",	171 },	/* angle quotation mark, left */
-  { "not",	172 },	/* not sign */
-  { "shy",	173 },	/* soft hyphen */
-  { "reg",	174 },	/* registered sign */
-  { "macr",	175 },	/* macron */
-  { "deg",	176 },	/* degree sign */
-  { "plusmn",	177 },	/* plus-or-minus sign */
-  { "sup2",	178 },	/* superscript two */
-  { "sup3",	179 },	/* superscript three */
-  { "acute",	180 },	/* acute accent */
-  { "micro",	181 },	/* micro sign */
-  { "para",	182 },	/* pilcrow (paragraph sign) */
-  { "middot",	183 },	/* middle dot */
-  { "cedil",	184 },	/* cedilla */
-  { "sup1",	185 },	/* superscript one */
-  { "ordm",	186 },	/* ordinal indicator, masculine */
-  { "raquo",	187 },	/* angle quotation mark, right */
-  { "frac14",	188 },	/* fraction one-quarter */
-  { "frac12",	189 },	/* fraction one-half */
-  { "frac34",	190 },	/* fraction three-quarters */
-  { "iquest",	191 },	/* inverted question mark */
-  { "Agrave",	192 },	/* capital A, grave accent */
+  { "AElig",	198 },	/* capital AE diphthong (ligature) */
   { "Aacute",	193 },	/* capital A, acute accent */
   { "Acirc",	194 },	/* capital A, circumflex accent */
+  { "Agrave",	192 },	/* capital A, grave accent */
+  { "Aring",	197 },	/* capital A, ring */
   { "Atilde",	195 },	/* capital A, tilde */
   { "Auml",	196 },	/* capital A, dieresis or umlaut mark */
-  { "Aring",	197 },	/* capital A, ring */
-  { "AElig",	198 },	/* capital AE diphthong (ligature) */
   { "Ccedil",	199 },	/* capital C, cedilla */
-  { "Egrave",	200 },	/* capital E, grave accent */
+  { "ETH",	208 },	/* capital Eth, Icelandic */
   { "Eacute",	201 },	/* capital E, acute accent */
   { "Ecirc",	202 },	/* capital E, circumflex accent */
+  { "Egrave",	200 },	/* capital E, grave accent */
   { "Euml",	203 },	/* capital E, dieresis or umlaut mark */
-  { "Igrave",	204 },	/* capital I, grave accent */
   { "Iacute",	205 },	/* capital I, acute accent */
   { "Icirc",	206 },	/* capital I, circumflex accent */
+  { "Igrave",	204 },	/* capital I, grave accent */
   { "Iuml",	207 },	/* capital I, dieresis or umlaut mark */
-  { "ETH",	208 },	/* capital Eth, Icelandic */
   { "Ntilde",	209 },	/* capital N, tilde */
-  { "Ograve",	210 },	/* capital O, grave accent */
   { "Oacute",	211 },	/* capital O, acute accent */
   { "Ocirc",	212 },	/* capital O, circumflex accent */
+  { "Ograve",	210 },	/* capital O, grave accent */
+  { "Oslash",	216 },	/* capital O, slash */
   { "Otilde",	213 },	/* capital O, tilde */
   { "Ouml",	214 },	/* capital O, dieresis or umlaut mark */
-  { "times",	215 },	/* multiply sign */
-  { "Oslash",	216 },	/* capital O, slash */
-  { "Ugrave",	217 },	/* capital U, grave accent */
+  { "THORN",	222 },	/* capital THORN, Icelandic */
   { "Uacute",	218 },	/* capital U, acute accent */
   { "Ucirc",	219 },	/* capital U, circumflex accent */
+  { "Ugrave",	217 },	/* capital U, grave accent */
   { "Uuml",	220 },	/* capital U, dieresis or umlaut mark */
   { "Yacute",	221 },	/* capital Y, acute accent */
-  { "THORN",	222 },	/* capital THORN, Icelandic */
-  { "szlig",	223 },	/* small sharp s, German (sz ligature) */
-  { "agrave",	224 },	/* small a, grave accent */
   { "aacute",	225 },	/* small a, acute accent */
   { "acirc",	226 },	/* small a, circumflex accent */
+  { "acute",	180 },	/* acute accent */
+  { "aelig",	230 },	/* small ae diphthong (ligature) */
+  { "agrave",	224 },	/* small a, grave accent */
+  { "amp",      '&' },  /* Ampersand */
+  { "aring",	229 },	/* small a, ring */
   { "atilde",	227 },	/* small a, tilde */
   { "auml",	228 },	/* small a, dieresis or umlaut mark */
-  { "aring",	229 },	/* small a, ring */
-  { "aelig",	230 },	/* small ae diphthong (ligature) */
+  { "brvbar",	166 },	/* broken (vertical) bar */
   { "ccedil",	231 },	/* small c, cedilla */
-  { "egrave",	232 },	/* small e, grave accent */
+  { "cedil",	184 },	/* cedilla */
+  { "cent",	162 },	/* cent sign */
+  { "copy",	169 },	/* copyright sign */
+  { "curren",	164 },	/* general currency sign */
+  { "deg",	176 },	/* degree sign */
+  { "divide",	247 },	/* divide sign */
   { "eacute",	233 },	/* small e, acute accent */
   { "ecirc",	234 },	/* small e, circumflex accent */
+  { "egrave",	232 },	/* small e, grave accent */
+  { "eth",	240 },	/* small eth, Icelandic */
   { "euml",	235 },	/* small e, dieresis or umlaut mark */
-  { "igrave",	236 },	/* small i, grave accent */
+  { "frac12",	189 },	/* fraction one-half */
+  { "frac14",	188 },	/* fraction one-quarter */
+  { "frac34",	190 },	/* fraction three-quarters */
+  { "gt",       '>' },  /* greater-than */
   { "iacute",	237 },	/* small i, acute accent */
   { "icirc",	238 },	/* small i, circumflex accent */
+  { "iexcl",	161 },	/* inverted exclamation mark */
+  { "igrave",	236 },	/* small i, grave accent */
+  { "iquest",	191 },	/* inverted question mark */
   { "iuml",	239 },	/* small i, dieresis or umlaut mark */
-  { "eth",	240 },	/* small eth, Icelandic */
+  { "laquo",	171 },	/* angle quotation mark, left */
+  { "lt",       '<' },  /* less-than */
+  { "macr",	175 },	/* macron */
+  { "micro",	181 },	/* micro sign */
+  { "middot",	183 },	/* middle dot */
+  { "nbsp",	' ' },	/* no-break space */
+  { "not",	172 },	/* not sign */
   { "ntilde",	241 },	/* small n, tilde */
-  { "ograve",	242 },	/* small o, grave accent */
   { "oacute",	243 },	/* small o, acute accent */
   { "ocirc",	244 },	/* small o, circumflex accent */
+  { "ograve",	242 },	/* small o, grave accent */
+  { "ordf",	170 },	/* ordinal indicator, feminine */
+  { "ordm",	186 },	/* ordinal indicator, masculine */
+  { "oslash",	248 },	/* small o, slash */
   { "otilde",	245 },	/* small o, tilde */
   { "ouml",	246 },	/* small o, dieresis or umlaut mark */
-  { "divide",	247 },	/* divide sign */
-  { "oslash",	248 },	/* small o, slash */
-  { "ugrave",	249 },	/* small u, grave accent */
+  { "para",	182 },	/* pilcrow (paragraph sign) */
+  { "plusmn",	177 },	/* plus-or-minus sign */
+  { "pound",	163 },	/* pound sterling sign */
+  { "quot",     '"' },  /* Quotation mark */
+  { "raquo",	187 },	/* angle quotation mark, right */
+  { "reg",	174 },	/* registered sign */
+  { "sect",	167 },	/* section sign */
+  { "shy",	173 },	/* soft hyphen */
+  { "sup1",	185 },	/* superscript one */
+  { "sup2",	178 },	/* superscript two */
+  { "sup3",	179 },	/* superscript three */
+  { "szlig",	223 },	/* small sharp s, German (sz ligature) */
+  { "thorn",	254 },	/* small thorn, Icelandic */
+  { "times",	215 },	/* multiply sign */
   { "uacute",	250 },	/* small u, acute accent */
   { "ucirc",	251 },	/* small u, circumflex accent */
+  { "ugrave",	249 },	/* small u, grave accent */
+  { "uml",	168 },	/* umlaut (dieresis) */
   { "uuml",	252 },	/* small u, dieresis or umlaut mark */
   { "yacute",	253 },	/* small y, acute accent */
-  { "thorn",	254 },	/* small thorn, Icelandic */
+  { "yen",	165 },	/* yen sign */
   { "yuml",	255 },	/* small y, dieresis or umlaut mark */
-
-  { NULL, 0 }
 };
 
-/* Another table to convert HTML color names to RGB colors */
+int nchar = sizeof(html_chartable) / sizeof(*html_chartable);
+
+/*
+ * Another table to convert HTML color names to RGB colors
+ */
 
 struct html_colorname {
-  const char *name;
+  const u8 *name;
   pgcolor c;
 } html_colortable[] = {
-  
+  { "Aqua",     0x00FFFF },
   { "Black",    0x000000 },
-  { "Green",    0x008000 },
-  { "Silver",   0xC0C0C0 }, 
-  { "Lime",     0x00FF00 },
+  { "Blue",     0x0000FF },  
+  { "Fuchsia",  0xFF00FF },
   { "Gray",     0x808080 },
-  { "Olive",    0x808000 },
-  { "White",    0xFFFFFF },
-  { "Yellow",   0xFFFF00 },
+  { "Green",    0x008000 },
+  { "Lime",     0x00FF00 },
   { "Maroon",   0x800000 },
   { "Navy",     0x000080 },
-  { "Red",      0xFF0000 },  
-  { "Blue",     0x0000FF },  
+  { "Olive",    0x808000 },
   { "Purple",   0x800080 },
+  { "Red",      0xFF0000 },  
+  { "Silver",   0xC0C0C0 }, 
   { "Teal",     0x008080 },
-  { "Fuchsia",  0xFF00FF },
-  { "Aqua",     0x00FFFF },
-
-  { NULL, 0 }
+  { "White",    0xFFFFFF },
+  { "Yellow",   0xFFFF00 },
 };   
    
+int ncolor = sizeof(html_colortable) / sizeof(*html_colortable);
+
+/*
+ * Functions passed to bsearch for various tables
+ */
+
+int keylen = -1;
+
+int html_charcmp(const void *p0, const void *p1)
+{
+  return strncmp(((struct html_charname *)p0)->name,
+		 ((struct html_charname *)p1)->name,
+		 keylen);
+}
+
+
+int html_colorcmp(const void *p0, const void *p1)
+{
+  return strncmp(((struct html_colorname *)p0)->name,
+		 ((struct html_colorname *)p1)->name,
+		 keylen);
+}
+
+int html_tagcmp(const void *p0, const void *p1)
+{
+  return strncasecmp(((struct html_taghandler *)p0)->name,
+		     ((struct html_taghandler *)p1)->name,
+		     keylen);
+}
+
 /*************************************** HTML tag handlers */
 
 /* Start a new block of text (paragraph)
@@ -485,55 +524,52 @@ g_error html_tag_end_a(struct html_parse *hp, struct html_tag_params *tag) {
 
 /*************************************** HTML tag table */
 
-struct html_taghandler {
-  const char *name;
-  g_error (*handler)(struct html_parse *hp, struct html_tag_params *tag);
-} html_tagtable[] = {
+struct html_taghandler html_tagtable[] = {
   
-  { "p",       &html_tag_p },
-  { "br",      &html_tag_br },
-  { "b",       &html_tag_b },
-  { "/b",      &html_tag_unformat },
-  { "i",       &html_tag_i },
-  { "/i",      &html_tag_unformat },
-  { "u",       &html_tag_u },
-  { "/u",      &html_tag_unformat },
-  { "tt",      &html_tag_tt },
-  { "/tt",     &html_tag_unformat },
-  { "strike",  &html_tag_strike },
-  { "/strike", &html_tag_unformat },
-  { "em",      &html_tag_i },
-  { "/em",     &html_tag_unformat },
-  { "strong",  &html_tag_b },
-  { "/strong", &html_tag_unformat },
-  { "big",     &html_tag_big },
-  { "/big",    &html_tag_unformat },
-  { "small",   &html_tag_small },
-  { "/small",  &html_tag_unformat },
-  { "pre",     &html_tag_pre },
-  { "/pre",    &html_tag_end_pre },
-  { "head",    &html_tag_head },
-  { "/head",   &html_tag_end_head },
-  { "font",    &html_tag_font },
-  { "/font",   &html_tag_unformat },
-  { "h1",      &html_tag_h },
-  { "/h1",     &html_tag_end_h },
-  { "h2",      &html_tag_h },
-  { "/h2",     &html_tag_end_h },
-  { "h3",      &html_tag_h },
-  { "/h3",     &html_tag_end_h },
-  { "h4",      &html_tag_h },
-  { "/h4",     &html_tag_end_h },
-  { "h5",      &html_tag_h },
-  { "/h5",     &html_tag_end_h },
-  { "h6",      &html_tag_h },
-  { "/h6",     &html_tag_end_h },
-  { "hr",      &html_tag_hr },
-  { "a",       &html_tag_a },
   { "/a",      &html_tag_end_a },
-
-  { NULL, NULL }
+  { "/b",      &html_tag_unformat },
+  { "/big",    &html_tag_unformat },
+  { "/em",     &html_tag_unformat },
+  { "/font",   &html_tag_unformat },
+  { "/h1",     &html_tag_end_h },
+  { "/h2",     &html_tag_end_h },
+  { "/h3",     &html_tag_end_h },
+  { "/h4",     &html_tag_end_h },
+  { "/h5",     &html_tag_end_h },
+  { "/h6",     &html_tag_end_h },
+  { "/head",   &html_tag_end_head },
+  { "/i",      &html_tag_unformat },
+  { "/pre",    &html_tag_end_pre },
+  { "/small",  &html_tag_unformat },
+  { "/strike", &html_tag_unformat },
+  { "/strong", &html_tag_unformat },
+  { "/tt",     &html_tag_unformat },
+  { "/u",      &html_tag_unformat },
+  { "a",       &html_tag_a },
+  { "b",       &html_tag_b },
+  { "big",     &html_tag_big },
+  { "br",      &html_tag_br },
+  { "em",      &html_tag_i },
+  { "font",    &html_tag_font },
+  { "h1",      &html_tag_h },
+  { "h2",      &html_tag_h },
+  { "h3",      &html_tag_h },
+  { "h4",      &html_tag_h },
+  { "h5",      &html_tag_h },
+  { "h6",      &html_tag_h },
+  { "head",    &html_tag_head },
+  { "hr",      &html_tag_hr },
+  { "i",       &html_tag_i },
+  { "p",       &html_tag_p },
+  { "pre",     &html_tag_pre },
+  { "small",   &html_tag_small },
+  { "strike",  &html_tag_strike },
+  { "strong",  &html_tag_b },
+  { "tt",      &html_tag_tt },
+  { "u",       &html_tag_u },
 };
+
+int ntags = sizeof(html_tagtable) / sizeof(*html_tagtable);
 
 /*************************************** Parsing engine*/
 
@@ -615,6 +651,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 g_error html_dispatch_tag(struct html_parse *hp,
 			  const u8 *start, const u8 *end) {
   struct html_taghandler *p;
+  struct html_taghandler key;
   struct html_tag_params tag_params;
   const u8 *tag;
   int tag_len;
@@ -631,37 +668,42 @@ g_error html_dispatch_tag(struct html_parse *hp,
     tag_len++;
   }
 
+  key.name = tag;
+  keylen = tag_len;
+
   /* Find a handler for the tag */
-  p = html_tagtable;
-  while (p->name) {
-    if (!strncasecmp(p->name,tag,tag_len) && !p->name[tag_len]) {
-      /* Got a handler */
+  if (((p = bsearch(&key,
+		   (void *) html_tagtable,
+		    ntags,
+		    sizeof(struct html_taghandler),
+		    html_tagcmp)) == NULL) ||
+      (strlen(p->name) != tag_len)) {
 
-      /* Skip leading whitespace */
-      while (start<=end && isspace(*start))
-	start++;
-
-      /* Fill in the html_tag_params structure */
-      memset(&tag_params,0,sizeof(tag_params));
-      tag_params.paramtext = start;
-      tag_params.paramtext_len = end-start+1;
-      tag_params.tag = tag;
-      tag_params.tag_len = tag_len;
-
-      /* Call handler */
-      return (*p->handler)(hp,&tag_params);
-    }
-    p++;
-  }  
-
-  /* No handler, ignore tag */
+    /* No handler, ignore tag */
 #ifdef DEBUG_HTML
-  write(1,"html: ignoring unhandled tag <",30);
-  write(1,tag,tag_len);
-  write(1,">\n",2);
+    write(1,"html: ignoring unhandled tag <",30);
+    write(1,tag,tag_len);
+    write(1,">\n",2);
 #endif
 
-  return success;
+    return success;
+  }
+
+  /* Got a handler */
+
+  /* Skip leading whitespace */
+  while (start<=end && isspace(*start))
+    start++;
+
+  /* Fill in the html_tag_params structure */
+  memset(&tag_params,0,sizeof(tag_params));
+  tag_params.paramtext = start;
+  tag_params.paramtext_len = end-start+1;
+  tag_params.tag = tag;
+  tag_params.tag_len = tag_len;
+
+  /* Call handler */
+  return (*p->handler)(hp,&tag_params);
 }
 
 /* Chop up text into fragments, sending wordbreaks
@@ -797,21 +839,26 @@ g_error html_textfragment(struct html_parse *hp,
 
 char html_findchar(const u8 *charname, int namelen) {
   struct html_charname *p;
+  struct html_charname key;
 
   /* If it's a numeric code, return it */
+
   if (charname[0]=='#')
     return atoi(charname+1);
 
-  /* Search our table of character names */
-  p = html_chartable;
-  while (p->name) {
-    if (!strncmp(p->name,charname,namelen))
-      return p->ch;
-    p++;
+  key.name = charname;
+  keylen = namelen;
+
+  if ((p = (struct html_charname *)
+       bsearch(&key,
+	       (void *) html_chartable,
+	       nchar,
+	       sizeof(struct html_charname),
+	       html_charcmp)) == NULL) {
+    return '?';
   }
-    
-  /* Still not found... */
-  return '?';
+
+  return p->ch;
 }
 
 /* Find the next tag argument. If there is a tag parameter remaining,
@@ -890,26 +937,27 @@ int html_nextarg(struct html_tag_params *tag, struct html_param *par) {
 
 pgcolor html_findcolor(const u8 *colorname, int namelen) {
   struct html_colorname *p;
+  struct html_colorname key;
   
   /* If it's a numeric code, return it */
   if (colorname[0]=='#')
     return strtoul(colorname+1,NULL,16);
   
+  key.name = colorname;
+  keylen = namelen;
+
   /* Search our table of color names */
-  p = html_colortable;
-  while (p->name) {
-    if (!strncasecmp(p->name,colorname,namelen))
-      return p->c;
-    p++;
+  if ((p = (struct html_colorname *)
+       bsearch(&key,
+	       (void *) html_colortable,
+	       ncolor,
+	       sizeof(struct html_colorname),
+	       html_colorcmp)) == NULL) {
+    /* Not found */
+    return 0;
   }
-  
-  /* Still not found... */
-  return 0;
+
+  return p->c;
 }
 
 /* The End */
-
-
-
-
-
