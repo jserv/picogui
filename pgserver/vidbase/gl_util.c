@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.9 2002/12/21 04:26:46 micahjd Exp $
+/* $Id: gl_util.c,v 1.10 2002/12/24 11:29:49 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -158,7 +158,6 @@ void gl_frame(void) {
   static u32 then = 0;
   u32 now;
   float interval;
-  int i = 0;
 
   gl_global.need_update = 0;
   gl_global.allow_update = 1;
@@ -210,25 +209,25 @@ void gl_frame(void) {
   gl_process_camera_smoothing();
 
   if (gl_global.showfps)
-    gl_osd_printf(&i,"FHz: %.2f",gl_global.fps);
+    gl_osd_printf("FHz: %.2f",gl_global.fps);
 
   switch (gl_global.camera_mode) {
   case GL_CAMERAMODE_TRANSLATE:
-    gl_osd_printf(&i,"Camera pan/zoom mode");
+    gl_osd_printf("Camera pan/zoom mode");
     break;
   case GL_CAMERAMODE_ROTATE:
-    gl_osd_printf(&i,"Camera rotate mode");
+    gl_osd_printf("Camera rotate mode");
     break;
   case GL_CAMERAMODE_FOLLOW_MOUSE:
-    gl_osd_printf(&i,"Camera following mouse, shift-mousewheel to zoom");
+    gl_osd_printf("Camera following mouse, shift-mousewheel to zoom");
     break;
   }
 
   if (gl_global.grid)
-    gl_osd_printf(&i,"Grid enabled");
+    gl_osd_printf("Grid enabled");
 
   if (gl_global.wireframe)
-    gl_osd_printf(&i,"Wireframe mode");
+    gl_osd_printf("Wireframe mode");
 
   /***************** Done */
 
@@ -263,6 +262,9 @@ void gl_frame_setup(void) {
 
   /* We have no idea what the current texture is now */
   gl_global.current_texture = -1;
+
+  /* Reset OSD */
+  gl_global.osd_y = 0;
 }
 
 void gl_frame_cleanup(void) {
@@ -281,7 +283,7 @@ void gl_frame_cleanup(void) {
   glDisable(GL_TEXTURE_2D);
 }
 
-void gl_osd_printf(int *y, const char *fmt, ...) {
+void gl_osd_printf(const char *fmt, ...) {
   char buf[256];
   va_list v;
   s16 w,h;
@@ -314,16 +316,16 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
   xy.x = 6;
-  xy.y = 6+(*y);  
+  xy.y = 6 + gl_global.osd_y;  
   gl_global.osd_font->lib->draw_string(gl_global.osd_font,vid->display,
 				       &xy,0x000000,pgstring_tmpwrap(buf),
 				       &clip,PG_LGOP_NONE,0);
   xy.x = 5;
-  xy.y = 5+(*y);  
+  xy.y = 5 + gl_global.osd_y;  
   gl_global.osd_font->lib->draw_string(gl_global.osd_font,vid->display,
 				       &xy,0xFFFF00,pgstring_tmpwrap(buf),
 				       &clip,PG_LGOP_NONE,0);
-  *y += h;
+  gl_global.osd_y += h;
 
   /* Restore matrix */
   glPopMatrix();

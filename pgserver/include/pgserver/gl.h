@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.3 2002/12/01 19:35:51 micahjd Exp $
+/* $Id: gl.h,v 1.4 2002/12/24 11:29:49 micahjd Exp $
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *
@@ -167,7 +167,10 @@ struct gl_data {
   
   /* Font for onscreen display */
   struct font_descriptor *osd_font;
-  
+
+  /* Y coordinate of the current OSD line */
+  int osd_y;
+
   /* More flags */
   int grid;
   int showfps;
@@ -220,7 +223,7 @@ g_error gl_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp);
 void gl_bitmap_free(hwrbitmap bmp);
 void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
 g_error gl_continuous_regfunc(struct inlib *i);
-void gl_osd_printf(int *y, const char *fmt, ...);
+void gl_osd_printf(const char *fmt, ...);
 void gl_matrix_pixelcoord(void);
 void gl_matrix_camera(void);
 void gl_process_camera_keys(void);
