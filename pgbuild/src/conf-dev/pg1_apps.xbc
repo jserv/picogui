@@ -1,4 +1,324 @@
 <?xml version="1.0" ?>
 <pgbuild title="Application packages for the PicoGUI 1.x architecture" root="packages">
 
+	<package name="pg1/apps/dev/atomicnav">
+		<description><summary>The Atomic Navigator web browser</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/atomicnav"/>
+	</package>
+
+	<package name="pg1/apps/dev/clamps">
+		<description><summary>A filesystem browser app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/clamps"/>
+	</package>
+
+	<package name="pg1/apps/dev/demo">
+		<description><summary>A simple demo app using Python and XWTs</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/demo"/>
+	</package>
+
+	<package name="pg1/apps/dev/edemo">
+		<description><summary>A more comprehensive demo written in C</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/edemo"/>
+	</package>
+
+	<package name="pg1/apps/dev/dirview">
+		<description><summary>A directory browsing library</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/dirview"/>
+	</package>
+
+	<package name="pg1/apps/dev/epterm">
+		<description><summary>The Extended PicoGUI terminal</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/epterm"/>
+	</package>
+
+	<package name="pg1/apps/dev/nifty">
+		<description><summary>The NIFTY scriptable text editor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/nifty"/>
+	</package>
+
+	<package name="pg1/apps/dev/pgl">
+		<description><summary>The PicoGUI Launcher system</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/pgl"/>
+	</package>
+
+	<package name="pg1/apps/dev/pgtuxphone">
+		<description><summary>A PicoGUI frontend for the TuxScreen's tuxphone daemon</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/pgtuxphone"/>
+	</package>
+
+	<package name="pg1/apps/dev/picomail">
+		<description><summary>A mail reader</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/picomail"/>
+	</package>
+
+	<package name="pg1/apps/dev/picopim">
+		<description><summary>A PIM application</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/picopim"/>
+	</package>
+
+	<package name="pg1/apps/dev/uspread">
+		<description><summary>A spreadsheet</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/uspread"/>
+	</package>
+
+	<package name="pg1/apps/dev/widgetfoundry">
+		<description><summary>The Widget Foundry XWT editor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/dev/widgetfoundry"/>
+	</package>
+
+	<package name="pg1/apps/test/bouncyball">
+		<description><summary>A popup with a bouncing ball animation</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/bouncyball"/>
+	</package>
+
+	<package name="pg1/apps/test/canvastiles">
+		<description><summary>A simple tile based graphics demo using the canvas widget</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/canvastiles"/>
+	</package>
+
+	<package name="pg1/apps/test/canvastst">
+		<description><summary>A simple test of the canvas widget</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/canvastst"/>
+	</package>
+
+	<package name="pg1/apps/test/customtheme">
+		<description><summary>A demo that constructs a theme file and loads it</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/customtheme"/>
+	</package>
+
+	<package name="pg1/apps/test/dialogdemo">
+		<description><summary>A demonstration of dialog boxes</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/dialogdemo"/>
+	</package>
+
+	<package name="pg1/apps/test/fieldtest">
+		<description><summary>Simple app with a field widget</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/fieldtest"/>
+	</package>
+
+	<package name="pg1/apps/test/flyingtux">
+		<description><summary>A canvas widget with many small Tuxes zooming out</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/flyingtux"/>
+	</package>
+
+	<package name="pg1/apps/test/galaxy">
+		<description><summary>A starfield that demonstrates taking exclusive control of the video device</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/galaxy"/>
+	</package>
+
+	<package name="pg1/apps/test/goodbye">
+		<description><summary>A "Hello World" for event handling</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/goodbye"/>
+	</package>
+
+	<package name="pg1/apps/test/hello">
+		<description><summary>A classic greeting, now in English and Japanese</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/hello"/>
+	</package>
+
+	<package name="pg1/apps/test/libpgtest">
+		<description><summary>Tests for using pgserver as a shared library</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/libpgtest"/>
+	</package>
+
+	<package name="pg1/apps/test/listtest">
+		<description><summary>A demonstration of lists</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/listtest"/>
+	</package>
+
+	<package name="pg1/apps/test/menutest">
+		<description><summary>A demonstration of menus</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/menutest"/>
+	</package>
+
+	<package name="pg1/apps/test/msgdemo">
+		<description><summary>Demonstrates messaging between applications</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/msgdemo"/>
+	</package>
+
+	<package name="pg1/apps/test/offscreen">
+		<description><summary>Demonstrates offscreen rendering</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/offscreen"/>
+	</package>
+
+	<package name="pg1/apps/test/omnibar">
+		<description><summary>A proof-of-concept launcher toolbar</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/omnibar"/>
+	</package>
+
+	<package name="pg1/apps/test/omnibar-helio">
+		<description><summary>A version of omnibar with a battery meter for the VTech Helio</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/omnibar-helio"/>
+	</package>
+
+	<package name="pg1/apps/test/paneldemo">
+		<description><summary>Demonstrates the panel widget's special features</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/paneldemo"/>
+	</package>
+
+	<package name="pg1/apps/test/pgfxcanvas">
+		<description><summary>Demonstrates the C client library's PGFX graphics layer</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/pgfxcanvas"/>
+	</package>
+
+	<package name="pg1/apps/test/python">
+		<description><summary>A collection of simple tests for the Python client library</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/python"/>
+	</package>
+
+	<package name="pg1/apps/test/scrctl">
+		<description><summary>Simple test for controlling screen brightness and contrast</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/scrctl"/>
+	</package>
+
+	<package name="pg1/apps/test/scrsaver">
+		<description><summary>A proof-of-concept screen saver app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/scrsaver"/>
+	</package>
+
+	<package name="pg1/apps/test/shm">
+		<description><summary>Demonstrates shared memory bitmaps</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/shm"/>
+	</package>
+
+	<package name="pg1/apps/test/textedit">
+		<description><summary>Testbed for the "textedit" widget</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/textedit"/>
+	</package>
+
+	<package name="pg1/apps/test/themebar">
+		<description><summary>Test for dynamically loading and unloading themes</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/themebar"/>
+	</package>
+
+	<package name="pg1/apps/test/themedemo">
+		<description><summary>Dynamically loads a theme specified on the command line</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/themedemo"/>
+	</package>
+
+	<package name="pg1/apps/test/traceproxy">
+		<description><summary>A debuggative proxy for the PicoGUI protocol</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/traceproxy"/>
+	</package>
+
+	<package name="pg1/apps/test/vidpopup">
+		<description><summary>Test changing video modes on the fly</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/vidpopup"/>
+	</package>
+
+	<package name="pg1/apps/test/xwt">
+		<description><summary>Demonstration of XML Widget Templates</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/test/xwt"/>
+	</package>
+
+	<package name="pg1/apps/working/battleship">
+		<description><summary>Battleship board game</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/battleship"/>
+	</package>
+
+	<package name="pg1/apps/working/blackout">
+		<description><summary>Blackout board game</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/blackout"/>
+	</package>
+
+	<package name="pg1/apps/working/connectfour">
+		<description><summary>Connect Four board game</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/connectfour"/>
+	</package>
+
+	<package name="pg1/apps/working/ghost-launcher">
+		<description><summary>Launcher utilizing the VR3's silkscreened buttons</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/ghost-launcher"/>
+	</package>
+
+	<package name="pg1/apps/working/gremlin">
+		<description><summary>Test app that simulates random user input in an attempt to crash your program</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/gremlin"/>
+	</package>
+
+	<package name="pg1/apps/working/gridgame">
+		<description><summary>Board game engine, with Ataxx and Overflow games</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/gridgame"/>
+	</package>
+
+	<package name="pg1/apps/working/imgview">
+		<description><summary>Simple image viewer app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/imgview"/>
+	</package>
+
+	<package name="pg1/apps/working/lcdclock">
+		<description><summary>Simple clock intended for small LCD devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/lcdclock"/>
+	</package>
+
+	<package name="pg1/apps/working/pgboard">
+		<description><summary>On-screen keyboard</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pgboard"/>
+	</package>
+
+	<package name="pg1/apps/working/pgedit">
+		<description><summary>Simple text editor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pgedit"/>
+	</package>
+
+	<package name="pg1/apps/working/pgmerlin">
+		<description><summary>Port of the XMerlin handwriting recognition engine</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pgmerlin"/>
+	</package>
+
+	<package name="pg1/apps/working/pgmon">
+		<description><summary>Network monitor app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pgmon"/>
+	</package>
+
+	<package name="pg1/apps/working/pgremote">
+		<description><summary>Remote input drivers for controlling PicoGUI over the network</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pgremote"/>
+	</package>
+
+	<package name="pg1/apps/working/picosm">
+		<description><summary>PicoGUI session manager</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/picosm"/>
+	</package>
+
+	<package name="pg1/apps/working/pqw">
+		<description><summary>Quikwriter input method for PicoGUI</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pqw"/>
+	</package>
+
+	<package name="pg1/apps/working/pterm">
+		<description><summary>Simple vt102-compatible terminal emulator</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/pterm"/>
+	</package>
+
+	<package name="pg1/apps/working/scribble">
+		<description><summary>Scribble Pad drawing app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/scribble"/>
+	</package>
+
+	<package name="pg1/apps/working/tpcal">
+		<description><summary>Touch panel calibrator</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/tpcal"/>
+	</package>
+
+	<package name="pg1/apps/working/vrcalc">
+		<description><summary>Simple calculator app</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/vrcalc"/>
+	</package>
+
+	<package name="pg1/apps/working/wclock">
+		<description><summary>World clock</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/wclock"/>
+	</package>
+
+	<package name="pg1/apps/working/x2pgui">
+		<description><summary>PicoGUI port of x2vnc</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/x2pgui"/>
+	</package>
+
+	<package name="pg1/apps/working/xchat">
+		<description><summary>PicoGUI port of X-Chat</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/apps/working/xchat"/>
+	</package>
+
 </pgbuild>
