@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.2 2002/02/03 03:04:38 micahjd Exp $
+/* $Id: adc7843.c,v 1.3 2002/02/03 03:08:13 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -36,7 +36,6 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* For sending events */
-#include <pgserver/touchscreen.h>
 
 #include <stdio.h>              /* For reading the device */
 
@@ -70,10 +69,6 @@ struct tpanel_sample {
 /******************************************** Implementations */
 
 g_error adc7843_init(void) {
-   g_error e;
-
-   e=touchscreen_init();
-   errorcheck;
    adc7843_fd = open("/dev/tpanel",O_NONBLOCK);
    if (adc7843_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
@@ -111,9 +106,6 @@ int adc7843_fd_activate(int fd) {
    y = ts.y;
 
    /* Converte to screen coordinates... */
-   //   touchscreen_pentoscreen(&x, &y);
-
-   //   this works better!
    x = ( ( ts.x - MIN_X ) * X_RES / ( MAX_X - MIN_X ) );
    y = ( ( ts.y - MIN_Y ) * Y_RES / ( MAX_Y - MIN_Y ) );
    
@@ -158,7 +150,6 @@ int adc7843_fd_activate(int fd) {
 g_error adc7843_regfunc(struct inlib *i) {
   i->init = &adc7843_init;
   i->close = &adc7843_close;
-  i->message = &touchscreen_message;
   i->fd_activate = &adc7843_fd_activate;
   i->fd_init = &adc7843_fd_init;
   return success;
