@@ -2,6 +2,8 @@ import PicoGUI
 app = PicoGUI.Application('Textbox Test')
 tb = app.addWidget('scrollbox').addWidget('Textbox','inside')
 tb.side = 'all'
+tb.insertmode = 'atcursor'
+
 tb.text = """Beastie Boys - Just a Test
 
 Like a flag at half mast as frames click fast
@@ -65,5 +67,18 @@ wish you were here
 
 -- The End --"""
 
+def stream(ev, w):
+    if ev.hasMod('ctrl'):
+        if ev.char == 's':
+            # stream
+            w.stream('\nsome more text\n')
+        elif ev.char == 'n':
+            # nuke
+            w.nuke()
+        elif ev.char == ' ':
+            print 'no status to display'
+
+app.link(stream, tb, 'kbd keyup')
+
 app.run()
-print "Testing text readback:\n\n\"" + app.server.getstring(tb.text)[:-1] + "\"\n";
+print "Testing text readback:\n\n\"" + tb.text

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.96 2003/03/14 15:20:43 cgrigis Exp $
+/* $Id: client_c.h,v 1.97 2003/03/19 04:59:07 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1206,7 +1206,7 @@ void pgWriteData(pghandle widget,struct pgmemdata data);
  * 
  * \sa pgWriteData, PG_WIDGET_CANVAS, pgNewCanvasContext
  */
-void pgWriteCmd(pghandle widget,s16 command,s16 numparams, ...);
+void pgWriteCmd(pghandle widget,s32 command,s16 numparams, ...);
 
 /*!
  * \brief Render a gropnode to a bitmap

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.179 2003/03/04 06:55:12 micahjd Exp $
+/* $Id: constants.h,v 1.180 2003/03/19 04:59:08 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1104,7 +1104,7 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_LEAVE         (1<<12) /* Mouse moves outside widget */
 #define PG_TRIGGER_DRAG          (1<<13) /* Mouse move when captured */
 #define PG_TRIGGER_CHAR          (1<<14) /* A processed ASCII/Unicode character */
-#define PG_TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITETO) */
+#define PG_TRIGGER_STREAM        (1<<15) /* Incoming packet (from WRITEDATA) */
 #define PG_TRIGGER_KEY_START     (1<<16) /* Sent at the beginning of key propagation */
 #define PG_TRIGGER_NONTOOLBAR    (1<<17) /* Not really a trigger, but widgets can put this
 				          * in their trigger mask to request placement in
@@ -1120,7 +1120,8 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_TOUCHSCREEN   (1<<21) /* A touchscreen event to be processed by infilter_touchscreen */
 #define PG_TRIGGER_TS_CALIBRATE  (1<<22) /* Store the touchscreen calibration given in this event */
 #define PG_TRIGGER_CLOSE         (1<<23) /* Sent by drivers to a managed window when externally closed */
-#define PG_TRIGGER_MOTIONTRACKER (1<<24) /* Data from a motion tracker sensor */
+#define PG_TRIGGER_COMMAND       (1<<24) /* A command sent to a widget, for example by pgWriteCmd */
+#define PG_TRIGGER_MOTIONTRACKER (1<<25) /* Data from a motion tracker sensor */
 
 /* List of triggers that use the mouse parameters 
  */

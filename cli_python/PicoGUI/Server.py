@@ -18,7 +18,7 @@ def _getString(str, server, reverse=0):
             str.upper()
         except:
             return str, _getString
-        return server.getString(str), _getString        
+        return server.getString(str), _getString
 
 def _getFont(str, server, reverse=0):
     if reverse:
@@ -52,6 +52,9 @@ def _getSize(s, server, reverse=0):
         if len(fraction) > 1:
             return (int(fraction[0])<<8) | int(fraction[1]), _getSize
         return int(s), _getSize
+
+_stop = ((),)
+_default = -1 # unique value
 
 _color_consts = {
             'black':            (0x000000, {}),
@@ -366,11 +369,11 @@ constants = {
                                               	# three possible states of the button widget.
             _thobj_consts),
 
-        'thobj button hilight':		(42, 
+        'thobj button hilight':		(42,
             _thobj_consts),
-        'thobj button on':		(43, 
+        'thobj button on':		(43,
             _thobj_consts),
-        'thobj button on nohilight':	(44, 
+        'thobj button on nohilight':	(44,
             _thobj_consts),
         'panelbar label':		(45, {	# more read-only panelbar properties to get the built-in panelbar widgets
         }),
@@ -425,10 +428,81 @@ constants = {
         'forward':	(2, {}),
         'backward':	(3, {}),	# much slower than forward, avoid it
         'container':	(4, {}),	# 'count' is thenumber of container levels to traverse up
-    }
+    },
+    'writedata': _stop,
+    'writecmd': ({
+        'nuke':			(1, _stop),
+        'grop':			(2, {
+            'rect':		  (0x00, _stop),
+            'frame':		  (0x10, _stop),
+            'slab':		  (0x20, _stop),
+            'bar':		  (0x30, _stop),
+            'pixel':		  (0x40, _stop),
+            'line':		  (0x50, _stop),
+            'ellipse':		  (0x60, _stop),
+            'fellipse':		  (0x70, _stop),
+            'text':		  (0x04, _stop),
+            'bitmap':		  (0x14, _stop),
+            'tilebitmap':	  (0x24, _stop),
+            'fpolygon':		  (0x34, _stop),
+            'blur':		  (0x44, _stop),
+            'rotatebitmap':	  (0x74, _stop),
+            'resetclip':	  (0x13, _stop),
+            'setoffset':	  (0x01, _stop),
+            'setclip':		  (0x11, _stop),
+            'setsrc':		  (0x21, _stop),
+            'setmapping':	  (0x05, {
+                'none':		    (0, _stop),
+                'scale':	    (1, _stop),
+                'squarescale':	    (2, _stop),
+                'center':	    (3, _stop),
+                _default:	    (0, _stop), # so you can use None
+            }),
+            'setcolor':		  (0x07, _stop),
+            'setfont':		  (0x17, _stop),
+            'setlgop':		  (0x27, {
+                'null':		    (0, _stop),
+                'none':		    (1, _stop),
+                'or':		    (2, _stop),
+                'and':		    (3, _stop),
+                'xor':		    (4, _stop),
+                'invert':	    (5, _stop),
+                'invert or':	    (6, _stop),
+                'invert and':	    (7, _stop),
+                'invert xor':	    (8, _stop),
+                'add':		    (9, _stop),
+                'subtract':	    (10, _stop),
+                'multiply':	    (11, _stop),
+                'stipple':	    (12, _stop),
+                'alpha':	    (13, _stop),
+                _default:	    (1, _stop), # so you can use None
+            }),
+            'setangle':		  (0x37, _stop),
+        }),
+        'execfill':		(3, _stop),
+        'findgrop':		(4, _stop),
+        'setgrop':		(5, _stop),
+        'movegrop':		(6, _stop),
+        'mutategrop':		(7, _stop),
+        'defaultflags':		(8, _stop),
+        'gropflags':		(9, _stop),
+        'redraw':		(10, _stop),
+        'incremental':		(11, _stop),
+        'scroll':		(12, _stop),
+        'inputmapping':		(13, {
+            'none':		  (0, _stop),
+            'scale':		  (1, _stop),
+            'squarescale':	  (2, _stop),
+            'center':		  (3, _stop),
+        }),
+        'gridsize':		(14, _stop),
+        _default:       _stop,
+    },),
 }
 
 def resolve_constant(name, namespace=constants, server=None):
+    if namespace is _stop:
+        return name, namespace
     if type(namespace) == type(()):
         # for cases where the argument is really supposed to be a string, yet there are contstants after this
         return name, namespace[0]
@@ -446,9 +520,15 @@ def resolve_constant(name, namespace=constants, server=None):
     try:
         lname = name.lower()
     except AttributeError:
-        # never mind, not a string
-        return name, namespace
-    r = namespace.get(lname, (name, namespace))
+        # not a string
+        r = namespace.get(_default, (name, namespace))
+    else:
+        try:
+            r = namespace[lname]
+        except KeyError:
+            r = namespace.get(_default, (name, namespace))
+    if r is _stop:
+        return name, _stop
     if type(r) == type(()) and len(r) == 2:
         if r[1]:
             return r

@@ -1,4 +1,4 @@
-/* $Id: requests.c,v 1.5 2003/01/01 03:42:59 micahjd Exp $
+/* $Id: requests.c,v 1.6 2003/03/19 04:59:07 micahjd Exp $
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.
@@ -702,7 +702,33 @@ g_error rqh_mkfillstyle(struct request_data *r) {
   return success;
 }
 
-g_error rqh_writeto(struct request_data *r) {
+g_error rqh_writecmd(struct request_data *r) {
+  union trigparam tp;
+  struct widget *w;
+  g_error e;
+  int i;
+  u32 *data;
+  u32 h;
+
+  data = (u32 *) r->in.data;
+
+  h = ntohl(data[0]);
+  tp.command.command = ntohl(data[1]);
+  tp.command.numparams = (r->in.req->size / sizeof(s32)) - 2;
+  tp.command.data = data + 2;
+
+  /* Convert parameters */
+  for (i=0; i< tp.command.numparams; i++)
+    tp.command.data[i] = ntohl(tp.command.data[i]);
+
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,r->in.owner,h);
+  errorcheck;
+  send_trigger(w,PG_TRIGGER_COMMAND,&tp);
+
+  return success;
+}
+
+g_error rqh_writedata(struct request_data *r) {
   union trigparam tp;
   struct widget *w;
   g_error e;

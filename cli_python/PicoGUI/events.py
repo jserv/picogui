@@ -114,9 +114,9 @@ class Event(object):
         self.data = (data & 0xffff)
         if self.name == 'kbd_char':
             self.char = unichr(data)
-        elif data < 256:
+        elif self.data < 256:
             # it's a key, but it represents a character, so why not have it
-            self.char = chr(data)
+            self.char = chr(self.data)
         else:
             self.char = ''
         self.mods = data >> 16

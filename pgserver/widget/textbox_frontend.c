@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.40 2003/03/10 23:48:27 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.41 2003/03/19 04:59:08 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -31,6 +31,9 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/textbox.h>
+
+void textbox_command(struct widget *self, u32 command, 
+		    u32 numparams, s32 *params);
 
 struct textboxdata {
   struct textbox_document *doc;
@@ -98,7 +101,7 @@ g_error textbox_install(struct widget *self) {
    */
   self->trigger_mask = PG_TRIGGER_DEACTIVATE | PG_TRIGGER_ACTIVATE |
     PG_TRIGGER_TIMER | PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP |
-    PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR | PG_TRIGGER_STREAM;
+    PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR | PG_TRIGGER_STREAM | PG_TRIGGER_COMMAND;
 
   e = document_new(&DATA->doc, self->in->div);
   errorcheck;
@@ -223,23 +226,30 @@ glob textbox_get(struct widget *self,int property) {
 
 void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   int seek_amount;
-
-  if (type == PG_TRIGGER_STREAM) {
-    struct pgstring *str;
-    g_error e;
+  struct pgstring *str; /* used for streaming */
+  g_error e;
+  
+  if ((type != PG_TRIGGER_COMMAND) && (DATA->readonly))
+    return;
+  
+  switch (type) {
+    
+    /* Accept a command from the client */
+    
+  case PG_TRIGGER_COMMAND:
+    textbox_command(self,param->command.command,param->command.numparams,param->command.data);
+    return;
+    
+    /* Receive streamed data from client */ 
+  case PG_TRIGGER_STREAM:
+    
     e = pgstring_new(&str, PGSTR_ENCODE_UTF8, param->stream.size, param->stream.data);
     errorcheck;
     textbox_write(self,str);
     pgstring_delete(str);
     paragraph_scroll_to_cursor(DATA->doc->crsr);
     return;
-  }
 
-  if (DATA->readonly)
-    return;
-
-  switch (type) {
-    
      /* Update visual appearance to reflect focus or lack of focus */
     
   case PG_TRIGGER_DEACTIVATE:
@@ -286,6 +296,20 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       return;
     param->kbd.consume++;
     textbox_reset_inactivity(self);
+
+    switch (param->kbd.key) {
+      /* don't post bound keys */
+    case PGKEY_LEFT:
+    case PGKEY_RIGHT:
+    case PGKEY_UP:
+    case PGKEY_DOWN:
+    case PGKEY_HOME:
+    case PGKEY_END:
+    break;
+    
+    default:
+      post_event(PG_WE_KBD_KEYUP,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
+    }
     return;   /* Skip update */
 
   case PG_TRIGGER_KEYDOWN:
@@ -352,6 +376,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
       break;
       
     default:
+      post_event(PG_WE_KBD_KEYDOWN,self,(param->kbd.mods<<16)|param->kbd.key,0,NULL);
       return; /* Skip update */
     }
 
@@ -390,6 +415,8 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     /* The cursor might have been hidden if we added a paragraph */
     paragraph_show_cursor(DATA->doc->crsr);
     paragraph_scroll_to_cursor(DATA->doc->crsr);
+
+    post_event(PG_WE_KBD_CHAR,self,param->kbd.key,0,NULL);
     break;
     
   }
@@ -478,6 +505,21 @@ g_error textbox_write(struct widget *self, struct pgstring *str) {
   errorcheck;
   
   return success;
+}
+
+/*********************************** Commands */
+   
+void textbox_command(struct widget *self, u32 command, 
+		     u32 numparams, s32 *params) {
+   int i;
+   
+   switch (command) {
+
+    case 1:
+      printf("textbox: received NUKE\n");
+      break;
+      
+   }
 }
 
 /* The End */

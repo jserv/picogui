@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.52 2003/03/14 15:20:45 cgrigis Exp $
+/* $Id: api.c,v 1.53 2003/03/19 04:59:07 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -828,7 +828,7 @@ void pgWriteData(pghandle widget,struct pgmemdata data) {
   if (!(buf = _pg_malloc(data.size+4))) return;
   *buf = htonl(widget ? widget : _pgdefault_widget);
   memcpy(buf+1,data.pointer,data.size);
-  _pg_add_request(PGREQ_WRITETO,buf,data.size+4);
+  _pg_add_request(PGREQ_WRITEDATA,buf,data.size+4);
   _pg_free_memdata(data);
   free(buf);
 }
@@ -837,20 +837,20 @@ void pgWriteData(pghandle widget,struct pgmemdata data) {
  * to a canvas widget. Widget, command, and param number must be followed
  * by the specified number of commands
  */
-void pgWriteCmd(pghandle widget,s16 command, s16 numparams, ...) {
-   struct pgcommand *hdr;
+void pgWriteCmd(pghandle widget, s32 command, s16 numparams, ...) {
    s32 *params;
+   s32 *buf;
    u32 bufsize;
-   char *buf;
    va_list v;
    
-   bufsize = numparams * sizeof(s32) + sizeof(struct pgcommand);
-   buf = alloca(bufsize);
-   hdr = (struct pgcommand *) buf;
-   params = (s32 *) (buf + sizeof(struct pgcommand));
+   bufsize = (numparams + 2) * sizeof(s32);
+   buf = params = _pg_malloc(bufsize);
+   if (!buf) return;
    
-   hdr->command = htons(command);
-   hdr->numparams = htons(numparams);
+   *params = htonl(widget ? widget : _pgdefault_widget);
+   params++;
+   *params = htonl(command);
+   params++;
       
    va_start(v,numparams);
    for (;numparams;numparams--) {
@@ -859,7 +859,8 @@ void pgWriteCmd(pghandle widget,s16 command, s16 numparams, ...) {
    }
    va_end(v);
    
-   pgWriteData(widget,pgFromMemory(buf,bufsize));
+  _pg_add_request(PGREQ_WRITECMD,buf,bufsize);
+  free(buf);
 }
 
 void pgRender(pghandle bitmap, s16 groptype, ...) {

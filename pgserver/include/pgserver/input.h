@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.55 2003/03/10 23:48:12 micahjd Exp $
+/* $Id: input.h,v 1.56 2003/03/19 04:59:07 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -212,6 +212,12 @@ union trigparam {
     u32 size;
     u8 *data;
   } stream;
+
+  struct trigparam_command {
+    u32 command;
+    u32 numparams;
+    s32 *data;
+  } command;
 };
 
 

@@ -34,7 +34,7 @@ RQH(dup)
 RQH(setpayload)
 RQH(getpayload)
 RQH(chcontext)
-RQH(writeto)
+RQH(writecmd)
 RQH(updatepart)
 RQH(mkarray)
 RQH(render)
@@ -58,6 +58,7 @@ RQH(setcontext)
 RQH(getcontext)
 RQH(infiltersend)
 RQH(mkshmbitmap)
+RQH(writedata)
 RQH(undef)        /* undef must be last */
 
 /* The End */

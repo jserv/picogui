@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.73 2003/03/04 23:37:01 micahjd Exp $
+/* $Id: network.h,v 1.74 2003/03/19 04:59:08 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -170,7 +170,7 @@ union pg_client_trigger {
 #define PGREQ_SETPAYLOAD   28  /* Sets an object's payload       |  struct */
 #define PGREQ_GETPAYLOAD   29  /* Gets an object's payload       |  handle */
 #define PGREQ_CHCONTEXT    30  /* Change a handle's context      |  struct */
-#define PGREQ_WRITETO      31  /* Stream data to a widget        |  handle + data */
+#define PGREQ_WRITECMD     31  /* Send a command to a widget     |  handle + data */
 #define PGREQ_UPDATEPART   32  /* Updates subtree defined by wgt |  handle */
 #define PGREQ_MKARRAY      33  /* Makes a array, returns handle  |    data */  
 #define PGREQ_RENDER       34  /* Render gropnode(s) to a bitmap |  struct */
@@ -194,10 +194,11 @@ union pg_client_trigger {
 #define PGREQ_GETCONTEXT   52  /* Return the current context     |   none */
 #define PGREQ_INFILTERSEND 53  /* Send a trigger to an infilter  | struct */
 #define PGREQ_MKSHMBITMAP  54  /* Return struct pgshmbitmap      | struct */
+#define PGREQ_WRITEDATA    55  /* Stream data to a widget        |  handle + data */
 
 /* NOTE: Before adding new entries to the end, replace any deprecated entries above */
 
-#define PGREQ_UNDEF        55  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        56  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -390,14 +391,6 @@ struct pgdata_getfstyle {
   unsigned short size;    /* Height in pixels (for bitmapped fonts) */
   unsigned short fontrep; /* PG_FR_* flags for font representation */
   unsigned long  flags;   /* PG_FSTYLE_* flags for font style itself */
-};
-
-/* A structure for encapsulating commands, for example in canvas, within
- * a RQH_WRITETO */
-struct pgcommand {
-   u16 command;
-   u16 numparams;
-   /* Followed by numparams * signed long */
 };
 
 /* Returned by rqh_getmode */

@@ -13,43 +13,43 @@ class Canvas:
     # Canvas commands, as specified in canvas.h
 
     def nuke(self):
-        self.widget.writecmd(1)
+        self.widget.command(1)
 
     def grop(self, grop, *params):
-        self.widget.writecmd(2, grop, *params)
+        self.widget.command(2, grop, *params)
 
     def execfill(self, thobj, property, x, y, w, h):
-        self.widget.writecmd(3, thobj, property, x, y, w, h)
+        self.widget.command(3, thobj, property, x, y, w, h)
 
     def findgrop(self, index):
-        self.widget.writecmd(4, index)
+        self.widget.command(4, index)
 
     def setgrop(self,  *params):
-        self.widget.writecmd(5, *params)
+        self.widget.command(5, *params)
 
     def movegrop(self,  x, y, w, h):
-        self.widget.writecmd(6, x, y, w, h)
+        self.widget.command(6, x, y, w, h)
         
     def mutategrop(self, type):
-        self.widget.writecmd(7, type)
+        self.widget.command(7, type)
         
     def defaultflags(self, flags):
-        self.widget.writecmd(8, flags)
+        self.widget.command(8, flags)
         
     def gropflags(self, flags):
-        self.widget.writecmd(9, flags)
+        self.widget.command(9, flags)
 
     def redraw(self):
-        self.widget.writecmd(10)
+        self.widget.command(10)
 
     def redraw(self):
         self.widget.incremental(11)
         
     def scroll(self, x, y):
-        self.widget.writecmd(12, x, y)
+        self.widget.command(12, x, y)
         
     def inputmapping(self, x, y, w, h, type):
-        self.widget.writecmd(13, x, y, w, h, {
+        self.widget.command(13, x, y, w, h, {
             'none': 0,
             'scale': 1,
             'squarescale': 2,
@@ -57,7 +57,7 @@ class Canvas:
             }[type])
 
     def gridsize(self, x, y):
-        self.widget.writecmd(14, x, y)
+        self.widget.command(14, x, y)
 
     # Gropnode wrappers
 

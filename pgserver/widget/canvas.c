@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.55 2003/03/10 23:48:26 micahjd Exp $
+/* $Id: canvas.c,v 1.56 2003/03/19 04:59:08 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -31,8 +31,8 @@
 #include <pgserver/widget.h>
 #include <picogui/canvas.h>
 
-void canvas_command(struct widget *self, u16 command, 
-		    u16 numparams, s32 *params);
+void canvas_command(struct widget *self, u32 command, 
+		    u32 numparams, s32 *params);
 
 struct canvasdata {
   struct gropctxt ctx;
@@ -123,7 +123,7 @@ g_error canvas_install(struct widget *self) {
    /* By default accept only stream commands and mouse clicks. The app can use
     * PG_WP_TRIGGERMASK to turn on mouse movement and keyboard events
     */
-   self->trigger_mask = PG_TRIGGER_STREAM | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE;
+   self->trigger_mask = PG_TRIGGER_COMMAND | PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE;
    
    return success;
 }
@@ -145,46 +145,13 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    int evt;
    s16 mx,my;
    
-   if (type == PG_TRIGGER_STREAM) {
-      /* Accept a command from the client */
-      
-      struct pgcommand *cmd;
-      char *buffer = param->stream.data;
-      u32 remaining = param->stream.size;
-      int i;
-      s32 *params;
-      
-      while (remaining) {
-	 
-	 /* Out of space? */
-	 if (remaining < sizeof(struct pgcommand))
-	   return;
-	 cmd = (struct pgcommand *) buffer;
-	 cmd->command = ntohs(cmd->command);
-	 cmd->numparams = ntohs(cmd->numparams);
-	 
-	 params = (s32 *) (buffer + sizeof(struct pgcommand));
-	 
-	 buffer += sizeof(struct pgcommand) + 
-	   cmd->numparams * sizeof(s32);
-	 remaining -= sizeof(struct pgcommand) + 
-	   cmd->numparams * sizeof(s32);
-	 if (remaining < 0)
-	   return;
-	 
-	 /* Convert parameters */
-	 for (i=0;i<cmd->numparams;i++)
-	   params[i] = ntohl(params[i]);
-	 
-	 canvas_command(self,cmd->command,cmd->numparams,params);
-	 
-      }
-      return;
-   }
-
-   /* Nope, it was some sort of event to pass on to the app */
-
    switch (type) {
+
+     /* Accept a command from the client */
+
+    case PG_TRIGGER_COMMAND:
+     canvas_command(self,param->command.command,param->command.numparams,param->command.data);
+     return;
 
      /* Scroll wheel events */
 
@@ -347,8 +314,8 @@ void canvas_resize(struct widget *self) {
 
 /*********************************** Commands */
    
-void canvas_command(struct widget *self, u16 command, 
-		    u16 numparams, s32 *params) {
+void canvas_command(struct widget *self, u32 command, 
+		    u32 numparams, s32 *params) {
    int i;
 
    /* Must we fix the gropctxt's pointers? */
