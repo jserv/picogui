@@ -26,7 +26,6 @@ def prepare (module, platform, project):
         "../configure",
         "--prefix=%s" % module.path ['prefix'],
         "--enable-bee",
-        "--enable-unix-sockets ",
         "--with-pgserver=%s" % project ['module/picoguiserver'].path ['dfl']
         ]
 
