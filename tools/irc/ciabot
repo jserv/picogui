@@ -62,6 +62,8 @@ if [ -e /tmp/lastlog-$projectname ]; then
         # there are differences, so this is a different commit
         cat $tmpfile | /usr/sbin/sendmail -t
         mv $tmpfile /tmp/lastlog-$projectname
+        # To ensure that the next person to commit will be able to overwrite
+        chmod a+w /tmp/lastlog-$projectname
     else
         # it's just cvs spamming us from another directory
         rm $tmpfile
@@ -69,6 +71,8 @@ if [ -e /tmp/lastlog-$projectname ]; then
 else
     cat $tmpfile | /usr/sbin/sendmail -t
     mv $tmpfile /tmp/lastlog-$projectname
+    # To ensure that the next person to commit will be able to overwrite
+    chmod a+w /tmp/lastlog-$projectname
 fi
 
 echo "done."
