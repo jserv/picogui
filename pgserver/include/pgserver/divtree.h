@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.29 2001/09/23 00:05:55 micahjd Exp $
+/* $Id: divtree.h,v 1.30 2001/09/23 01:57:42 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -258,6 +258,12 @@ void divnode_redraw(struct divnode *n,int all);
 g_error newdiv(struct divnode **p,struct widget *owner);
 void r_divnode_free(struct divnode *n);
 void r_set_nextline(struct divnode *n, struct divnode *nl);
+
+/* Given a starting point and a node, this finds the 'div' branch the node
+ * is on. This is used in word wrapping to figure out what line a
+ * divnode is on.
+ */
+struct divnode *divnode_findbranch(struct divnode *tree, struct divnode *dest);
 
 /* Little helper to rotate a side constant 90 degrees counterclockwise */
 int rotate_side(int s);

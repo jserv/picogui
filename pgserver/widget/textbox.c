@@ -1,4 +1,4 @@
-/* $Id: textbox.c,v 1.4 2001/09/23 00:05:55 micahjd Exp $
+/* $Id: textbox.c,v 1.5 2001/09/23 01:57:42 micahjd Exp $
  *
  * textbox.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities
@@ -63,24 +63,6 @@ g_error textbox_install(struct widget *self) {
    e = newdiv(&self->in->div,self);
    errorcheck;
    self->in->div->flags |= PG_S_TOP;
-
-   /* 2nd line */
-   e = newdiv(&self->in->div->next,self);
-   errorcheck;
-   self->in->div->next->flags |= PG_S_TOP;
-   self->in->div->nextline = self->in->div->next;
-
-   /* 3rd line */
-   e = newdiv(&self->in->div->next->next,self);
-   errorcheck;
-   self->in->div->next->next->flags |= PG_S_TOP;
-   self->in->div->next->nextline = self->in->div->next->next;
-
-   /* 4th line */
-   e = newdiv(&self->in->div->next->next->next,self);
-   errorcheck;
-   self->in->div->next->next->next->flags |= PG_S_TOP;
-   self->in->div->next->next->nextline = self->in->div->next->next->next;
 
    /* Start at 1st line */
    w = &self->in->div->div;   

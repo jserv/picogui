@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.56 2001/09/23 00:05:55 micahjd Exp $
+/* $Id: div.c,v 1.57 2001/09/23 01:57:42 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -362,50 +362,71 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	* flags straight, the recalc will reset itself and traverse again.
 	*/
        if ((!(nextrect.w && nextrect.h)) && ((!parent) || parent->div!=n)) {
-
+	 struct divnode *p;
 	 /* Send to the next line */
-	 if (n->nextline) {
-	   struct divnode *p;
-	   
-	   /* Find the end of our subtree */
-	   p = n;
-	   while (p->next)
-	     p = p->next;
-	   
-	   /* Insert it at the beginning of the next line */
-	   p->next = n->nextline->div;
-	   n->nextline->div = n;
 
-	   /* Unlink from current position */
-	   *pn = NULL;            
+	 /* Need to create a line? */
+	 if (!n->nextline) {
+	   g_error e;
+	   struct divnode *thisline, *newline;
 
-	   /* Recalculate preferred sizes. This is more processing than
-	    * I would prefer to do here, but a change here could possibly
-	    * change the sizing for an entire application. The autosplit
-	    * code is smart enough to set flags properly.
-	    */
-	   divresize_recursive(n->owner->dt->head);
+	   /* First, find the current line's divnode. */
+	   thisline = divnode_findbranch(n->owner->in, n);
+	   if (!thisline)
+	     return 0;
 
-	   /* Update the nextline pointer for this node and all children */
-	   r_set_nextline(n,n->nextline->nextline);
+	   /* Construct a new node */
+	   e = newdiv(&newline, n->owner);
+	   if (iserror(e)) {
+	     /* No great way to handle errors- just abort the calculations */
+	     n->nextline = NULL;
+	     return 0;
+	   }
 
-	   return 1;   /* Abort! */
+	   /* Same flags & size as the current line */
+	   newline->flags = thisline->flags;
+	   newline->split = thisline->split;
+
+	   /* Insert after this line */
+	   newline->next = thisline->next;
+	   thisline->next = newline;
+	   thisline->nextline = newline;
+	   r_set_nextline(thisline->div,newline);
 	 }
-	 else {
-	   /* Create a new line */
-	   
-	   /* FIXME: Create new lines automatically when possible */
-	 }
+  
+	 /* Find the end of our subtree */
+	 p = n;
+	 while (p->next)
+	   p = p->next;
+	 
+	 /* Insert it at the beginning of the next line */
+	 p->next = n->nextline->div;
+	 n->nextline->div = n;
+	 
+	 /* Unlink from current position */
+	 *pn = NULL;            
+	 
+	 /* Recalculate preferred sizes. This is more processing than
+	  * I would prefer to do here, but a change here could possibly
+	  * change the sizing for an entire application. The autosplit
+	  * code is smart enough to set flags properly.
+	  */
+	 divresize_recursive(n->owner->dt->head);
+	 
+	 /* Update the nextline pointer for this node and all children */
+	 r_set_nextline(n,n->nextline->nextline);
+	 
+	 return 1;   /* Abort! */
        }
        
        /* Otherwise, check whether there's extra room */
        else if (n->nextline && (!n->next)) {
-       	 struct divnode **p;
+	 struct divnode **p;
 	 s16 avw,avh;       /* Available width/height */
-
+	 
 	 avw = nextrect.w;
 	 avh = nextrect.h;
-
+	 
 	 /* See how many divnodes from the next line will fit here */
 	 p = &n->nextline->div;
 	 while (*p) {
@@ -417,19 +438,19 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	     break;
 	   p = &(*p)->next;
 	 }
-
+	 
 	 /* After this loop, *p points to the first node that can't be
 	  * moved to the current line. Munge the pointers a little to
 	  * move all that we can. Insert the subtree, and fix up
 	  * the nextline pointers.
 	  */
-
+	 
 	 if (*p != n->nextline->div) {
 	   n->next = n->nextline->div;
 	   n->nextline->div = *p;
 	   *p = NULL;
 	   r_set_nextline(n->next,n->nextline);
-
+	   
 	   /* If we just emptied the next line completely, that's a Bad
 	    * Thing. Try to transfer one node over from the line after that.
 	    * When this node recalcs, it should maintain proper flow between
@@ -444,14 +465,14 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	     n->nextline->div->nextline = n->nextline->nextline;
 	     n->nextline->div->flags |= DIVNODE_NEED_RECALC;
 	   }
-
+	   
 	   /* Recalculate preferred sizes. This is more processing than
 	    * I would prefer to do here, but a change here could possibly
 	    * change the sizing for an entire application. The autosplit
 	    * code is smart enough to set flags properly.
 	    */
 	   divresize_recursive(n->owner->dt->head);
-
+	   
 	   return 1;  /* Abort! */
 	 }
        }
@@ -459,9 +480,10 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
      
      /* Recalc completed.  Propagate the changes- always propagate to
 	div, only propagate to next if our changes affected other nodes. 
-      */
+     */
      if (n->div) {
-       n->div->flags |= DIVNODE_NEED_RECALC | (n->flags & DIVNODE_PROPAGATE_RECALC);
+       n->div->flags |= DIVNODE_NEED_RECALC | 
+	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        divnode_divscroll(n->div);
        div_rebuild(n->div);
      }     
@@ -474,7 +496,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
      /* We're done */
      n->flags &= ~(DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC);
    }
-
+   
    /* A child node might need a recalc even if we aren't forcing one */
    if (divnode_recalc(&n->div,n))
      return 1;                      /* Allow child nodes to abort */
@@ -920,6 +942,34 @@ int divnode_in_toolbar(struct divnode *div) {
     if (iserror(rdhandle((void**) &w,PG_TYPE_WIDGET,-1,w->container)) || !w)
       return 0;
   return w->type == PG_WIDGET_TOOLBAR;
+}
+
+/* Given a starting point and a node, this finds the 'div' branch the node
+ * is on. This is used in word wrapping to figure out what line a
+ * divnode is on.
+ */
+struct divnode *r_divnode_findbranch(struct divnode *p,
+				     struct divnode *dest,
+				     struct divnode *branch) {
+  struct divnode *x;
+
+  /* Leaf */
+  if (!p)
+    return NULL;
+
+  /* We've found it, so hopefully we know what branch it came from */
+  if (p==dest)
+    return branch;
+
+  /* Traversing 'div' we change branches, traversing 'next' we don't */
+  if (x = r_divnode_findbranch(p->div,dest,p))
+    return x;
+  if (x = r_divnode_findbranch(p->next,dest,branch))
+    return x;
+}
+struct divnode *divnode_findbranch(struct divnode *tree,
+				   struct divnode *dest) {
+  return r_divnode_findbranch(tree,dest,NULL);
 }
 
 /* The End */
