@@ -1,0 +1,31 @@
+/* $Id: lucid.ths,v 1.1 2002/10/25 21:59:45 micahjd Exp $
+ *
+ * Lucid - A simple and clean solid color and thin outline theme, where
+ *         most elements are translucent.
+ *
+ * WARNING: This theme is still incomplete!
+ *
+ * Micah Dowty
+ */
+
+property fTranslucent;
+property frameColor,alpha;
+
+object default {
+  name = "Lucid (incomplete)";
+
+  bgfill = Copy(default::fTranslucent);
+
+  fTranslucent = fillstyle {
+    SetColor(PGCF_ALPHA | (alpha << 24) | bgcolor);
+    Rect(x,y,w,h);
+  };
+
+
+  margin  = 5;
+  spacing = 5;
+  width   = 20;
+  height  = 20;
+}
+
+/* The End */
