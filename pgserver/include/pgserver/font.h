@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.20 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: font.h,v 1.21 2002/01/18 16:42:59 pney Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -62,6 +62,8 @@ struct fontdesc {
 		   image horizontally one pixel for every 'skew' vertical
 		   pixels */
   int italicw;  /* Extra width added by the italic */
+  int passwdc;  /* Password char. If null or positive, define the returned
+		   character to display text in a 'password way'. */
   int (*decoder)(const u8 **str);   /* Text decoder (for Unicode, etc) */
   void *extra;  /* Extra driver-specific data */
 };

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.40 2002/01/16 23:04:26 micahjd Exp $
+/* $Id: field.c,v 1.41 2002/01/18 16:42:59 pney Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -159,6 +159,10 @@ g_error field_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_FONT:
+    /* if a font was already created due to password set, make an error */
+    if(DATA->font)
+      return mkerror(PG_ERRT_HANDLE,108);
+
     if (iserror(rdhandle((void **)&fd,
 			 PG_TYPE_FONTDESC,-1,data)) || !fd) 
       return mkerror(PG_ERRT_HANDLE,44); 
@@ -193,6 +197,18 @@ g_error field_set(struct widget *self,int property, glob data) {
      resizewidget(self); 
      self->in->flags |= DIVNODE_NEED_RECALC;
      self->dt->flags |= DIVTREE_NEED_RECALC;
+     break;
+
+   case PG_WP_PASSWORD:
+     /* If no font already associated with the field, create a default one */
+     if(!DATA->font) findfont(&(DATA->font),-1,NULL,0,PG_FSTYLE_DEFAULT);
+
+     /* get the fontdesc pointer */
+     if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) || !fd)
+       return mkerror(PG_ERRT_HANDLE,44);
+
+     /* set the font to 'password look' */
+     fd->passwdc = 1;
      break;
 
    default:

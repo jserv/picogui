@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.46 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: font.c,v 1.47 2002/01/18 16:42:59 pney Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -282,8 +282,12 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	   break;
 	   
 	}
-      else if (ch!='\r')
-	outchar(dest,fd,&x,&y,col,ch,clip,lgop,angle);
+      else if (ch!='\r') {
+	if(fd->passwdc > 0)    /* Is the font to be a password? */
+          outchar(dest,fd,&x,&y,col,'*',clip,lgop,angle);
+	else
+	  outchar(dest,fd,&x,&y,col,ch,clip,lgop,angle);
+      }
    }
 }
 
@@ -307,7 +311,10 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
       *w = fd->margin << 1;
     }
     else if (ch!='\r') {
-      outchar_fake(fd,w,ch);
+      if(fd->passwdc > 0)      /* If the font is set to a password */
+	outchar_fake(fd,w,'*');
+      else
+	outchar_fake(fd,w,ch);
     }
   }
   if ((*w)<o_w) *w = o_w;
