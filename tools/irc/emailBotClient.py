@@ -24,6 +24,7 @@ class AnnounceClient(protocol.Protocol):
 	f.close()
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
+        subjectFields[1] = subjectFields[1].lower()
         if subjectFields[0] in allowedTextCommands:
             for line in messages:
 	    	line = line.strip()
