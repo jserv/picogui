@@ -201,7 +201,7 @@ if __name__ == '__main__':
                         #print "found socket = " + socketName
                 f.close()
 
-            # we did not find the channel
+            # we did not find the channel, ie we want to join it
             if socketName == socketBaseName:
                 # we always choose the last bot to be started for joining channels
                 socketName = socketBaseName + "." + lastBotID;
@@ -219,13 +219,14 @@ if __name__ == '__main__':
                     lines.append(applyColorTags(commandLine))
 
                 
-            # now launch the client object for the channel-specific bot
+            # now launch the client
             f = AnnounceClientFactory()
             reactor.connectUNIX(socketName, f)
             reactor.run()
             
-            # and now if we are not the first bot, send there, so it goes into the main channels
-            if socketName != socketBaseName + ".1":
+            # if we were not the first bot, AND this was not a Join/Part request (which should only go to the last bot)
+            # we need to send it to the first bot as well so things appear in #commits
+            if socketName != socketBaseName + ".1" and subjectFields[0] == "Announce":
                 socketName = socketBaseName + ".1"
                 f = AnnounceClientFactory()
                 reactor.connectUNIX(socketName, f)
