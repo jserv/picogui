@@ -1,9 +1,9 @@
-/* $Id: pseudo3d.ths,v 1.8 2001/12/12 19:47:18 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.9 2001/12/16 20:23:15 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
  *
- * Version 1.1
+ * Version 1.11
  *
  * Micah Dowty
  */
@@ -187,5 +187,7 @@ object box.hilight {
   fgcolor = Copy(box::bgcolor);
   bgcolor = Copy(box::fgcolor);
 }
+
+object field height = 18;
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.35 2001/12/14 22:56:44 micahjd Exp $
+/* $Id: field.c,v 1.36 2001/12/16 20:23:15 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -35,7 +35,7 @@
 #define FIELDBUF_MAXCRUFT        25    /* Amount of wasted space in buffer before it is resized */
 #define FIELDBUF_ALLOCSTEP       10    /* Amount to allocate when the buffer is full */
 
-#define CURSORWIDTH 2
+#define CURSORWIDTH 1
 #define FLASHTIME_ON   250
 #define FLASHTIME_OFF  150
 
@@ -99,7 +99,7 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Cursor 
    * FIXME: The cursor doesn't use themes! (much)
    */
-  addgropsz(c,PG_GROP_RECT,0,c->y+2,CURSORWIDTH,c->h-4);
+  addgropsz(c,PG_GROP_RECT,0,c->y,CURSORWIDTH,c->h);
   DATA->cursor = c->current;
    
   fieldstate(self);

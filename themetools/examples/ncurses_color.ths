@@ -1,4 +1,4 @@
-/* $Id: ncurses_color.ths,v 1.5 2001/07/05 07:53:59 micahjd Exp $
+/* $Id: ncurses_color.ths,v 1.6 2001/12/16 20:23:15 micahjd Exp $
  *
  * PicoGUI theme for the ncurses video driver.
  * Nice colorful buttons and things, as provided by programs like dialog
@@ -28,6 +28,8 @@ object panelbar {
    bgcolor = 0x000080;
    fgcolor = 0xFFFFFF;
 }
+
+object field bgcolor = 0x20000300 | '_';
 
 object background bgcolor = 0x40000300 | 'a';
 

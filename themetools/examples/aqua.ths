@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.32 2001/12/16 19:45:12 micahjd Exp $
+/* $Id: aqua.ths,v 1.33 2001/12/16 20:23:15 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -326,5 +326,7 @@ object checkbox {
    spacing = 5;
 }
 object checkbox.on bitmap1 = LoadBitmap("data/aq_check_on.pnm");
+
+object field height = 20;
 
 /* The End */
