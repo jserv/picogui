@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.4 2002/09/15 10:51:49 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.5 2002/09/29 09:20:22 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -185,8 +185,6 @@ void touchscreen_cal_set(struct ts_calibration *tsc, handle cal_string, int save
     
     tsc->valid = 1;
   }  
-
-  pgstring_delete(str);
 }
 
 /* Transform from pen to screen coordinates using the given calibration 
