@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.105 2002/05/20 21:10:48 micahjd Exp $
+/* $Id: button.c,v 1.106 2002/05/20 22:28:51 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -172,6 +172,12 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
 
   /* Text */
   if (DATA->text) {
+    /* Reset the LGOP if we need to */
+    if (((DATA->bitmap && (DATA->lgop || DATA->has_alpha)) || DATA->bitmask) && !DATA->disabled) {
+      addgrop(c,PG_GROP_SETLGOP);
+      c->current->param[0] = PG_LGOP_NONE;
+    }
+
     addgrop(c,PG_GROP_SETCOLOR);
     c->current->param[0] = VID(color_pgtohwr) 
        (DATA->colorset ? DATA->color : theme_lookup(state,PGTH_P_FGCOLOR));
