@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.4 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: default_theme.c,v 1.5 2000/06/07 06:49:54 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -33,7 +33,7 @@
  * but the default theme needs to be simple enough to work on any hardware.
  */
 #define EL_NULL {0,ELEM_NULL}
-#define EL_FLAT(w,c) {w,ELEM_FLAT,{{c}}}
+#define EL_FLAT(w,c) {w,ELEM_FLAT,{{c},{c},{c}}}
 #define EL_ACTIVE(c1,c2,c3) {0,ELEM_FLAT,{{c1},{c2},{c3}}}
 
 /* This is initialized to the default theme */
@@ -64,7 +64,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(1,mkcolor(0,0,0)),  
 
   /* 08 scrollind.fill */
-  EL_FLAT(0,mkcolor(220,255,220)),  
+  EL_ACTIVE(mkcolor(220,255,220),mkcolor(255,255,220),mkcolor(220,255,255)),  
 
   /* 09 scrollind.overlay */
   EL_NULL,

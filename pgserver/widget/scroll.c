@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.10 2000/06/02 22:02:46 micahjd Exp $
+/* $Id: scroll.c,v 1.11 2000/06/07 06:49:54 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -123,11 +123,19 @@ void scrollupdate(struct widget *self) {
 	       STATE_NORMAL);
   }
 
+  /* Border */
+  self->in->div->grop->next->next->y = self->in->div->param.i * 
+    (self->in->div->h-(self->in->div->h>>HEIGHT_DIV)) / DATA->res;
+  /* Fill */
+  self->in->div->grop->next->next->next->y = 
+    self->in->div->grop->next->next->y + (
+    (current_theme[E_SCROLLIND_BORDER].width >= 0) ?
+    current_theme[E_SCROLLIND_BORDER].width : 0);
+  /* Overlay */
   self->in->div->grop->next->next->next->next->y = 
-    (self->in->div->grop->next->next->next->y = 
-     (self->in->div->grop->next->next->y = 
-      (self->in->div->param.i * (self->in->div->h-
-	       		 (self->in->div->h>>HEIGHT_DIV)) / DATA->res)));
+    self->in->div->grop->next->next->next->y + (
+    (current_theme[E_SCROLLIND_FILL].width >= 0) ?
+    current_theme[E_SCROLLIND_FILL].width : 0);
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
