@@ -228,6 +228,15 @@ AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FORMAT_PNG, [
   DRIVER_LIBS="$DRIVER_LIBS -lm -lz -lpng"
 ])
 
+dnl pthreads are required for the VNC server
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_VNCSERVER, [
+
+  AC_CHECK_LIB(pthread, pthread_create,, AC_MSG_WARN(cannot find pthreads))
+
+  DRIVER_LIBS="$DRIVER_LIBS -lpthread"
+])
+
 dnl check for the X window system
 
 AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_X11, [

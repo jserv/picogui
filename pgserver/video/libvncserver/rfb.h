@@ -1,6 +1,8 @@
 #ifndef RFB_H
 #define RFB_H
 
+#define HAVE_PTHREADS
+
 /*
  * rfb.h - header file for RFB DDX implementation.
  */

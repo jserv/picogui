@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.4 2003/01/19 09:25:51 micahjd Exp $
+/* $Id: vncserver.c,v 1.5 2003/01/19 10:41:07 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -37,7 +37,8 @@
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
 
-rfbScreenInfoPtr vncserver_screeninfo = NULL;
+rfbScreenInfoPtr vncserver_screeninfo = NULL;      /* VNC server's main structure */
+hwrbitmap vncserver_buffer = NULL;                 /* Framebuffer provided to VNC clients */
 
 
 g_error vncserver_init(void) {
@@ -54,8 +55,10 @@ g_error vncserver_init(void) {
 
 void vncserver_close(void) {
   unload_inlib(inlib_main);   /* Take out our input driver */
-  if (FB_MEM)
+  if (FB_MEM) {
     g_free(FB_MEM);
+    vid->bitmap_free(vncserver_buffer);
+  }
 }
 
 g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
@@ -75,6 +78,7 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    /* Free the old buffer */
    if (FB_MEM) {
       g_free(FB_MEM);
+      vid->bitmap_free(vncserver_buffer);
       FB_MEM = NULL;
    }
 
@@ -89,7 +93,9 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    FB_BPL = (vid->xres * bpp) >> 3;
    e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres));
    errorcheck;
-   vncserver_screeninfo->frameBuffer = FB_MEM;
+   e = vid->bitmap_new(&vncserver_buffer, vid->xres, vid->yres, vid->bpp);
+   errorcheck;
+   vncserver_screeninfo->frameBuffer = ((struct stdbitmap*) vncserver_buffer)->bits;
 
    /* Process configuration variables */
    vncserver_screeninfo->rfbPort            = get_param_int("video-vncserver", "port", 5900);
@@ -101,14 +107,16 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    vncserver_screeninfo->rfbNeverShared     = get_param_int("video-vncserver", "never-shared", 0);
    vncserver_screeninfo->rfbDontDisconnect  = get_param_int("video-vncserver", "dont-disconnect", 0);
 
-   /* Set up the RFB server */
+   /* Start the VNC server's thread */
    rfbInitServer(vncserver_screeninfo);
-   
+   rfbRunEventLoop(vncserver_screeninfo, -1, TRUE);
+
    /* Load the input driver */
    return load_inlib(&vncinput_regfunc,&inlib_main);
 }
  
 void vncserver_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
+  vid->blit(vncserver_buffer, x,y,w,h, d, x,y, PG_LGOP_NONE);
   rfbMarkRectAsModified(vncserver_screeninfo, x,y,x+w,y+h);
 }
 
