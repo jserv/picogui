@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.34 2002/11/12 22:52:47 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.35 2002/11/19 01:18:14 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -64,6 +64,9 @@ struct textboxdata {
 /* Get a pgstring for the current text format */
 g_error textbox_getformat(struct widget *self, struct pgstring **fmt);
 
+/* Add text in the current text format and insertion mode */
+g_error textbox_write(struct widget *self, struct pgstring *str);
+
 /* Find keys to ignore */
 int textbox_ignorekey(struct widget *self, int key);
 
@@ -95,7 +98,7 @@ g_error textbox_install(struct widget *self) {
    */
   self->trigger_mask = PG_TRIGGER_DEACTIVATE | PG_TRIGGER_ACTIVATE |
     PG_TRIGGER_TIMER | PG_TRIGGER_DOWN | PG_TRIGGER_KEYUP |
-    PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR;
+    PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR | PG_TRIGGER_STREAM;
 
   e = document_new(&DATA->doc, self->in->div);
   errorcheck;
@@ -119,9 +122,7 @@ void textbox_resize(struct widget *self) {
 
 g_error textbox_set(struct widget *self,int property, glob data) {
   g_error e;
-  int i;
-  struct pgstring *str;  
-  struct pgstring *fmt;
+  struct pgstring *str;
 
   switch (property) {
 
@@ -161,29 +162,9 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_TEXT:
-    switch (DATA->insertmode) {
-
-    case PG_INSERT_OVERWRITE:
-      document_nuke(DATA->doc);
-      break;
-
-    case PG_INSERT_ATCURSOR:
-      break;
-
-    case PG_INSERT_PREPEND:
-      document_seek(DATA->doc, 0, PGSEEK_SET);
-      break;
-
-    case PG_INSERT_APPEND:
-      document_seek(DATA->doc, 0, PGSEEK_END);
-      break;
-
-    }
-    e = textbox_getformat(self,&fmt);
-    errorcheck;
     e = rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,data);
     errorcheck;
-    e = document_load(DATA->doc, fmt, str);
+    e = textbox_write(self,str);
     errorcheck;
     break;
 
@@ -241,6 +222,13 @@ glob textbox_get(struct widget *self,int property) {
 
 void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   int seek_amount;
+
+  if (type == PG_TRIGGER_STREAM) {
+    /* FIXME: this doesn't do unicode correctly */
+    struct pgstring str = *pgstring_tmpwrap(param->stream.data);
+    textbox_write(self,&str);
+    return;
+  }
 
   if (DATA->readonly)
     return;
@@ -452,6 +440,39 @@ void textbox_reset_inactivity(struct widget *self) {
     paragraph_show_cursor(DATA->doc->crsr);
   }
   DATA->update_time = os_getticks();
+}
+
+/* Add text in the current text format and insertion mode */
+g_error textbox_write(struct widget *self, struct pgstring *str) {
+  struct pgstring *fmt;
+  g_error e;
+
+  switch (DATA->insertmode) {
+    
+  case PG_INSERT_OVERWRITE:
+    document_nuke(DATA->doc);
+    break;
+    
+  case PG_INSERT_ATCURSOR:
+    break;
+    
+  case PG_INSERT_PREPEND:
+    document_seek(DATA->doc, 0, PGSEEK_SET);
+    break;
+    
+  case PG_INSERT_APPEND:
+    document_seek(DATA->doc, 0, PGSEEK_END);
+    break;
+    
+  }
+  
+  e = textbox_getformat(self,&fmt);
+  errorcheck;
+  
+  e = document_load(DATA->doc, fmt, str);
+  errorcheck;
+  
+  return success;
 }
 
 /* The End */
