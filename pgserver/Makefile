@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.37 2000/12/16 18:37:46 micahjd Exp $
+# $Id: Makefile,v 1.38 2000/12/16 19:34:29 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -37,7 +37,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
        video/ez328_chipslice_lcd.c input/sdlinput.c vidbase/defaultvbl.c \
        video/sdl.c video/sdlmin.c theme/memtheme.c theme/fillstyle.c \
-       widget/background.c widget/menuitem.c widget/terminal.c
+       widget/background.c widget/menuitem.c widget/terminal.c \
+       video/sdlfb.c
 
 HDR := include/pgserver/*.h include/picogui/*.h
 

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.19 2000/12/16 18:37:46 micahjd Exp $
+/* $Id: video.c,v 1.20 2000/12/16 19:34:31 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -165,6 +165,9 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
     vid = NULL;
     return e;
   }
+
+  /* Reset clipping */
+  (*vid->clip_off)();
 
   /* Generate text colors table */
   for (i=0;i<16;i++)

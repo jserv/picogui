@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.3 2000/11/18 07:47:07 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.4 2000/12/16 19:34:29 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -27,7 +27,7 @@ STRIPBIN = no
 #CFLAGS := $(CFLAGS) -DTINY_MESSAGES
 
 #### Brandon's Haiku errors (can be funny :)
-#CFLAGS := $(CFLAGS) -DHAIKU_MESSAGES
+CFLAGS := $(CFLAGS) -DHAIKU_MESSAGES
 
 #### DEBUG flag
 #CFLAGS := $(CFLAGS) -DDEBUG
@@ -60,6 +60,7 @@ FONTS := $(FONTS) font/utopia.fi
 #### Video drivers. Uncomment any number of them.
 DRV := $(DRV) -DDRIVER_SDL        # SDL driver
 #DRV := $(DRV) -DDRIVER_SDLMIN     # Debugging only!
+#DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs 
 #DRV := $(DRV) -DDRIVER_SVGA       # SVGAlib driver
 
 #### Input drivers. Uncomment any number of
