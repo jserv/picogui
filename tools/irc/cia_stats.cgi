@@ -45,22 +45,23 @@ for project in projects:
         if projectCounts[project][statSubdirs[i]] > columnMaxima[i]:
             columnMaxima[i] = projectCounts[project][statSubdirs[i]]
 
+def convertDuration(t):
+    """Convert a duration in seconds to other units depending on its magnitude"""
+    if not t:
+        t = ''
+    elif t > 172800:
+        t = "%.1fd" % (t / 86400)
+    elif t > 7200:
+        t = "%.1fh" % (t / 3600)
+    elif t > 120:
+        t = "%.1fm" % (t / 60)
+    else:
+        t = "%.1fs" % t
+    return t
+
 # Project table contents
 for project in projects:
-    # Format the MTBC a little
-    mtbc = projectMTBC[project]
-    if not mtbc:
-        mtbc = ''
-    elif mtbc > 172800:
-        mtbc = "%.1fd" % (mtbc / 86400)
-    elif mtbc > 7200:
-        mtbc = "%.1fh" % (mtbc / 3600)
-    elif mtbc > 120:
-        mtbc = "%.1fm" % (mtbc / 60)
-    else:
-        mtbc = "%.1fs" % mtbc
-    
-    print "<tr><td>%s</td><td>%s</td>" % (project, mtbc),
+    print "<tr><td>%s</td><td>%s</td>" % (project, convertDuration(projectMTBC[project])),
     for statIndex in xrange(len(statSubdirs)):
         count = projectCounts[project][statSubdirs[statIndex]]
         if count:
@@ -113,6 +114,7 @@ msgTotal = 0
 for projCount in projectCounts.values():
     msgTotal += projCount[statSubdirs[0]]
 print "<li>%d messages</li>" % msgTotal
+print "<li>overall MTBC: %s</li>" % convertDuration(totalMTBC)
 print """
     </ul>
   </div>
