@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.3 2000/08/06 02:48:17 micahjd Exp $
+/* $Id: timer.c,v 1.4 2000/08/06 04:42:38 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -26,9 +26,16 @@
  * 
  */
 
-#include <sys/time.h>
+#if defined(__WIN32__) || defined(WIN32)
+#define WINDOWS
+#include <windows.h>
+#include <mmsystem.h>
+#else
 #include <unistd.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#endif
 
 #include <timer.h>
 
@@ -36,16 +43,55 @@
    precision of the TRIGGER_TIMER */
 #define TIMERINTERVAL 50   /* In milliseconds */
 
+/* All this code is OS-specific */
+
+#ifdef WINDOWS
+/**************** Windows */
+
+static DWORD first_tick;
+static UINT ntimer;
+
+static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
+				 DWORD dw1, DWORD dw2) {
+  trigger_timer();
+}
+
+g_error timer_init(void) {
+  MMRESULT result;
+
+  /* Get a reference point for getticks */
+  first_tick = timeGetTime();
+  
+  /* Set timer resolution */
+  result = timeBeginPeriod(TIMERINTERVAL);
+  if ( result != TIMERR_NOERROR ) 
+    return mkerror(ERRT_IO,"Can't set timer resolution");
+
+  /* Start up the repeating timer, just like
+     the sigalrm handler for linux... */
+  ntimer = timeSetEvent(TIMERINTERVAL,1,HandleAlarm,0,TIME_PERIODIC);
+  if (!ntimer)
+    return mkerror(ERRT_IO,"Can't set timer event");
+  
+  return sucess;
+}
+
+void timer_release(void) {
+  /* Shut off the timer */
+
+  if (ntimer)
+    timeKillEvent(ntimer);
+  timeEndPeriod(TIMERINTERVAL);
+}
+
+unsigned long getticks(void) {
+  return timeGetTime();
+}
+
+#else
+/**************** Linux */
+
 static struct timeval first_tick;
-
-/* Linked list of scheduled timers */
-struct timernode {
-  struct widget *w;
-  unsigned long alarm_at;
-  struct timernode *next;
-};
-
-struct timernode *timerlist;
 
 static void sigalarm(int sig) {
   trigger_timer();
@@ -54,8 +100,6 @@ static void sigalarm(int sig) {
 g_error timer_init(void) {
   struct itimerval itv;
   struct sigaction action;
-
-  timerlist = NULL;
 
   /* Get a reference point for getticks */
   gettimeofday(&first_tick,NULL);
@@ -104,4 +148,8 @@ unsigned long getticks(void) {
     (now.tv_usec-first_tick.tv_usec)/1000;
 }
 
+#endif /* WINDOWS */
+
 /* The End */
+
+
