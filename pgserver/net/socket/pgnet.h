@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.8 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: pgnet.h,v 1.9 2000/08/01 06:31:39 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -130,6 +130,8 @@ struct event {
 /* A connection buffer node */
 struct conbuf {
   int owner;
+
+  int context;   /* The owner's current context */
   
   /* Event ring buffer */
   struct event q[EVENTQ_LEN];
@@ -212,8 +214,10 @@ struct event *get_event(int owner,int remove);
 #define RQH_GRABPNTR  20     /* Own the pointing device        |  none */
 #define RQH_GIVEKBD   21     /* Give the keyboard back         |  none */
 #define RQH_GIVEPNTR  22     /* Give the pointing device back  |  none */
+#define RQH_MKCONTEXT 23     /* Enters a new context           |  none */
+#define RQH_RMCONTEXT 24     /* Cleans up and kills the context|  none */
 
-#define RQH_UNDEF     23     /* types > this will be truncated. return error */
+#define RQH_UNDEF     25     /* types > this will be truncated. return error */
 
 /* Structures passed to request handlers as 'data'.
  * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)

@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.6 2000/07/30 21:29:17 micahjd Exp $
+/* $Id: handle.h,v 1.7 2000/08/01 06:31:39 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -55,6 +55,7 @@ struct handlenode {
   unsigned char type;          /* Most of this represents the data type
 				  that this handle points to. Upper 2 bits
 				  are for HFLAGs */
+  int context;
   void *obj;
   struct handlenode *left,*right,*parent;
 };
@@ -78,8 +79,10 @@ handle hlookup(void *obj,int *owner);
  */
 g_error handle_free(int owner,handle h);
 
-/* Deletes all handles from a specified owner (-1 for all handles) */
-void handle_cleanup(int owner);
+/* Deletes all handles from a specified owner (-1 for all handles) 
+  that are in a context greater than or equal to 'context'
+*/
+void handle_cleanup(int owner,int context);
 
 /* A fairly interesting function.  Destroys any data referenced by
    the destination handle, and transfers the data from the source

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.8 2000/07/31 20:18:22 micahjd Exp $
+/* $Id: handle.c,v 1.9 2000/08/01 06:31:39 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -349,6 +349,12 @@ void object_free(struct handlenode *n) {
 g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   struct handlenode *n;
   g_error e;
+  int context = -1;
+  struct conbuf *owner_conbuf;
+
+  /* Find the owner's current context */
+  if ((owner!=-1) && (owner_conbuf = find_conbuf(owner)))
+    context = owner_conbuf->context;
 
   if (!h) return mkerror(ERRT_BADPARAM,"mkhandle - NULL handle pointer");
   if (obj==NULL) {
@@ -359,6 +365,7 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   if (e.type != ERRT_NONE) return e;
   n->id = newhandle();
   n->type = type;
+  n->context = context;
   n->obj = obj;
   n->owner = owner;
   htree_insert(n);
@@ -388,35 +395,40 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
 g_error handle_free(int owner,handle h) {
   struct handlenode *n = htree_find(h);
+  struct handlenode ncopy = *n;
+
+#ifdef DEBUG
+  printf("handle_free(%d,0x%08X): node=0x%08X\n",owner,h,n);
+#endif
 
   if (!h) return mkerror(ERRT_HANDLE,"handle_free - null handle");
   if (!n) return mkerror(ERRT_HANDLE,"handle_free - invalid handle");
   if (owner>=0 && n->owner != owner) 
     return mkerror(ERRT_HANDLE,"handle_free - permission denied");
-  object_free(n);
-  htree_delete(n);
+  htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
+  object_free(&ncopy);
 
   return sucess;
 }
 
-/* Deletes all handles owned by owner,
+/* Deletes all handles owned by owner with a context >= 'context',
    (all handles if owner is -1)
    Traverses seperately to find each handle because the tree could
    be rearranged by deletion
 */
-int r_handle_cleanup(struct handlenode *n,int owner) {
+int r_handle_cleanup(struct handlenode *n,int owner,int context) {
   if ((!n) || (n==NIL)) return 0;
-  if ((owner<0) || (owner==n->owner)) {
+  if (((owner<0) || (owner==n->owner)) && (n->context>=context)) {
     object_free(n);
     htree_delete(n);
     return 1;
   }
-  if (r_handle_cleanup(n->left,owner)) return 1;
-  if (r_handle_cleanup(n->right,owner)) return 1;
+  if (r_handle_cleanup(n->left,owner,context)) return 1;
+  if (r_handle_cleanup(n->right,owner,context)) return 1;
   return 0;
 }
-void handle_cleanup(int owner) {
-  while (r_handle_cleanup(htree,owner));
+void handle_cleanup(int owner,int context) {
+  while (r_handle_cleanup(htree,owner,context));
 }
 
 /* A fairly interesting function.  Destroys any data referenced by

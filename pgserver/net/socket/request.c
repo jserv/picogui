@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.20 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: request.c,v 1.21 2000/08/01 06:31:39 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -59,7 +59,7 @@ void closefd(int fd) {
 #ifdef DEBUG 
   printf("Close. fd = %d\n",fd);
 #endif
-  handle_cleanup(fd);
+  handle_cleanup(fd,-1);
   close(fd);
   FD_CLR(fd,&con);
   appmgr_unregowner(fd);

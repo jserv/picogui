@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.12 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: mainloop.c,v 1.13 2000/08/01 06:31:39 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -96,7 +96,7 @@ void windows_inputpoll_hack(void);
   /*************************************** cleanup time */
   in_shutdown = 1;
   input_release();
-  handle_cleanup(-1);
+  handle_cleanup(-1,-1);
   dts_free();
   req_free();
   appmgr_free();

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.7 2000/06/11 17:59:18 micahjd Exp $
+/* $Id: dispatch.c,v 1.8 2000/08/01 06:31:39 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -55,6 +55,8 @@ DEF_REQHANDLER(grabkbd)
 DEF_REQHANDLER(grabpntr)
 DEF_REQHANDLER(givekbd)
 DEF_REQHANDLER(givepntr)
+DEF_REQHANDLER(mkcontext)
+DEF_REQHANDLER(rmcontext)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -80,6 +82,8 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(grabpntr)
   TAB_REQHANDLER(givekbd)
   TAB_REQHANDLER(givepntr)
+  TAB_REQHANDLER(mkcontext)
+  TAB_REQHANDLER(rmcontext)
   TAB_REQHANDLER(undef)
 };
 
@@ -532,6 +536,28 @@ g_error rqh_givepntr(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,
 		   "Not the current owner of the pointing device");
   pointer_owner = 0;
+  return sucess;
+}
+
+g_error rqh_mkcontext(int owner, struct uipkt_request *req,
+		      void *data, unsigned long *ret, int *fatal) {
+  struct conbuf *cb = find_conbuf(owner);
+  if (!cb) return mkerror(ERRT_INTERNAL,"mkcontext: NULL connection buffer");
+
+  cb->context++;
+
+  return sucess;
+}
+
+g_error rqh_rmcontext(int owner, struct uipkt_request *req,
+		      void *data, unsigned long *ret, int *fatal) {
+  struct conbuf *cb = find_conbuf(owner);
+  if (!cb) return mkerror(ERRT_INTERNAL,"rmcontext: NULL connection buffer");
+  if (cb->context<=0) return mkerror(ERRT_BADPARAM,"Context underflow");
+
+  handle_cleanup(owner,cb->context);
+  cb->context--;
+  
   return sucess;
 }
 
