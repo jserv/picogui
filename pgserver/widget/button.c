@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.83 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: button.c,v 1.84 2002/01/08 12:07:10 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -258,8 +258,8 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case PG_WP_DISABLED:
     DATA->disabled = data;
-    /* Fake a trigger to redraw the button */
-    button_trigger(self,0,NULL);
+    /* Just do a rebuild/redraw */
+    div_rebuild(self->in->div);
     break;
      
   default:
