@@ -134,14 +134,14 @@ class OptionsXML(xml.dom.minidom.Document):
             value = getattr(self.options, option)
             if value != None:
                 node = self.createElement("option")
-                node.setAttribute("name", option)
+                node.setAttribute("name", str(option))
                 for child in self.marshall(value):
                     node.appendChild(child)
                 pgbuild.appendChild(node)
 
         for i in xrange(len(self.args)):
             node = self.createElement("target")
-            node.setAttribute("index", i)
+            node.setAttribute("index", str(i))
             node.appendChild(self.createTextNode(self.args[i]))
             pgbuild.appendChild(node)
 
@@ -155,7 +155,7 @@ class OptionsXML(xml.dom.minidom.Document):
         if type(value) == list or type(value) == tuple:
             for i in xrange(len(value)):
                 node = self.createElement("item")
-                node.setAttribute("index", i)
+                node.setAttribute("index", str(i))
                 for child in self.marshall(value[i]):
                     node.appendChild(child)
                 nodes.append(node)
