@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.15 2001/10/10 01:52:31 micahjd Exp $
+/* $Id: main.c,v 1.16 2001/12/31 08:12:26 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
       
     case '?':        /* Need help */
     case 'h':
-      puts("PicoGUI Theme Compiler (pgui.sourceforge.net)\n\n"
+      puts("PicoGUI Theme Compiler (http://picogui.org)\n\n"
 	   "usage: themec [-q] [-t] [-o thfile] [thsfile]\n\n"
 	   "  q         : Quiet, suppress theme statistics\n"
 	   "  t         : Test run, parse and output stats but don't write file\n"
