@@ -50,10 +50,14 @@ def readStats():
 
     # Yucky hack to strip off "#"
 
-    # iterate over each channel in the list
+    # Add channels from all bots, remove duplicates, sort
     channels = []
+    channelTemp = {}
     for channelFile in glob.glob(channelBaseFile + ".*"):
-        channels = channels + open(channelFile).read().strip().split("\n")
+        for channel in open(channelFile).read().strip().split("\n"):
+	    channelTemp[channel] = 1
+    for key in channelTemp:
+        channels += [key]
     channels.sort()
 
     projectCounts = {}
