@@ -114,7 +114,8 @@ def scanIds(package):
     # module name - module path pairs, without importing anything.
     def visit(arg, dirname, names):
         for name in names:
-            if name.endswith(".py"):
+            # Ignore editor backups and such
+            if name.endswith(".py") and not (name.startswith(".") or name.startswith("#")):
                 modulePath = os.path.join(dirname, name)
                 modPathList = modulePath[len(packagePath):].split(os.sep)
                 # Strip off the .py extension, strip off __init__ modules from packages

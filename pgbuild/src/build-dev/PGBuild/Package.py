@@ -61,7 +61,11 @@ class PackageVersion(object):
 
     def getLocalPath(self):
         """Using the current bootstrap configuration, get the local path for this package"""
-        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'), str(self))
+        name = str(self)
+        # The name may contain slashes to indicate directories- the package name always
+        # uses forward slashes, here we convert them to the local OS's format
+        name = os.sep.join(name.split("/"))
+        return os.path.join(self.config.eval('bootstrap/path[@name="packages"]/text()'), name)
 
     def update(self, progress):
        """Update the package if possible. Return 1 if there was an update available, 0 if not."""
@@ -170,8 +174,21 @@ class PackageList(object):
 
     def getLocalPackages(self):
         """Retrieve a list of all packages with local copies"""
-        # Make sure each directory in this list is actually a package
-        return filter(self.isPackage, os.listdir(self.config.eval("bootstrap/path[@name='packages']/text()")))
+        # Every directory in our package path is potentially a package-
+        # check them against the config's pacage list using isPackage.
+        pkgDir = self.config.eval("bootstrap/path[@name='packages']/text()")
+        pkgList = []
+        def visit(arg, dirname, names):
+           # Chop off the leading directory and convert from the OS's separator back to forward slashes
+           pkgName = dirname[len(pkgDir)+1:]
+           pkgName = "/".join(pkgName.split(os.sep))
+           if self.isPackage(pkgName):
+              pkgList.append(pkgName)
+              # If this is a package, don't descend into subdirectories
+              while names:
+                 del names[0]
+        os.path.walk(self.config.eval("bootstrap/path[@name='packages']/text()"), visit, None)
+        return pkgList
 
     def getBootstrapPackages(self):
         """Retrieve a list of all packages mentioned in the <bootstrap> section.

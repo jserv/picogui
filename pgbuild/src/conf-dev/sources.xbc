@@ -98,6 +98,11 @@
       Package names can not contain dashes, since a dash separates
       package name and version in pgbuild's working copy.
 
+      Package names -are- allowed to contain slashes. They can be used
+      to separate packages into a directory hierarchy. Note that the
+      package names always use forward slashes, they are converted to the
+      local OS's path separator by PGBuild.
+
       The optional <description> tag can be used in frontends to provide
       help for a package. The <require> tag forces the package to be loaded-
       it should only be used for packages necessary to bootstrap the build
@@ -133,7 +138,7 @@
       </version>
     </package>
 
-    <package name="picogui">
+    <package name="legacy/picogui">
       <description>
         <summary>PicoGUI legacy packages.</summary>
         <detail>
@@ -155,5 +160,34 @@
         <a href="picogui-0.45.tar.gz"><site name="picogui-releases"/></a>
       </version>
     </package>
+
+    <package name="pg1/server">
+      <description>
+        <summary>PicoGUI Server.</summary>
+        <detail>
+          In the PicoGUI 1.x architecture, the server is the component that manages
+          and contains drivers, widgets, and all subsystems except the client and client
+          library.
+        </detail>
+      </description>
+      <version name="dev">
+        <a href="trunk/pg1/server"><site name="picogui-svn"/></a>
+      </version>
+    </package>
+
+    <package name="pg1/server">
+      <description>
+        <summary>PicoGUI Server.</summary>
+        <detail>
+          In the PicoGUI 1.x architecture, the server is the component that manages
+          and contains drivers, widgets, and all subsystems except the client and client
+          library.
+        </detail>
+      </description>
+      <version name="dev">
+        <a href="trunk/pg1/server"><site name="picogui-svn"/></a>
+      </version>
+    </package>
+
   </packages>
 </pgbuild>

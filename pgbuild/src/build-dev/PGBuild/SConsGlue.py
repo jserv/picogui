@@ -25,6 +25,11 @@ instead of directly to the command line.
 _svn_id = "$Id$"
 
 
+
+def Environment(config):
+    """Factory to create an SCons environment from a PGBuild configuration"""
+    
+
 ### The End ###
         
     
