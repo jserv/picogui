@@ -1,6 +1,6 @@
 # -*- python -*-
 #
-# $Id: PicoGUIServer.mdl,v 1.56 2003/04/03 08:40:42 bornet Exp $
+# $Id: PicoGUIServer.mdl,v 1.57 2003/04/14 14:50:10 cgrigis Exp $
 
 import os, string
 from Bee.Autoconf import compile, install, clean, configure, flags
@@ -23,6 +23,7 @@ prefix = '/usr'
 depends = [
     'kernel', 'processmanager',
     ('libjpeg', ~S ('platform/m68k-pic-coff')),
+    ('libpng', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
     ]
 
@@ -41,7 +42,8 @@ runtime = [
                      content = [ 'bin/pgserver'],
                      depends = [ 'kernel/video',
                                  ('kernel/keyboard', S ('product/remora')),
-                                 ('libjpeg/library', ~ S ('platform/m68k-pic-coff'))
+                                 ('libjpeg/library', ~ S ('platform/m68k-pic-coff')),
+                                 ('libpng/library', ~ S ('platform/m68k-pic-coff')),
                                  ],
                      help = "Install the PicoGUI Server" ),
 
@@ -81,12 +83,16 @@ def prepare (module, platform, project):
             ]
 
     if not platform.platform == "m68k-pic-coff":
+        cflags, libs = flags ((('libjpeg', 'library'),
+                               ('libpng', 'library')),
+                              platform, project)
         command += [
-            "--with-jpeg-dir=%s" % project ['module/libjpeg'].path ['dfl']
+            '--with-extra-cflags="%s"' % cflags,
+            '--with-extra-libs="%s"' % libs,
             ]
 
-        configure (module, platform, command)
-        return
+    configure (module, platform, command)
+    return
 
 def install (module, platform, project):
     sequence ("make install DESTDIR=%s" % module.path ['d_frz'])

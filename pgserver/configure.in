@@ -38,6 +38,14 @@ AC_ARG_WITH(pm-cflags,
   DRIVER_CFLAGS="$DRIVER_CFLAGS ${withval}"
 ])
 
+dnl
+dnl Check if we have extra CFLAGS to pass
+dnl 
+AC_ARG_WITH(extra-cflags,
+[  --with-extra-cflags=<cflags>   To specify extra cflags],[
+  DRIVER_CFLAGS="$DRIVER_CFLAGS ${withval}"
+])
+
 dnl normalize the path somehow
 CONFIG_FILE=$with_profile
 CONFIG_FILE=`echo $CONFIG_FILE`
