@@ -1,0 +1,125 @@
+/*
+ * Fluid GL
+ *
+ * The dynamic liquid theme for PicoGUI and OpenGL.
+ * Requires the sdlgl driver, and the PNG, PNM, and JPEG image loaders.
+ *
+ * PicoGUI small and efficient client/server GUI
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ */
+
+object default {
+  name = "Fluid GL";
+
+  /* Default background is transparent */
+  bgfill = fillstyle {
+    Nop();
+  };
+}
+
+object background {
+  bitmap1 = LoadBitmap("data/fgl_swirly.jpeg");
+  bitmap2 = LoadBitmap("data/fgl_watermap.png");
+
+  bgfill = fillstyle {
+    var t,wx,wy;
+    t = ticks;
+
+    GL.color(0xFFFFFF);
+    GL.enable(GL_TEXTURE_2D);  
+
+    /* Stretched swirly background to cover the whole screen */
+    GL.bindtexture(bitmap1);
+    GL.begin(GL_QUADS);
+    GL.texcoord2f(0    ,0    ); GL.vertex3f((x  )<<16,(y  )<<16,0);
+    GL.texcoord2f(1<<16,0    ); GL.vertex3f((x+w)<<16,(y  )<<16,0);
+    GL.texcoord2f(1<<16,1<<16); GL.vertex3f((x+w)<<16,(y+h)<<16,0);
+    GL.texcoord2f(0    ,1<<16); GL.vertex3f((x  )<<16,(y+h)<<16,0);
+    GL.end();
+
+    /* Setup for flowing translucent watermap doodads */
+    GL.bindtexture(bitmap2);
+    GL.blendfunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    GL.enable(GL_BLEND);
+
+    wx = t*4;
+    wy = t*8;
+    GL.begin(GL_QUADS);
+    GL.texcoord2f(wx        ,wy        ); GL.vertex3f((x  )<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy        ); GL.vertex3f((x+w)<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy+(1<<16)); GL.vertex3f((x+w)<<16,(y+h)<<16,0);
+    GL.texcoord2f(wx        ,wy+(1<<16)); GL.vertex3f((x  )<<16,(y+h)<<16,0);
+    GL.end();
+
+    wx = t*15;
+    wy = t*20;
+    GL.begin(GL_QUADS);
+    GL.texcoord2f(wx        ,wy        ); GL.vertex3f((x  )<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy        ); GL.vertex3f((x+w)<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy+(1<<16)); GL.vertex3f((x+w)<<16,(y+h)<<16,0);
+    GL.texcoord2f(wx        ,wy+(1<<16)); GL.vertex3f((x  )<<16,(y+h)<<16,0);
+    GL.end();
+
+    wx = t*21;
+    wy = t*38;
+    GL.begin(GL_QUADS);
+    GL.texcoord2f(wx        ,wy        ); GL.vertex3f((x  )<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy        ); GL.vertex3f((x+w)<<16,(y  )<<16,0);
+    GL.texcoord2f(wx+(1<<16),wy+(1<<16)); GL.vertex3f((x+w)<<16,(y+h)<<16,0);
+    GL.texcoord2f(wx        ,wy+(1<<16)); GL.vertex3f((x  )<<16,(y+h)<<16,0);
+    GL.end();
+
+    GL.disable(GL_BLEND);
+    GL.disable(GL_TEXTURE_2D);
+  };
+}
+
+object base.tlcontainer {
+  bitmap1 = LoadBitmap("data/fgl_interlace.pgm");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+  margin = 5;
+}
+
+object button {
+  bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x,y,w,h,bitmap1);
+  };
+}
+
+object panelbar {
+  bitmap1 = LoadBitmap("data/fgl_title_white.png");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+  width = 20;
+  margin = 0;
+}
+
+object base.panelbtn {
+  width = 20;
+  height = 20;
+}
+
+object closebtn widgetbitmap = LoadBitmap("data/fgl_redball.png");
+object rotatebtn widgetbitmap = LoadBitmap("data/fgl_grayball.png");
+object zoombtn widgetbitmap = LoadBitmap("data/fgl_yellowball.png");
+
+/* The End */

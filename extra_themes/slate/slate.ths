@@ -1,0 +1,207 @@
+/* $Id: slate.ths,v 1.1 2002/09/12 07:06:50 micahjd Exp $
+ *
+ * This theme is based on the Pseudo3D picogui theme and the slate-alpha GQmpeg theme
+ *
+ * Version 1.00
+ *
+ * Micah Dowty
+ */
+
+object default {
+  name = "Slate";
+
+  /* Simple fill */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  fgcolor = 0x2C3B43;
+  bgcolor = 0xCFD0D0;
+  hilightcolor = 0xD2E3E9;
+  shadowcolor = 0x6D777C;
+
+  /* Some consistant spacings and margins */
+  spacing = 3;
+  margin = 6;
+}
+
+/* Beveled fill for buttons and things */
+object base.interactive {
+  /* Black border, hilights, and a dynamic offset */
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
+    x = x + offset;
+    y = y + offset;
+  };
+  overlay = Copy(base.interactive::bgfill);
+  bgcolor = 0x9BABB1;
+}
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
+      x = x + 16;
+   };
+//   bitmap1 = LoadBitmap("data/check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+//object checkbox.on bitmap1 = LoadBitmap("data/check_checked.pnm");
+  
+/* Top-level containers need the same bevel */
+object base.tlcontainer bgfill = Copy(base.interactive::bgfill);
+
+object base.container {
+  /* Black border, hilights, and a dynamic offset */
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x,y,w-1,1);
+    Bar(x,y,1,h-1);
+    SetColor(shadowcolor);
+    Slab(x,y+h-1,w-1,1);
+    Bar(x+w-1,y,1,h-1);
+    SetColor(0x000000);
+    Frame(x+1,y+1,w-2,h-2);
+  };
+
+  /* Containers are beveled 'in to the screen' */
+  hilightcolor = Copy(default::shadowcolor);
+  shadowcolor = Copy(default::hilightcolor);
+}
+
+/* Display widgets are similar */
+object base.display bgfill = Copy(base.container::bgfill);
+
+/* Extra fun. The fill for base.display doesn't scroll nicely, so make it simpler */
+object label.scroll bgfill = Copy(default::bgfill);
+
+/* Special overlay for indicators */
+object indicator overlay = fillstyle {
+  SetColor(0x000080);
+  Rect(x,y,w,h);
+};
+
+/* Button sizing */
+object button {
+  height = 20;
+  width = 20;
+}
+
+/* Special stuff for panelbuttons */
+object base.panelbtn {
+  width = Copy(panelbar::width);
+  height = Copy(panelbar::width);
+  spacing = 0;
+}
+object closebtn  {
+//  widgetbitmap = LoadBitmap("data/tiny_x.pnm");
+  side = PG_S_LEFT;
+}
+object rotatebtn {
+//  widgetbitmap = LoadBitmap("data/tiny_arrow.pnm");
+  side = PG_S_RIGHT;
+}
+object zoombtn {
+//  widgetbitmap = LoadBitmap("data/tiny_expand.pnm");
+  side = PG_S_RIGHT;
+}
+
+/* Button click effects! */
+object button.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object closebtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object zoombtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+object rotatebtn.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+
+/* Panelbars */
+object panelbar {
+  font = Font("",12,PG_FSTYLE_BOLD);
+  width = 17;
+  margin = 2;
+  align = PG_A_LEFT;
+}
+
+object panel {
+  bgfill = fillstyle {
+    SetColor(0x9BABB1);
+    Rect(x,y,w,h);
+  };
+}
+
+
+/* Dialog box title, just like a panelbar */
+object label.dlgtitle {
+  margin = 5;
+  bgfill = Copy(panelbar::bgfill);
+  fgcolor = Copy(panelbar::fgcolor);
+  bgcolor = Copy(panelbar::bgcolor);
+  hilightcolor = Copy(panelbar::hilightcolor);
+  shadowcolor = Copy(panelbar::shadowcolor);
+}
+
+/* Dark gray and black grid background */
+object background {
+  bitmap1 = LoadBitmap("data/slate_bg.png");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+}
+
+/* Menu items are pretty simple */
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  spacing = 0;
+  align = PG_A_LEFT;
+}
+object menuitem.hilight {
+  bgcolor = Copy(menuitem::fgcolor);
+  fgcolor = Copy(menuitem::bgcolor);
+}
+
+/* A little 'fudge factor' for the dialogs */
+object popup.messagedlg {
+  width = 10;
+  height = 30;
+}
+
+/* Hilight definitions */
+object label.hilight {
+  fgcolor = Copy(label::bgcolor);
+  bgcolor = Copy(label::fgcolor);
+}
+object box.hilight {
+  fgcolor = Copy(box::bgcolor);
+  bgcolor = Copy(box::fgcolor);
+}
+
+object field height = 18;
+
+/* The End */

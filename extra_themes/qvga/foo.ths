@@ -1,0 +1,145 @@
+/* $Id: foo.ths,v 1.1 2002/09/12 07:06:50 micahjd Exp $
+ *
+ * Hmm, what shall I call this?
+ *
+ * Note: This theme makes use of PNG images and alpha blending.
+ *       You need PNG support, and for best results you should have
+ *       "Fast alpha blending" turned on.
+ *
+ * Version 1.00
+ *
+ * -- Micah Dowty
+ */
+
+/********************************* Defaults ********/
+
+object default {
+  name = "The Unnamed Theme!";
+  
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+  bgcolor = 0xE5E5E5;
+
+  margin=0;
+}
+
+/********************************* Background ******/
+
+/* Stripey background with watermark */
+object background {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x+5,y+h-31,118,26,bitmap2);
+  };
+  bitmap1 = LoadBitmap("data/interlace.png");
+  bitmap2 = LoadBitmap("data/picogui_watermark.png");
+}
+
+/********************************* Panelbar ********/
+
+object panelbar {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,h>w ? bitmap2 : bitmap1);
+  };
+  width = 22;
+  margin = 1;
+  bitmap1 = LoadBitmap("data/gray_h.png");;
+  bitmap2 = LoadBitmap("data/gray_v.png");
+}
+object panelbar.on { 
+  bitmap1 = LoadBitmap("data/blue_h.png");
+  bitmap2 = LoadBitmap("data/blue_v.png");
+}
+
+object base.panelbtn {
+  bgfill = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x,y,w,h,bitmap1);
+  };
+  spacing = 2;
+  width = 20;
+  height = 20;
+  side = PG_S_RIGHT;
+}
+
+object closebtn  bitmap1 = LoadBitmap("data/btn_x.png");
+object rotatebtn bitmap1 = LoadBitmap("data/btn_rotate.png");
+object zoombtn   bitmap1 = LoadBitmap("data/btn_zoom.png");
+object "panelbar.menubtn" bitmap1 = LoadBitmap("data/btn_menu.png");
+
+object closebtn.on  bitmap1 = LoadBitmap("data/btn_x_blue.png");
+object rotatebtn.on bitmap1 = LoadBitmap("data/btn_rotate_blue.png");
+object zoombtn.on   bitmap1 = LoadBitmap("data/btn_zoom_blue.png");
+object "panelbar.menubtn.on" bitmap1 = LoadBitmap("data/btn_menu_blue.png");
+
+/********************************* Button ********/
+
+/* Paste together pieces of the button, but make
+ * sure that the height of the middle peice is a multiple
+ * of 4 so it tiles correctly.
+ */
+object button {
+  bgfill = fillstyle {
+    var middle_h, bottom_y, top_y;
+
+    /* Make sure it's a multiple of 4 */
+    middle_h = ((h - 18) / 4) * 4;
+    top_y = y + ((h - 18) - middle_h)/2;
+    bottom_y = top_y + middle_h + 9;
+
+    /* top-left corner */
+    SetSrc(0,0,9,9);
+    Bitmap(x,top_y,9,9,bitmap1);
+    
+    /* top-right corner */
+    SetSrc(13,0,9,9);
+    Bitmap(x+w-10,top_y,9,9,bitmap1);
+    
+    /* top edge */
+    SetSrc(9,0,4,9);
+    Tilebitmap(x+9,top_y,w-18,9,bitmap1);
+
+    /* bottom-left corner */
+    SetSrc(0,13,9,9);
+    Bitmap(x,bottom_y,9,9,bitmap1);
+    
+    /* bottom-right corner */
+    SetSrc(13,13,9,9);
+    Bitmap(x+w-10,bottom_y,9,9,bitmap1);
+    
+    /* bottom edge */
+    SetSrc(9,13,4,9);
+    Tilebitmap(x+9,bottom_y,w-18,9,bitmap1);
+
+    /* left edge */
+    SetSrc(0,9,4,4);
+    Tilebitmap(x,top_y+9,4,middle_h,bitmap1);
+
+    /* right edge */
+    SetSrc(18,9,4,4);
+    Tilebitmap(x+w-5,top_y+9,4,middle_h,bitmap1);
+
+    /* middle */
+    SetSrc(4,9,14,4);
+    Tilebitmap(x+4,top_y+9,w-8,middle_h,bitmap1);
+  };
+
+  bitmap1 = LoadBitmap("data/btn_blank.png");
+  width   = 25;
+  height  = 20;
+  spacing = 3;
+}
+
+object button.on bitmap1 = LoadBitmap("data/btn_blue.png");
+
+/********************************* Panel ********/
+
+object panel {
+  margin = 2;
+}
+
+
+/* The End */
