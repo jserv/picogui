@@ -102,8 +102,7 @@ object default {
 
     /* Reset params to not mess up the widget.. */
     SetSrc(0,0,0,0);
-
-    y = y + offset;
+    h = h + offset;
   };    
 
   srcx = 0;
@@ -183,15 +182,32 @@ object popup {
   margin = 2;
 
   bitmap1 = LoadBitmap("data/gold_hbar.png");
+  bitmap2 = LoadBitmap("data/dropshadow_parts.png");
 
   backdrop = fillstyle {
     var title_x,title_y,title_w;
 
-    /* Put the previous layer "out of focus" */
-    Blur(0,0,0x7FFF,0x7FFF,2);
+    /* De-emphasize the rest of the screen */
     SetLgop(PG_LGOP_ALPHA);
-    SetColor(PGCF_ALPHA | PGC_WHITE | (30<<24));
+    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
     Rect(0,0,0x7FFF,0x7FFF);
+    SetLgop(PG_LGOP_NONE);
+
+    /* Drop shadow */
+    SetLgop(PG_LGOP_MULTIPLY);
+    SetSrc(19,0,16,27);
+    Bitmap(x+w,y-1,16,27,bitmap2);
+    SetSrc(19,27,16,1);
+    Tilebitmap(x+w,y+26,16,h-29,bitmap2);
+    SetSrc(16,28,19,14);
+    Bitmap(x+w-3,y+h-3,16,14,bitmap2);
+    SetSrc(0,31,15,11);
+    Bitmap(x,y+h,15,11,bitmap2);
+    SetSrc(15,31,1,11);
+    Tilebitmap(x+15,y+h,w-18,11,bitmap2);
+    SetSrc(0,6,13,20);
+    Bitmap(x-13,y+7,13,20,bitmap2);
+    SetSrc(0,0,0,0);
     SetLgop(PG_LGOP_NONE);
 
     /* Place the titlebar */
@@ -220,7 +236,9 @@ object popup {
 }
 
 object label.dlgtitle {
-  bgfill = Copy(default::fNop);
+  bgfill = fillstyle {
+    h = h - 4;
+  };
   align = PG_A_LEFT;
   fgcolor = 0x706C5A;
   font = Font("Gelly",10,0);
@@ -337,9 +355,12 @@ object scroll.h.on bitmap2 = LoadBitmap("data/scrollthumb_h_bright.png");
 /********************************** Scroll */
 
 object menuitem {
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+    h = h - 1;
+  };
   align = PG_A_LEFT;
   height = 18;
-  offset = -1;
 }
 
 object menuitem.hilight {
