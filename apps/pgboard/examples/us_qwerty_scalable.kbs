@@ -18,7 +18,7 @@
 #
 
 $option{'side'} = PG_S_BOTTOM;
-$option{'size'} = 24;
+$option{'size'} = 19;
 $option{'sizemode'} = PG_SZMODE_PERCENT;
 $option{'path'} = './img/';
 
@@ -87,6 +87,7 @@ sub drawkey {
     $key = chr(substr($key,1)) if (length($key) > 1 && $key=~/^#/);
 
     $mods = $defaultmods if (!defined $mods);
+    $mods = eval($mods);
     $pat = $defaultpat if (!defined $pat);
     $h = 1 if (!defined $h);
 
@@ -310,6 +311,8 @@ drawgrid("tab:\t:PGKEY_TAB",
 	 "^B:#2:PGKEY_b",
 	 "^N:#14:PGKEY_n",
 	 "^M:#13:PGKEY_m",
+# To send a CTRL-ALT-m
+#	 "^M:#13:PGKEY_m:PGMOD_CTRL | PGMOD_ALT",
 	 ",:,:PGKEY_COMMA",
 	 ".:.:PGKEY_PERIOD",
 	 "/:/:PGKEY_SLASH",

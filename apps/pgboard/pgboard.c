@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.10 2001/10/24 09:47:37 bornet Exp $
+/* $Id: pgboard.c,v 1.11 2001/10/26 17:47:44 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -22,12 +22,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  * Contributors:
- * 
+ *    
  * 
  * 
  */
 
 #include <stdio.h>
+#include <netinet/in.h>
 #include <picogui.h>
 #include <picogui/pgboard.h>
 #include "kbfile.h"
@@ -41,12 +42,12 @@
 
 FILE *fpat;
 struct mem_pattern mpat;
-pghandle wCanvas, wApp;
+pghandle wCanvas, wDisabled, wApp;
 struct key_entry *keydown = NULL;
-int current_pat;
 
-int initKbdCanvas ();
+void enableKbdCanvas ();
 void disableKbdCanvas ();
+void selectPattern (unsigned short);
 
 /* Small utility function to XOR a key's rectangle */
 void xorKey(struct key_entry *k) {
@@ -98,7 +99,7 @@ int evtMessage (struct pgEvent * evt)
 	  break;
 
 	case PG_KEYBOARD_ENABLE:
-	  initKbdCanvas ();
+	  enableKbdCanvas ();
 	  status = 0;
 	  break;
 
@@ -108,15 +109,12 @@ int evtMessage (struct pgEvent * evt)
 	  break;
 
 	case PG_KEYBOARD_TOGGLE_DISPLAY:
-	  if (status)
-	    {
-	      initKbdCanvas ();
-	    }
-	  else
-	    {
-	      disableKbdCanvas ();
-	    }
+	  status ? enableKbdCanvas () : disableKbdCanvas ();
 	  status = !status;
+	  break;
+
+	case PG_KEYBOARD_SELECT_PATTERN:
+	  selectPattern (ntohs (cmd->data.pattern));
 	  break;
 
 	default:
@@ -139,6 +137,47 @@ int evtMessage (struct pgEvent * evt)
     }
 
   return 1;
+}
+
+/*
+ * Select a given key pattern
+ * pattern : key pattern identifier
+ */
+void selectPattern (unsigned short pattern)
+{
+  /* Current pattern */
+  static unsigned short current_pat;
+
+  /* Flag indicating if we are within a context */
+  static int inContext = 0;
+
+  if (pattern == current_pat)
+    {
+      /* Shortcut if we are selecting the current pattern */
+      return;
+    }
+
+  if (inContext)
+    {
+      pgLeaveContext ();
+    }
+  else
+    {
+      inContext = 1;
+    }
+
+  pgEnterContext ();
+
+  if (kb_loadpattern (fpat, &mpat, pattern - 1, wCanvas))
+    {
+      pgMessageDialog ("Virtual Keyboard", "Error loading keyboard pattern", 0);
+      return;
+    }
+
+  pgWriteCmd (wCanvas, PGCANVAS_REDRAW, 0);
+  pgSubUpdate (wCanvas);
+
+  current_pat = pattern;
 }
 
 int evtMouse(struct pgEvent *evt) {
@@ -181,13 +220,8 @@ int evtMouse(struct pgEvent *evt) {
       if (clickkey) {
 	if (clickkey->pgkey)
 	  pgSendKeyInput(PG_TRIGGER_KEYUP,clickkey->pgkey,clickkey->mods);
-	if (clickkey->pattern && clickkey->pattern-1 != current_pat) {
-	  pgLeaveContext();
-	  pgEnterContext();
-	  kb_loadpattern(fpat,&mpat,
-			 current_pat = clickkey->pattern-1,wCanvas);
-	  pgWriteCmd(wCanvas,PGCANVAS_REDRAW,0);
-	  pgSubUpdate(wCanvas);
+	if (clickkey->pattern) {
+	  selectPattern (clickkey->pattern);
 	  keydown = NULL;
 	  return 0;
 	}
@@ -207,17 +241,7 @@ int evtMouse(struct pgEvent *evt) {
  */
 int initKbdCanvas ()
 {
-  if (mpat.keys == 0)
-    {
-      rewind (fpat);
-      pgEnterContext ();
-      if (kb_loadpattern (fpat, &mpat, current_pat = 0, wCanvas)) {
-	pgMessageDialog("Virtual Keyboard", "Error loading keyboard pattern", 0);
-	return 1;
-      }
-    }
-  pgWriteCmd (wCanvas, PGCANVAS_REDRAW, 0);
-  pgSubUpdate (wCanvas);
+  selectPattern (PG_KBPATTERN_NORMAL);
   
   /* Set up an event handler for the keyboard */
   pgBind (wCanvas, PG_WE_PNTR_DOWN, &evtMouse, NULL);
@@ -228,22 +252,39 @@ int initKbdCanvas ()
 }
 
 /*
- * Disable the keyboard canvas by clearing it
+ * Enable the keyboard canvas
+ */
+void enableKbdCanvas ()
+{
+  pgSetWidget (wCanvas,
+	       PG_WP_SIDE, PG_S_ALL,
+	       0);
+}
+
+/*
+ * Disable the keyboard canvas
  */
 void disableKbdCanvas ()
 {
-  pgcontext gc;
+  pgSetWidget (wCanvas,
+	       PG_WP_SIZE, 0,
+	       PG_WP_SIDE, PG_S_TOP,
+	       0);
+}
 
-  gc = pgNewCanvasContext (wCanvas, PGFX_IMMEDIATE);
-  pgSetColor (gc, 0xFFFFFF);
-  pgRect (gc, 0, 0, 100, pgGetWidget (wApp, PG_WP_SIZE));
+/*
+ * Draw the contents of the disabled keyboard
+ * This could be filled with an image, a logo, etc.
+ */
+void drawDisabledKeyboard ()
+{
+  pgcontext gc = pgNewCanvasContext (wDisabled, PGFX_PERSISTENT);
+
+  pgSetMapping (gc, 0, 0, 100, 100, PG_MAP_SCALE);
+  /* ... */
+
   pgContextUpdate (gc);
   pgDeleteContext (gc);
-
-  /* Clear event handlers for the keyboard */
-  pgBind (wCanvas, PG_WE_PNTR_DOWN, NULL, NULL);
-  pgBind (wCanvas, PG_WE_PNTR_RELEASE, NULL, NULL);
-  pgBind (wCanvas, PG_WE_PNTR_UP, NULL, NULL);
 }
 
 int main(int argc,char **argv) {
@@ -251,7 +292,15 @@ int main(int argc,char **argv) {
   pgInit(argc,argv);
   wApp = pgRegisterApp(PG_APP_TOOLBAR,"Keyboard",0);
 
-  wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
+  wCanvas = pgNewWidget(PG_WIDGET_CANVAS, PG_DERIVE_INSIDE, wApp);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_ALL,
+	       0);
+  wDisabled = pgNewWidget (PG_WIDGET_CANVAS, PG_DERIVE_AFTER, wCanvas);
+  pgSetWidget (PGDEFAULT,
+	       PG_WP_SIDE, PG_S_ALL,
+	       0);
+  drawDisabledKeyboard ();
 
   if (!argv[1] || argv[2]) {
     printf("usage:\n  %s <keyboard file>\n",argv[0]);
@@ -276,7 +325,7 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,mpat.app_side,
 	      PG_WP_SIZE,mpat.app_size,
 	      PG_WP_SIZEMODE,mpat.app_sizemode,
-	      PG_WP_TRANSPARENT,1,
+/* 	      PG_WP_TRANSPARENT,1, */
 	      0);
 
   initKbdCanvas ();
