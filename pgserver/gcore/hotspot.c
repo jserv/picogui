@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.20 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: hotspot.c,v 1.21 2002/02/03 19:34:36 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -62,14 +62,11 @@ int hotspot_compare(struct hotspot *a, struct hotspot *b) {
     if (!iserror(rdhandle((void**)&wca,PG_TYPE_WIDGET,-1,a->div->owner->container)) &&
 	!iserror(rdhandle((void**)&wcb,PG_TYPE_WIDGET,-1,b->div->owner->container))) {
       
-      /* We need to use calx/calcy so we don't care about the scrolling
-       */
       ca.div = NULL;
       cb.div = NULL;
-      ca.x = wca->in->div->calcx;
-      ca.y = wca->in->div->calcy;
-      cb.x = wcb->in->div->calcx;
-      cb.y = wcb->in->div->calcy;
+      divnode_hotspot_position(wca->in->div, &ca.x, &ca.y);
+      divnode_hotspot_position(wcb->in->div, &cb.x, &cb.y);
+
 
       /* Sort by container first.
        * This doesn't become recursive, since we have both hotspot's div parameter
