@@ -64,7 +64,7 @@ connected = 0 # false
 accounts = [
     ircsupport.IRCAccount("IRC", 1,
         botNick,               # nickname
-        "",                    # passwd
+        password,              # passwd
         "irc.freenode.net",    # irc server
         6667,                  # port
         ""
