@@ -1,0 +1,56 @@
+
+/* Use the "granite" texture to draw the checkerboard,
+ * inverting the colors to make white squares.
+ */
+object custom {
+  name = "checkers";
+  bitmap1 = LoadBitmap("data/granite.pgm");
+  bgfill = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+    SetLgop(PG_LGOP_XOR);
+    SetColor(0xFFFFFF);
+  };
+  BGEVEN = fillstyle {
+    Rect(x,y,w,h);
+  };
+}
+
+object custom {
+  name = "checkers.player1";
+  bgcolor = 0x2F77C4;
+  PIECE = fillstyle {
+
+    /* Checker body */
+    SetOffset(1,1,-2,-2);
+    SetColor(bgcolor);
+    SetLgop(PG_LGOP_NONE);
+    Fellipse(x,y,w,h);
+
+    /* Border */
+    SetColor(0x000000);
+    Ellipse(x,y,w,h);
+
+    /* Outer ring */
+    SetColor(ColorAdd(bgcolor,0x404040));
+    SetOffset(0,0,0,0);
+    Ellipse(x+10,y+10,w-20,h-20);
+    SetColor(ColorSub(bgcolor,0x404040));
+    SetOffset(1,1,0,0);
+    Ellipse(x+10,y+10,w-20,h-20);    
+
+    /* Inner ring */
+    SetColor(ColorAdd(bgcolor,0x404040));
+    SetOffset(0,0,0,0);
+    Ellipse(x+20,y+20,w-40,h-40);
+    SetColor(ColorSub(bgcolor,0x404040));
+    SetOffset(1,1,0,0);
+    Ellipse(x+20,y+20,w-40,h-40);    
+  };
+}
+
+object custom {
+  name = "checkers.player2";
+  bgcolor = 0x2FBF8D;
+  parent = FindThemeObject("checkers.player1");
+}
+
