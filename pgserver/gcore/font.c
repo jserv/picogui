@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.13 2001/01/14 19:41:04 micahjd Exp $
+/* $Id: font.c,v 1.14 2001/01/14 23:13:05 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -205,79 +205,88 @@ void sizetext(struct fontdesc *fd, int *w, int *h, char *txt) {
 
 /* Find a font and fill in the fontdesc structure */
 g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
-  struct fontstyle_node *p;
-  struct fontstyle_node *closest = NULL;
-  struct fontdesc *fd; 
-  int closeness = -1;
-  int r;
-  g_error e;
-
-  e = g_malloc((void **) &fd,sizeof(struct fontdesc));
-  errorcheck;
-  e = mkhandle(pfh,PG_TYPE_FONTDESC,owner,fd);
-  errorcheck;
-
-  /* Initialize the fd */
-  memset(fd,0,sizeof(struct fontdesc));
-  fd->hline = -1;
-  fd->hline_c = (*vid->color_pgtohwr)(0x000000);
-  
-  if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
-  if (flags & PG_FSTYLE_GRAYLINE) {
-    fd->hline_c = (*vid->color_pgtohwr)(0x808080);
-    flags |= PG_FSTYLE_UNDERLINE;
-  }
-
-  /* Now that the easy stuff is taken care of, find the font to use */
-  p = fontstyles;
-  while (p) {
-    r = fontcmp(p,name,size,flags);
-    if (r>closeness) {
-      closeness = r;
-      closest = p;
-    }
-    p = p->next;
-  }
-  fd->fs = closest;
-
-  if ((flags&PG_FSTYLE_BOLD) && (flags&PG_FSTYLE_ITALIC) && closest->bolditalic) {
-    flags &= ~(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC);
-    fd->font = closest->bolditalic;
-  }
-  else if ((flags&PG_FSTYLE_ITALIC) && closest->italic) {
-    flags &= ~PG_FSTYLE_ITALIC;
-    fd->font = closest->italic;
-  }
-  else if ((flags&PG_FSTYLE_BOLD) && closest->bold) {
-    flags &= ~PG_FSTYLE_BOLD;
-    fd->font = closest->bold;
-  }
-  else					
-    fd->font = closest->normal;
-
-  if (flags&PG_FSTYLE_BOLD) fd->boldw = closest->boldw;
-
-  if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = 
-				  fd->font->h+fd->font->vspace;
-  if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
-				  fd->font->vwtab[' ']+fd->font->hspace+
-				  fd->boldw;
-  if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
-  if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
-
-  if (flags&PG_FSTYLE_ITALIC2) {
-    fd->skew = DEFAULT_SKEW / 2;
-    fd->italicw = closest->ulineh / fd->skew; 
-  }
-  else if (flags&PG_FSTYLE_ITALIC) {
-    fd->skew = DEFAULT_SKEW;
-    fd->italicw = closest->ulineh / fd->skew; 
-  }
-
-  /* Let the video driver transmogrify it if necessary */
-  (*vid->font_newdesc)(fd);
+   struct fontstyle_node *p;
+   struct fontstyle_node *closest = NULL;
+   struct fontdesc *fd; 
+   int closeness = -1;
+   int r;
+   g_error e;
    
-  return sucess;
+   e = g_malloc((void **) &fd,sizeof(struct fontdesc));
+   errorcheck;
+   e = mkhandle(pfh,PG_TYPE_FONTDESC,owner,fd);
+   errorcheck;
+   
+   /* Initialize the fd */
+   memset(fd,0,sizeof(struct fontdesc));
+   fd->hline = -1;
+   fd->hline_c = (*vid->color_pgtohwr)(0x000000);
+   
+   if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
+   if (flags & PG_FSTYLE_GRAYLINE) {
+      fd->hline_c = (*vid->color_pgtohwr)(0x808080);
+      flags |= PG_FSTYLE_UNDERLINE;
+   }
+   
+   /* Normally having no fonts compiled in is a very bad thing.
+    * If the video driver doesn't need them, though, as in the case of
+    * the ncurses driver then it's ok and we can just skip this junk
+    * and let the driver handle it.
+    */
+   if (fontstyles) {
+   
+      /* Now that the easy stuff is taken care of, find the font to use */
+      p = fontstyles;
+      while (p) {
+	 r = fontcmp(p,name,size,flags);
+	 if (r>closeness) {
+	    closeness = r;
+	    closest = p;
+	 }
+	 p = p->next;
+      }
+      fd->fs = closest;
+      
+      if ((flags&PG_FSTYLE_BOLD) && (flags&PG_FSTYLE_ITALIC) && closest->bolditalic) {
+	 flags &= ~(PG_FSTYLE_BOLD|PG_FSTYLE_ITALIC);
+	 fd->font = closest->bolditalic;
+      }
+      else if ((flags&PG_FSTYLE_ITALIC) && closest->italic) {
+	 flags &= ~PG_FSTYLE_ITALIC;
+	 fd->font = closest->italic;
+      }
+      else if ((flags&PG_FSTYLE_BOLD) && closest->bold) {
+	 flags &= ~PG_FSTYLE_BOLD;
+	 fd->font = closest->bold;
+      }
+      else					
+	fd->font = closest->normal;
+      
+      if (flags&PG_FSTYLE_BOLD) fd->boldw = closest->boldw;
+      
+      if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = 
+	fd->font->h+fd->font->vspace;
+      if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
+	fd->font->vwtab[' ']+fd->font->hspace+
+	fd->boldw;
+      if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
+      if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
+      
+      if (flags&PG_FSTYLE_ITALIC2) {
+	 fd->skew = DEFAULT_SKEW / 2;
+	 fd->italicw = closest->ulineh / fd->skew; 
+      }
+      else if (flags&PG_FSTYLE_ITALIC) {
+	 fd->skew = DEFAULT_SKEW;
+	 fd->italicw = closest->ulineh / fd->skew; 
+      }
+      
+   }
+   
+   /* Let the video driver transmogrify it if necessary */
+   (*vid->font_newdesc)(fd);
+   
+   return sucess;
 }
 
 /* A function used by findfont that computes the 'closeness' between
