@@ -10,7 +10,7 @@
  */ 
 
 /* Bitmaps */
-prop bBackground, bDarkInterlace;
+prop bDarkInterlace;
 
 /* Fillstyles */
 prop fBitmap, fNop, fExpand;
@@ -29,7 +29,6 @@ object default {
   bitmap1 = Copy(default::bDarkInterlace);
   font = Font("Helvetica",10,0);
 
-  bBackground = LoadBitmap("data/background.jpeg");
   bDarkInterlace = LoadBitmap("data/dark_interlace.png");
 
   fNop = fillstyle {
@@ -122,8 +121,9 @@ object default {
 /********************************** Background */
 
 object background {
+  name = "Electric Silk";
   bgfill = Copy(default::fBitmap);
-  bitmap1 = Copy(default::bBackground);
+  bitmap1 = LoadBitmap("data/electric_silk.jpeg");
 }
 
 /********************************** Panels */
