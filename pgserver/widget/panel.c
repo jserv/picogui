@@ -1,5 +1,5 @@
 
-/* $Id: panel.c,v 1.50 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: panel.c,v 1.51 2001/03/03 03:33:07 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -147,10 +147,10 @@ void panelbtn_close(struct widget *self,struct widget *button) {
 void panelbtn_rotate(struct widget *self,struct widget *button) {
   switch (panel_get(self,PG_WP_SIDE)) {
 
-  case PG_S_TOP:    panel_set(self,PG_WP_SIDE,PG_S_RIGHT); break;
-  case PG_S_RIGHT:  panel_set(self,PG_WP_SIDE,PG_S_BOTTOM); break;
-  case PG_S_BOTTOM: panel_set(self,PG_WP_SIDE,PG_S_LEFT); break;
-  case PG_S_LEFT:   panel_set(self,PG_WP_SIDE,PG_S_TOP); break;
+  case PG_S_TOP:    widget_set(self,PG_WP_SIDE,PG_S_RIGHT); break;
+  case PG_S_RIGHT:  widget_set(self,PG_WP_SIDE,PG_S_BOTTOM); break;
+  case PG_S_BOTTOM: widget_set(self,PG_WP_SIDE,PG_S_LEFT); break;
+  case PG_S_LEFT:   widget_set(self,PG_WP_SIDE,PG_S_TOP); break;
 
   }
 
