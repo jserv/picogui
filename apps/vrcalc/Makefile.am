@@ -1,0 +1,7 @@
+bin_PROGRAMS = vrcalc
+vrcalc_SOURCES = vrcalc.c vrcalc.h
+
+LDFLAGS += @PICOGUI_LDFLAGS@
+LDADD = @PICOGUI_LIBS@ -lm
+
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@
