@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.80 2001/09/10 18:02:19 micahjd Exp $
+/* $Id: constants.h,v 1.81 2001/09/18 21:52:10 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -777,7 +777,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_LISTITEM    16    /* Still yet another... */
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
-#define PG_WIDGETMAX          18    /* For error checking */
+#define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
+#define PG_WIDGETMAX          19    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
