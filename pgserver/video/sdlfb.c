@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.36 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: sdlfb.c,v 1.37 2002/01/22 02:44:55 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -126,9 +126,16 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   if (bpp && bpp<8)
      xres &= ~((8/bpp)-1);
 #endif
-  
+
+#ifdef CONFIG_SDLSKIN
+  sdlfb_scale = get_param_int("video-sdlfb","scale",1);
+  fbw = xres * sdlfb_scale;
+  fbh = yres * sdlfb_scale;
+#else
   fbw = xres;
   fbh = yres;
+#endif  
+
 
   /* Interpret flags */
   if (get_param_int("video-sdlfb","fullscreen",0))
@@ -143,7 +150,6 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     sdlflags &= ~SDL_RESIZABLE;
   }
   sdlfb_simbits = get_param_int("video-sdlfb","simbits",0);
-  sdlfb_scale = get_param_int("video-sdlfb","scale",1);
   sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
 #endif
 #ifdef CONFIG_SDLSDC

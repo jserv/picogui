@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.31 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: sdlinput.c,v 1.32 2002/01/22 02:44:55 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -132,7 +132,7 @@ void sdlinput_poll(void) {
     /* If SDL's old mouse position doesn't jive with our cursor position,
      * warp the mouse and try again.
      */
-    if (sdlinput_autowarp)
+    if (sdlinput_autowarp && sdlfb_scale==1)
       if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
 	  (evt.motion.y-evt.motion.yrel)!=cursory) {
 	SDL_WarpMouse(cursorx,
@@ -155,7 +155,7 @@ void sdlinput_poll(void) {
     
   case SDL_MOUSEBUTTONDOWN:
     /* Also auto-warp for button clicks */
-    if (sdlinput_autowarp)
+    if (sdlinput_autowarp && sdlfb_scale==1)
       if (evt.button.x!=cursorx ||
 	  evt.button.y!=cursory)
 	SDL_WarpMouse(cursorx,cursory);
@@ -176,7 +176,7 @@ void sdlinput_poll(void) {
     
   case SDL_MOUSEBUTTONUP:
     /* Also auto-warp for button clicks */
-    if (sdlinput_autowarp)
+    if (sdlinput_autowarp && sdlfb_scale==1)
       if (evt.button.x!=cursorx ||
 	  evt.button.y!=cursory)
 	SDL_WarpMouse(cursorx,
