@@ -1,5 +1,5 @@
 bin_PROGRAMS = pgl-clock 
-pgl_clock_SOURCES = pgl-clock.c applet.c 
+pgl_clock_SOURCES = pgl-clock.c 
 
 LDFLAGS += @PICOGUI_LDFLAGS@
 LDADD = @PICOGUI_LIBS@

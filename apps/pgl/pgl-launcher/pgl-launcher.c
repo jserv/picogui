@@ -31,95 +31,215 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/utsname.h>
 #include <string.h>
 
 #include "pgl-launcher.h"
-#include "applet.h"
+#include "linkedList.h"
 #include "configfile.h"
 
-struct pgllApp *gAppList = NULL;
-int gAppCount;
-char *appDir;
-char *confPath;
-char *toolbarResponse;
+#define PGL_VERSION 1
+
+pgoLinkedListNode *gAppList = NULL;
+char *appDir = NULL;
+char *confPath = NULL;
+char *toolbarResponse = NULL;
+char *architecture = NULL;
 pghandle pglBar;
 
 int directoryScan(char *path);
-void freeApplication(struct pgllApp *app);
+pgllApp *parseApp(char *appConfPath, int *appCount);
+
+void emptyList(void);
+void freeApplication(pgllApp *app);
 void childDied(int foo);
-int runApp(char *appPath);
+int runApp(pgllApp *app);
 int setPreferences(void);
 int launchMenu(struct pgEvent *evt);
 void loadPreferences(void);
 int recieveMessage(struct pgEvent *evt);
+char **buildArgv(char *exename, char *optionString);
+
+int parse_line(char* line, char* demchar, char*** arglist, int type){
+  char* t;
+  char* snew;
+  int numtokens;
+  int i;
+  
+  /*snew is real start of string after skipping leading demchar*/
+  snew=line+strspn(line, demchar);
+  
+  if ((t=calloc(strlen(snew)+1, sizeof(char)))==NULL){
+    *arglist=NULL;
+    numtokens=-1;
+    return numtokens;
+  }
+  //count the number of tokens in snew
+  strcpy(t, snew);
+  if (strtok(t, demchar)==NULL){
+    numtokens=0;
+  }else{
+    for(numtokens=1; strtok(NULL, demchar)!=NULL; numtokens++);
+  }
+  /*create an argument array to contain ptrs to tokens*/
+  if((*arglist=calloc(numtokens+1, sizeof(char*)))==NULL){
+    free(t);
+    numtokens=-1;
+    return numtokens;
+  }else{             //insert pointers to tokens into the array
+    if (numtokens>0){
+      if (type == 1)
+      strcpy(t, snew);
+      else {
+	free(t);
+	t = snew;
+      }
+      **arglist=strtok(t, demchar);
+      for(i=1; i<numtokens+1; i++)
+      *((*arglist)+i)=strtok(NULL, demchar);
+    } else {
+      **arglist=NULL;
+      free(t);
+      return numtokens;
+    }
+  }
+  return numtokens;
+}
 
 int directoryScan(char *path){
-  int appCount = 0, appCopy = 0, freeLoop;
-  char architecture[] = "Application";  //DJ: For now.
-  char *appname, *binpath, *appicon;
-  char absPath[1024];              //DJ: THIS MUST BE FIXED!!!
+  int appCount, listInsert;
+  pgllApp *newApp;
+  char *absPath;
   struct dirent *dent;
   DIR *d;
 
+  if(!architecture)
+    architecture = strdup("Default");
+
   if(!path)
     return 0;
+
+  if(pgoLLListLength(gAppList) > 0){
+    emptyList();
+  }
 
   d = opendir(path);
 
   if(d){
     while((dent = readdir(d))){
-      sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
-      if(configfile_parse(absPath)){
-	appCount++;
-	configfile_free();
-      }
-    }
-    
-    if(appCount > 0){
-      if(gAppList){
-	  for(freeLoop = 0; freeLoop < gAppCount; freeLoop++){
-	    freeApplication(&gAppList[freeLoop]);
-	  }      
-	  free(gAppList);
-      }
-      gAppList = (struct pgllApp *)malloc((sizeof(struct pgllApp)*appCount));
-      rewinddir(d);
-      while((dent = readdir(d))){
-	sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
-	if(configfile_parse(absPath)){
-	  if((binpath = (char *)get_param_str(architecture, "binpath", NULL))){
-	    gAppList[appCopy].appPath = strdup(binpath);
-	  }else{
-	    gAppList[appCopy].appPath = NULL;
-	  }
-	  if((appname = get_param_str(architecture, "appname", NULL))){
-	    gAppList[appCopy].appName = strdup(appname);
-	  }else{
-	    gAppList[appCopy].appName = NULL;
-	  }
-	  if((appicon = get_param_str(architecture, "iconpath", NULL))){
-	    gAppList[appCopy].appIcon = strdup(appicon);
-	  }else{
-	    gAppList[appCopy].appIcon = NULL;
-	  }
-	  appCopy++;
-	  configfile_free();
+      absPath = malloc(sizeof(path)+sizeof(dent->d_name)+strlen("app.conf")+3);
+      strcpy(absPath, path);
+      strcat(absPath, "/");
+      strcat(absPath, dent->d_name);
+      strcat(absPath, "/app.conf");
+
+      newApp = parseApp(absPath, &appCount);
+      if(newApp)
+	for(listInsert = 0; listInsert < appCount; listInsert++){
+	  pgoLLAddRecord(gAppList, newApp[listInsert].variantName, &newApp[listInsert], sizeof(pgllApp));
 	}
-      }
-      return gAppCount = appCount;
-    }else{
-      return 0;
+
+      free(absPath);
     }
   }
 }
 
-void freeApplication(struct pgllApp *app){
+pgllApp *parseApp(char *appConfPath, int *appCount){
+  char **variantListing, *basePath;
+  int variantCount, moveLoop;
+  pgllApp *newApp, *currentApp;
+  
+  if(configfile_parse(appConfPath)){
+    char **variantListing, *basePath;
+    int variantCount;
+    
+    if(atoi(get_param_str("PGL-Launcher", "version", "-1")) == PGL_VERSION){
+      basePath = get_param_str("Application", "basePath", "/usr/local/apps");
+      variantCount = parse_line(get_param_str(architecture, "variantList", NULL),
+				",",
+				&variantListing,
+				1);
+
+      newApp = malloc(sizeof(pgllApp)*variantCount);
+
+      if(appCount)
+	*appCount = variantCount;
+      variantCount--;
+
+      while(variantCount >= 0){
+	currentApp = &newApp[variantCount];
+	currentApp->basePath = strdup(basePath);
+	currentApp->appName = strdup(get_param_str(variantListing[variantCount], "name", NULL));
+	currentApp->exeName = strdup(get_param_str(variantListing[variantCount], "binary", NULL));
+	currentApp->variantName = strdup(variantListing[variantCount]);
+	currentApp->optionCount = parse_line(get_param_str(variantListing[variantCount], "options", NULL),
+					     " ",
+					     &currentApp->appOptions,
+					     1);
+	/* Account for arg[0] and the NULL at the end*/
+	currentApp->optionCount+=2;
+
+	/* appOptions[0] needs to be the binary name */
+	currentApp->appOptions = realloc(currentApp->appOptions, 
+					 (currentApp->optionCount)*sizeof(char *));
+	for(moveLoop = currentApp->optionCount; moveLoop >= 0; moveLoop--){
+	  if(moveLoop == 0){
+	    currentApp->appOptions[0] = currentApp->exeName;
+	  }else if(moveLoop == currentApp->optionCount){
+	    currentApp->appOptions[moveLoop] = NULL;
+	  }else{
+	    currentApp->appOptions[moveLoop] = currentApp->appOptions[moveLoop-1];
+	  }
+	} 
+	variantCount--;
+      }
+    }else{
+      printf("This config is too old\n");
+      configfile_free();
+      return NULL;
+    }
+    configfile_free();
+    return newApp;
+  }else{
+    return NULL;
+  }
+}
+
+void emptyList(void){
+  int keyCount, freeLoop;
+  pgoNodeIdentifier *keys = pgoLLListIdentifiers(gAppList, &keyCount);
+  pgllApp *app;
+
+  printf("KEY: %s\n", keys[0]);
+
+  if(keys){
+    for(freeLoop = 0; freeLoop < keyCount; freeLoop++){
+      app = pgoLLGetRecord(gAppList, keys[freeLoop], NULL);
+      freeApplication(app);
+      pgoLLDeleteRecord(gAppList, keys[freeLoop]);
+    }
+    free(keys);
+  }
+}
+
+
+void freeApplication(pgllApp *app){
+  int optionFree;
+
+  if(app->basePath)
+    free(app->basePath);
   if(app->appName)
     free(app->appName);
-  if(app->appPath)
-    free(app->appPath);
-  if(app->appIcon)
-    free(app->appIcon);
+  if(app->variantName)
+    free(app->variantName);
+
+  /* app->appOptions[0] is a pointer to exeName, so this takes care of exeName as well */
+  for(optionFree = 0; optionFree < app->optionCount; optionFree++){
+    if(app->appOptions[optionFree])
+      free(app->appOptions[optionFree]);
+  }
+  
+  free(app->appOptions);
 }
 
 void childDied(int foo){ 
@@ -127,14 +247,20 @@ void childDied(int foo){
   waitpid(-1, NULL, WNOHANG); 
 }
 
-int runApp(char *appPath){
-  
+int runApp(pgllApp *app){
+  char *finalPath = malloc(strlen(app->exeName)+strlen(app->basePath)+1);
+
+  strcpy(finalPath, app->basePath);
+  strcat(finalPath, app->exeName);
+
   signal(SIGCHLD, childDied);
 
   if(!vfork()){
-    execl(appPath, NULL);
+    execv(finalPath, app->appOptions);
   }
   
+  free(finalPath);
+
   return 1;
 }
 
@@ -220,28 +346,39 @@ int setPreferences(void){
 
 int launchMenu(struct pgEvent *evt){
   pghandle *items;
+  pgoNodeIdentifier *nodeList;
+  pgllApp *app;
   int item;
 
   pgEnterContext();
 
-  items = alloca(sizeof(pghandle) * gAppCount+1);
+  items = alloca(sizeof(pghandle) * pgoLLListLength(gAppList)+1);
+  nodeList = pgoLLListIdentifiers(gAppList, NULL);
 
-  for(item = 0; item < gAppCount; item++){
-    items[item] = pgNewString(gAppList[item].appName);
+  for(item = 0; item < pgoLLListLength(gAppList); item++){
+    app = pgoLLGetRecord(gAppList, nodeList[item], NULL);
+    items[item] = pgNewString(app->appName);
   }
 
   //Add the standard options
-  items[gAppCount] = pgNewString("Preferences...");
+  items[pgoLLListLength(gAppList)] = pgNewString("Preferences...");
 
-  item = pgMenuFromArray(items, gAppCount+1);
+  item = pgMenuFromArray(items, pgoLLListLength(gAppList)+1);
 
   if(item){
-    if(item == gAppCount+1){
+    if(item == pgoLLListLength(gAppList)+1){
       setPreferences();
     }else{
-      runApp(gAppList[item-1].appPath);
+      printf("nodeList: %s\n", nodeList[item-1]);
+      app = pgoLLGetRecord(gAppList, nodeList[item-1], NULL);
+      if(app){
+	printf("ExeName: %s\n", app->exeName);
+	runApp(app);
+      }
     }
   }
+
+  free(nodeList);
 
   pgLeaveContext();
  
@@ -291,15 +428,15 @@ int recieveMessage(struct pgEvent *evt){
 
 int main(int argc, char **argv){
   pghandle pglButton;
+  struct utsname unameInfo;
   int freeLoop;
   int gotPrefs = 0;
 
   toolbarResponse = NULL;
   appDir = NULL;
+  gAppList = pgoLLInit();
 
   pgInit(argc, argv);
-
-  sleep(1);
 
   //Install into the toolbar
   pglBar = pgFindWidget("PGL-AppletBar");
@@ -307,8 +444,6 @@ int main(int argc, char **argv){
     pgMessageDialog(argv[0], "This applet requires PGL",PG_MSGICON_ERROR);
     return 1;
   } 
-
-  printf("Got toolbar\n");
 
   //Create our widget
   pglButton = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, pglBar);
@@ -322,16 +457,14 @@ int main(int argc, char **argv){
   pgBind(pglButton, PG_WE_APPMSG, &recieveMessage, NULL);
   pgBind(pglButton, PG_WE_PNTR_DOWN, &launchMenu, NULL);
 
+  //Get our arch name
+  uname(&unameInfo);
+  architecture = strdup(unameInfo.machine);
+
   pgAppMessage(pglBar, pglBuildMessage(PGL_APPLETINSTALLED, "PGL-Launcher", "", ""));
 
   pgEventLoop();
 
-  for(freeLoop = 0; freeLoop < gAppCount; freeLoop++){
-    freeApplication(&gAppList[freeLoop]);
-  }
- 
-  free(gAppList);
-  
   return 0;
 }
 	      

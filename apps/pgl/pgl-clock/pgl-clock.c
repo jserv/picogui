@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.1 2002/01/09 16:18:01 carpman Exp $
+/* $Id: pgl-clock.c,v 1.2 2002/02/07 01:34:17 carpman Exp $
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *
@@ -29,108 +29,37 @@
 #include <time.h>
 #include <string.h>
 
-#include "applet.h"
-
-/* Maximum length of clock format strings */
-#define FMTMAX 30
-
-/* Maximum length of clock contents */
-#define CLKMAX 50
-
-/* The toolbar */
-pghandle pglToolbar;
-
-/* The toolbar's response variable */
-char *pglToolbarResponse;
-
-/* Clock settings */
-struct clockData {
-  /* The clock itself */
-  pghandle wClock;
-
-  /* Settings */
-  pghandle fClockFont;
-  unsigned int flashColon : 1;
-  unsigned int enable24hour : 1;
-  unsigned int enableSeconds : 1;
-  unsigned int enableWeekDay : 1;
-  unsigned int enableDay : 1;
-  unsigned int enableMonth : 1;
-  unsigned int enableYear : 1;
-
-  /* Format strings- these are generated from the above settings
-   * by the mungeSettings function
-   */
-  char fmt1[40];
-  char fmt2[40];
-
-} currentClock;
-
-/* Functions */
-void loadSettings(void);
-void storeSettings(void);
-int recieveMessage(struct pgEvent *evt);
-int btnDialog(struct pgEvent *btnevt);
-void mungeSettings(void);
-void updateTime(void);
+#include "pgl-clock.h"
 
 void loadSettings(void){
   
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "flashColon", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.flashColon ^= 1;
-  }else{
-    currentClock.flashColon ^= 0;
-  }
-  
+  currentClock.flashColon ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
+
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enable24Hour", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enable24hour ^= 1;
-  }else{
-    currentClock.enable24hour ^= 0;
-  }
+  currentClock.enable24hour ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
   
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableSeconds", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enableSeconds ^= 1;
-  }else{
-    currentClock.enableSeconds ^= 0;
-  }
+  currentClock.enableSeconds ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
   
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableWeekday", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enableWeekDay ^= 1;
-  }else{
-    currentClock.enableWeekDay ^= 0;
-  }
+  currentClock.enableWeekDay ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
 
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableDay", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enableDay ^= 1;
-  }else{
-    currentClock.enableDay ^= 0;
-  }
+  currentClock.enableDay ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
 
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableMonth", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enableMonth ^= 1;
-  }else{
-    currentClock.enableMonth ^= 0;
-  }
+  currentClock.enableMonth ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
 
   pgAppMessage(pglToolbar, pglBuildMessage(PGL_GETPREF, "PGL-Clock", "enableYear", ""));
   recieveMessage(pgGetEvent());
-  if(!strcmp(pglToolbarResponse, "Y")){
-    currentClock.enableYear ^= 1;
-  }else{
-    currentClock.enableYear ^= 0;
-  }
+  currentClock.enableYear ^= !strcmp(pglToolbarResponse, "Y") ? 1 : 0;
   
   mungeSettings();
 }
@@ -178,6 +107,8 @@ void storeSettings(void){
   }else{
     pgAppMessage(pglToolbar, pglBuildMessage(PGL_STOREPREF, "PGL-Clock", "enableYear", "N"));
   }
+
+  pgAppMessage(pglToolbar, pglBuildMessage(PGL_RELOADPREFS, "PGL-Clock", "", ""));
 }
 
 int recieveMessage(struct pgEvent *evt){
@@ -451,8 +382,6 @@ void updateTime(void) {
 int main(int argc,char **argv) {
   pghandle wPGLbar;
   pgInit(argc,argv);
-
-  sleep(1);
 
   /* Find the applet container */
   pglToolbar = pgFindWidget("PGL-AppletBar");

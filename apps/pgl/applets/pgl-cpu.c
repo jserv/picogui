@@ -1,4 +1,4 @@
-/* $Id: pgl-cpu.c,v 1.3 2002/01/09 16:40:18 carpman Exp $
+/* $Id: pgl-cpu.c,v 1.4 2002/02/07 01:34:17 carpman Exp $
  * 
  * pgl-cpu.c - PGL applet to display a simple CPU monitor
  *
@@ -64,8 +64,6 @@ int main(int argc, char **argv) {
   pghandle wPGLbar,wLoadbox;
   pgInit(argc,argv);
 
-  sleep(1);
-  
   /* Find the applet container */
   wPGLbar = pgFindWidget("PGL-AppletBar");
   if (!wPGLbar) {

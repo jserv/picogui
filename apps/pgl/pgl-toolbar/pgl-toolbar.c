@@ -30,7 +30,6 @@
 #include <sys/wait.h>
 #include <picogui.h>
 
-#include "applet.h"
 #include "configfile.h"
 
 char configFilePath[] = "toolbar.conf";
@@ -44,6 +43,12 @@ void setPref(char *section, char *key, char *data){
 char *getPref(char *section, char *key){
   
   return (char *)get_param_str(section, key, "NOTSET");
+}
+
+void reloadPrefs(void){
+  
+  configfile_free();
+  configfile_parse("/etc/toolbar.conf");
 }
 
 int messageHandler(struct pgEvent *evt){
@@ -75,6 +80,14 @@ int messageHandler(struct pgEvent *evt){
     pgAppMessage(pgFindWidget(sender), 
 		 pglBuildMessage(PGL_GETPREF, "PGL-AppletBar", key, response));
     break;
+  case PGL_LOADAPPLET:
+    sender = pglGetMessageData(appletMessage, 0);
+    key = pglGetMessageData(appletMessage, appletMessage->senderLen+1);
+    launchApplet(key);
+    break;
+  case PGL_RELOADPREFS:
+    reloadPrefs();
+    break;
   }
 
   free(appletMessage);
@@ -101,6 +114,7 @@ int launchApplet(char *appPath){
 int main(int argc, char **argv) {
   int appletCount, appletLoop;
   char **appletList;
+  pghandle toolbar;
 
   pgInit(argc,argv);
 
@@ -108,18 +122,18 @@ int main(int argc, char **argv) {
 
   if(configfile_parse("/etc/toolbar.conf")){
     
-    pgRegisterApp(PG_APP_TOOLBAR,"PGL Toolbar",0);
-    pgSetWidget(PGDEFAULT,
+    toolbar = pgRegisterApp(PG_APP_TOOLBAR,"PGL Toolbar",0);
+    pgSetWidget(toolbar,
 		PG_WP_PUBLICBOX,1,
 		PG_WP_NAME,pgNewString("PGL-AppletBar"),
 		0);
-    pgBind(PGDEFAULT, PG_WE_APPMSG, &messageHandler, NULL);
+    pgBind(toolbar, PG_WE_APPMSG, &messageHandler, NULL);
 
     appletList = get_section_params("PGL-Toolbar Applets", &appletCount);
 
     if(appletList){
       for(appletLoop = 0; appletLoop < appletCount; appletLoop++){
-	launchApplet(appletList[appletLoop]);
+	pgAppMessage(toolbar, pglBuildMessage(PGL_LOADAPPLET, "PGL-Launcher", appletList[appletLoop], ""));
       }
       free(appletList);
     }else{

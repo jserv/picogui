@@ -24,9 +24,13 @@
  * 
  */
 
-struct pgllApp{
+typedef struct{
+  char *basePath;
   char *appName;
-  char *appPath;
+  char *variantName;
+  int optionCount;
+  char **appOptions;
+  char *exeName;
   char *appIcon;
-};
+} pgllApp;
 

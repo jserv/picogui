@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.5 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: configfile.c,v 1.6 2002/02/07 01:34:17 carpman Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -283,6 +283,42 @@ const char *get_param_str(const char *section, const char* key,
     p = p->next;
   }
   return def;
+}
+
+const char **get_section_params(const char *section, int *count){
+  struct cfg_section *sect;
+  struct cfg_item *p;
+  int paramCount = 0;
+  char **paramList;
+
+  sect = configfile_getsection(section);
+  if (!sect)
+    return NULL;
+  
+  p = sect->items;
+  while (p) {
+    paramCount++;
+    p = p->next;
+  }
+
+  if(paramCount > 0){
+    
+    paramList = malloc(sizeof(char *)*paramCount);
+    paramCount = 0;
+    
+    p = sect->items;
+    while (p) {
+      paramList[paramCount] = p->value;
+      paramCount++;
+      p = p->next;
+    }
+    
+    *count = paramCount;
+    return paramList;
+  }else{
+    *count = 0;
+    return NULL;
+  }
 }
 
 g_error configfile_write(const char *filename){
