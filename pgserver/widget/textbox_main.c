@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.6 2001/10/06 20:25:41 micahjd Exp $
+/* $Id: textbox_main.c,v 1.7 2001/10/07 07:01:25 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -40,6 +40,9 @@ struct textboxdata {
 };
 #define DATA ((struct textboxdata *)(self->data))
 
+/* Move the cursor to the mouse location */
+void textbox_move_cursor(struct widget *self, union trigparam *param);
+
 /* Set up divnodes */
 g_error textbox_install(struct widget *self) {
    g_error e;
@@ -61,25 +64,34 @@ g_error textbox_install(struct widget *self) {
    DATA->c.head = self->in->div;
    DATA->c.widget = self;
    self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
-     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
+     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER
+     | TRIGGER_MOVE;
 
    /* Add some demo text */
-   
-   text_format_modifyfont(&DATA->c,PG_FSTYLE_FLUSH,0,0);
-   text_insert_string(&DATA->c,"Hello ");
-   text_insert_wordbreak(&DATA->c);
-   text_format_color(&DATA->c,0x008000);
-   text_insert_string(&DATA->c,"World! ");
-   text_insert_linebreak(&DATA->c);
-   text_insert_string(&DATA->c,"This ");
-   text_insert_wordbreak(&DATA->c);
-   text_format_modifyfont(&DATA->c,PG_FSTYLE_BOLD,0,10);
-   text_format_color(&DATA->c,0x000080);
-   text_insert_string(&DATA->c,"is ");
-   text_format_modifyfont(&DATA->c,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD,-20);
-   text_insert_wordbreak(&DATA->c);
-   text_insert_string(&DATA->c,"nifty. ");
 
+   {   
+     int i;
+     text_format_modifyfont(&DATA->c,PG_FSTYLE_FLUSH,0,0);
+     text_insert_string(&DATA->c,"Hello ");
+     text_insert_wordbreak(&DATA->c);
+     text_format_color(&DATA->c,0x008000);
+     text_insert_string(&DATA->c,"World! ");
+     text_insert_linebreak(&DATA->c);
+     text_insert_string(&DATA->c,"This ");
+     text_insert_wordbreak(&DATA->c);
+     text_format_modifyfont(&DATA->c,PG_FSTYLE_BOLD,0,10);
+     text_format_color(&DATA->c,0x000080);
+     text_insert_string(&DATA->c,"is ");
+     text_format_modifyfont(&DATA->c,PG_FSTYLE_ITALIC,PG_FSTYLE_BOLD,-5);
+     text_insert_wordbreak(&DATA->c);
+     text_insert_string(&DATA->c,"nifty. ");
+     text_insert_linebreak(&DATA->c);
+     for (i=0;i<100;i++) {
+       text_insert_string(&DATA->c,"foo ");
+       text_insert_wordbreak(&DATA->c);
+     }
+   }
+   
    return sucess;
 }
 
@@ -100,23 +112,36 @@ glob textbox_get(struct widget *self,int property) {
    return 0;
 }
 
+/* Move the cursor to the mouse location */
+void textbox_move_cursor(struct widget *self, union trigparam *param) {
+  DATA->c.c_div = deepest_div_under_crsr;
+  DATA->c.c_gx = param->mouse.x - deepest_div_under_crsr->x;
+  DATA->c.c_gy = 0;
+  DATA->c.c_gctx.current = NULL;
+  text_caret_on(&DATA->c);
+}
+
 void textbox_trigger(struct widget *self,long type,union trigparam *param) {
   switch (type) {
 
     /* When clicked, request keyboard focus */
     
   case TRIGGER_DOWN:
-    if (param->mouse.chbtn==1)
-      DATA->on=1;
-    return;
+    if (param->mouse.chbtn!=1)
+      break;
+    DATA->on=1;
+    if (!DATA->focus)
+      request_focus(self);
+    textbox_move_cursor(self,param);
+    break;
+
+  case TRIGGER_MOVE:
+    /* Drag the cursor */
+    if (DATA->on)
+      textbox_move_cursor(self,param);
+    break;
 
   case TRIGGER_UP:
-    if (DATA->on && param->mouse.chbtn==1) {
-      DATA->on=0;
-      request_focus(self);
-    }
-    return;
-    
   case TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
@@ -133,7 +158,7 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_ACTIVATE:
     DATA->focus = 1;
     /* No break; here! Get TRIGGER_TIMER to set up the flash timer*/
-    
+
   case TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
@@ -148,6 +173,25 @@ void textbox_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_CHAR:    /* Keyboard input */
+    switch (param->kbd.key) {
+
+    case PGKEY_RETURN:
+      text_insert_linebreak(&DATA->c);
+      break;
+      
+    default:
+      {
+	char *str;
+	if (iserror(g_malloc((void**)&str,2)))
+	  break;
+	str[0] = param->kbd.key;
+	str[1] = 0;
+	text_insert_string(&DATA->c,str);
+	if (param->kbd.key == PGKEY_SPACE)
+	  text_insert_wordbreak(&DATA->c);
+      }
+      break;
+    }
     break;
     
   }

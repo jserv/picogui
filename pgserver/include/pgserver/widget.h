@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.41 2001/09/18 21:51:50 micahjd Exp $
+/* $Id: widget.h,v 1.42 2001/10/07 07:01:25 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -341,8 +341,12 @@ void dispatch_key(u32 type,s16 key,s16 mods);
  */
 void dispatch_direct(char *name,u32 param);
 
-/* The divnode currently occupied by the pointing device */
+/* The divnode currently occupied by the pointing device - this will always
+ * be a visible divnode owned by an interactive widget */
 extern struct divnode *div_under_crsr;
+/* This will be the deepest (in the divtree) divnode containing the
+ * pointer, even if it is not visible or owned by an interactive widget */
+extern struct divnode *deepest_div_under_crsr;
 
 /* Other status variables */
 /* These are needed to determine which widget is under the pointing

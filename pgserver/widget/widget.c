@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.116 2001/10/06 19:43:24 micahjd Exp $
+/* $Id: widget.c,v 1.117 2001/10/07 07:01:25 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -81,7 +81,7 @@ DEF_WIDGET_TABLE(textbox)
 
 /* These are needed to determine which widget is under the pointing
    device, keep track of status */
-struct divnode *div_under_crsr;
+struct divnode *div_under_crsr, *deepest_div_under_crsr;
 struct widget *under;
 struct widget *lastclicked;
 struct widget *prev_under;
@@ -605,9 +605,12 @@ void widgetunder(int x,int y,struct divnode *div) {
     /* The cursor is inside this divnode */
     
     /* If this divnode has an interactive widget as its owner, and it
-     * is visible, take it. */
+     * is visible, store it in div_under_crsr */
     if (div->owner && div->owner->trigger_mask && div->build)
       div_under_crsr = div;
+
+    /* Always store the deepest match in here */
+    deepest_div_under_crsr = div;
 
     /* Check this divnode's children */
     widgetunder(x,y,div->next);
@@ -722,7 +725,8 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   }
 
   div_under_crsr = NULL;
-
+  deepest_div_under_crsr = NULL;
+  
   /* If we need to worry about toolbars under the popup boxes, pass events
      occurring in the toolbar area to the root divtree */
   if (popup_toolbar_passthrough()) {

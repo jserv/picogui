@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.5 2001/10/06 09:02:41 micahjd Exp $
+/* $Id: textbox_document.c,v 1.6 2001/10/07 07:01:25 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -211,6 +211,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str) {
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,defaultfont);
   errorcheck;
   sizetext(fd,&tw,&th,str);
+  th = fd->font->ascent + fd->font->descent;
   
   /* Add a text gropnode at the cursor */
   e = mkhandle(&hstr,PG_TYPE_STRING,c->widget->owner,str);
@@ -246,6 +247,9 @@ g_error text_caret_on(struct textbox_cursor *c) {
   g_error e;
   struct gropnode *g; 
 
+  e = text_caret_off(c);
+  errorcheck;
+
   /* is the caret not at the right place? */
   if (c->caret != &c->c_div->grop) {
 
@@ -263,8 +267,6 @@ g_error text_caret_on(struct textbox_cursor *c) {
     errorcheck;
     (*c->caret)->flags = PG_GROPF_UNIVERSAL | PG_GROPF_COLORED;
     (*c->caret)->next = g;
-    (*c->caret)->r.x = 0;
-    (*c->caret)->r.y = 0;
     (*c->caret)->r.w = 2;
     (*c->caret)->r.h = 0x7FFF;
     (*c->caret)->type = PG_GROP_RECT;
@@ -272,7 +274,10 @@ g_error text_caret_on(struct textbox_cursor *c) {
 
   /* Make the caret visible */
   (*c->caret)->param[0] = 0x000000;
+  (*c->caret)->r.x = c->c_gx;
+  (*c->caret)->r.y = c->c_gy;
   c->c_div->flags |= DIVNODE_INCREMENTAL;
+  c->caret_div = c->c_div;
   update(c->c_div,1);
 
   return sucess;
@@ -282,8 +287,8 @@ g_error text_caret_on(struct textbox_cursor *c) {
 g_error text_caret_off(struct textbox_cursor *c) {
   if (c->caret && *c->caret) {
     (*c->caret)->param[0] = 0xFFFFFF;
-    c->c_div->flags |= DIVNODE_INCREMENTAL;
-    update(c->c_div,1);
+    c->caret_div->flags |= DIVNODE_NEED_REDRAW;
+    update(c->caret_div,1);
   }
   return sucess;
 }

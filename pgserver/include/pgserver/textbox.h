@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.4 2001/10/06 01:39:57 micahjd Exp $
+/* $Id: textbox.h,v 1.5 2001/10/07 07:01:24 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -54,6 +54,7 @@ struct textbox_cursor {
   struct formatnode *f_top;  /* Top of formatting stack */
   struct formatnode *f_used; /* Formats not on stack with refcnt != 0 */
   struct gropnode **caret;   /* Gropnode for the caret, if it is on */
+  struct divnode *caret_div; /* Divnode containing the caret */
 };
 
 /************************* Formatting */
