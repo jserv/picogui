@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.3 2002/10/05 11:31:38 micahjd Exp $
+/* $Id: textedit_logical.c,v 1.4 2002/10/05 11:37:23 micahjd Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -222,9 +222,8 @@ void text_backend_destroy (  text_widget * widget ) {
         block_destroy(BLOCK(l));
     llist_free(widget->blocks);
 
-/* this seems to make problem. widget->data seems to be freed twice. */
-//    if (widget->data)
-//	pgstring_delete(widget->data);
+    if (widget->client_data_h)
+      handle_free(widget->self->owner, widget->client_data_h);
 
     /* clipboard client deregistration */
     clipboard_client--;
