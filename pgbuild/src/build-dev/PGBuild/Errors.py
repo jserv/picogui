@@ -21,18 +21,6 @@ Defines common exception classes for PGBuild
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-# A little explanation is in order for this code.
-# As of this writing, Gentoo Linux includes a broken _xmlplus module.
-# This wouldn't be so bad, since we only need core XML functionality,
-# except that the xml module transparently replaces itself with
-# _xmlplus if it's available. See this writeup on the "_xmlplus hack":
-#    http://www.amk.ca/conceit/xmlplus.html
-#
-# So, in the interest of portability, (and so I don't have to wait for
-# Gentoo to fix the bug) this wrapper exists. It performs a simple test
-# of the xml module, and if it fails it uses a similarly hackish trick
-# to prevent the xml module from loading _xmlplus.
-
 class InternalError(Exception):
     def __init__(self, args=None):
         self.args = args
