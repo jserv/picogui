@@ -1,3 +1,5 @@
+import Completer
+
 class Minibuffer(object):
     "A field that displays stuff and executes python statements"
 
@@ -38,6 +40,7 @@ class Minibuffer(object):
         return i
 
     def _python_handler(self, ev):
+        cmd = self._field.text
         self.append_to_history()
         self._field.text = ''
         try:
@@ -46,6 +49,8 @@ class Minibuffer(object):
             # no buffers open
             self._frame.toolbar.focus()
         self._saved_text = None
+        if not cmd:
+            return
         try:
             workspace = self._frame.current
             self.bind(buffer = workspace.buffer, workspace = workspace)
@@ -69,12 +74,28 @@ class Minibuffer(object):
                     return
                 pos = self.history_index() - 1
                 self._field.text = self._history[pos]
-            if ev.char == 'n':
+            elif ev.char == 'n':
                 if not self._history:
                     # empty history
                     return
                 pos = (self.history_index() + 1) % len(self._history)
                 self._field.text = self._history[pos]
+            elif ev.char == 'g':
+                self._field.text = ''
+                self._python_handler(ev)
+            elif ev.key == 'equals':
+                # I'd prefer to complete on TAB, but right now I don't see how
+                try:
+                    workspace = self._frame.current
+                    self.bind(buffer = workspace.buffer, workspace = workspace)
+                except AttributeError:
+                    # no buffers open
+                    self.bind(buffer = None, workspace = None)
+                import sys
+                print >>sys.stderr, 'trying to complete'
+                self._field.text = Completer.python_stmt.complete(self._field.text,
+                                                                  self._frame.python_ns,
+                                                                  self.python_ns)
 
     def _focus_handler(self, ev):
         if self._saved_text is not None:

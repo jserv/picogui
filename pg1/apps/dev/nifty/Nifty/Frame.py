@@ -163,7 +163,10 @@ class Frame(object):
     def run(self):
         _stop = False
         while not _stop:
-            r = self._app.run()
+            try:
+                r = self._app.run()
+            except KeyboardInterrupt:
+                raise SystemExit
             _stop = True
             for page in self._pages:
                 if _stop and hasattr(page.workspace, 'confirm_close'):
