@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.7 2002/09/28 10:58:11 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.8 2002/10/07 15:30:36 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -157,12 +157,12 @@ glob textbox_get(struct widget *self,int property) {
      * an old string handle in DATA->textformat. Clean up the old one and
      * make a handle for the new string.
      */
-    e = handle_free(self->owner,DATA->textformat);
+    e = handle_free(self->owner,DATA->doc_string);
     errorcheck;
-    e = mkhandle(&DATA->textformat,PG_TYPE_PGSTRING, self->owner,str);
+    e = mkhandle(&DATA->doc_string,PG_TYPE_PGSTRING, self->owner,str);
     errorcheck;
 
-    return DATA->textformat;
+    return DATA->doc_string;
 
   }
   return widget_base_get(self,property);
