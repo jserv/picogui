@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.11 2001/05/31 04:56:00 micahjd Exp $
+/* $Id: linear1.c,v 1.12 2001/05/31 11:09:09 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -29,6 +29,8 @@
 #include <pgserver/common.h>
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy if possible*/
 #include <pgserver/video.h>
+
+#include <pgserver/appmgr.h>
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
@@ -265,71 +267,56 @@ void linear1_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
   }
 }
 
-#if 0
 void linear1_blit(hwrbitmap dest,
 		  s16 dst_x, s16 dst_y,s16 w, s16 h,
 		  hwrbitmap sbit,s16 src_x,s16 src_y,
 		  s16 lgop) {
-   u8 *src, *srcline, *dst, *dstline;
+   u8 *src, *srcline, *dst, *dstline, mask;
    struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
-   int bw,tp,shift,rshift;
+   int bw,xb,s,rs,tp,lp,rlp;
    int i;
 
-   if (dest == vid->display) {
-      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
-      return;
-   }
-   def_rect(dest,dst_x,dst_y,w,h,0,lgop);
-   
-   /* Blit calculations */ 
+   /* Initializations */ 
    src = srcline = srcbit->bits + (src_x>>3) + src_y*srcbit->pitch;
    dst = dstline = PIXELBYTE(dst_x,dst_y);
-   i = (src_x & 7) - (dst_x & 7);             /* Relative byte alignment */
-   if (i<0) {
-      shift = i+8;
-      rshift = -i;
-   }
-   else {
-      rshift = i;
-      shift = 8-i;
+   xb = dst_x & 7;
+   s = (src_x & 7) - xb;
+   if (s<0) {
+      s += 8;
       src=--srcline;
    }
-   bw = (w-shift)>>3;                         /* Byte width */
-   tp = (w-shift)&7;                          /* Trailing pixels */
-
-//   if ((rshift+w)<=8) {                       /* Completely within one byte */
-//      mask = slabmask1[rshift];
-//      mask &= ~slabmask1[rshift+w];
-//      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL) {
-//	 *dst &= ~mask;
-//	 *dst |= mask & ((*src) >> rshift);
-//      }
-//   }
-//   else {                                     /* Blit in three sections */
-     {
+   rs = 8-s;
    
-	while (h) {
-	   if (shift) {                         /* Leading partial byte */
-//	    *dst &= ~slabmask1[rshift];
-//	    *dst |= ((pb << shift) | ((*src) >> rshift)) & slabmask1[rshift];
-	    dst++;
+   /* Special case when it fits entirely within one byte */
+   if ((xb+w)<=8) {
+      mask = slabmask1[xb] & ~slabmask1[xb+w];
+      for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)
+	*dst = (((src[0] << s) | (src[1] >> rs)) 
+		& mask) | (*dst & ~mask);
+   }
+   else { 
+      tp = (dst_x+w)&7;        /* Trailing pixels */
+      lp = (8-xb)&7;           /* Leading pixels */
+      bw = (w-tp-lp)>>3;       /* Width in whole bytes */
+      rlp = 8-lp;
+      
+      /* Bit-banging blitter loop */
+      for (;h;h--,src=srcline+=srcbit->pitch,dst=dstline+=FB_BPL) {
+	 if (lp) {
+	    *dst = (((src[0] << s) | (src[1] >> rs))
+		    & slabmask1[rlp]) | (*dst & ~slabmask1[rlp]);
+	    src++,dst++;
 	 }
-	 for (i=bw;i>0;i--,src++,dst++) { /* Whole bytes */
-	    *dst = (pb << shift) | ((*src) >> rshift);
-	 }
-	 if (tp) {                            /* Trailing partial byte */
-//	    *dst &= slabmask1[tp];
-//	    *dst |= (pb << shift) | ((*src) >> rshift) & ~slabmask1[tp];
-	 }
-	 h--;
-	 src=srcline+=srcbit->pitch;
-	 dst=dstline+=FB_BPL;
-	 pb = src[-1];
+	 for (i=bw;i>0;i--,src++,dst++)
+	   *dst = (src[0] << s) | (src[1] >> rs);
+	 if (tp)
+	   *dst = (((src[0] << s) | (src[1] >> rs)) 
+		   & ~slabmask1[tp]) | (*dst & slabmask1[tp]);
       }
    }
-}
-#endif
 
+}
+   
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
