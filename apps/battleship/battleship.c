@@ -27,7 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <time.h>
 #include "battleship.h"
 
 int board[4][10][10];
@@ -52,6 +52,8 @@ int main(int argc, char **argv)
   toolbar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   
   canvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
+
+  srand(time(NULL));
   
   
   
@@ -240,7 +242,7 @@ int clickski(struct pgEvent *evt)
     }
   draw_spot(guessx,guessy,PLAY_GUESS);
   pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
-  pgUpdate();
+  //pgUpdate();
   picked_color = 1;
   return 0;
 }
@@ -283,14 +285,16 @@ int redraw(struct pgEvent *evt)
 
 
   pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
-  
   /**Background
      What I do here is I set the background to white, and everything after that is black
      so to save time, I just set it to black after whiting out the background.
   **/
 
   pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0xFFFFFF);
-  pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,evt->e.size.w,evt->e.size.h);
+  pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,sizex,sizey);
+
+  //  pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0xFFFFFF);
+  //pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,evt->e.size.w,evt->e.size.h);
   pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0x000000);
 
   /*Board*/
@@ -317,7 +321,7 @@ int redraw(struct pgEvent *evt)
       for(j=0;j<10;j++)
 	{
 	  draw_spot(i,j,PLAY_GUESS);
-	  draw_spot(i+11,j,PLAY_PIECE);
+	  draw_spot(i,j,PLAY_PIECE);
 	}
     }
 
@@ -394,14 +398,14 @@ void draw_spot (int x, int y, int side)
       fprintf(stderr,"draw_spot called with %d and %d for COMP_PIECE\n",x%11,y);
       break;
     case PLAY_GUESS:
-      fprintf(stderr,"draw_spot called with %d and %d for PLAY_GUESS\n",x%11,y);
+      //fprintf(stderr,"draw_spot called with %d and %d for PLAY_GUESS\n",x%11,y);
       if(board[side][y][x%11] == HIT)
 	draw_hit(x,y);
       if(board[side][y][x%11] == MISS)
 	draw_miss(x,y);
       break;
     case PLAY_PIECE:
-      fprintf(stderr,"draw_spot called with %d and %d for PLAY_PIECE -- %d\n",x,y,board[side][y][x%11]);
+      //fprintf(stderr,"draw_spot called with %d and %d for PLAY_PIECE -- %d\n",x,y,board[side][y][x%11]);
       if(board[side][y][x%11] == MISS)
 	draw_miss(x+11,y);
       if(board[side][y][x%11] <= 5 && board[side][y][x%11] >= 1)
@@ -423,9 +427,9 @@ void draw_miss(int x, int y)
   //back slash
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+bit,((y+1)*ss)+yleft-bit,ss-(2*bit),-ss+(2*bit));
   
-  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
+  //pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
   
-  pgSubUpdate(canvas);
+  //pgSubUpdate(canvas);
 
 }
 
@@ -442,7 +446,7 @@ void draw_hit(int x, int y)
 
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft-unit+center,(y*ss)+yleft+center,2*unit,0);
   pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
-  pgUpdate();
+  //pgSubUpdate(canvas);
 }
 
 void draw_ship(int x, int y, int type)
@@ -456,9 +460,9 @@ void draw_ship(int x, int y, int type)
 
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft+unit+center,-2*unit,0);
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,(x*ss)+xleft+unit+center,(y*ss)+yleft+unit+center,0,-2*unit);
-  pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
+  //pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
 
-  pgUpdate();
+  // pgSubUpdate(canvas);
 }
 
 void draw_hit_ship(int x, int y)
@@ -469,7 +473,7 @@ void draw_hit_ship(int x, int y)
   //This is a filled box
   pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_RECT,(x*ss)+xleft + (center - unit),(y*ss)+yleft-unit+center,2*unit,2*unit);
   pgWriteCmd(canvas,PGCANVAS_REDRAW,0);
-  pgUpdate();
+  pgSubUpdate(canvas);
 }
 
 void quoe(int x)
