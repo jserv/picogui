@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2000/11/19 04:47:17 micahjd Exp $
+# $Id: Makefile,v 1.13 2001/01/03 09:34:23 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -29,6 +29,12 @@
 
 LIBNAME = libpgui
 
+# Library installation path
+RPATH := /usr/lib
+
+# Header installation path
+HPATH := /usr/include
+
 # The source files to link into the library
 SRC := src/picogui_client.c
 
@@ -45,7 +51,7 @@ CFLAGS := -Iinclude
 
 DEMOCFLAGS := $(CFLAGS) -O3
 CFLAGS := $(CFLAGS) -O3 -g -c
-LDFLAGS := -rpath /usr/local/lib
+LDFLAGS := -rpath $(RPATH)
 
 LIBTOOL := libtool
 GCC := gcc
@@ -62,8 +68,8 @@ instructions:
 	@echo ""
 	@echo "	make clean     : Get rid of object files and binaries"
 	@echo "	make library   : Build static and shared lib into the .libs directory"
-	@echo "	make install   : * Not implemented yet *"
-	@echo "	make uninstall : * Not implemented yet *"
+	@echo "	make install   : Install libraries and headers"
+	@echo "	make uninstall : Uninstall libraries and headers"
 	@echo "	make demos     : Compile the demo programs"
 	@echo ""
 
@@ -72,6 +78,14 @@ clean:
 	rm -Rf .libs src/.libs
 
 library : $(LIBNAME).la
+
+install : library
+	cp -Rf -d include/* $(HPATH)
+	$(LIBTOOL) --mode=install install -c $(LIBNAME).la $(RPATH)/$(LIBNAME).la
+
+uninstall :
+	rm -Rf $(HPATH)/picogui.h $(HPATH)/picogui
+	$(LIBTOOL) --mode=uninstall rm $(RPATH)/$(LIBNAME).la
 
 $(LIBNAME).la : $(LOBJ) $(HDR)
 	$(LIBTOOL) $(GCC) $(LDFLAGS) -o $(LIBNAME).la $(LOBJ)

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.32 2000/12/12 00:55:53 micahjd Exp $
+/* $Id: picogui_client.c,v 1.33 2001/01/03 09:34:27 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -47,7 +47,7 @@
 //#define DEBUG
 
 /* Default server */
-#define PG_REQUEST_SERVER       "localhost"
+#define PG_REQUEST_SERVER       "127.0.0.1"
 
 /* Buffer size. When packets don't need to be sent immediately,
  * they accumulate in this buffer. It doesn't need to be very big
@@ -221,10 +221,11 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
   static unsigned char in_defaulterr = 0;
 
   /* Are we unable to make a dialog? (no connection, or we already tried) */  
-  if (in_defaulterr || !_pgsockfd) {
-    fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
+  if (in_defaulterr || !_pgsockfd)
     exit(errortype);
-  }
+
+  /* Print on stderr too in case the dialog fails */
+  fprintf(stderr,"*** PicoGUI ERROR (%s) : %s\n",pgErrortypeString(errortype),msg);
 
   /* Try a dialog box */
   in_defaulterr = 1;
