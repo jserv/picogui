@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.7 2000/08/03 02:24:02 micahjd Exp $
+/* $Id: default_theme.c,v 1.8 2000/08/07 11:41:20 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -85,10 +85,10 @@ struct element default_theme[E_NUM] = {
   EL_FLAT(0,mkcolor(255,255,255)),  
 
   /* 15 panelbar.border */
-  EL_FLAT(-1,mkcolor(127,127,127)),  
+  EL_FLAT(1,mkcolor(64,64,64)),  
 
   /* 16 panelbar.fill */
-  EL_FLAT(0,mkcolor(192,192,192)),  
+  EL_ACTIVE(mkcolor(255,255,192),mkcolor(192,224,255),mkcolor(192,192,255)),
 
   /* 17 popup.border */
   EL_FLAT(1,mkcolor(0,0,0)),  

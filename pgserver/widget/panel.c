@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.17 2000/08/07 11:09:27 micahjd Exp $
+/* $Id: panel.c,v 1.18 2000/08/07 11:41:20 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -41,6 +41,8 @@
 /* A shortcut... */
 #define PANELBAR_DIV self->in->next->div
 
+void themeify_panel(struct divnode *d);
+
 struct paneldata {
   int on,over;
   int grab_offset;  /* Difference between side of panel bar
@@ -61,6 +63,7 @@ void panelbar(struct divnode *d) {
   addelement(d,&current_theme[E_PANELBAR_BORDER],&x,&y,&w,&h);
   addelement(d,&current_theme[E_PANELBAR_FILL],&x,&y,&w,&h);
 
+  themeify_panel(d);
 }
 
 void panel(struct divnode *d) {
@@ -161,6 +164,9 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_LEAVE:
+    /* If we're dragging, the mouse didn't REALLY leave */
+    if (DATA->on) return;
+
     DATA->over=0;
     break;
 
@@ -189,6 +195,11 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->grab_offset<0) return;
 
     DATA->on = 1;
+
+    /* Update the screen now, so we have an up-to-date picture
+       of the panelbar stored in DATA->bar */
+    themeify_panel(PANELBAR_DIV);
+    update();
 
     /* Lock the screen */
     dts_push();
@@ -313,8 +324,32 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
   }
 
+  themeify_panel(PANELBAR_DIV);
+
   /* Use the Power of the almighty update() to redraw the screen! */
   update();
+}
+
+void themeify_panel(struct divnode *d) {
+  int state;
+  struct widget *self = d->owner;
+
+  /* Apply the current state to the elements */
+  if (DATA->on)
+    state = STATE_ACTIVATE;
+  else if (DATA->over)
+    state = STATE_HILIGHT;
+  else
+    state = STATE_NORMAL;
+
+  applystate(d->grop,
+	     &current_theme[E_PANELBAR_BORDER],state);
+  applystate(d->grop->next,
+	     &current_theme[E_PANELBAR_FILL],state);
+
+  /* Redraw this node only */
+  d->flags |= DIVNODE_NEED_REDRAW;
+  self->dt->flags |= DIVTREE_NEED_REDRAW;   
 }
 
 /* The End */
