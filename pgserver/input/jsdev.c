@@ -1,4 +1,4 @@
-/* $Id: jsdev.c,v 1.5 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: jsdev.c,v 1.6 2002/10/24 17:21:05 micahjd Exp $
  *
  * jsdev.c - Driver for cursor control and key input using a joystick,
  *           reads from the linux joystick device. Note that all joystick 
@@ -91,8 +91,8 @@ struct button_mapping {
   int mousebutton;
 } *jsdev_buttons;
 
-/* Velocity of the mouse cursor */
-int jsdev_cursorvx, jsdev_cursorvy;
+/* Velocity and button status of the mouse cursor */
+int jsdev_cursorvx, jsdev_cursorvy, jsdev_button;
 
 /* Time unit for velocity, in microseconds */
 long jsdev_polltime;
@@ -126,16 +126,13 @@ int jsdev_fd_activate(int fd) {
 	/* Release */
 	infilter_send_key(PG_TRIGGER_KEYUP, jsdev_buttons[js.number].key, 0);
       }
-      break;
+       break;
 
     case BUTTON_CLICK:
-      /* Get the cursor position in physical coordinates */
-      cursorx = cursor->x;
-      cursory = cursor->y;
-      VID(coord_physicalize)(&cursorx,&cursory);
-
-      infilter_send_pointing(js.value ? PG_TRIGGER_DOWN : PG_TRIGGER_UP,
-			     cursorx,cursory,jsdev_buttons[js.number].mousebutton,js_cursor);	
+      if (js.value)
+	jsdev_button |= jsdev_buttons[js.number].mousebutton;
+      else
+	jsdev_button &= ~jsdev_buttons[js.number].mousebutton;
       break;
 
     }
@@ -321,29 +318,7 @@ void jsdev_close(void){
 }
 
 void jsdev_poll(void) {
-  s16 cursorx,cursory;
-
-  if (jsdev_cursorvx || jsdev_cursorvy) {
-    /* Get the cursor position in physical coordinates */
-    cursorx = cursor->x;
-    cursory = cursor->y;
-    VID(coord_physicalize)(&cursorx,&cursory);
-    
-    /* Integrate the velocity */
-    cursorx += jsdev_cursorvx;
-    cursory += jsdev_cursorvy;
- 
-    /* Constrain to physical screen size */
-    if (cursorx >= vid->xres)
-      cursorx=vid->xres-1;
-    if (cursory >= vid->yres)
-      cursory=vid->yres-1;
-    if (cursorx < 0)cursorx=0;
-    if (cursory < 0)cursory=0;
-   
-    /* Move the cursor */
-    infilter_send_pointing(PG_TRIGGER_MOVE,cursorx,cursory,0,js_cursor);
-  }
+  infilter_send_pointing(PG_TRIGGER_PNTR_RELATIVE,jsdev_cursorvx,jsdev_cursorvy,jsdev_button,js_cursor);
 }
 
 g_error jsdev_regfunc(struct inlib *i) {
