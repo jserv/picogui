@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.4 2001/04/16 07:59:27 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.5 2001/04/16 08:02:01 micahjd Exp $
  *
  * Monochrome theme for LCDs
  *
@@ -67,9 +67,13 @@ object background {
    text = "PicoGUI";
    font = Font("Utopia",25,PG_FSTYLE_BOLD);
    bgfill = fillstyle {
-      Rect(x+30,y,w-30,h,ColorConv(0xFFFFFF));
-      Rect(x,y,30,h,ColorConv(0x808080));
-      Textv(x+3,y+h-4,1,1,text,font,ColorConv(0x000000));
+      var f;
+      f = ColorConv(0x000000);
+      Rect(x,y,w,h,ColorConv(0xFFFFFF));
+      Bar(x+30,y,1,h,f);
+      Bar(x+31,y,1,h,f);
+      Bar(x+33,y,1,h,f);
+      Textv(x+3,y+h-4,1,1,text,font,f);
    };
 }
 
