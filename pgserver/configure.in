@@ -260,15 +260,11 @@ AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_MGL2FB, [
 ])
 
 dnl check for freetype2
+dnl Gamma correction needs math lib for pow()
 AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FONTENGINE_FREETYPE, [
     AC_CHECK_LIB(freetype, FT_Init_FreeType,, AC_MSG_WARN([can't find libfreetype]))
     CFLAGS="$CFLAGS `freetype-config --cflags`"
-    DRIVER_LIBS="$DRIVER_LIBS `freetype-config --libs`"
-])
-
-dnl Gamma correction needs math lib for pow()
-AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_FREETYPE_GAMMA, [
-    DRIVER_LIBS="$DRIVER_LIBS -lm"
+    DRIVER_LIBS="$DRIVER_LIBS `freetype-config --libs` -lm"
 ])
 
 # More compiler flags...

@@ -73,9 +73,6 @@ endmenu
 mainmenu_option next_comment
 comment 'Fonts'
 bool 'Freetype2 font engine'                     CONFIG_FONTENGINE_FREETYPE
-if [ "$CONFIG_FONTENGINE_FREETYPE" = "y" ]; then
-    bool '  Gamma correction support (requires floating point)'  CONFIG_FREETYPE_GAMMA
-fi
 bool 'Internal BDF font engine'                  CONFIG_FONTENGINE_BDF
 if [ "$CONFIG_FONTENGINE_BDF" = "y" ]; then
     bool '  Helvetica 10 (default font)'         FONT_HELVETICA10

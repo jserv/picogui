@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.19 2002/10/14 15:50:07 micahjd Exp $
+/* $Id: font_freetype.c,v 1.20 2002/10/15 02:45:38 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <math.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -45,13 +46,10 @@
 
 #define CFGSECTION "font-freetype"
 
-#ifdef CONFIG_FREETYPE_GAMMA
-#include <math.h>
+void ft_build_gamma_table(u8 *table, float gamma);
 u8 ft_light_gamma_table[256];
 u8 ft_dark_gamma_table[256];
 int ft_gamma_light_dark_threshold;     /* Premultiplied by 3 */
-void ft_build_gamma_table(u8 *table, float gamma);
-#endif
 u8 *ft_pick_gamma_table(hwrcolor c);
 
 struct ft_face_id {
@@ -149,13 +147,11 @@ g_error freetype_engine_init(void) {
   ft_minimum_size = get_param_int(CFGSECTION,"minimum_size",5);
 
   /* Gamma config/initialization */
-#ifdef CONFIG_FREETYPE_GAMMA
   ft_build_gamma_table(ft_light_gamma_table,
 		       atof(get_param_str(CFGSECTION,"light_gamma","1.5")));
   ft_build_gamma_table(ft_dark_gamma_table,
 		       atof(get_param_str(CFGSECTION,"dark_gamma","0.75")));
   ft_gamma_light_dark_threshold = 3*get_param_int(CFGSECTION,"gamma_light_dark_threshold",128);
-#endif
 
   /* Scan for available faces  */
   ft_facelist = NULL;
@@ -514,7 +510,6 @@ void freetype_draw_string(struct font_descriptor *self, hwrbitmap dest, struct p
   position->y = subpos.y >> 6;
 }
 
-#ifdef CONFIG_FREETYPE_GAMMA
 void ft_build_gamma_table(u8 *table, float gamma) {
   int i;
   for (i=0;i<256;i++)
@@ -528,12 +523,6 @@ u8 *ft_pick_gamma_table(hwrcolor c) {
     return ft_light_gamma_table;
   return ft_dark_gamma_table;
 }
-#else
-u8 *ft_pick_gamma_table(hwrcolor c) {
-  return NULL;
-}
-#endif /* CONFIG_FREETYPE_GAMMA */
-
 
 /************************************************* Font Descriptors ***/
 

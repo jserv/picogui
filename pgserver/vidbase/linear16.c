@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.23 2002/10/11 08:29:32 micahjd Exp $
+/* $Id: linear16.c,v 1.24 2002/10/15 02:45:38 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -52,7 +52,11 @@
 
 /* Lookup table for alpha blending */
 #ifdef CONFIG_FAST_ALPHA
-u8 alpha_table[256*128];
+u8 alpha_table_7bit[256*128];
+#endif
+#ifdef CONFIG_FONTENGINE_FREETYPE
+u8 alpha_table_8bit[256*256];
+#define FAST_MUL_8x8(a,b)  (alpha_table_8bit[((a)<<8)|(b)])
 #endif
 
 /************************************************** Minimum functionality */
@@ -172,17 +176,20 @@ void linear16_blit(hwrbitmap dest,
    {                                                                   \
      u32 rgba = *((u32*)(s++));                                        \
      u16 oldpixel = *d;                                                \
-     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
-     *d = (((rgba>>16) + atab[(oldpixel&0xF800)>>8] ) << 8) & 0xF800 | \
-          (((rgba>>8)  + atab[(oldpixel&0x07E0)>>3] ) << 3) & 0x07E0 | \
-          (( rgba      + atab[(oldpixel&0x001F)<<3] ) >> 3) & 0x001F;  \
+     u8 *atab = alpha_table_7bit + ((rgba >> 16) & 0x7F00);            \
+     int or = (oldpixel&0xF800)>>8;                                    \
+     int og = (oldpixel&0x07E0)>>3;                                    \
+     int ob = (oldpixel&0x001F)<<3;                                    \
+     *d = (((rgba>>16) + atab[or | (or >> 5)] ) << 8) & 0xF800 |       \
+          (((rgba>>8)  + atab[og | (og >> 6)] ) << 3) & 0x07E0 |       \
+          (( rgba      + atab[ob | (ob >> 5)] ) >> 3) & 0x001F;        \
    }                     
 #elif defined(CONFIG_FAST_ALPHA_555)
 #define ALPHA_OP(d,s)                                                  \
    {                                                                   \
      u32 rgba = *((u32*)(s++));                                        \
      u16 oldpixel = *d;                                                \
-     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
+     u8 *atab = alpha_table_7bit + ((rgba >> 16) & 0x7F00);                 \
      *d = (((rgba>>16) + atab[(oldpixel&0x7C00)>>7] ) << 7) & 0x7C00 | \
           (((rgba>>8)  + atab[(oldpixel&0x03E0)>>2] ) << 2) & 0x03E0 | \
           (( rgba      + atab[(oldpixel&0x001F)<<3] ) >> 3) & 0x001F;  \
@@ -192,7 +199,7 @@ void linear16_blit(hwrbitmap dest,
    {                                                                   \
      u32 rgba = *((u32*)(s++));                                        \
      u16 oldpixel = *d;                                                \
-     u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
+     u8 *atab = alpha_table_7bit + ((rgba >> 16) & 0x7F00);                 \
      *d = (((rgba>>16) + atab[(oldpixel&0x0F00)>>4] ) << 4) & 0x0F00 | \
            ((rgba>>8)  + atab[oldpixel&0x00F0     ] )       & 0x00F0 | \
           (( rgba      + atab[(oldpixel&0x000F)<<4] ) >> 4) & 0x000F;  \
@@ -677,6 +684,167 @@ void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
   }
 }
 
+#ifdef CONFIG_FONTENGINE_FREETYPE
+static u8 linear16_null_gammatable[256];
+/*
+ * A lot like rotateblit in the clipping and rotation, but our source is
+ * 8-bit alpha data that is blended with the destination. Use a fast alpha op
+ * if we can.
+ */
+void linear16_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 src_w, s16 src_h,
+			     int char_pitch, u8 *gammatable, s16 angle, hwrcolor c,
+			     struct quad *clip, s16 lgop) {
+  int i,j;
+  int ac,bd;  /* Rotation matrix */
+  u16 *pixeldest, *linedest;
+  u8 *src;
+  int a, a_, r,g,b, or,og,ob, nr,ng,nb;
+  int offset_src;
+  int src_x = 0,src_y = 0;
+  hwrcolor oc;
+
+  /* We don't handle anything funky */
+  if (!FB_ISNORMAL(dest,lgop)) {
+    def_alpha_charblit(dest,chardat,x,y,src_w,src_h,char_pitch,gammatable,angle,c,clip,lgop);
+    return;
+  } 
+
+  /* For each angle, set the rotation matrix. (premultiplied with pitch,
+   * columns added together) Also handle clipping here.
+   *
+   * FIXME: The only difference between these blocks of code are sign
+   * and x/y changes, this could be factored out into a common clipping
+   * function that takes pointers to the x/y variables and signs
+   */
+  switch (angle) {
+
+  case 0:
+    ac = 1;
+    bd = FB_BPL>>1;
+
+    if ((i = clip->x1 - x) > 0) {
+      src_x += i;
+      src_w -= i;
+      x = clip->x1;
+    }
+    if ((i = clip->y1 - y) > 0) {
+      src_y += i;
+      src_h -= i;
+      y = clip->y1;
+    }
+    if ((i = x + src_w - 1 - clip->x2) > 0)
+      src_w -= i;
+    if ((i = y + src_h - 1 - clip->y2) > 0)
+      src_h -= i;
+    break;
+
+  case 90:
+    ac = -(FB_BPL>>1);
+    bd = 1;
+
+    if ((i = clip->x1 - x) > 0) {
+      src_y += i;
+      src_h -= i;
+      x = clip->x1;
+    }
+    if ((i = y - clip->y2) > 0) {
+      src_x += i;
+      src_w -= i;
+      y = clip->y2;
+    }
+    if ((i = x + src_h - 1 - clip->x2) > 0)
+      src_h -= i;
+    if ((i = clip->y1 - y + src_w - 1) > 0)
+      src_w -= i;
+    break;
+
+  case 180:
+    ac = -1;
+    bd = -(FB_BPL>>1);
+
+    if ((i = x - clip->x2) > 0) {
+      src_x += i;
+      src_w -= i;
+      x = clip->x2;
+    }
+    if ((i = y - clip->y2) > 0) {
+      src_y += i;
+      src_h -= i;
+      y = clip->y2;
+    }
+    if ((i = clip->x1 - x + src_w - 1) > 0)
+      src_w -= i;
+    if ((i = clip->y1 - y + src_h - 1) > 0)
+      src_h -= i;
+    break;
+
+  case 270:
+    ac = FB_BPL>>1;
+    bd = -1;
+
+    if ((i = x - clip->x2) > 0) {
+      src_y += i;
+      src_h -= i;
+      x = clip->x2;
+    }
+    if ((i = clip->y1 - y) > 0) {
+      src_x += i;
+      src_w -= i;
+      y = clip->y1;
+    }
+    if ((i = clip->x1 - x + src_h - 1) > 0)
+      src_h -= i;
+    if ((i = y + src_w - 1 - clip->y2) > 0)
+      src_w -= i;
+    break;
+
+  default:
+    return;   /* Can't handle this angle! */
+  }
+
+  /* Initial source and destination positions. */
+  linedest = PIXELADDR(x,y);
+  offset_src = char_pitch - src_w;
+  src = chardat + src_x + src_y * char_pitch;
+
+  /* Blitter loop, moving the source as normal,
+   * but using the rotation matrix above to move the destination
+   */
+  for (j=0;j<src_h;j++,src+=offset_src) {
+    for (i=0,pixeldest=linedest;i<src_w;i++,src++) {
+      a_ = gammatable[*src];
+      a = 255-a_;
+
+#ifdef CONFIG_FAST_ALPHA_565
+      /* Fast alpha blitter for 565 color */
+      oc = *pixeldest;
+      or = (oc&0xF800)>>8;
+      og = (oc&0x07E0)>>3;
+      ob = (oc&0x001F)<<3;
+      nr = (c&0xF800)>>8;
+      ng = (c&0x07E0)>>3;
+      nb = (c&0x001F)<<3;
+      r = FAST_MUL_8x8(nr | (nr>>5),a_) + FAST_MUL_8x8(or | (or>>5),a);
+      g = FAST_MUL_8x8(ng | (nr>>6),a_) + FAST_MUL_8x8(og | (og>>5),a);
+      b = FAST_MUL_8x8(nb | (nr>>5),a_) + FAST_MUL_8x8(ob | (ob>>5),a);
+      *pixeldest = (((r << 8) & 0xF800) |
+		    ((g << 3) & 0x07E0) |
+		    ((b >> 3) & 0x001F));
+#else
+      /* Fallback blending */
+      oc = vid->color_hwrtopg(*pixeldest);
+      r = FAST_MUL_8x8(getred(c),a_)   + FAST_MUL_8x8(getred(oc),a);
+      g = FAST_MUL_8x8(getgreen(c),a_) + FAST_MUL_8x8(getgreen(oc),a);
+      b = FAST_MUL_8x8(getblue(c),a_)  + FAST_MUL_8x8(getblue(oc),a);
+      *pixeldest = vid->color_pgtohwr(mkcolor(0,g,b));
+#endif
+      pixeldest += ac;
+    }
+    linedest += bd;
+  }
+}
+#endif /* CONFIG_FONTENGINE_FREETYPE */
+
 
 /*********************************************** Registration */
 
@@ -691,6 +859,9 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->blit           = &linear16_blit;
   vid->scrollblit     = &linear16_scrollblit;
   vid->rotateblit     = &linear16_rotateblit;
+#ifdef CONFIG_FONTENGINE_FREETYPE
+  vid->alpha_charblit = &linear16_alpha_charblit;
+#endif
 #if defined(CONFIG_FAST_BLUR) || defined(CONFIG_FASTER_BLUR)
   vid->blur = &linear16_blur;
 #endif
@@ -698,12 +869,24 @@ void setvbl_linear16(struct vidlib *vid) {
 #ifdef CONFIG_FAST_ALPHA
   /* Initialize the alpha blending table */
   {
-    u8 *p = alpha_table;
+    u8 *p = alpha_table_7bit;
     int a,c;
     
     for (a=0;a<128;a++)
       for (c=0;c<256;c++)
 	*(p++) = (c * (128-a)) >> 7;
+  }
+#endif
+
+#ifdef CONFIG_FONTENGINE_FREETYPE
+  /* The alpha_charblit function needs an 8-bit alpha table */
+  {
+    u8 *p = alpha_table_8bit;
+    int a,c;
+    
+    for (a=0;a<256;a++)
+      for (c=0;c<256;c++)
+	*(p++) = (c * a) >> 8;
   }
 #endif
 }

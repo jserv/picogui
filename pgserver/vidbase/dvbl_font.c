@@ -1,4 +1,4 @@
-/* $Id: dvbl_font.c,v 1.7 2002/10/14 07:58:27 micahjd Exp $
+/* $Id: dvbl_font.c,v 1.8 2002/10/15 02:45:37 micahjd Exp $
  *
  * dvbl_font.c - Low level implementations for font rendering
  *
@@ -345,8 +345,8 @@ void def_alpha_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
       }
 
       if (clip)
-	if (x+i < clip->x1 || x+i > clip->x2 ||
-	    y+j < clip->y1 || y+j > clip->y2)
+	if (xp < clip->x1 || xp > clip->x2 ||
+	    yp < clip->y1 || yp > clip->y2)
 	  continue;
       
       oc = vid->color_hwrtopg(vid->getpixel(dest,xp,yp));
