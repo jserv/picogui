@@ -25,6 +25,7 @@ prop left_sz, right_sz, top_sz, bottom_sz;
 
 object default {
   name = "Fluidity";
+  font = Font("Gelly",10,0);
   bgfill = Copy(default::fNop);
 
   bBackground = LoadBitmap("data/background.jpeg");
@@ -107,6 +108,8 @@ object default {
   right_sz = 0;
   top_sz = 0;
   bottom_sz = 0;
+  margin = 0;
+  spacing = 0;
 }
   
 /********************************** Background */
@@ -138,7 +141,6 @@ object panelbar {
   align = PG_A_LEFT;
   fgcolor = 0x57596F;
   margin = 2;
-  font = Font("Gelly",10,0);
 }
 
 object base.panelbtn {
@@ -169,19 +171,19 @@ object label.dlgtitle {
 
 object button {
   bgfill = Copy(default::fExpand);
-  bitmap1 = LoadBitmap("data/button_white.png");
-  width = 24;
-  height = 24;
-  srcw = 24;
-  srch = 24;
-  left_sz = 11;
-  right_sz = 12;
-  top_sz = 11;
-  bottom_sz = 12;
+  bitmap1 = LoadBitmap("data/button_white_small.png");
+  width = 18;
+  height = 18;
+  srcw = 18;
+  srch = 18;
+  left_sz = 8;
+  right_sz = 9;
+  top_sz = 8;
+  bottom_sz = 9;
   margin = 4;
-  spacing = 2;
+  spacing = 1;
 }  
 
-object button.on bitmap1 = LoadBitmap("data/button_bright.png");
+object button.on bitmap1 = LoadBitmap("data/button_bright_small.png");
 
 /* The End */
