@@ -130,7 +130,8 @@ class AnnounceClient(protocol.Protocol):
             # Send allowed text commands
             if subjectFields[0] in allowedTextCommands:
                 # Check for duplicates
-                fullLog = "\n".join([subjectFields[0]] + lines)
+                global message
+                fullLog = subjectFields[0] + "\n" + message
                 lastLog = None
                 try:
                     f = open(os.path.join(lastLogDir, subjectFields[1]))
@@ -175,6 +176,7 @@ class AnnounceClientFactory(protocol.ClientFactory):
 
 if __name__ == '__main__':
     import sys
+    global message
 
     mailMsg  = email.message_from_file(sys.stdin)
     
