@@ -1,0 +1,19 @@
+/* Background theme-
+ * Damn sexy translucent background from whardier on #zaurus
+ * This composites itself over the solid color in 'bgcolor', so try
+ * loading a solid color background at the same time.
+ */
+
+obj default name = "Dark Curves background (translucent)";
+
+object background {
+   bitmap1 = LoadBitmap("data/whardier_dark_curves.png");
+   bgfill = fillstyle {
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+      SetLgop(PG_LGOP_ALPHA);
+      Bitmap(x,y,w,h,bitmap1);
+   };
+}
+
+/* The End */
