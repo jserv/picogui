@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.32 2001/09/25 17:51:20 micahjd Exp $
+/* $Id: divtree.h,v 1.33 2001/11/14 08:14:19 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -228,6 +228,11 @@ struct divnode {
 					  * engine will automatically shuffle nodes between lines
 					  * to implement word wrapping.
 					  */
+#define DIVNODE_CONTINUATION_LINE (1<<28) /* This line was automatically added by DIVNODE_AUTOWRAP
+					   * so this should be taken into consideration when
+					   * calculating the preferred size. This also indicates
+					   * that the line can be automatically removed
+					   */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;

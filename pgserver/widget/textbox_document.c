@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.15 2001/11/09 08:33:50 micahjd Exp $
+/* $Id: textbox_document.c,v 1.16 2001/11/14 08:14:19 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -219,7 +219,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   struct fontdesc *fd;
   s16 tw,th;
   handle hstr;
-  
+
   /*** First thing to do is make sure we have a valid insertion point. */
 
   /* No line? */

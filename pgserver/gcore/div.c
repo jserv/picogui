@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.61 2001/11/13 07:51:45 micahjd Exp $
+/* $Id: div.c,v 1.62 2001/11/14 08:14:19 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -351,7 +351,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
      
      /* Handle autowrapping */
      if (n->flags & DIVNODE_AUTOWRAP) {
-       
+
        /* If we're mushed, move this node to the next line. Normally
 	* it isn't a great idea to rearrange the divtree while it's
 	* recalculating...
@@ -390,7 +390,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	   }
 
 	   /* Same flags & size as the current line */
-	   newline->flags = thisline->flags;
+	   newline->flags = thisline->flags | DIVNODE_CONTINUATION_LINE;
 	   newline->split = thisline->split;
 
 	   /* Insert after this line */
@@ -443,9 +443,9 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	 p = &n->nextline->div;
 	 while (*p) {
 	   if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
-	     avw -= (*p)->pw;
+	     avw -= (*p)->cw;
 	   if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
-	     avh -= (*p)->ph;
+	     avh -= (*p)->ch;
 	   if (avw<=0 || avh<=0)
 	     break;
 	   p = &(*p)->next;
@@ -464,7 +464,7 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	   r_set_nextline(n->next,n->nextline);
 	   
 	   /* If we just emptied the next line, delete it */
-	   if (!n->nextline->div) {
+	   if ((!n->nextline->div) && (n->nextline->flags & DIVNODE_CONTINUATION_LINE)) {
 	     struct divnode *blankline = n->nextline;
 	     struct divnode **pp, *p;
 
@@ -913,14 +913,34 @@ void divresize_recursive(struct divnode *div) {
       
     case PG_S_TOP:
     case PG_S_BOTTOM:
-      div->ch = dh + nh;
-      div->cw = max(dw,nw);
+      /* If we're adding continuation lines, stack them in the
+       * opposite orientation. This way we get the size it would
+       * be if the continuation lines were not present.
+       */
+      if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
+	div->cw = dw + nw;
+	div->ch = max(dh,nh);
+      }
+      else {
+	div->ch = dh + nh;
+	div->cw = max(dw,nw);
+      }
       break;
       
     case PG_S_LEFT:
     case PG_S_RIGHT:
-      div->cw = dw + nw;
-      div->ch = max(dh,nh);
+      /* If we're adding continuation lines, stack them in the
+       * opposite orientation. This way we get the size it would
+       * be if the continuation lines were not present.
+       */
+      if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
+	div->ch = dh + nh;
+	div->cw = max(dw,nw);
+      }
+      else {
+	div->cw = dw + nw;
+	div->ch = max(dh,nh);
+      }
       break;
       
     case PG_S_ALL:
