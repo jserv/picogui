@@ -9,7 +9,7 @@
  */
 
 #include <stdio.h>                /* fopen() and friends */
-#include <pgserver/common.h>      /* g_error, errorcheck, and pgserver config */
+#include <pgserver/common.h>      /* data types and exceptions, must come first */
 #include <pgserver/init.h>        /* pgserver_init, pgserver_shutdown */
 #include <pgserver/requests.h>    /* request_exec, struct request_data and friends */
 #include <pgserver/os.h>          /* os_show_error */
