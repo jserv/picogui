@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.14 2002/11/07 11:43:58 micahjd Exp $
+/* $Id: x11_init.c,v 1.15 2002/11/08 05:35:03 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -166,11 +166,19 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 }
 
 void x11_close(void) {
-  /* Clean up after the monolithic window and the debug window */
-  if (vid->display)
+  /* Delete the monolithic window and the debug window,
+   * both the front and back buffers if they exist.
+   */
+  if (vid->display) {
+    if (XB(vid->display)->frontbuffer)
+      x11_bitmap_free((hwrbitmap) XB(vid->display)->frontbuffer);
     x11_bitmap_free(vid->display);
-  if (x11_debug_window)
+  }
+  if (x11_debug_window) {
+    if (XB(x11_debug_window)->frontbuffer)
+      x11_bitmap_free((hwrbitmap) XB(x11_debug_window)->frontbuffer);
     x11_bitmap_free(x11_debug_window);
+  }
 
   XDestroyRegion(x11_display_region);  
 
