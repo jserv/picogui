@@ -23,10 +23,10 @@ pgserver_LDADD = \
 	debug/libdebug.a	\
 	video/libvideo.a	\
 	vidwrap/libvidwrap.a	\
-	font/libfont.a		\
 	vidbase/libvidbase.a	\
 	input/libinput.a	\
 	formats/libformats.a	\
+	font/libfont.a		\
 	@LIB_OS@		\
 	$(DRIVER_LIBS)		\
 	@RM_LIBS@
