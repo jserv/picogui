@@ -31,12 +31,25 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <string.h>
 
 #include "pgl-launcher.h"
+#include "applet.h"
 #include "configfile.h"
 
 char *appDir;
 char *confPath;
+char *toolbarResponse;
+pghandle pglBar;
+
+int directoryScan(char *path);
+void freeApplication(struct pgllApp *app);
+void childDied(int foo);
+int runApp(char *appPath);
+int setPreferences(void);
+int launchMenu(struct pgEvent *evt);
+void loadPreferences(void);
+int recieveMessage(struct pgEvent *evt);
 
 int directoryScan(char *path){
   int appCount = 0, appCopy = 0;
@@ -66,7 +79,7 @@ int directoryScan(char *path){
       while((dent = readdir(d))){
 	sprintf(absPath, "%s/%s/app.conf", path, dent->d_name);
 	if(configfile_parse(absPath)){
-	  if((binpath = get_param_str(architecture, "binpath", NULL))){
+	  if((binpath = (char *)get_param_str(architecture, "binpath", NULL))){
 	    gAppList[appCopy].appPath = (char *)malloc(strlen(binpath)+1);
 	    strcpy(gAppList[appCopy].appPath, binpath);
 	  }else{
@@ -101,15 +114,6 @@ void freeApplication(struct pgllApp *app){
   free(app->appIcon);
 }
 
-void parseConfig(char *configfile){
-  char *appDirTmp;
-
-  configfile_parse("launcher.conf");
-  appDirTmp = get_param_str("Applications", "appdirPath", "/usr/local/apps");
-  appDir = strdup(appDirTmp);
-  configfile_free();
-}
-
 void childDied(int foo){ 
 
   waitpid(-1, NULL, WNOHANG); 
@@ -129,7 +133,7 @@ int runApp(char *appPath){
 int setPreferences(void){
   pghandle toolbar, optionBox;
   pghandle appPath;
-  pghandle cancel, ok;
+  pghandle rescan, cancel, ok;
   struct pgEvent evt;
 
   pgEnterContext();
@@ -150,6 +154,12 @@ int setPreferences(void){
   pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, optionBox);
   pgSetWidget(PGDEFAULT, 
 	      PG_WP_TEXT, pgNewString("App path:"), 
+	      0);
+
+  rescan = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,toolbar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Rescan App Dir"),
+	      PG_WP_SIDE,PG_S_LEFT,
 	      0);
 
   cancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,toolbar);
@@ -183,12 +193,15 @@ int setPreferences(void){
     if(evt.from == cancel){
       break;
     }else if(evt.from == ok){
-      configfile_parse("launcher.conf");
-      set_param_str("Applications", "appdirPath", pgGetString(pgGetWidget(appPath,PG_WP_TEXT)));
-      configfile_write("launcher.conf");
-      configfile_free();
+      pgAppMessage(pglBar, pglBuildMessage(PGL_STOREPREF, 
+					   "PGL-Launcher", 
+					   "appdir", 
+					   pgGetString(pgGetWidget(appPath,PG_WP_TEXT))));
       //We need to refresh our config data now
-      parseConfig("launcher.conf");
+      loadPreferences();
+      break;
+    }else if(evt.from == rescan){
+      directoryScan(appDir);
       break;
     }
   }
@@ -203,23 +216,20 @@ int launchMenu(struct pgEvent *evt){
 
   pgEnterContext();
 
-  items = alloca(sizeof(pghandle) * gAppCount+2);
+  items = alloca(sizeof(pghandle) * gAppCount+1);
 
   for(item = 0; item < gAppCount; item++){
     items[item] = pgNewString(gAppList[item].appName);
   }
 
   //Add the standard options
-  items[gAppCount] = pgNewString("Rescan Application Directory");
-  items[gAppCount+1] = pgNewString("Preferences...");
+  items[gAppCount] = pgNewString("Preferences...");
 
-  item = pgMenuFromArray(items, gAppCount+2);
+  item = pgMenuFromArray(items, gAppCount+1);
 
   if(item){
-    if(item == gAppCount+2){
+    if(item == gAppCount+1){
       setPreferences();
-    }else if(item == gAppCount+1){
-      directoryScan(appDir);
     }else{
       runApp(gAppList[item-1].appPath);
     }
@@ -230,32 +240,70 @@ int launchMenu(struct pgEvent *evt){
   return 1;
 }
 
+void loadPreferences(void){
+
+  pgAppMessage(pglBar, pglBuildMessage(PGL_GETPREF, "PGL-Launcher", "appdir", ""));
+  recieveMessage(pgGetEvent());
+  appDir = strdup(toolbarResponse);
+
+  //We probably should re-scan our app dir now
+  directoryScan(appDir);
+}
+
+int recieveMessage(struct pgEvent *evt){
+  pglMessage *inMessage;
+  char *data;
+  
+  pgEnterContext();
+
+  inMessage = (pglMessage *)evt->e.data.pointer;
+  inMessage = (pglMessage *)alignMessageData(inMessage);
+  switch(inMessage->messageType){
+  case PGL_LOADPREFS:
+    loadPreferences();
+    break;
+  case PGL_GETPREF:
+    if(toolbarResponse)
+      free(toolbarResponse);
+    data = pglGetMessageData(inMessage, (inMessage->senderLen+inMessage->keyLen)+2);
+    toolbarResponse = strdup(data);
+    break;
+  }
+
+  pgLeaveContext();
+
+  return 1;
+}
+
 int main(int argc, char **argv){
-  pghandle pglBar;
+  pghandle pglButton;
   int freeLoop;
+  int gotPrefs = 0;
+
+  toolbarResponse = NULL;
 
   pgInit(argc, argv);
-
-  //Open our config file and parse it
-  parseConfig("launcher.conf");
-
-  //Find applications
-  directoryScan(appDir);
 
   //Install into the toolbar
   pglBar = pgFindWidget("PGL-AppletBar");
   if(!pglBar){
     pgMessageDialog(argv[0], "This applet requires PGL",PG_MSGICON_ERROR);
     return 1;
-  }
+  } 
 
-  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, pglBar);
-  pgSetWidget(PGDEFAULT,
+  //Create our widget
+  pglButton = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, pglBar);
+  pgSetWidget(pglButton,
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      PG_WP_TEXT,pgNewString("Launch"),
+	      PG_WP_NAME,pgNewString("PGL-Launcher"),
 	      0);
-  pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, &launchMenu, NULL);
+
+  pgBind(pglButton, PG_WE_APPMSG, &recieveMessage, NULL);
+  pgBind(pglButton, PG_WE_PNTR_DOWN, &launchMenu, NULL);
+
+  pgAppMessage(pglBar, pglBuildMessage(PGL_APPLETINSTALLED, "PGL-Launcher", "", ""));
 
   pgEventLoop();
 
