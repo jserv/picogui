@@ -30,7 +30,7 @@
 #endif
 
 #ifdef DRIVER_TUXTS
-  DRV("vr3ts",&tuxts_regfunc)
+  DRV("tuxts",&tuxts_regfunc)
 #endif
 
 #ifdef DRIVER_SERIALMOUSE
