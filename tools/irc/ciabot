@@ -66,6 +66,7 @@ if [ ! -d $tmpdir ]; then
     chmod 0777 $tmpdir
 fi
 tmpfile="$tmpdir/$RANDOM-$projectname"
+
 cat <<EOF >$tmpfile
 From: $returnaddress
 To: $commitaddress
@@ -75,16 +76,16 @@ Subject: Announce $projectname
 commit by $uname to $module: $message
 EOF
 
-if [ -e /tmp/lastlog-$projectname ]; then
-    if ! diff /tmp/lastlog-$projectname $tmpfile &>/dev/null; then
+lastlog="$tmpdir/lastlog-$projectname"
+if [ -r $lastlog ]; then
+    if ! diff $lastlog $tmpfile &>/dev/null; then
         # there are differences, so this is a different commit
         cat $tmpfile | /usr/sbin/sendmail -t
         # try to replace the lastlog if we're allowed
-        # ...which we aren't if the sticky bit is set
-        if [ -w /tmp/lastlog-$projectname ]; then
-            mv $tmpfile /tmp/lastlog-$projectname
-            # allow the next person to commit to overwrite
-            chmod a+w /tmp/lastlog-$projectname
+        if [ -w $lastlog ]; then
+            mv $tmpfile $lastlog
+            # allow the next person to overwrite
+            chmod a+w $lastlog
         fi
     else
         # it's just cvs spamming us from another directory
@@ -92,9 +93,9 @@ if [ -e /tmp/lastlog-$projectname ]; then
     fi
 else
     cat $tmpfile | /usr/sbin/sendmail -t
-    mv $tmpfile /tmp/lastlog-$projectname
+    mv $tmpfile $lastlog
     # To ensure that the next person to commit will be able to overwrite
-    chmod a+w /tmp/lastlog-$projectname
+    chmod a+w $lastlog
 fi
 
 echo "done."
