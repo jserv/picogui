@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.35 2002/01/08 17:24:15 cgrigis Exp $
+/* $Id: canvas.c,v 1.36 2002/01/24 10:28:34 cgrigis Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -233,13 +233,22 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    /* Keyboard event? */
    switch (type) {
     case TRIGGER_KEYUP:
+      if (!(param->kbd.flags & PG_KF_FOCUSED))
+	return;
       evt = PG_WE_KBD_KEYUP;
+      param->kbd.consume++;
       break;
     case TRIGGER_KEYDOWN:
+      if (!(param->kbd.flags & PG_KF_FOCUSED))
+	return;
       evt = PG_WE_KBD_KEYDOWN;
+      param->kbd.consume++;
       break;
     case TRIGGER_CHAR:
+      if (!(param->kbd.flags & PG_KF_FOCUSED))
+	return;
       evt = PG_WE_KBD_CHAR;
+      param->kbd.consume++;
       break;
    default:
       evt = 0;
