@@ -41,6 +41,7 @@ print """Content-type: text/html
 </head>
 <body>
 <h1>CIA bot statistics</h1>
+"Because SF stats weren't pointless enough"
 
 <p>Number of messages posted per project:</p>
 
