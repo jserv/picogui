@@ -1,4 +1,4 @@
-/* $Id: dvbl_lgop.c,v 1.1 2002/04/03 08:08:41 micahjd Exp $
+/* $Id: dvbl_lgop.c,v 1.2 2002/04/11 04:25:03 micahjd Exp $
  *
  * dvbl_lgop.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -229,6 +229,22 @@ hwrcolor def_getpixel(hwrbitmap src, s16 x, s16 y) {
    }
    /* 8 */
    return *s;
+}
+
+void def_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
+  /* You could make this create a very thin rectangle, but then if niether
+   * were implemented they would be a pair of mutually recursive functions! */
+   
+  for (;w;w--,x++)
+     (*vid->pixel) (dest,x,y,c,lgop);
+}
+
+void def_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
+  (*vid->rect) (dest,x,y,1,h,c,lgop);
+}
+
+void def_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
+  for (;h;h--,y++) (*vid->slab) (dest,x,y,w,c,lgop);
 }
 
 /* The End */

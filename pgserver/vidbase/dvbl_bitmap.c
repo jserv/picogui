@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.1 2002/04/03 08:08:41 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.2 2002/04/11 04:25:03 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -425,6 +425,84 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->output_rect.h = h;
 
   return success;
+}
+
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+
+void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		  hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop) {
+  s16 i,j;
+
+  if (!(sw && sh)) return;
+   
+  /* Do a tiled blit */
+  for (i=0;i<w;i+=sw)
+     for (j=0;j<h;j+=sh)
+       (*vid->blit) (dest,x+i,y+j,min(w-i,sw),min(h-j,sh),
+		     src,sx,sy,lgop);
+}
+
+/* Scary slow blit, but necessary for dealing with unsupported lgop values
+ * or other things that the fast lib can't deal with */
+void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+	      s16 src_x, s16 src_y, s16 lgop) {
+   int i;
+   s16 bw,bh;
+   
+   if(!src)
+	   return;
+
+   (*vid->bitmap_getsize)(src,&bw,&bh);
+
+   if (w>(bw-src_x) || h>(bh-src_y)) {
+      int i,j,sx,sy;
+      src_x %= bw;
+      src_y %= bh;
+      
+      /* Do a tiled blit */
+      for (i=0,sx=src_x;i<w;i+=bw-sx,sx=0)
+	for (j=0,sy=src_y;j<h;j+=bh-sy,sy=0)
+	  (*vid->blit) (dest,x+i,y+j,
+			min(bw-sx,w-i),min(bh-sy,h-j),
+			src,sx,sy,lgop);
+      return;
+   }
+   
+   /* Icky blit loop */
+   for (;h;h--,y++,src_y++)
+     for (i=0;i<w;i++)
+	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
+}
+
+/* Backwards version of the scary slow blit, needed for scrolling 1/2 of the time */
+void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop) {
+  /* Special scrollblit handling is only necessary if we're copying to the same bitmap */
+  if (dest==src) {
+
+    /* If the blit moves the image down, we need to to an upside-down blit */
+    if (y>src_y) {
+      for (y+=h-1,src_y+=h-1;h;h--,y--,src_y--)
+	(*vid->blit) (dest,x,y,w,1,src,src_x,src_y,lgop);
+      return;
+    }
+    
+    /* If the blit moves right on the same line, we can split the image into vertical
+     * slices to do the horizontal equivalent of an upside-down blit. Note that though
+     * this seems obscure, it's the common method of scrolling on rotated platforms such
+     * as most QVGA handheld devices.
+     */
+    if (y==src_y && x>src_x) {
+      for (x+=w-1,src_x+=w-1;w;w--,x--,src_x--)
+	(*vid->blit) (dest,x,y,1,h,src,src_x,src_y,lgop);
+      return;
+    }
+  }    
+  
+  /* Well... no reason we can't do a normal blit */
+  (*vid->blit) (dest,x,y,w,h,src,src_x,src_y,lgop);
 }
    
 /* The End */
