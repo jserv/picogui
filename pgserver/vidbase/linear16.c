@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.12 2002/03/26 17:37:29 instinc Exp $
+/* $Id: linear16.c,v 1.13 2002/03/29 06:40:28 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -231,7 +231,12 @@ void linear16_blit(hwrbitmap dest,
 
     switch (lgop) {
 
-    case PG_LGOP_NONE:  
+    case PG_LGOP_NONE: 
+#ifdef CONFIG_NO_VRAM_MEMCPY
+#define OP(d,s) (*d|=*s)
+      TILEBLITLOOP;
+#undef OP
+#else
        while (h) {
 	  for (;sh && h;sh--,h--,src_line+=srcbit->pitch>>1,dst+=offset_dst) {
 	     src = src_line + src_x;
@@ -247,6 +252,7 @@ void linear16_blit(hwrbitmap dest,
 	  sh = srcbit->h;
 	  src_line = (u16*) srcbit->bits;
        }
+#endif
        break;
 
     case PG_LGOP_OR:
@@ -286,10 +292,17 @@ void linear16_blit(hwrbitmap dest,
 
     switch (lgop) {
     case PG_LGOP_NONE: 
-       for (;h;h--,src+=(srcbit->pitch>>1),dst+=(FB_BPL>>1))
-	 __memcpy(dst,src,w<<1);
-       break;
-       
+#ifdef CONFIG_NO_VRAM_MEMCPY
+      for (;h;h--,src+=offset_src,dst+=offset_dst) {
+	for (i=w;i;i--,src++,dst++)
+	  *dst = *src;
+      }
+#else
+      for (;h;h--,src+=(srcbit->pitch>>1),dst+=(FB_BPL>>1))
+	__memcpy(dst,src,w<<1);
+#endif
+      break;
+
     case PG_LGOP_OR:
 #define OP(d,s) (*d|=*s)
       BLITLOOP;
