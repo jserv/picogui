@@ -69,13 +69,13 @@ setSelected (struct pgEvent *evt)
 }
 
 void
-addheader (char *sender, char *title, int msg)
+addheader (int msg, char *sender, char *subject, char *date)
 {
   lastItem = pgNewWidget (PG_WIDGET_LISTITEM,
 			  row ? PGDEFAULT : PG_DERIVE_INSIDE,
 			  row ? lastItem : wBox);
 
-  pgReplaceTextFmt (lastItem, "[%d] %s - (%s)", msg, title, sender);
+  pgReplaceTextFmt (lastItem, "[%s] %s - %s",date, subject, sender);
   pgBind (lastItem, PG_WE_ACTIVATE, &setSelected, (void *) (msg));
   pgEventPoll ();
 

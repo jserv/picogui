@@ -14,15 +14,12 @@
 #define FAILURE 1
 
 #define IMAP_WELCOME "* OK"
-//#define LIST_FLAGS (flags body[header.fields (date from subject)])
-//#define LIST_FLAGS FULL
 
 /* Filepointer for the IMAP connection */
 FILE *imapfp;
 
 /* How many messages in the folder? */
 int messages = 0;
-int rowno;
 int connectionLocked = false;
 
 /* Counter for the command id... */
@@ -30,8 +27,7 @@ int cmd;
 char cmdchar = 'A';
 
 char *imapCurrentHeader;
-char *imapCurrentMessage;
-int imapCurrentHeaderAlloc, imapCurrentMessageAlloc;
+int imapCurrentHeaderAlloc;
 
 
 /* Reads a line from the fp. */
@@ -158,20 +154,108 @@ donothing (char *line)
 }
 
 
-/* This function doesn't nothing ;) */
-int
-doheader (char *line)
-{
-  int msg;
-  int i = 0;
 
-  if (strncmp (line, "* ", 2) == 0)
+/* Sends a command, get all the responses,
+ * calls the process function...
+ */
+int
+readheaders (char *command)
+{
+  char *buffer;
+  char cmdid[5];
+
+  int messageid = -1;
+
+  char *sender;
+  char *date;
+  char *subject;
+
+  sender = malloc (BUFFERSIZE);
+  date = malloc (80);
+  subject = malloc (BUFFERSIZE);
+
+  sendcmd (command);
+  getcmdid (cmdid);
+
+  do
     {
-      sscanf (line, "* %i FLAGS ", &msg);
-      addheader (line, "Title", msg);
+      buffer = getrow ();
+      if (strncmp (buffer, "* ", 2) == 0)
+	{
+	  if (messageid > 0)
+	    addheader (messageid, sender, subject, date);
+	  strcpy (sender, "");
+	  strcpy (date, "");
+	  strcpy (subject, "");
+	  sscanf (buffer, "* %i FLAGS ", &messageid);
+	}
+      else
+	{
+	  if (strncmp (buffer, "From: ", 6) == 0)
+	    {
+	      strncpy (sender, buffer + 6, strlen (buffer) - 7);
+	      sender[strlen (buffer) - 7] = '\0';
+	    }
+	  if (strncmp (buffer, "Subject: ", 9) == 0)
+	    {
+	      strncpy (subject, buffer + 9, strlen (buffer) - 10);
+	      subject[strlen (buffer) - 10] = '\0';
+	    }
+	  if (strncmp (buffer, "Date: ", 6) == 0)
+	    {
+	      strncpy (date, buffer + 6, strlen (buffer) - 7);
+	      date[strlen (buffer) - 7] = '\0';
+	    }
+	}
+
     }
+  while (strncmp (buffer, cmdid, 4) != 0);
+
+  free (sender);
+  free (date);
+  free (subject);
+
   return SUCCESS;
 }
+
+
+
+char *
+readmessage (char *command)
+{
+  char *buffer;
+  char *message;
+  char cmdid[5];
+
+  int allocated;
+  int rowno = 0;
+
+  sendcmd (command);
+  getcmdid (cmdid);
+
+  allocated = 4048;
+  message = malloc (allocated);
+  strcpy (message, "");
+
+  while (strncmp ((buffer = getrow ()), cmdid, 4) != 0)
+    {
+      if ((rowno++ != 0))
+	{
+	  if (allocated < (strlen (buffer) + strlen (message) + 1))
+	    {
+	      allocated = strlen (buffer) + strlen (message) + 2048;
+	      message = realloc (message, allocated);
+	    }
+	  strcat (message, buffer);
+	}
+    }
+
+  message[strlen (message) - 2] = '\0';
+  return message;
+}
+
+
+
 
 int
 domessageheader (char *line)
@@ -194,33 +278,8 @@ domessageheader (char *line)
   return SUCCESS;
 }
 
-int
-domessage (char *line)
-{
-  //char *cmdid;
-  //char *compare;
 
-  //getcmdid (cmdid);
-  //compare = malloc(30);
 
-  //sprintf (compare, "%s OK FETCH completed.", cmdid);
-
-  //if ((strncmp (line, compare, strlen (compare)) != 0))
-  if ((rowno++ != 0))
-    {
-      if (imapCurrentMessageAlloc <
-	  (strlen (line) + strlen (imapCurrentMessage) + 1))
-	{
-	  imapCurrentMessageAlloc =
-	    strlen (line) + strlen (imapCurrentMessage) + 1024;
-	  imapCurrentMessage =
-	    realloc (imapCurrentMessage, imapCurrentMessageAlloc);
-	}
-      strcat (imapCurrentMessage, line);
-    }
-  //free(compare);
-  return SUCCESS;
-}
 
 
 /* Login to the IMAP server... */
@@ -285,8 +344,9 @@ imap_getlist ()
   command = malloc (64);
   printf ("imap_getlist\n");
   check_connection ();
-  sprintf (command, "FETCH %d:%d FULL", 1, messages);
-  docmd (command, &doheader);
+  sprintf (command, "FETCH %d:%d (BODY[HEADER.FIELDS (SUBJECT DATE FROM)])",
+	   1, messages);
+  readheaders (command);
 }
 
 
@@ -299,36 +359,32 @@ imap_getmesg (int mesg)
   char *header;
   char *text;
   char *message;
-
-  rowno = 0;
+  char *messagebody;
 
   header = malloc (512);
   text = malloc (512);
 
-  imapCurrentMessageAlloc = 4048;
-  imapCurrentMessage = malloc (imapCurrentMessageAlloc);
 
   imapCurrentHeaderAlloc = 4048;
   imapCurrentHeader = malloc (imapCurrentHeaderAlloc);
+  strcpy (imapCurrentHeader, "");
 
   sprintf (header, "FETCH %d RFC822.HEADER", mesg);
   sprintf (text, "FETCH %d RFC822.TEXT", mesg);
 
   check_connection ();
   docmd (header, &domessageheader);
-  docmd (text, &domessage);
+  messagebody = readmessage (text);
 
-  message =
-    malloc (strlen (imapCurrentHeader) + strlen (imapCurrentMessage) + 6);
+  message = malloc (strlen (imapCurrentHeader) + strlen (messagebody) + 6);
   strcpy (message, imapCurrentHeader);
   strcat (message, "~~~\n\n");
-  strcat (message, imapCurrentMessage);
+  strcat (message, messagebody);
 
-  imapCurrentHeader = "";
-  imapCurrentMessage = "";
+  strcpy (imapCurrentHeader, "");
 
   free (imapCurrentHeader);
-  free (imapCurrentMessage);
+  free (messagebody);
 
   return message;
 }

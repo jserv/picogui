@@ -1,1 +1,1 @@
-void addheader (char *sender, char *title, int msg);
+void addheader (int msg, char *sender, char *subject, char *date);
