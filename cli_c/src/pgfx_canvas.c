@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.12 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.13 2002/10/20 17:16:22 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -42,6 +42,11 @@ pgprim _pgfxcanvas_line(pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2) {
 
 pgprim _pgfxcanvas_rect(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h) {
    pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_RECT,x,y,w,h);
+   return 0;
+}
+
+pgprim _pgfxcanvas_blur(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h, pgu radius) {
+   pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_BLUR,x,y,w,h,radius);
    return 0;
 }
 
@@ -158,6 +163,7 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    l.pixel      = _pgfxcanvas_pixel;
    l.line       = _pgfxcanvas_line;
    l.rect       = _pgfxcanvas_rect;
+   l.blur       = _pgfxcanvas_blur;
    l.frame      = _pgfxcanvas_frame;
    l.slab       = _pgfxcanvas_slab;
    l.bar        = _pgfxcanvas_bar;

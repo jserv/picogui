@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.18 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgfx.h,v 1.19 2002/10/20 17:16:21 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -153,6 +153,8 @@ struct pgfx_lib {
    //! Implementation of pgGradient
    pgprim (*gradient)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
 			pgu angle, pgcolor c1, pgcolor c2);
+   //! Implementation of pgBlur
+   pgprim (*blur)(pgcontext c, pgu x,pgu y,pgu w,pgu h,pgu radius);
 
    /* Nonvisual primitives */
    
@@ -209,6 +211,8 @@ inline pgprim pgEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 inline pgprim pgFEllipse(pgcontext c,pgu x,pgu y,pgu w,pgu h);
 //! Draw a filled polygon in the current color 
 inline pgprim pgFPolygon(pgcontext c, pghandle array); 
+//! Blur an area of the screen
+inline pgprim pgBlur(pgcontext c, pgu x, pgu y, pgu w, pgu h, pgu radius); 
 /*! 
  * \brief Draw a string in the current color, font, and angle
  * 

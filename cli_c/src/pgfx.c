@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.8 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgfx.c,v 1.9 2002/10/20 17:16:22 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -52,6 +52,9 @@ inline pgprim pgLine(pgcontext c,pgu x1,pgu y1,pgu x2,pgu y2) {
 }
 inline pgprim pgRect(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
    return (*(c)->lib->rect)(c,x,y,w,h);
+}
+inline pgprim pgBlur(pgcontext c,pgu x,pgu y,pgu w,pgu h,pgu radius) {
+   return (*(c)->lib->blur)(c,x,y,w,h,radius);
 }
 inline pgprim pgFrame(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
    return (*(c)->lib->frame)(c,x,y,w,h);
