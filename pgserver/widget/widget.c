@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.203 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: widget.c,v 1.204 2002/10/24 11:23:06 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -552,6 +552,10 @@ glob widget_base_get(struct widget *w, int property) {
     
   case PG_WP_AUTO_ORIENTATION:
     return w->auto_orientation;
+
+  case PG_WP_TYPE:
+    return w->type;
+
   }
   return 0;
 }
