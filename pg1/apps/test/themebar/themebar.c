@@ -38,11 +38,14 @@ int evtChangeTheme(struct pgEvent *evt) {
 
 int main(int argc, char **argv) {
   struct dirent *dent;
-  int i,l;
+  int i,l,derive;
   DIR *d;
   pgInit(argc,argv);
   pgRegisterApp(PG_APP_TOOLBAR,"ThemeBar",0);
   pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_LEFT,0);
+  pgNewWidget(PG_WIDGET_SCROLLBOX,0,0);
+  pgSetWidget(PGDEFAULT, PG_WP_SIZE, 100, 0);
+  derive = PG_DERIVE_INSIDE;
 
   d = opendir(THEME_DIRECTORY);
 
@@ -58,12 +61,13 @@ int main(int argc, char **argv) {
     dent->d_name[l-3] = 0;
 
     /* Add item */
-    pgNewWidget(PG_WIDGET_LISTITEM,0,0);
+    pgNewWidget(PG_WIDGET_LISTITEM,derive,0);
     pgSetWidget(PGDEFAULT,
 		PG_WP_EXTDEVENTS, pgGetWidget(PGDEFAULT, PG_WP_EXTDEVENTS) & ~PG_EXEV_EXCLUSIVE,
 		PG_WP_TEXT, pgNewString(dent->d_name),
 		0);
     pgBind(PGDEFAULT,PG_WE_ACTIVATE,evtChangeTheme,NULL);
+    derive = 0;
   }
   closedir(d);
   
