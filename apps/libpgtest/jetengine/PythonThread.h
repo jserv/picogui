@@ -7,26 +7,22 @@ extern "C" {
 #include <SDL/SDL_thread.h>
 #include <Python.h>
 }
-#include "SimpleException.h"
-
 
 class PythonThread {
  public:
-  PythonThread(char *path, char *modulename);
+  PythonThread(void);
   ~PythonThread();
+
+  void addPath(char *path);
+  void addObject(char *name, PyObject *object);
+  void run(char *modulename);
 
   int threadHandler(void);
 
  private:
-  void addPath(char *path);
-
   SDL_Thread *thread;
+  PyObject *globals;
   char *modulename;
-};
-
-class PythonException : public SimpleException {
- public:
-  virtual void show(void);
 };
 
 

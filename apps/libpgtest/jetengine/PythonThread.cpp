@@ -1,6 +1,7 @@
 /* The thread executing our python scripting */
 
 #include "PythonThread.h"
+#include "PythonInterpreter.h"
 
 /* FIXME: used for the mainloop hack below */
 extern "C" {
@@ -15,17 +16,19 @@ int PythonThreadCallback(void *data) {
   return t->threadHandler();
 }
 
-PythonThread::PythonThread(char *path,char *modulename_) {
-  modulename = modulename_;
-  Py_Initialize();
-  addPath(path);
-  
-  thread = SDL_CreateThread(&PythonThreadCallback, this);
+PythonThread::PythonThread(void) {
+  thread = NULL;
+  globals = PyDict_New();
 }
 
 PythonThread::~PythonThread() {
   SDL_KillThread(thread);
-  Py_Finalize();
+  Py_DECREF(globals);
+}
+
+void PythonThread::run(char *modulename_) {
+  modulename = modulename_;
+  thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
 
 void PythonThread::addPath(char *path) {
@@ -53,7 +56,7 @@ void PythonThread::addPath(char *path) {
 
 int PythonThread::threadHandler(void) {
   /* FIXME: Pass errors like this back to the other thread */
-  if (!PyImport_ImportModule(modulename))
+  if (!PyImport_ImportModuleEx(modulename,globals,NULL,NULL))
     PyErr_Print();
 
   /* Signal the main thread to terminate 
@@ -65,7 +68,8 @@ int PythonThread::threadHandler(void) {
   return 0;
 }
 
-void PythonException::show(void) {
-  PyErr_Print();
+void PythonThread::addObject(char *name, PyObject *object) {
+  if (PyDict_SetItemString(globals, name, object) < 0)
+    throw PythonException();
 }
 

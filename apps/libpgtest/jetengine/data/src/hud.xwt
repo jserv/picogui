@@ -1,10 +1,9 @@
 <application>
 	<box side="top">
-		<label bitmap_src="pglogo3.png" side="right"/>
+		<label bitmap_src="pglogo3.png" side="right" />
+		<label bitmap_src="pythonlogo.png" side="left" />
 	</box>
-	<box side="bottom">
-		<label color="white" side="right" font=":0:bold">
-			JetEngine - PicoGUI and Python embedding demo
-		</label>
-	</box>
+	<label color="white" side="bottom" font=":20:bold">
+		JetEngine - PicoGUI and Python embedding demo
+	</label>
 </application>

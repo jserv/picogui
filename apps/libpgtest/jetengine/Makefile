@@ -1,5 +1,19 @@
-OBJS = EmbeddedPGserver.o jetengine.o PythonThread.o PGTexture.o
-HEADERS = EmbeddedPGserver.h PythonThread.h SimpleException.h PGTexture.h
+OBJS = \
+	EmbeddedPGserver.o	\
+	jetengine.o		\
+	PythonThread.o		\
+	PGTexture.o		\
+	ScriptableObject.o	\
+	PythonInterpreter.o
+
+HEADERS = \
+	EmbeddedPGserver.h	\
+	PythonThread.h		\
+	SimpleException.h	\
+	PGTexture.h		\
+	ScriptableObject.h	\
+	PythonInterpreter.h
+
 BIN = jetengine
 
 # Embedding pgserver and python

@@ -4,12 +4,20 @@
 #include <GL/gl.h>
 #include "EmbeddedPGserver.h"
 #include "PythonThread.h"
+#include "PythonInterpreter.h"
 #include "PGTexture.h"
+#include "ScriptableObject.h"
+
 
 int main(int argc, char **argv) {
   try {
+    PythonInterpreter py(argc, argv);
     EmbeddedPGserver pgserver(argc, argv);
-    PythonThread pythread("./script","game");
+    PythonThread pythread;
+    
+    pythread.addObject("foo",new ScriptableObject);
+    pythread.addPath("script");
+    pythread.run("game");
 
     glViewport(0, 0, 640, 480);
     glMatrixMode(GL_PROJECTION);
@@ -86,5 +94,4 @@ int main(int argc, char **argv) {
     e.show();
     return 1;
   }
-  return 0;
 }
