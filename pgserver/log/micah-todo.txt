@@ -7,11 +7,11 @@ pgswak (SWiss Army Knife)
 
 pgl (PicoGui Launcher)
 
--- ucLinux
+-- Ports
 
-ucLinux/m68k port
+Continued work with uClinux
 
-Port WabaVM and to PicoGUI, write wrapper classes
+Other ports to WinCE, Philips Nino, VTech Helio, Palm III?
 
 speedup options: pointers vs handles. etc
 
@@ -56,14 +56,10 @@ PicoGUI Bugs
 - scrolling
 - FIXMEs
 - retest all video drivers
-- tiled blit() src_x and src_y ignored in most drivers
-- tileblit() hangs in linear8
 - pgGetText of non-text handles crashes server
 - memory leak (doesn't delete app_info)
 - Deleting a handle returned from WP_TEXT of a field crashes the server. Need
   a way to mark a handle as readable by app but not deletable.
 - Themes aren't necessarily loaded back in the right order when increasing bpp
 - Crash on resizing panel sometimes
-
-* Need more testing for possibly-handle-related bugs. Make a program like
-'gremlins' using remote input?
+- Misc server crashes with gremlins??

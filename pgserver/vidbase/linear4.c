@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.9 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: linear4.c,v 1.10 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -45,19 +45,6 @@
 unsigned const char notmask4[] = { 0x0F, 0xF0 };
 
 /************************************************** Minimum functionality */
-
-/* By default assume 16 grays */
-hwrcolor linear4_color_pgtohwr(pgcolor c) {
-   return (getred(c)+getgreen(c)+getblue(c))/51;
-}
-pgcolor linear4_color_hwrtopg(hwrcolor c) {
-   /* If this was called more often we could use a lookup table,
-    * but it's not even worth the space here. */
-   unsigned char gray = c * 17;
-   return mkcolor(gray,gray,gray);
-}
-
-/* Ugh. Evil but necessary... I suppose... */
 
 void linear4_pixel(int x,int y,hwrcolor c) {
    char *p = PIXELBYTE(x,y);
@@ -529,8 +516,6 @@ void setvbl_linear4(struct vidlib *vid) {
   /* Minimum functionality */
   vid->pixel          = &linear4_pixel;
   vid->getpixel       = &linear4_getpixel;
-  vid->color_pgtohwr  = &linear4_color_pgtohwr;
-  vid->color_hwrtopg  = &linear4_color_hwrtopg;
    
   /* Accelerated functions */
   vid->slab           = &linear4_slab;

@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.1 2001/03/01 02:23:11 micahjd Exp $
+/* $Id: linear16.c,v 1.2 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers (5-6-5 RGB mapping)
@@ -45,18 +45,6 @@
 
 /************************************************** Minimum functionality */
 
-/* 5-6-5 RGB color quantization */
-hwrcolor linear16_color_pgtohwr(pgcolor c) {
-    return (((getred(c) << 8) & 0xF800) |
-	    ((getgreen(c) << 3) & 0x07E0) |
-	    ((getblue(c) >> 3) & 0x001F));
-}
-pgcolor linear16_color_hwrtopg(hwrcolor c) {
-  return mkcolor( (c&0xF800) >> 8,
-		  (c&0x07E0) >> 3,
-		  (c&0x001F) << 3 );
-}
-
 void linear16_pixel(int x,int y,hwrcolor c) {
    PIXEL(x,y) = c;
 }
@@ -78,8 +66,6 @@ void setvbl_linear16(struct vidlib *vid) {
   /* Minimum functionality */
   vid->pixel          = &linear16_pixel;
   vid->getpixel       = &linear16_getpixel;
-  vid->color_pgtohwr  = &linear16_color_pgtohwr;
-  vid->color_hwrtopg  = &linear16_color_hwrtopg;
    
   /* Accelerated functions */
 //  vid->slab           = &linear16_slab;

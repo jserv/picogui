@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.34 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: video.h,v 1.35 2001/04/11 02:28:59 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -620,6 +620,7 @@ g_error bitmap_iterate(g_error (*iterator)(void **pbit));
 /************** Debugging */
 void videotest_run(int number);
 void videotest_help(void);
+void videotest_benchmark(void);
 
 #endif /* __H_VIDEO */
 

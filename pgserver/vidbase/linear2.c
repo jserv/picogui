@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.2 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: linear2.c,v 1.3 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear2.c - For 1-bit packed pixel devices (most black and white displays)
@@ -46,19 +46,6 @@ unsigned const char notmask2[] = { 0x3F, 0xCF, 0xF3, 0xFC };
 
 /************************************************** Minimum functionality */
 
-/* Assume a four-gray palette. Sorry, this won't work for CGA ;-) */
-hwrcolor linear2_color_pgtohwr(pgcolor c) {
-   return (getred(c)+getgreen(c)+getblue(c)) / 255;
-}
-pgcolor linear2_color_hwrtopg(hwrcolor c) {
-   /* If this was called more often we could use a lookup table,
-    * but it's not even worth the space here. */
-   unsigned char gray = c * 85;
-   return mkcolor(gray,gray,gray);
-}
-
-/* Ugh. Evil but necessary... I suppose... */
-
 void linear2_pixel(int x,int y,hwrcolor c) {
    char *p = PIXELBYTE(x,y);
    *p &= notmask2[x&3];
@@ -82,8 +69,6 @@ void setvbl_linear2(struct vidlib *vid) {
   /* Minimum functionality */
   vid->pixel          = &linear2_pixel;
   vid->getpixel       = &linear2_getpixel;
-  vid->color_pgtohwr  = &linear2_color_pgtohwr;
-  vid->color_hwrtopg  = &linear2_color_hwrtopg;
    
   /* Accelerated functions */
 //  vid->slab           = &linear2_slab;

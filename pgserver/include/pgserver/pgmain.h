@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.5 2001/04/06 06:27:04 micahjd Exp $
+/* $Id: pgmain.h,v 1.6 2001/04/11 02:28:59 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -28,7 +28,7 @@
 #ifndef _H_PGMAIN
 #define _H_PGMAIN
 
-extern volatile int in_shutdown;
+extern volatile u8 in_shutdown;
 void request_quit(void);
 
 /* Functions for initializing function pointer tables when they can't

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.31 2001/04/06 06:27:03 micahjd Exp $
+/* $Id: pgmain.c,v 1.32 2001/04/11 02:28:59 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -44,8 +44,8 @@
 #include <sys/types.h>
 #endif
 
-volatile int proceed = 1;
-volatile int in_shutdown = 0;
+volatile u8 proceed = 1;
+volatile u8 in_shutdown = 0, in_init = 1;
 int use_sessionmgmt = 0;
 extern long memref;
 struct dtstack *dts;
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"frbhlx:y:d:v:i:t:s:");
+      c = getopt(argc,argv,"mfrbhlx:y:d:v:i:t:s:");
       if (c==-1)
 	break;
       
@@ -261,6 +261,10 @@ int main(int argc, char **argv) {
 	   exit(1);
 	}
 	break;
+
+      case 'm':
+	videotest_on = 2;
+        break;
 #endif
 	 
       default:        /* Need help */
@@ -279,6 +283,9 @@ int main(int argc, char **argv) {
 	     "  l : List installed drivers and fonts\n"
 #ifdef CONFIG_ROTATE
 	     "  r : Begin with screen rotated\n"
+#endif
+#ifdef CONFIG_VIDEOTEST
+	     "  m : enter benchmark mode\n"
 #endif
 	     "\n"
 	     "  x width   : default screen width\n"
@@ -334,8 +341,10 @@ int main(int argc, char **argv) {
     }
 
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
-    if (videotest_on)
+    if (videotest_on==1)
        videotest_run(videotest_mode);
+    if (videotest_on==2)
+       videotest_benchmark();
 #endif
      
      
@@ -442,6 +451,8 @@ int main(int argc, char **argv) {
 
   }
 
+  in_init = 0;
+     
   /*************************************** Main loop */
 
 #ifdef DEBUG_INIT
@@ -503,6 +514,11 @@ g_error reload_initial_themes(void) {
    unsigned char *themebuf;
    int fd;
    struct stat st;
+
+   /* Don't need to reload them if we're not even done initting yet.
+    * It would be bad to reload themes before the appmgr or layout engine
+    * is up! */
+   if (in_init) return sucess;
    
    for (p=themefiles;p;p=p->next) {
       

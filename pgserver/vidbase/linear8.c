@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.16 2001/03/17 04:16:35 micahjd Exp $
+/* $Id: linear8.c,v 1.17 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -40,18 +40,6 @@
  */
 #define LINE(y)    ((y)*vid->fb_bpl+vid->fb_mem)
 #define PIXEL(x,y) (*((x)+LINE(y)))
-
-/* 2-3-3 RGB color quantization */
-hwrcolor linear8_color_pgtohwr(pgcolor c) {
-  return ((getred(c) & 0xC0) |
-	  ((getgreen(c) >> 2) & 0x38) |
-	  (getblue(c) >> 5));
-}
-pgcolor linear8_color_hwrtopg(hwrcolor c) {
-  return mkcolor( (c&0xC0),
-		  (c&0x38) << 2,
-		  c << 5 );
-}
 
 /* Simple horizontal and vertical straight lines */
 void linear8_slab(int x,int y,int w,hwrcolor c) {
@@ -384,8 +372,8 @@ void linear8_tileblit(struct stdbitmap *srcbit,
 		  int src_x,int src_y,int src_w,int src_h,
 		  int dest_x,int dest_y,int dest_w,int dest_h) {
   unsigned char *src_top = srcbit->bits + src_y*srcbit->w + src_x;
-  unsigned char *dest = LINE(dest_y) + dest_x;
-  int dw;
+  unsigned char *dest,*dest_line = LINE(dest_y) + dest_x;
+  int dw,sw;
   /* Restart values for the tile */
   unsigned char *src_line;
   int sh;
@@ -398,9 +386,9 @@ void linear8_tileblit(struct stdbitmap *srcbit,
    */
   while (dest_h)
      for (src_line=src_top,sh=src_h;sh && dest_h;
-	  sh--,dest_h--,src_line+=srcbit->w,dest+=vid->fb_bpl)
-       for (dw=dest_w;dw;)
-	 __memcpy(dest,src_line, src_w < dw ? src_w : dw);
+	  sh--,dest_h--,src_line+=srcbit->w,dest_line+=vid->fb_bpl)
+       for (dest=dest_line,dw=dest_w;dw>0;dw-=sw,dest+=sw)
+	 __memcpy(dest,src_line,sw = (src_w < dw ? src_w : dw));
 }
 
 /* Ugh. Evil but necessary... I suppose... */
@@ -590,9 +578,6 @@ void setvbl_linear8(struct vidlib *vid) {
   /* Start with the defaults */
   setvbl_default(vid);
    
-  /* In this linear8 driver, replacing the default version */
-  vid->color_pgtohwr  = &linear8_color_pgtohwr;
-  vid->color_hwrtopg  = &linear8_color_hwrtopg;
   vid->slab           = &linear8_slab;
   vid->bar            = &linear8_bar;
   vid->line           = &linear8_line;
@@ -603,9 +588,6 @@ void setvbl_linear8(struct vidlib *vid) {
   vid->charblit       = &linear8_charblit;
   vid->charblit_v     = &linear8_charblit_v;
   vid->tileblit       = &linear8_tileblit;
-	
-  /* In linear8, but no equivalent exists by default (Listed as "Required"
-   * in the video.h index) */
   vid->pixel          = &linear8_pixel;
   vid->getpixel       = &linear8_getpixel;
   vid->blit           = &linear8_blit;

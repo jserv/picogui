@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.8 2001/03/21 05:09:47 micahjd Exp $
+/* $Id: videotest.c,v 1.9 2001/04/11 02:28:55 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -28,6 +28,10 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+#include <time.h>               /* For benchmarking */
+
+#define NUM_PATTERNS    4
+#define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
 
 /************ Line test pattern */
 
@@ -264,7 +268,7 @@ void videotest_help(void) {
 }
 
 
-static void videotest_run_one(int number) {
+static void videotest_run_one(int number,int update) {
   switch (number) {
   case 1:
     testpat_line();
@@ -282,7 +286,8 @@ static void videotest_run_one(int number) {
     printf("Unknown video test mode");
     exit(1);
   }
-  VID(update) (0,0,vid->lxres,vid->lyres);
+  if (update)
+     VID(update) (0,0,vid->lxres,vid->lyres);
 }
 
 
@@ -296,7 +301,7 @@ void videotest_run(int number) {
   nr = cycle ? 1 : number;
 
   for(;;) {
-    videotest_run_one(nr);
+    videotest_run_one(nr,1);
 
     if(loop || cycle) {
       if (sleep(delay))    /* If sleep is interrupted, exit -- micah */
@@ -312,5 +317,49 @@ void videotest_run(int number) {
   }
 }
 
+/************ Benchmarking */
+
+/* Runs a test, returns FPS 
+ * (we could just return a float, but PicoGUI doesn't have any floating
+ * point in it and I don't want to start now... Used fixed point to make
+ * a string, and return that string.)
+ */
+const char *videotest_time_one(int number,int update) {
+   time_t start,seconds;
+   unsigned long frames;
+   static char fpsbuf[10];
+   
+   start = time(NULL);
+   do {
+      videotest_run_one(number,update);
+      frames++;
+      seconds = time(NULL) - start;
+   } while (seconds < TEST_DURATION);
+
+   sprintf(fpsbuf,"%5d.%02d",frames/seconds,(frames*100/seconds)%100);
+   return fpsbuf;
+}
+
+/* Run all benchmark tests */
+void videotest_benchmark(void) {
+   int i;
+   
+   printf("\nPlease wait... Each test will take %d seconds to complete.\n"
+	  "Results are measured in frames per second. Complete includes\n"
+	  "screen hardware updates, raw is just the software. Raw should\n"
+	  "equal complete if the driver does not double-buffer\n\n",
+	  TEST_DURATION*2);
+   
+   printf(" Test  | Complete / Raw\n"
+	  "------------------------\n");
+   for (i=1;i<=NUM_PATTERNS;i++) {
+      printf(" %5d | %s / ",i,videotest_time_one(i,1));
+      printf("%s\n",videotest_time_one(i,0));
+   }
+
+   printf("\nDone.\n");
+}
+      
 
 /* The End */
+

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.34 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.35 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -74,16 +74,19 @@ void def_coord_logicalize(int *x,int *y) {
 /******* colors */
 
 hwrcolor def_color_pgtohwr(pgcolor c) {
-  if (vid->bpp<8) {
+  if (vid->bpp==1) {
+    /* Black and white, tweaked for better contrast */
+    return (getred(c)+getgreen(c)+getblue(c)) >= 382;
+  }
+  else if(vid->bpp<8) {
     /* grayscale */
-    return (((getred(c)*3+getgreen(c)*6+getblue(c))/10) >>
-	    (8-vid->bpp))&((1<<vid->bpp)-1);
+    return (getred(c)+getgreen(c)+getblue(c)) * ((1<<vid->bpp)-1) / 768;
   }
   else if (vid->bpp==8) {
     /* 2-3-3 color */
     return ((getred(c) & 0xC0) |
 	    ((getgreen(c) >> 2) & 0x38) |
-	    ((getblue(c) >> 5) & 0x07));
+	    ((getblue(c) >> 5)));
   }
   else if (vid->bpp==16) {
     /* 5-6-5 color */
@@ -97,22 +100,25 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 }
 
 pgcolor def_color_hwrtopg(hwrcolor c) {
-  if (vid->bpp<8) {
+  if (vid->bpp==1) {
+    return c ? 0xFFFFFF : 0x000000;  
+  }
+  else if (vid->bpp<8) {
     /* grayscale */
-    return (((getred(c)*3+getgreen(c)*6+getblue(c))/10) >>
-	    (8-vid->bpp))&((1<<vid->bpp)-1);
+    unsigned char gray = c * 255 / ((1<<vid->bpp)-1);
+    return mkcolor(gray,gray,gray);
   }
   else if (vid->bpp==8) {
-    /* 2-3-3 color */
-    return ((getred(c) & 0xC0) |
-	    ((getgreen(c) >> 2) & 0x38) |
-	    ((getblue(c) >> 5) & 0x07));
+    /* 2-3-3 color */  
+     return mkcolor( (c&0xC0),
+		     (c&0x38) << 2,
+		            c << 5 );
   }
   else if (vid->bpp==16) {
-    /* 5-6-5 color */
-    return (((getred(c) << 8) & 0xF800) |
-	    ((getgreen(c) << 3) & 0x07E0) |
-	    ((getblue(c) >> 3) & 0x001F));
+     /* 5-6-5 color */
+     return mkcolor( (c&0xF800) >> 8,
+		     (c&0x07E0) >> 3,
+		     (c&0x001F) << 3 );
   }
   else
     /* True color */
@@ -838,12 +844,15 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    u8 oshift;
    
    if (srcbit && (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))) {
-      int i,j;
+      int i,j,sx,sy;
+      src_x %= srcbit->w;
+      src_y %= srcbit->h;
       
       /* Do a tiled blit */
-      for (i=0;i<w;i+=srcbit->w)
-	for (j=0;j<h;j+=srcbit->h)
-	  def_blit(srcbit,0,0,dest_x+i,dest_y+j,min(srcbit->w,w-i),min(srcbit->h,h-j),lgop);
+      for (i=0,sx=src_x;i<w;i+=srcbit->w-sx,sx=0)
+	for (j=0,sy=src_y;j<h;j+=srcbit->h-sy,sy=0)
+	  VID(blit) (srcbit,sx,sy,dest_x+i,dest_y+j,
+		     min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),lgop);
     
       return;
    }

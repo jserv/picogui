@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.3 2001/03/16 04:06:25 micahjd Exp $
+/* $Id: linear1.c,v 1.4 2001/04/11 02:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -50,16 +50,6 @@ unsigned const char slabmask1[] = { 0xFF, 0x7F, 0x3F, 0x1F,
                                     0x0F, 0x07, 0x03, 0x01 };
 
 /************************************************** Minimum functionality */
-
-/* Just black or white, 0 or 1... */
-hwrcolor linear1_color_pgtohwr(pgcolor c) {
-   return (getred(c)+getgreen(c)+getblue(c)) >= 382;
-}
-pgcolor linear1_color_hwrtopg(hwrcolor c) {
-   return c ? 0xFFFFFF : 0x000000;
-}
-
-/* Ugh. Evil but necessary... I suppose... */
 
 void linear1_pixel(int x,int y,hwrcolor c) {
    char *p = PIXELBYTE(x,y);
@@ -133,8 +123,6 @@ void setvbl_linear1(struct vidlib *vid) {
    /* Minimum functionality */
    vid->pixel          = &linear1_pixel;
    vid->getpixel       = &linear1_getpixel;
-   vid->color_pgtohwr  = &linear1_color_pgtohwr;
-   vid->color_hwrtopg  = &linear1_color_hwrtopg;
    
    /* Accelerated functions */
    vid->slab           = &linear1_slab;

@@ -1,3 +1,34 @@
+2001-04-10    Micah Dowty <micahjd@users.sourceforge.net>
+
+Well, now I've killed the bugs that were bothering people and at least know
+(hopefully) where the others are, I'm going to go back to finishing the video
+code. Some of the other things I need to do soon are write a loader for BMP
+images, and start the nifty text layout engine.
+I'd also like to get this running on some actual handheld hardware. I was
+thinking of the Agenda VR3, but the company seems to be on the way down due
+to bad management, and the hardware has crummy battery life. The VTech Helio
+seems like a good piece of hardware, has good Linux support, and doesn't
+even run WinCE! I've still got that Philips Nino to try a WinCE port on, but
+I'm really not looking forward to that.
+
+      * vidbase/defaultvbl.c: Fixed a bug in tiled blit()s that made the
+        background shift in weird ways
+	
+      * gcore/pgmain.c: Fixed crash bug when theme and video were specified
+        on the command line: reload_initial_themes would be called
+	before initialization was completed
+	
+      * vidbase/linear8.c: Unbroke the tileblit, so aqua (and other bitmapped
+        themes) no longer crash it
+
+      * vidbase/defaultvbl.c: Fixed up the default color conversions
+
+      * vidbase/linear(16|8|4|2|1).c: Removed custom color conversions.
+        The one in defaultvbl works fine, and is not significantly slower
+	
+      * debug/videotest.c: To quantitatively measure video driver performance,
+        added a benchmarking system (-m command line option)
+
 2001-04-09    Micah Dowty <micahjd@users.sourceforge.net>
 
 Compared the handle tree dumps, and the handle tree stays the same throughout!
