@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.12 2000/10/21 17:58:29 micahjd Exp $
+/* $Id: svga.c,v 1.13 2000/10/21 18:57:39 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -33,7 +33,7 @@
 #include <vga.h>
 #include <vgagl.h>
 
-//#define DOUBLEBUFFER
+#define DOUBLEBUFFER
 
 GraphicsContext *svga_virtual,*svga_physical;
 
@@ -133,8 +133,6 @@ void svga_clip_off(void) {
 void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 		 struct stdbitmap *dest,int dest_x,int dest_y,
 		 int w,int h,int lgop) {
-
-  return;
 
   if (lgop==PG_LGOP_NULL) return;
   if (w<=0) return;
@@ -252,6 +250,40 @@ hwrcolor svga_color_pgtohwr(pgcolor c) {
   return gl_rgbcolor(getred(c),getgreen(c),getblue(c));
 }
 
+void svga_charblit(unsigned char *chardat,int dest_x,
+		   int dest_y,int w,int h,int lines,
+		   hwrcolor c) {
+  int bw = w;
+  int iw,bit,x,i;
+  int olines = lines;
+  unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (dest_x>vid->clip_x2 || dest_y>vid->clip_y2 || 
+      (dest_x+w)<vid->clip_x1 || (dest_y+h)<vid->clip_y1) return;
+
+  /* Find the width of the source data in bytes */
+  if (bw & 7) bw += 8;
+  bw = bw >> 3;
+  bw &= 0x1F;
+
+  for (i=0;i<h;i++,dest_y++) {
+    /* Skewing */
+    if (olines && lines==i) {
+      lines += olines;
+      dest_x--;
+    }
+    for (x=dest_x,iw=bw;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++)
+	/* FIXME: This still needs lots of optimization. I'm sure
+	   we're involving at least a multiplication and some bitshifting
+	   per-pixel that we don't need, not to mention the function
+	   call...
+	*/
+	if (ch&0x80)   gl_setpixel(x,dest_y,c);
+  }
+}
+
 /******************************************** Driver registration */
 
 /* This func. is passed to registervid */
@@ -266,6 +298,7 @@ g_error svga_regfunc(struct vidlib *v) {
   v->clip_off = &svga_clip_off;
   v->rect = &svga_rect;
   v->color_pgtohwr = &svga_color_pgtohwr;
+  v->charblit = &svga_charblit;
 
   return sucess;
 }

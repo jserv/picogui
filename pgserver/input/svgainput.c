@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.8 2000/10/21 18:14:25 micahjd Exp $
+/* $Id: svgainput.c,v 1.9 2000/10/21 18:57:39 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -43,6 +43,12 @@
 */
 extern int __svgalib_mouse_fd;
 extern int __svgalib_kbd_fd;
+extern void (*__svgalib_mouse_eventhandler)(int, int, int, int, int, int, int);
+
+void (*default_svgalib_mousehandler)(int, int, int, int, int, int, int);
+
+/******************************************** Keyboard handler */
+/* Where indicated, code has been used from SDL (www.libsdl.org) */
 
 /* Keyboard maps (from SDL_svgaevents.c -- see below) */
 #define NUM_VGAKEYMAPS	(1<<KG_CAPSSHIFT)
@@ -72,18 +78,11 @@ short svgainput_keymap[128] = {
 /* Current modifier state (in PGKEY values) */
 int svgainput_mod;
 
-/* Called by SVGAlib */
-void svgainput_kbdhandler(int scancode,int press);
-
-/******************************************** Keyboard handler */
-/* Where indicated, code has been used from SDL (www.libsdl.org) */
-
 /* Initialize the keymaps. Almost all of this is from
    SDL_svgaevents.c in SDL.
    Duplicates the kernel's keymapping code, so it's kinda
    yucky but it's the only way I know of to get both raw
    and mapped keys at the same time like PicoGUI requires.
-                    FIXME if possible!
 */
 void svgainput_initkeymaps(void) {
   struct kbentry entry;
@@ -160,8 +159,7 @@ void svgainput_kbdhandler(int scancode,int press) {
   /******* Handle modifiers */
 
   switch (scancode) {
-    /* locks 
-     * FIXME: what do do with scroll lock? */
+    /* locks */
 
   case SCANCODE_NUMLOCK:
     if (!press) break;
@@ -217,7 +215,9 @@ void svgainput_kbdhandler(int scancode,int press) {
 
 
 #ifdef DEBUG
+    /*
     guru("Translated key: %c (%d) (mods: %d)",c,c,svgainput_mod);
+    */
 #endif
 
     if (c)
@@ -240,6 +240,47 @@ void svgainput_kbdhandler(int scancode,int press) {
   }
 }
 
+/******************************************** Mouse handler */
+
+void svgainput_mousehandler(int button,int dx,int dy,int dz,
+			    int drx,int dry,int drz) {
+  int x,y,trigger;
+  static int prevbutton = 0;
+  
+  /* This is ugly, but better than the alternative... */
+  (*default_svgalib_mousehandler)(button,dx,dy,dz,drx,dry,drz);
+  x = mouse_getx();
+  y = mouse_gety();
+
+#ifdef DEBUG
+  /*
+  guru("svgainput_mousehandler:\n"
+       "button = %d\ndx = %d\ndy = %d\ndz = %d\ndrx = %d\ndry = %d\ndrz = %d"
+       "\nx = %d\ny = %d",
+       button,dx,dy,dz,drx,dry,drx,x,y);
+  */
+#endif
+
+  /* We're going to need a real cursor here soon... :) */
+  (*vid->pixel)(x,y,(*vid->color_pgtohwr)(0xFF0000));
+  (*vid->update)();
+
+  /* So, what just happened? */
+  if (button & (~prevbutton))
+    trigger = TRIGGER_DOWN;
+  else if (prevbutton & (~button))
+    trigger = TRIGGER_UP;
+  else
+    trigger = TRIGGER_MOVE;      
+  prevbutton = button;
+
+  /* Dispatch to PicoGUI */
+  dispatch_pointing(trigger,x,y,
+		    ((button>>2)&1) ||
+		    ((button<<2)&4) ||
+		    (button&2));
+}
+
 /******************************************** Implementations */
 
 /* Enable keyboard and mouse support */
@@ -247,8 +288,10 @@ g_error svgainput_init(void) {
   if (keyboard_init()==-1)
     return mkerror(PG_ERRT_IO,73);
   vga_setmousesupport(1);
-  keyboard_seteventhandler(&svgainput_kbdhandler);
   svgainput_initkeymaps();
+  keyboard_seteventhandler(&svgainput_kbdhandler);
+  default_svgalib_mousehandler = __svgalib_mouse_eventhandler;
+  mouse_seteventhandler(&svgainput_mousehandler);
   return sucess;
 }
  
