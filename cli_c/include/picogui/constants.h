@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.57 2001/07/12 09:01:46 micahjd Exp $
+/* $Id: constants.h,v 1.58 2001/07/19 09:06:38 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -792,10 +792,12 @@ typedef unsigned long pghandle;
 /* Widget events */
 #define PG_WE_ACTIVATE    0x001 /* Gets focus (or for a non-focusing widget such
 			           as a button, it has been clicked/selected  */
-#define PG_WE_DEACTIVATE  0x002 /* Lost focus */
-#define PG_WE_CLOSE       0x003 /* A top-level widget has closed */
-#define PG_WE_PNTR_DOWN   0x204 /* The "mouse" button is now down */
-#define PG_WE_PNTR_UP     0x205 /* The "mouse" button is now up */
+#define PG_WE_DEACTIVATE   0x002 /* Lost focus */
+#define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
+#define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
+#define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
+#define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside
+				  * the widget */
 #define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
 #define PG_WE_RESIZE      0x107 /* For terminal widgets */
 #define PG_WE_BUILD       0x108 /* Sent from a canvas, clients can rebuild groplist */

@@ -11,7 +11,7 @@ pgl (PicoGui Launcher)
 
 Continued work with uClinux
 
-Other ports to WinCE, Philips Nino, VTech Helio, Palm III?
+Other ports to WinCE, Philips Nino, Palm III?
 
 speedup options: pointers vs handles. etc
 
@@ -21,10 +21,6 @@ demo disk?
 other ports?
 
 -- graphics
-
-gropnode coordinate systems
-
-linear1,2,4,16,24,32...
 
 Fix svgalib ctrl-C and other bucky bits
 
@@ -46,9 +42,6 @@ abstract comm interface: TCP/IP, unix sockets, SHM, signals...
 
 text layout engine
 
-DOCUMENTATION!
-    (ESPECIALLY CLIENT LIB!)
-
 
 PicoGUI Bugs
 -------------------------------
@@ -61,3 +54,6 @@ PicoGUI Bugs
   a way to mark a handle as readable by app but not deletable.
 - Themes aren't necessarily loaded back in the right order when increasing bpp
 - Misc server crashes with gremlins
+- Clicking a panelbar in solid mode doesn't shade/unshade it
+- Disappearing handles??
+- A new command prompt appears each time pterm is resized

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.5 2001/05/06 00:16:40 micahjd Exp $
+# $Id: kbcompile.pl,v 1.6 2001/07/19 09:06:38 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -109,7 +109,7 @@ while (<>) {
        	      $req_table{$pattern} .= pack("nnN",$symbols{'PGREQ_MKSTRING'},0,length($1)).$1;
 	   }
 	   else {
-	      die "Unknown request?";
+	      die "Unknown request in: '$_'";
  	   }
 	 }
 

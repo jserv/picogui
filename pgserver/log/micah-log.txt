@@ -1,3 +1,25 @@
+2001-07-19    Micah Dowty <micahjd@users.sourceforge.net>
+
+Finishing the virtual keyboard.
+-
+The virtual keyboard interpreter, pgboard, is (for now) finished. It can
+display a pattern, and react to buttons by sending a key event and/or jumping
+to another pattern. Now all that is needed is a good way to generate these
+keyboard files. A converter script for generating the binary keyboard file
+from an ascii keyboard file is already done, but even the ascii keyboard
+file is very tedious to edit by hand.
+I'm researching various vector graphics formats, hoping that an
+off-the-shelf open source vector graphics program can be used to draw the
+keyboards, then a script could convert them.
+
+      * widget/canvas.c: Added the capability to pass on 'release' events
+		  to the client.
+		  
+		* apps/pgboard/main.c: Cleaned up XOR handling for the buttons:
+		  using PGFX now, correct handling of mouse events
+		
+		* apps/pgboard/main.c: Added pattern jump support
+
 2001-07-10    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, I'm supposed to be done with this meta-input stuff today. After that
