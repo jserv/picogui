@@ -1,0 +1,12 @@
+# -*- python -*-
+
+from Bee.Autoconf import compile, install, clean
+
+native = 1
+multicompile = 1
+
+
+def prepare (module, platform, project):
+    sequence ("../configure --prefix=%s" % module.path ['dfl'])
+    return
+
