@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.14 2001/11/05 04:06:39 micahjd Exp $
+/* $Id: textbox_document.c,v 1.15 2001/11/09 08:33:50 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -168,6 +168,10 @@ g_error text_insert_wordbreak(struct textbox_cursor *c) {
     c->c_div = c->c_div->next;
     c->c_gctx.current = NULL;
     c->c_div->flags |= PG_S_LEFT | DIVNODE_AUTOWRAP;
+
+    /* A child div to actually do the rendering into */
+    e = newdiv(&c->c_div->div,c->widget);
+    errorcheck;
   }
 
   return sucess;
@@ -229,11 +233,15 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     c->c_div = c->c_line->div;
     c->c_gctx.current = NULL;
     c->c_div->flags |= PG_S_LEFT | DIVNODE_AUTOWRAP;
+
+    /* A child div to actually do the rendering into */
+    e = newdiv(&c->c_div->div,c->widget);
+    errorcheck;
   }
 
   /* No grop? */
   if (!c->c_gctx.current) {
-    gropctxt_init(&c->c_gctx,c->c_div);
+    gropctxt_init(&c->c_gctx,c->c_div->div);
     c->c_gx = c->c_gy = 0;
   }
   
@@ -268,12 +276,12 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   /* Update cursor and preferred size. Add the width of a space to
    * the preferred size so we have space between words. */
   c->c_gx += tw;
-  c->c_div->pw = c->c_gx;
-  if (th > c->c_div->ph)
-    c->c_div->ph = th;
+  c->c_div->div->pw = c->c_gx;
+  if (th > c->c_div->div->ph)
+    c->c_div->div->ph = th;
   sizetext(fd,&tw,&th," ");
-  c->c_div->pw += tw;
-  c->c_div->split = c->c_div->pw;
+  c->c_div->div->pw += tw;
+  c->c_div->split = c->c_div->div->pw;
 
   return sucess;
 }
