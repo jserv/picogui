@@ -24,6 +24,7 @@ int btnMenu(struct pgEvent *evt) {
 int main(int argc, char **argv) {
   pghandle wPanel, wZoom, wRotate, wClose, wPanelBar, wLabel;
   pghandle bArrow, bArrowMask;
+  pghandle wSizableBox, wMyPanelBar;
 
   /* Connect to the PicoGUI server and create an app as normal
    */
@@ -100,9 +101,58 @@ int main(int argc, char **argv) {
 	      PG_WP_EXTDEVENTS, PG_EXEV_PNTR_DOWN,
 	      0);
   pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, btnMenu, NULL);
-	     
 
-  /* Process events...
+  /* Another nifty feature of the new panel, is that the panelbar
+   * is now a completely self-contained widget. The panelbar widget
+   * is very versatile- whenever it is dragged, it simply applies
+   * the same change in size to the widget it's bound to. It's designed
+   * to be used with a container widget that the panelbar is inside:
+   */
+  
+  wSizableBox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_INSIDE, wPanel);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_RIGHT,
+	      PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
+	      PG_WP_SIZE, 50,
+	      PG_WP_TRANSPARENT, 1,
+	      PG_WP_MARGIN, 0,
+	      0);
+
+  wMyPanelBar = pgNewWidget(PG_WIDGET_PANELBAR, PG_DERIVE_INSIDE, wSizableBox);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_LEFT,
+	      PG_WP_BIND, wSizableBox,
+	      0);
+
+  /* Add some labels so we can tell what's in and out of our sizable container
+   */
+
+  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_AFTER, wMyPanelBar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_ALL,
+	      PG_WP_TEXT, pgNewString("Inside\nwSizableBox"),
+	      0);
+
+  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_AFTER, wSizableBox);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_ALL,
+	      PG_WP_TEXT, pgNewString("Outside\nwSizableBox"),
+	      0);
+
+  /* Add a label to our panel bar. This illustrates how to make it look like
+   * the panel's label widget.
+   */
+
+  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, wMyPanelBar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_ALL,
+	      PG_WP_DIRECTION, PG_DIR_VERTICAL,
+	      PG_WP_THOBJ, PGTH_O_PANELBAR,
+	      PG_WP_TEXT, pgNewString("wMyPanelBar"),
+	      0);
+
+  /* Process events... 
+   * The only event we need to process is the menu button
    */
 
   pgEventLoop();
