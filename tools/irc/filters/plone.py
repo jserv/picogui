@@ -19,7 +19,9 @@ dirName = message['subject'].split(" ")[1]
 
 # Use the from address as the author
 # since everyone is <user>@users.sf.net, print just the username
-author = message['from'].split('@')[0] + '>'
+author = message['from'].split('@')[0]
+if '<' in author:
+    author += '>'
 
 # The body is the set of non-blank lines starting after "Log Message:"
 log = ""
@@ -35,13 +37,13 @@ while True:
         break
     log += line + "\n"
 
-ciaMessage = "%s {green}%s{white}: %s" % (dirName, author, log)
+ciaMessage = "%s {underline}%s{underline}: %s" % (dirName, author, log)
 if tag:
-    ciaMessage = "[tag={yellow}%s{white}] %s" % (tag, ciaMessage)
+    ciaMessage = "[tag={bold}%s{bold}] %s" % (tag, ciaMessage)
 
 s = smtplib.SMTP()
 s.connect()
 s.sendmail(returnAddress, toAddress,
-           "From: %s\nTo: %s\nSubject: Announce %s\n\n{black}{reverse}{white}%s" % \
+           "From: %s\nTo: %s\nSubject: Announce %s\n\n%s" % \
            (returnAddress, toAddress, projectName, ciaMessage))
 s.close()
