@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.30 2002/01/07 18:26:12 lonetech Exp $
+/* $Id: input.h,v 1.31 2002/01/10 13:50:44 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -135,6 +135,7 @@ g_error rrts_regfunc(struct inlib *i);
 g_error vr3ts_regfunc(struct inlib *i);
 g_error tuxts_regfunc(struct inlib *i);
 g_error ucb1x00_regfunc(struct inlib *i);
+g_error sc3_regfunc(struct inlib *i);
 g_error ttykb_regfunc(struct inlib *i);
 g_error remorakb_regfunc(struct inlib *i);
 g_error serialmouse_regfunc(struct inlib *i);

@@ -41,6 +41,10 @@
   DRV("ucb1x00",&ucb1x00_regfunc)
 #endif
 
+#ifdef DRIVER_SC3TS
+  DRV("sc3ts",&sc3_regfunc)
+#endif
+
 #ifdef DRIVER_TTYKB
   DRV("ttykb",&ttykb_regfunc)
 #endif

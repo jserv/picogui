@@ -105,31 +105,32 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Input Drivers'
-bool 'Touchscreen calibration'		CONFIG_TOUCHSCREEN
+bool 'Touchscreen calibration'		                CONFIG_TOUCHSCREEN
 if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
-   bool 'Palmax touchscreen driver'	       DRIVER_PALMAXTS
+   bool 'Palmax touchscreen driver'	                DRIVER_PALMAXTS
+   bool 'SC3 compatible touchscreen input driver'	DRIVER_SC3TS
+   bool 'R3912 (VTech Helio) touchscreen input driver'  DRIVER_R3912TS
+   if [ "$DRIVER_R3912TS" = "y" ]; then
+     bool '  Convert Helio silk-screen buttons'         DRIVER_R3912TS_HELIOSS
+  fi
 fi
-bool 'SDL input driver'                    DRIVER_SDLINPUT
-bool 'X Window System input driver'        DRIVER_X11INPUT
-bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
-bool 'Ncurses input driver (also for framebuffer)' DRIVER_NCURSESINPUT
-bool 'GPM input driver'			DRIVER_GPM
-bool 'ChipSlice touchscreen input driver'  DRIVER_CHIPSLICETS
-bool 'Event broker driver'                 DRIVER_EVENTBROKER
-bool 'R3912 (VTech Helio) touchscreen input driver'    DRIVER_R3912TS
-if [ "$DRIVER_R3912TS" = "y" ]; then
-   bool '  Convert Helio silk-screen buttons'          DRIVER_R3912TS_HELIOSS
-fi
-bool 'Agenda VR3 touchscreen input driver'             DRIVER_VR3TS
-bool 'Old-Style TuxScreen touchscreen input driver'              DRIVER_TUXTS
+bool 'SDL input driver'                                 DRIVER_SDLINPUT
+bool 'X Window System input driver'                     DRIVER_X11INPUT
+bool 'SVGAlib input driver'                             DRIVER_SVGAINPUT
+bool 'Ncurses input driver'                             DRIVER_NCURSESINPUT
+bool 'GPM input driver'			                DRIVER_GPM
+bool 'ChipSlice touchscreen input driver'               DRIVER_CHIPSLICETS
+bool 'Event broker driver'                              DRIVER_EVENTBROKER
+bool 'Agenda VR3 touchscreen input driver'              DRIVER_VR3TS
+bool 'Old-Style TuxScreen touchscreen input driver'     DRIVER_TUXTS
 if [ "$DRIVER_TUXTS" = "y" ]; then
    bool '  Sound FX support via /dev/wheaties (EXPERIMENTAL)'  DRIVER_TUXTS_WHEATIES
 fi
-bool 'New-Style TuxScreen touchscreen input driver'    DRIVER_UCB1X00
-bool 'TTY keyboard input driver (TuxScreen, fb)'       DRIVER_TTYKB
-bool 'Remora keyboard (Chipslice)'                     DRIVER_REMORAKB
-bool 'Serial mouse input driver'                       DRIVER_SERIALMOUSE
-bool 'MGL2 input driver'                               DRIVER_MGL2INPUT
+bool 'New-Style TuxScreen touchscreen input driver'     DRIVER_UCB1X00
+bool 'TTY keyboard input driver (TuxScreen, fb)'        DRIVER_TTYKB
+bool 'Remora keyboard (Chipslice)'                      DRIVER_REMORAKB
+bool 'Serial mouse input driver'                        DRIVER_SERIALMOUSE
+bool 'MGL2 input driver'                                DRIVER_MGL2INPUT
 endmenu
 
 mainmenu_option next_comment
