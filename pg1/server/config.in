@@ -4,8 +4,7 @@ mainmenu_option next_comment
 comment 'Target System'
 
 choice 'Platform' \
-	"POSIX-compatible               CONFIG_OS_POSIX \
-	 Windows			CONFIG_OS_WINDOWS" POSIX-compatible
+	"POSIX-compatible               CONFIG_OS_POSIX" POSIX-compatible
 if [ "$CONFIG_OS_POSIX" = "y" ]; then
     bool '  uClinux'           		CONFIG_OS_UCLINUX
 fi
@@ -25,7 +24,7 @@ comment 'Unintrusive debugging'
 bool 'Enable text messages'             CONFIG_TEXT
 bool 'Magic debugging keys'             DEBUG_KEYS
 bool 'Video test modes'                 CONFIG_VIDEOTEST
-bool 'Trace location of fatal signals'  DEBUG_SIGTRACE
+bool 'Trace location of fatal signals (LINUX ONLY!)'  DEBUG_SIGTRACE
 if [ "$UCLINUX" != "y" ]; then
     bool 'Debugging symbols in binary'  CONFIG_NOSTRIP
 fi
