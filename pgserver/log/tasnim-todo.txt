@@ -1,10 +1,18 @@
 Todo:
 =====
 
+Start Work on 2 new applications:
+
+1) Fuel / mileage tracking
+2) Expenses (this one is so independent from other PIMs)
+
+* its about time to decide on the DB issue.
+
 uSpread: (micro-spreadsheet application for PicoGUI)
 --------
 
-* implement save and save as... menus.
-* figure out to add rows to a loaded sheet
+* DONE: implement save and save as... menus.
+* figure out to add rows / columns to a loaded sheet
 * ask size of sheet when New menuitem is clicked
-* add to cvs
+* DONE: add to cvs
+

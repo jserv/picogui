@@ -1,3 +1,23 @@
+2001-08-25    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: file save complete but some bugs crept in.
+		 the worst one is that the FILE button in toolbar does
+		 not show the menu once a file is saved or sav(ed) as.
+
+
+2001-08-23    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: completed algorithm for saving and various user
+		 interactions to be added.
+
+
+2001-08-18    Tasnim Ahmed <tasnim@users.sourceforge.net>
+
+      * uSpread: PG_WP_NAME usage complete, i.e. every cell widget can be
+		 located pgFindWidget, pgGetWidget and pgGetString can be
+		 used to retrieve data to save to file which is next task
+
+
 2001-08-14    Tasnim Ahmed <tasnim@users.sourceforge.net>
 
       * uSpread: util.[c|h] csv_info done, returns rows, cols 
