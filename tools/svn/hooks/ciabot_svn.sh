@@ -22,10 +22,18 @@
 #
 ##### There are some parameters for this script that you can customize:
 
+# Project information
 project_name="picogui"
 return_address="micah@picogui.org"
-log_message_lines="6"
+
+# System
 sendmail_command="/usr/sbin/sendmail -t"
+
+# Commit format
+log_message_lines="6"
+basedir_color="{normal}"
+revision_color="{normal}"
+author_color="{green}"
 
 ##### Below this line you shouldn't have to change anything unless you
 ##### want more extensive customization
@@ -52,7 +60,7 @@ author=`svnlook author -r "$REV" "$REPOS"`
    echo "Content-Type: text/plain;"
    echo "Subject: Announce $project_name"
    echo
-   echo -n "{light blue}$basedir{normal} r{yellow}$REV{normal} {green}$author{normal}: "
+   echo -n "$basedir_color$basedir{normal} r$revision_color$REV{normal} $author_color$author{normal}: "
    svnlook log -r "$REV" "$REPOS" | head -n $log_message_lines
 ) | $sendmail_command
 
