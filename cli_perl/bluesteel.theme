@@ -3,17 +3,14 @@ button.border.normal.y = 2
 button.border.normal.w = -4
 button.border.normal.h = -4
 button.border.normal.type = gradient
-
 button.border.normal.c1 = 0x7080A0
 button.border.normal.c2 = 0x000000
 button.border.normal.angle = 45
 button.border.normal.trans = none
-
 button.border.hilighted.c1 = 0x7080A0
 button.border.hilighted.c2 = 0x000000
 button.border.hilighted.angle = 45
 button.border.hilighted.trans = none
-
 button.border.active.c1 = 0x7080A0
 button.border.active.c2 = 0x000000
 button.border.active.angle = 225
@@ -24,17 +21,14 @@ button.fill.normal.y = 0
 button.fill.normal.w = 0
 button.fill.normal.h = 0
 button.fill.normal.type = gradient
-
 button.fill.normal.c1 = 0x8090B0
 button.fill.normal.c2 = 0x000000
 button.fill.normal.angle = 240
 button.fill.normal.trans = none
-
 button.fill.hilighted.c1 = 0x8090B0
 button.fill.hilighted.c2 = 0x000000
 button.fill.hilighted.angle = 240
 button.fill.hilighted.trans = none
-
 button.fill.active.c1 = 0x8090B0
 button.fill.active.c2 = 0x000000
 button.fill.active.angle = 240
@@ -45,17 +39,14 @@ button.overlay.normal.y = 2
 button.overlay.normal.w = -4
 button.overlay.normal.h = -4
 button.overlay.normal.type = gradient
-
 button.overlay.normal.c1 = 0x000000
 button.overlay.normal.c2 = 0x000000
 button.overlay.normal.angle = 270
 button.overlay.normal.trans = light
-
 button.overlay.hilighted.c1 = 0x505000
 button.overlay.hilighted.c2 = 0x000000
 button.overlay.hilighted.angle = 270
 button.overlay.hilighted.trans = light
-
 button.overlay.active.c1 = 0x505000
 button.overlay.active.c2 = 0x000000
 button.overlay.active.angle = 270
@@ -78,6 +69,83 @@ toolbar.fill.normal.c2 = 0x102030
 toolbar.fill.normal.angle = 85
 toolbar.fill.normal.trans = none
 
+scrollbar.border.normal.x = 1
+scrollbar.border.normal.y = 1
+scrollbar.border.normal.w = -2
+scrollbar.border.normal.h = -2
+scrollbar.border.normal.type = flat
+scrollbar.border.normal.c = 0x000000
+
+scrollbar.fill.normal.x = 0
+scrollbar.fill.normal.y = 0
+scrollbar.fill.normal.w = 0
+scrollbar.fill.normal.h = 0
+scrollbar.fill.normal.type = gradient
+scrollbar.fill.normal.c1 = 0x70A0A0
+scrollbar.fill.normal.c2 = 0x103030
+scrollbar.fill.normal.angle = 4
+scrollbar.fill.normal.trans = none
+
+scrollind.border.normal.x = 1
+scrollind.border.normal.y = 1
+scrollind.border.normal.w = -2
+scrollind.border.normal.h = -2
+scrollind.border.normal.type = gradient
+scrollind.border.normal.c1 = 0x8080A0
+scrollind.border.normal.c2 = 0x000000
+scrollind.border.normal.angle = 45
+scrollind.border.normal.trans = none
+scrollind.border.hilighted.c1 = 0x8080A0
+scrollind.border.hilighted.c2 = 0x000000
+scrollind.border.hilighted.angle = 45
+scrollind.border.hilighted.trans = none
+scrollind.border.active.c1 = 0x8080A0
+scrollind.border.active.c2 = 0x000000
+scrollind.border.active.angle = 225
+scrollind.border.active.trans = none
+
+scrollind.fill.normal.x = 0
+scrollind.fill.normal.y = 0
+scrollind.fill.normal.w = 0
+scrollind.fill.normal.h = 0
+scrollind.fill.normal.type = gradient
+scrollind.fill.normal.c1 = 0xB090B0
+scrollind.fill.normal.c2 = 0x000000
+scrollind.fill.normal.angle = 185
+scrollind.fill.normal.trans = none
+scrollind.fill.hilighted.c1 = 0xB090B0
+scrollind.fill.hilighted.c2 = 0x000000
+scrollind.fill.hilighted.angle = 185
+scrollind.fill.hilighted.trans = none
+scrollind.fill.active.c1 = 0xB090B0
+scrollind.fill.active.c2 = 0x000000
+scrollind.fill.active.angle = 185
+scrollind.fill.active.trans = none
+
+scrollind.overlay.normal.x = 1
+scrollind.overlay.normal.y = 1
+scrollind.overlay.normal.w = -2
+scrollind.overlay.normal.h = -2
+scrollind.overlay.normal.type = gradient
+scrollind.overlay.normal.c1 = 0x000000
+scrollind.overlay.normal.c2 = 0x000000
+scrollind.overlay.normal.angle = 270
+scrollind.overlay.normal.trans = light
+scrollind.overlay.hilighted.c1 = 0x505000
+scrollind.overlay.hilighted.c2 = 0x000000
+scrollind.overlay.hilighted.angle = 270
+scrollind.overlay.hilighted.trans = light
+scrollind.overlay.active.c1 = 0x505000
+scrollind.overlay.active.c2 = 0x000000
+scrollind.overlay.active.angle = 270
+scrollind.overlay.active.trans = light
+
 background = ../images/bg/darkblueswirl.pnm
+
+
+
+
+
+
 
 
