@@ -1,4 +1,4 @@
-/* $Id: gl_grop.c,v 1.2 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: gl_grop.c,v 1.3 2002/11/26 02:22:23 micahjd Exp $
  *
  * gl_grop.c - OpenGL driver for picogui
  *             This handles all new gropnodes that export OpenGL interfaces to
@@ -162,6 +162,10 @@ void gl_grop_handler(struct groprender *r, struct gropnode *n) {
     gl_feedback(n->r.x, n->r.y, n->r.w, n->r.h,
 		r->lgop, n->param[0], n->param[1],
 		(n->param[2]>>16) & 0xFFFF, (n->param[2] & 0xFFFF));
+    break;
+
+  case PG_GROP_GL_TEXPARAMETERI:
+    glTexParameteri(n->param[0],n->param[1],n->param[2]);
     break;
 
   }
