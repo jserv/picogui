@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.130 2001/12/15 00:19:58 micahjd Exp $
+/* $Id: widget.c,v 1.131 2001/12/18 02:55:21 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -997,6 +997,48 @@ void div_dump(void) {
        r_div_dump(dt->head,"Root:",0);
    printf("---------------- End div tree dump\n");
 }
+
+/* Trace the outlines of all divnodes onscreen */
+void r_divnode_trace(struct divnode *div) {
+  struct groprender r;
+  struct gropnode n;
+
+  if (!div)
+    return;
+
+  memset(&r,0,sizeof(r));
+  memset(&n,0,sizeof(n));
+
+  /* Set up rendering... */
+  r.output = vid->display;
+  n.r.x = div->x;
+  n.r.y = div->y;
+  n.r.w = div->w;
+  n.r.h = div->h;
+  r.clip.x1 = 0;
+  r.clip.y1 = 0;
+  r.clip.x2 = vid->lxres-1;
+  r.clip.y2 = vid->lyres-1;
+
+  /* Green shading for leaf divnodes */
+  if (!div->div && !div->next) {
+    r.color = VID(color_pgtohwr)(0xA0FFA0);
+    r.lgop = PG_LGOP_MULTIPLY;
+    n.type = PG_GROP_RECT;
+    gropnode_clip(&r,&n);
+    gropnode_draw(&r,&n);
+  }
+
+  /* yellow box around all divnodes */
+  r.color = VID(color_pgtohwr)(0xFFFF00);
+  r.lgop = PG_LGOP_NONE;
+  n.type = PG_GROP_FRAME;
+  gropnode_clip(&r,&n);
+  gropnode_draw(&r,&n);
+
+  r_divnode_trace(div->div);
+  r_divnode_trace(div->next);
+} 
      
 #endif
    
@@ -1049,6 +1091,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 	   "  CTRL-ALT-Y: Unsynchronize screen buffers\n"
 	   "  CTRL-ALT-U: Blue screen\n"
 	   "  CTRL-ALT-P: Bitmap dump to video display\n"
+	   "  CTRL-ALT-O: Trace all divnodes\n"
 	   );
       return;
 
@@ -1147,9 +1190,14 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
       handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps);
       VID(update) (0,0,vid->lxres,vid->lyres);
       return;
-       
-#endif /* DEBUG_KEYS */
 
+    case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
+      r_divnode_trace(dts->top->head);
+      VID(update) (0,0,vid->lxres,vid->lyres);
+      return;
+
+#endif /* DEBUG_KEYS */
+      
     }
   }
 
