@@ -185,6 +185,8 @@ class BotChat(basechat.ChatUI):
         basechat.ChatUI.unregisterAccountClient(self, client)
         if connected:
             accounts[0].logOn(self)
+        else:
+            sys.exit(1)
 
 from twisted.internet.app import Application
 application = Application("announceBot")
