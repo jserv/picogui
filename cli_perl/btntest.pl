@@ -25,6 +25,6 @@ NewWidget(-type => label,-text => NewString("This is only a test..."),-font =>
 	  -side=>left);
 
 NewWidget(-type=>button,-onclick => sub{print"click!\n"},
-	  -text => NewString("print \"click!\\n\";"));
+	  -text => NewString("print \"click!\\n\";"),-side => all);
 
 EventLoop;
