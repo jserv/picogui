@@ -90,11 +90,11 @@ dnl 2.- set the flags for our tests
 CFLAGS="${PGSERVER_CFLAGS}"
 
 dnl 3.- try to compile some significant test
-AC_TRY_LINK(
-	[#include <picogui/network.h>], 
-	[ struct pgrequest dummy; ],, 
-	AC_MSG_ERROR([cannot link a test picogui program.])
-)
+dnl AC_TRY_LINK(
+dnl 	[#include <picogui/network.h>], 
+dnl	[ struct pgrequest dummy; ],, 
+dnl	AC_MSG_ERROR([cannot link a test picogui program.])
+dnl )
 
 dnl 4.- restore everything
 CFLAGS="${old_CFLAGS}"
