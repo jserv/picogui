@@ -9,7 +9,6 @@ libvidbase_a_SOURCES = 	\
 	dvbl_font.c	\
 	dvbl_init.c	\
 	dvbl_lgop.c	\
-	dvbl_primitives.c\
 	dvbl_sprite.c	\
 	$(VIDBASE)
 
@@ -23,7 +22,9 @@ EXTRA_libvidbase_a_SOURCES = \
 	linear32.c      \
 	slowvbl.c       \
 	dvbl_dither.c   \
-	visibone2.c     
+	visibone2.c     \
+	dvbl_primitives.c\
+	dvbl_primitives_aa.c
 
 libvidbase_a_LIBADD       = $(VIDBASE:%.c=%.o)
 libvidbase_a_DEPENDENCIES = $(VIDBASE:%.c=%.o)

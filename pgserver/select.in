@@ -51,6 +51,8 @@ add_if_true vgaplan4.c    $CONFIG_VBL_VGAPLAN4
 add_if_true slowvbl.c     $CONFIG_VBL_SLOWVBL
 add_if_true dvbl_dither.c $CONFIG_DITHER
 add_if_true visibone2.c   $CONFIG_PAL8_VISIBONE2
+add_if_true dvbl_primitives_aa.c $CONFIG_ANTIALIAS
+add_if_false dvbl_primitives.c $CONFIG_ANTIALIAS
 
 close_section
 

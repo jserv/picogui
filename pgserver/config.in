@@ -196,6 +196,7 @@ bool 'Floyd-steinberg image dithering'                   CONFIG_DITHER
 if [ "$CONFIG_DITHER" = "y" ]; then
   bool '  Also dither gradients (slow)'                  CONFIG_DITHER_GRADIENTS
 fi
+bool 'Use anti-aliasing when available (EXPERIMENTAL)'   CONFIG_ANTIALIAS
 bool 'Very slow VBL (for debugging)'                     CONFIG_VBL_SLOWVBL
 bool '90 degree video rotation'                          CONFIG_ROTATE
 bool '180 degree video rotation'                         CONFIG_ROTATE180
