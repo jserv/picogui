@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.7 2000/11/04 07:03:41 micahjd Exp $
+/* $Id: widget.h,v 1.8 2000/11/05 05:08:19 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -196,10 +196,11 @@ DEF_STATICWIDGET_PROTO(indicator)
 DEF_STATICWIDGET_PROTO(bitmap)
 DEF_WIDGET_PROTO(button)
 DEF_WIDGET_PROTO(panel)
-DEF_STATICWIDGET_PROTO(popup)
+DEF_WIDGET_PROTO(popup)
 DEF_STATICWIDGET_PROTO(box)
 DEF_WIDGET_PROTO(field)
 DEF_STATICWIDGET_PROTO(background)
+DEF_WIDGET_PROTO(menuitem)
 
 /* Set to the client # if a client has taken over the input device */
 extern int keyboard_owner;

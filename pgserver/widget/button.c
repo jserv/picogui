@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.39 2000/11/05 03:13:47 micahjd Exp $
+/* $Id: button.c,v 1.40 2000/11/05 05:08:19 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -27,9 +27,6 @@
 
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
-
-/* Button content offsetted in X and Y coords by this much when on */
-#define ON_OFFSET 1
 
 struct btndata {
   int on,over;

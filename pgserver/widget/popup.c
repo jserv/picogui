@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.17 2000/11/05 03:13:47 micahjd Exp $
+/* $Id: popup.c,v 1.18 2000/11/05 05:08:19 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -55,11 +55,12 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   }
 
   if (((signed short)x) == PG_POPUP_ATCURSOR) {
-    x = pointer->x;
-    y = pointer->y;
+    x = pointer->x+(pointer->w/2);
+    y = pointer->y-(pointer->h/2);;
     /* pop vertically if the cursor is on the bottom half of the screen */
     // y = (pointer->y > (vid->yres>>1)) ? (pointer->y - h) : pointer->y;
     (*wgt)->in->div->state = PGTH_O_POPUP_MENU;
+    (*wgt)->in->state = PGTH_O_POPUP_MENU;
   }
 
   /* Clipping and things */
@@ -84,6 +85,11 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   return sucess;
 }
 
+void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
+  /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
+  exec_fillstyle(c,state,PGTH_P_BACKDROP);
+}
+
 g_error popup_install(struct widget *self) {
   g_error e;
 
@@ -91,6 +97,8 @@ g_error popup_install(struct widget *self) {
      let create_popup position it.
   */
   e = newdiv(&self->in,self);
+  self->in->build = &build_popupbg;
+  self->in->state = PGTH_O_POPUP;
   errorcheck;
   self->in->flags = DIVNODE_SPLIT_IGNORE;
 
@@ -102,6 +110,8 @@ g_error popup_install(struct widget *self) {
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
+  
+  self->trigger_mask = TRIGGER_DOWN;
 
   return sucess;
 }
@@ -132,6 +142,11 @@ g_error popup_set(struct widget *self,int property, glob data) {
 
 glob popup_get(struct widget *self,int property) {
   return 0;
+}
+
+void popup_trigger(struct widget *self,long type,union trigparam *param) {
+  /* Only possible trigger (due to the mask) is a mouse down. */
+  //  guru("Panel trigger.\n div_under_crsr = 0x%08X",div_under_crsr);
 }
 
 /* The End */
