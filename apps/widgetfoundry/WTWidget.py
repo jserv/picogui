@@ -1,4 +1,4 @@
-# $Id: WTWidget.py,v 1.6 2003/01/01 03:42:53 micahjd Exp $
+# $Id: WTWidget.py,v 1.7 2003/03/23 02:11:28 micahjd Exp $
 #
 # WTWidget.py - Extensions to the PicoGUI widget class to support
 #               Widget Foundry's XWT exporting and property editing
@@ -163,7 +163,7 @@ class WidgetType:
         self.properties = []
         self.defaults = {}
         self.name = type
-        for prop in PicoGUI.server.constants['set'].keys():
+        for prop in PicoGUI.constants._constants['set'].keys():
             try:
                 default = getattr(widget, prop)
                 setattr(widget,prop,default)
