@@ -1,0 +1,100 @@
+/* $Id: phosphor.ths,v 1.1 2002/07/11 21:34:44 micahjd Exp $
+ *
+ * It's retro, it's green, it's small... It's Phosphor.
+ *
+ * Micah Dowty
+ */
+
+object default {
+  name = "Phosphor";
+
+  /* Use a modified version of bitmapengine's fs_expand
+   * to draw the phosphor texture around borders.
+   */
+  bitmap1 = LoadBitmap("data/phosphor_texture.pnm");
+  bgfill = fillstyle {
+    var bit, sx, sy, sw, sh, l, r, t, b, bsy, by;
+
+    bit = bitmap1;
+    sx  = 0;
+    sy  = 0;
+    sw  = 36;
+    sh  = 35;
+    l   = 8;
+    r   = 8;
+    t   = 7;
+    b   = 7;
+
+    /* Some common subexpressions */
+    bsy = sy+sh-b;
+    by  = y+h-b;
+
+    /* Top-left */
+    SetSrc(sx,sy,l,t);
+    Bitmap(x,y,l,t,bit);
+
+    /* Top edge */
+    SetSrc(sx+l,sy,sw-l-r,t);
+    Tilebitmap(x+l,y,w-l-r,t,bit);
+
+    /* Top-right */
+    SetSrc(sx+sw-r,sy,r,t);
+    Bitmap(x+w-r,y,r,t,bit);
+
+    /* Left edge */
+    SetSrc(sx,sy+t,l,sh-t-b);
+    Tilebitmap(x,y+t,l,h-t-b,bit);
+
+    /* Middle */
+    SetColor(bgcolor);
+    Rect(x+l,y+t,w-l-r,h-t-b);
+
+    /* Right edge */
+    SetSrc(sx+sw-r,sy+t,r,sh-t-b);
+    Tilebitmap(x+w-r,y+t,r,h-t-b,bit);
+
+    /* Bottom-left */
+    SetSrc(sx,bsy,l,t);
+    Bitmap(x,by,l,t,bit);
+
+    /* Bottom edge */
+    SetSrc(sx+l,bsy,sw-l-r,t);
+    Tilebitmap(x+l,by,w-l-r,t,bit);
+
+    /* Bottom-right */
+    SetSrc(sx+sw-r,bsy,r,t);
+    Bitmap(x+w-r,by,r,t,bit);
+
+    /* Reset params to not mess up the widget.. */
+    SetSrc(0,0,0,0);
+  };
+
+  font = Font(NULL,12, PG_FSTYLE_BOLD | PG_FSTYLE_FIXED);
+
+  bgcolor = 0x000000;
+  fgcolor = 0x00A000;
+  margin = 10;
+}
+
+object button {
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+  margin = 0;
+  spacing = 2;
+}
+
+object button.hilight fgcolor = 0x00FF00;
+
+object scroll {
+  bgfill = fillstyle {
+    SetSrc(0,7,8,21);
+    Tilebitmap(x,y,w,h,bitmap1);
+  };
+  overlay = fillstyle {
+    SetSrc(8,7,8,20);
+    Tilebitmap(x,y,w,h,bitmap1);
+  };
+  width = 8;
+}
