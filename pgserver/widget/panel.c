@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.21 2000/08/07 19:44:09 micahjd Exp $
+/* $Id: panel.c,v 1.22 2000/08/07 22:39:45 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -126,7 +126,8 @@ g_error panel_install(struct widget *self) {
   self->out = &self->in->next->next;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DRAG;
+    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
+    TRIGGER_DRAG | TRIGGER_MOVE;
 
   return sucess;
 }
@@ -183,10 +184,18 @@ glob panel_get(struct widget *self,int property) {
 void panel_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
   g_error e;
+  int tmpover;
 
   switch (type) {
 
   case TRIGGER_ENTER:
+
+    /* Only set DATA->over if the mouse is in the panelbar */
+    if (param->mouse.x < PANELBAR_DIV->x ||
+	param->mouse.y < PANELBAR_DIV->y ||
+	param->mouse.x >= (PANELBAR_DIV->x+PANELBAR_DIV->w) ||
+	param->mouse.y >= (PANELBAR_DIV->y+PANELBAR_DIV->h))
+      return;
     DATA->over = 1;
     break;
 
@@ -317,8 +326,19 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->on = 0;
     break;
 
+  case TRIGGER_MOVE:
+    /* We're not dragging the bar, but see if the mouse is 
+       entering or exiting the bar */
+    tmpover = (param->mouse.x >= PANELBAR_DIV->x &&
+	       param->mouse.y >= PANELBAR_DIV->y &&
+	       param->mouse.x < (PANELBAR_DIV->x+PANELBAR_DIV->w) &&
+	       param->mouse.y < (PANELBAR_DIV->y+PANELBAR_DIV->h));
+    if (tmpover == DATA->over) return;
+    DATA->over = tmpover;
+    break;
+    
   case TRIGGER_DRAG:
-    if (!DATA->on) return;    
+    if (!DATA->on) return;
     /* Ok, button 1 is dragging through our widget... */
 
     /* If we haven't waited long enough since the last update,
