@@ -2,8 +2,6 @@ SUBDIRS = thdump themec pgbg
 
 EXTRA_DIST = themetools.spec
 
-INCLUDES = $(PGSERVER_CFLAGS)
-
 dist-hook:
 	$(mkinstalldirs) $(distdir)/examples/data
 	$(mkinstalldirs) $(distdir)/include/picogui

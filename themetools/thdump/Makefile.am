@@ -10,5 +10,7 @@ symtab.c : $(CONSTANTS) $(srcdir)/mksymtab.pl
 
 DISTCLEANFILES = symtab.c
 
+INCLUDES = $(PGSERVER_CFLAGS)
+
 EXTRA_DIST = $(srcdir)/mksymtab.pl
 

@@ -24,6 +24,8 @@ endif
 
 DISTCLEANFILES = symtab.c pgtheme.c pgtheme.h pglex.c
 
+INCLUDES = $(PGSERVER_CFLAGS)
+
 EXTRA_DIST = $(srcdir)/mksymtab.pl
 
 symtab.c : $(CONSTANTS) $(srcdir)/mksymtab.pl

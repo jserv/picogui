@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.57 2002/04/08 23:43:57 micahjd Exp $
+/* $Id: network.h,v 1.58 2002/04/09 16:28:48 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -150,10 +150,12 @@ struct pghello {
 #define PGREQ_FINDTHOBJ    48  /* Find theme object by name      |   chars */
 #define PGREQ_TRAVERSEWGT  49  /* Find widgets after this one    | struct */
 #define PGREQ_MKTEMPLATE   50  /* Load a Widget Template         |      wt */
+#define PGREQ_SETCONTEXT   51  /* Set the app's current context  | struct */
+#define PGREQ_GETCONTEXT   52  /* Return the current context     |   none */
 
 /* NOTE: Before adding new entries to the end, replace any deprecated entries above */
 
-#define PGREQ_UNDEF        51  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        53  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
