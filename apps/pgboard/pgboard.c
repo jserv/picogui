@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.11 2001/10/26 17:47:44 cgrigis Exp $
+/* $Id: pgboard.c,v 1.12 2001/10/29 09:44:13 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -45,9 +45,83 @@ struct mem_pattern mpat;
 pghandle wCanvas, wDisabled, wApp;
 struct key_entry *keydown = NULL;
 
+/* Flag representing the status of the keyboard (enabled/disabled) */
+static int enable_status = 1;
+  /* Current pattern */
+static unsigned short current_pat;
+
+/* Structure to hold the current keyboard context */
+struct keyboard_context
+{
+  long appSize;
+  int enable_status;
+  unsigned short current_pat;
+
+  /* Linked list pointer */
+  struct keyboard_context * next;
+};
+
+/* Top of the keyboard context stack */
+static struct keyboard_context * context_top = NULL;
+
+/* Prototype declarations */
 void enableKbdCanvas ();
 void disableKbdCanvas ();
 void selectPattern (unsigned short);
+
+/*
+ * Push the current keyboard context 
+ */
+void pushKeyboardContext ()
+{
+  struct keyboard_context * kbc;
+
+  /* Allocate new context */
+  kbc = (struct keyboard_context *) malloc (sizeof (struct keyboard_context));
+  if (kbc == NULL)
+    {
+      pgMessageDialog ("Virtual Keyboard", "Error allocating memory for context", 0);
+      return;
+    }
+
+  /* Fill in context data */
+  kbc->appSize = pgGetWidget (wApp, PG_WP_SIZE);
+  kbc->enable_status = enable_status;
+  kbc->current_pat = current_pat;
+  kbc->next = context_top;
+
+  /* Update top of context stack */
+  context_top = kbc;
+}
+
+/*
+ * Pop the last pushed keyboard context
+ */
+void popKeyboardContext ()
+{
+  struct keyboard_context * kbc = context_top;
+
+  if (context_top == NULL)
+    {
+      /* No context to pop -> ignore */
+      printf ("popKeyboardContext() on empty context stack --> ignored\n");
+      return;
+    }
+
+  /* Retrieve context data */
+  pgSetWidget(wApp,
+	      PG_WP_SIZE, kbc->appSize,
+	      0);
+  enable_status = kbc->enable_status;
+  enable_status ? enableKbdCanvas () : disableKbdCanvas ();
+  selectPattern (kbc->current_pat);
+
+  /* Update top of context stack */
+  context_top = kbc->next;
+
+  /* Free context space */
+  free (kbc);
+}
 
 /* Small utility function to XOR a key's rectangle */
 void xorKey(struct key_entry *k) {
@@ -73,9 +147,6 @@ int evtMessage (struct pgEvent * evt)
   /* Keyboard's new size */
   int newSize = -1;
 
-  /* Internal status reprenting the stats of the keyboard (enabled/disabled) */
-  static int status = 0;
-      
   switch (evt->type)
     {
     case PG_WE_APPMSG:
@@ -100,21 +171,29 @@ int evtMessage (struct pgEvent * evt)
 
 	case PG_KEYBOARD_ENABLE:
 	  enableKbdCanvas ();
-	  status = 0;
+	  enable_status = 1;
 	  break;
 
 	case PG_KEYBOARD_DISABLE:
 	  disableKbdCanvas ();
-	  status = 1;
+	  enable_status = 0;
 	  break;
 
 	case PG_KEYBOARD_TOGGLE_DISPLAY:
-	  status ? enableKbdCanvas () : disableKbdCanvas ();
-	  status = !status;
+	  enable_status = !enable_status;
+	  enable_status ? enableKbdCanvas () : disableKbdCanvas ();
 	  break;
 
 	case PG_KEYBOARD_SELECT_PATTERN:
 	  selectPattern (ntohs (cmd->data.pattern));
+	  break;
+
+	case PG_KEYBOARD_PUSH_CONTEXT:
+	  pushKeyboardContext ();
+	  break;
+
+	case PG_KEYBOARD_POP_CONTEXT:
+	  popKeyboardContext ();
 	  break;
 
 	default:
@@ -145,9 +224,6 @@ int evtMessage (struct pgEvent * evt)
  */
 void selectPattern (unsigned short pattern)
 {
-  /* Current pattern */
-  static unsigned short current_pat;
-
   /* Flag indicating if we are within a context */
   static int inContext = 0;
 

@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.3 2001/10/26 17:21:42 cgrigis Exp $
+/* $Id: pgboard.h,v 1.4 2001/10/29 09:44:34 cgrigis Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -39,6 +39,8 @@
 #define PG_KEYBOARD_DISABLE         5  /* Disable the keyboard app */
 #define PG_KEYBOARD_TOGGLE_DISPLAY  6  /* Toggle between ENABLE and DISABLE */
 #define PG_KEYBOARD_SELECT_PATTERN  7  /* Select a different pattern */
+#define PG_KEYBOARD_PUSH_CONTEXT    8  /* Push the current keyboard context */
+#define PG_KEYBOARD_POP_CONTEXT     9  /* Pop the last pushed keyboard context */
 
 
 /* Constants for keyboard patterns */
