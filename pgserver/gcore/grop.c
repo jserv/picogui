@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.36 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: grop.c,v 1.37 2001/02/11 06:34:51 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -172,7 +172,18 @@ void grop_render(struct divnode *div) {
      */
     srcx = srcy = 0;
     switch (type) {
-      
+       
+       /* Text clipping is handled by the charblit, but we can
+	* go ahead and handle a few cases on the string level */
+     case PG_GROP_TEXT:
+       if (x>cx2 || y>cy2)
+	 goto skip_this_node;
+       break;
+     case PG_GROP_TEXTV:
+       if (y<cy1)
+	 goto skip_this_node;
+       break;
+
      case PG_GROP_LINE:
 
        /* Is this line just completely out there? */
@@ -272,8 +283,9 @@ void grop_render(struct divnode *div) {
 	     h=1;   
 	     if (w<0) {
 		x += w;
-		w = 1-w;
+		w = -w;
 	     }
+	     w++;
 	     type = PG_GROP_SLAB;
 	  }
 	  
@@ -281,25 +293,14 @@ void grop_render(struct divnode *div) {
 	     w=1;
 	     if (h<0) {
 		y += h;
-		h = 1-h;
+		h = -h;
 	     }
+	     h++;
 	     type = PG_GROP_BAR;
 	  }
 
 	  /* ... and fall through to default */
        }
-       
-       /* Text clipping is handled by the charblit, but we can
-	* go ahead and handle a few cases on the string level */
-    case PG_GROP_TEXT:
-      if (x>cx2 || y>cy2)
-	goto skip_this_node;
-      break;
-    case PG_GROP_TEXTV:
-      if (y<cy1)
-	goto skip_this_node;
-      break;
-
        /* Default clipping just truncates */
      default:
        if (x<cx1) {
