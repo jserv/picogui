@@ -46,12 +46,21 @@ class Main:
 class WorkArea:
     "This is where widget templates are constructed"
     def __init__(self, main):
-        self.widget = main.toolbar.widget.addWidget('box')
+        self.widget = WTWidget.Widget(main.app,main.toolbar.widget.addWidget('box'))
         self.widget.side = 'all'
         self.main = main
         
-        w = WTWidget.Widget(main.app,self.widget.addWidget('label','inside'))
-        main.select(w)
+        w1 = self.widget.addWidget('label','inside')
+        w2 = w1.addWidget('label')
+        w3 = w2.addWidget('button')
+
+        w1.text = "This..."
+        w2.text = "... is a test!"
+        w3.text = "Yay"
+        w3.side = "top"
+        
+        main.select(self.widget)
+
 
 if __name__ == '__main__':
     Main().app.run()

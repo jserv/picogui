@@ -8,20 +8,67 @@ class Widget:
     properties and defaults, and dump itself to XWT format.
     """
     def __init__(self,app,pgwidget):
-        self.pgwidget = pgwidget
-        self.app = app
-
         # Get a WidgetType class for this widget.
         # Cache the WidgetType objects per-app.
         if not hasattr(app,'widgetTypes'):
             app.widgetTypes = {}
         type = pgwidget.type
         if not app.widgetTypes.has_key(type):
-           app. widgetTypes[type] = WidgetType(app, type)
-        self.type = app.widgetTypes[type]
+           app.widgetTypes[type] = WidgetType(app, type)
 
-        self.properties = {}
-        self.children = []
+        # This avoids calling __setattr__
+        self.__dict__.update({
+            'pgwidget': pgwidget,
+            'app': app,
+            'properties': {},
+            'children': [],
+            'wtype': app.widgetTypes[type],
+            'parent': None,
+           })
+
+    def __eq__(self, other):
+        return self.pgwidget == other.pgwidget
+
+    def __delattr__(self, property):
+        # Standard picogui widgets don't support deleting properties.
+        # Here we delete it from our list and set the pgwidget's property
+        # to what we think is the default.
+        del self.properties[property]
+        setattr(self.pgwidget,property,self.wtype.defaults[property])
+
+    def __setattr__(self, name, value):
+        pname = name.lower().replace('_', ' ')
+        if pname in self.wtype.properties:
+            # Set it in our list and the pgwidget
+            self.properties[pname] = value
+            setattr(self.pgwidget,pname,value)
+        else:
+            self.__dict__[name] = value
+            
+    def __getattr__(self, name):
+        pname = name.lower().replace('_', ' ')
+        # Our list is considered authoritative when getting properties
+        return self.properties[pname]
+        
+    def addWidget(self, wtype, relationship=None):
+        # Wrap the new widget, and maintain the child/parent attributes
+        if not relationship:
+            relationship = self.pgwidget.default_relationship
+        newWidget = Widget(self.app,self.pgwidget.addWidget(wtype,relationship))
+
+        if relationship == 'inside':
+            self.children = [newWidget] + self.children
+            newWidget.parent = self
+        elif relationship == 'after':
+            newWidget.parent = self.parent
+            if self.parent:
+                self.parent.children.insert(self.parent.children.index(self)+1,newWidget)
+        elif relationship == 'before':
+            newWidget.parent = self.parent
+            if self.parent:
+                self.parent.children.insert(self.parent.children.index(self),newWidget)
+
+        return newWidget
 
     # Settings for outputting XWTs
     indentSize = 4
@@ -29,14 +76,6 @@ class Widget:
 
     def getIndent(self, indentLevel):
         return ' ' * (self.indentSize * indentLevel)
-
-    def unset(self, property):
-        del self.properties[property]
-        setattr(self.pgwidget,property,self.type.defaults[property])
-
-    def set(self, property, value):
-        self.properties[property] = value
-        setattr(self.pgwidget,property,value)
 
     # Returns the attribute list, with separator before each pair
     def getAttributes(self, properties=None, separator=' '):
@@ -58,12 +97,12 @@ class Widget:
         else:
             data = ''
             
-        xwt = "%s<%s%s" % (indent, self.type.name, self.getAttributes(properties))
+        xwt = "%s<%s%s" % (indent, self.wtype.name, self.getAttributes(properties))
             
         # Was that too long? We can put properties on individual lines
         if len(xwt) > self.maxInlineLength:
             separator = '\n' + getIndent(indentLevel+1)
-            xwt = '%s<%s%s%s' % (indent, self.type.name,
+            xwt = '%s<%s%s%s' % (indent, self.wtype.name,
                                  self.getAttributes(properties,separator), separator)
             
         # If we have no widgets or data, make this a self-closing tag and exit
@@ -78,7 +117,7 @@ class Widget:
         for child in self.children:
             xwt += child.toXWT(indentLevel+1)
 
-        return '%s%s</%s>\n' % (xwt, indent, self.type.name)
+        return '%s%s</%s>\n' % (xwt, indent, self.wtype.name)
 
 
 class WidgetType:
@@ -104,6 +143,9 @@ class WidgetType:
                 self.properties.append(prop)
 	self.properties.sort()
         app.delWidget(widget)
+        
+        # Overrides for defaults we don't detect right
+        self.defaults['size'] = None
 
 
 class PropertyList:
@@ -114,7 +156,7 @@ class PropertyList:
         self.container = container
         self.list = []
 
-        for i in widget.type.properties:
+        for i in widget.wtype.properties:
             self.list.append(PropertyEdit(self,i))
 
     def destroy(self):
@@ -147,7 +189,6 @@ class PropertyEdit:
         if self.widget.properties.has_key(self.property):
             self.checkbox.on = 1
             self.show()
-	    self.propertyValid()
 
     def destroy(self):
 	self.deleteEditorWidgets()
@@ -155,7 +196,8 @@ class PropertyEdit:
 	
     def show(self):
 	if not self.visible:
-            self.widget.set(self.property,self.widget.type.defaults[self.property])
+            setattr(self.widget,self.property,
+                    self.widget.wtype.defaults[self.property])
 	    self.editor = StringPropertyEditor(self)
 	    self.visible = True
 
@@ -167,7 +209,7 @@ class PropertyEdit:
     def hide(self):
 	if self.visible:
 	    self.deleteEditorWidgets()
-            self.widget.unset(self.property)
+            delattr(self.widget,self.property)
 	    self.visible = False
 
     def _show_hide(self, ev, widget):
@@ -186,7 +228,7 @@ class PropertyEdit:
         # If we have an exception setting the property,
         # slap an invalid warning on this property
         try:
-            self.widget.set(self.property, value)
+            setattr(self.widget, self.property, value)
         except:
             self.errorLabel = self.box.addWidget('label','inside')
             self.errorLabel.side = 'bottom'
