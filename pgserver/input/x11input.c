@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.6 2001/11/21 04:38:34 micahjd Exp $
+/* $Id: x11input.c,v 1.7 2001/11/21 05:18:28 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -126,8 +126,10 @@ int x11input_fd_activate(int fd) {
 
       /****************** Keyboard events
        *
-       * Keyboard support is more complicated. Most of this code was taken
-       * straight from SDL's x11 driver.
+       * In X11, keyboard repeats are release events, not press events...
+       * This code needs to send KEYDOWN and KEYUP only when the key
+       * is actually pressed or released, and send CHAR events when the
+       * key is pressed and when it repeats.
        */
 
     case KeyPress:
@@ -139,11 +141,15 @@ int x11input_fd_activate(int fd) {
       break;
 
     case KeyRelease:
-      if (x11_key_repeat(xdisplay, &ev))
-	break;
       x11_translate_key(xdisplay, &ev.xkey, ev.xkey.keycode, &sym, &mod, &chr);
-      if (sym)
-	dispatch_key(TRIGGER_KEYUP,sym,mod);
+      if (x11_key_repeat(xdisplay, &ev)) {
+	if (chr)
+	  dispatch_key(TRIGGER_CHAR,chr,mod);
+      }
+      else {
+	if (sym)
+	  dispatch_key(TRIGGER_KEYUP,sym,mod);
+      }
       break;
 
     }

@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.8 2001/11/21 04:38:34 micahjd Exp $
+/* $Id: x11.c,v 1.9 2001/11/21 05:18:28 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -176,6 +176,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   XSelectInput(xdisplay, x11_display.d,
 	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
+  XAutoRepeatOn(xdisplay);
 
   XFlush(xdisplay);
   return sucess;
