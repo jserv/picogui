@@ -1,0 +1,549 @@
+/*
+ * Larger version of the "Fluidity" theme for PicoGUI
+ *
+ * Code and artwork Copyright 2002 Micah Dowty 
+ * <micahjd@users.sourceforge.net>
+ *
+ * This theme requires the JPEG and PNG image loaders,
+ * and is optimized for 320x240 or 240x320 high-color LCDs
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * All graphics used here are original works also licensed under the GPL!
+ *
+ * This theme is still incomplete!
+ *
+ */ 
+
+/* Bitmaps */
+prop bDarkInterlace;
+
+/* Fillstyles */
+prop fBitmap, fNop, fExpand, fDarkInterlace, fDeEmphasize;
+
+/* X and Y of source bitmap */
+prop srcx, srcy, srcw, srch;
+
+/* Amount not to tile on each side */
+prop left_sz, right_sz, top_sz, bottom_sz;
+
+/********************************** Default definitions */
+
+object default {
+  name = "Fluidity Large (incomplete)";
+  bgfill = Copy(default::fDarkInterlace);
+
+  cursorbitmap = LoadBitmap("data/cursor.png");
+  cursorbitmask = 0;
+
+  bDarkInterlace = LoadBitmap("data/dark_interlace.png");
+
+  fNop = fillstyle {
+    Nop();
+  };
+
+  fBitmap = fillstyle {
+    Bitmap(x,y,w,h,bitmap1);
+  };
+
+  /* Tile a bitmap horizontally, keeping the end pieces static */
+  /* Expand horizontally and vertically by tiling 
+   */
+  fExpand = fillstyle {
+    var bit, sx, sy, sw, sh, l, r, t, b, bsy, by, my_w, my_h;
+
+    /* Load theme properties now */
+    bit = bitmap1;
+    sx  = srcx;
+    sy  = srcy;
+    sw  = srcw;
+    sh  = srch;
+    l   = left_sz;
+    r   = right_sz;
+    t   = top_sz;
+    b   = bottom_sz;
+	
+    /* Limit minimum size */
+    my_w = w < (l+r) ? (l+r) : w;
+    my_h = h < (t+b) ? (t+b) : h;
+
+    /* Some common subexpressions */
+    bsy = sy+sh-b;
+    by  = y+my_h-b;
+
+    /* Top-left */
+    SetSrc(sx,sy,l,t);
+    Bitmap(x,y,l,t,bit);
+
+    /* Top edge */
+    SetSrc(sx+l,sy,sw-l-r,t);
+    Tilebitmap(x+l,y,my_w-l-r,t,bit);
+
+    /* Top-right */
+    SetSrc(sx+sw-r,sy,r,t);
+    Bitmap(x+my_w-r,y,r,t,bit);
+
+    /* Left edge */
+    SetSrc(sx,sy+t,l,sh-t-b);
+    Tilebitmap(x,y+t,l,my_h-t-b,bit);
+
+    /* Middle */
+    SetSrc(sx+l,sy+t,sw-l-r,sh-t-b);
+    Tilebitmap(x+l,y+t,my_w-l-r,my_h-t-b,bit);
+
+    /* Right edge */
+    SetSrc(sx+sw-r,sy+t,r,sh-t-b);
+    Tilebitmap(x+my_w-r,y+t,r,my_h-t-b,bit);
+
+    /* Bottom-left */
+    SetSrc(sx,bsy,l,t);
+    Bitmap(x,by,l,t,bit);
+
+    /* Bottom edge */
+    SetSrc(sx+l,bsy,sw-l-r,t);
+    Tilebitmap(x+l,by,my_w-l-r,t,bit);
+
+    /* Bottom-right */
+    SetSrc(sx+sw-r,bsy,r,t);
+    Bitmap(x+my_w-r,by,r,t,bit);
+
+    /* Reset params to not mess up the widget.. */
+    SetSrc(0,0,0,0);
+  };    
+
+  /* Draw our interlaced background, making sure it lines up */
+  fDarkInterlace = fillstyle {
+    SetSrc(widget::PG_WP_ABSOLUTEX - widget->app[0]::PG_WP_ABSOLUTEX + x,
+	   widget::PG_WP_ABSOLUTEY - widget->app[0]::PG_WP_ABSOLUTEY + y,
+	   w,h);
+    Bitmap(x,y,w,h,bDarkInterlace);
+    SetSrc(0,0,0,0);
+  };
+
+  /* De-emphasize the rest of the screen by blending with white then blurring */
+  fDeEmphasize = fillstyle {
+    SetLgop(PG_LGOP_ALPHA);
+    SetColor(PGCF_ALPHA | PGC_WHITE | (45<<24));
+    Rect(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+    Blur(x,y,w,h,2);
+  };
+
+  srcx = 0;
+  srcy = 0;
+  srcw = 0;
+  srch = 0;
+  left_sz = 0;
+  right_sz = 0;
+  top_sz = 0;
+  bottom_sz = 0;
+  margin = 3;
+  spacing = 3;
+  offset = 0;
+}
+  
+/********************************** Background */
+
+object background {
+  bgfill = Copy(default::fBitmap);
+  bitmap1 = LoadBitmap("data/background.jpeg");
+}
+
+/********************************** Panels */
+
+object panelbar {
+  width = 16;
+  bgfill = Copy(default::fExpand);
+  fgcolor = 0x57596F;
+  margin = 2;
+  font = Font(NULL,0,PG_FSTYLE_BOLD | PG_FSTYLE_ITALIC);
+  
+  /* This will make it left-justified when horizontal,
+   * and centered when vertical. PG_A_NW will make it at the
+   * top when vertical, but that doesn't look as good.
+   */
+  align = PG_A_LEFT;
+}
+
+object panelbar.h {
+  bitmap1 = LoadBitmap("data/bright_hbar.png");
+  srcw = 17;
+  srch = 16;
+  left_sz = 8;
+  right_sz = 6;
+  top_sz = 8;
+  bottom_sz = 7;
+}
+
+object panelbar.v {
+  bitmap1 = LoadBitmap("data/bright_vbar.png");
+  srcw = 16;
+  srch = 17;
+  left_sz = 8;
+  right_sz = 7;
+  top_sz = 8;
+  bottom_sz = 6;
+}
+
+object base.panelbtn {
+  bgfill = Copy(default::fNop);
+  side = PG_S_RIGHT;
+  width = 13;
+  height = 13;
+  margin = 0;
+}
+  
+object rotatebtn widgetbitmap = LoadBitmap("data/panel_swirl.png");
+object closebtn widgetbitmap = LoadBitmap("data/panel_x.png");
+object zoombtn widgetbitmap = LoadBitmap("data/panel_square.png");
+
+/********************************** Popups */
+
+object popup {
+  margin = 2;
+
+  bitmap1 = LoadBitmap("data/gold_hbar.png");
+  bitmap2 = LoadBitmap("data/dropshadow_parts.png");
+
+  backdrop = fillstyle {
+    var title_x,title_y,title_w;
+
+    fDeEmphasize(0,0,0x7FFF,0x7FFF);
+
+    /* Drop shadow */
+    SetLgop(PG_LGOP_MULTIPLY);
+    SetSrc(19,0,16,27);
+    Bitmap(x+w,y-1,16,27,bitmap2);
+    SetSrc(19,27,16,1);
+    Tilebitmap(x+w,y+26,16,h-29,bitmap2);
+    SetSrc(16,28,19,14);
+    Bitmap(x+w-3,y+h-3,16,14,bitmap2);
+    SetSrc(0,31,15,11);
+    Bitmap(x,y+h,15,11,bitmap2);
+    SetSrc(15,31,1,11);
+    Tilebitmap(x+15,y+h,w-18,11,bitmap2);
+    SetSrc(0,6,13,20);
+    Bitmap(x-13,y+7,13,20,bitmap2);
+    SetSrc(0,0,0,0);
+    SetLgop(PG_LGOP_NONE);
+
+    /* Place the titlebar */
+    title_x = x - 8;
+    title_y = y;
+    title_w = w + 16;
+
+    /* Draw a thin grey border containing our background pattern */
+    SetColor(0x606060);
+    Frame(x,y+4,w,h-4);
+    fDarkInterlace(x+1,y+5,w-2,h-6);
+
+    /* Draw the titlebar, with alpha */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,8,19);
+    Bitmap(title_x,title_y,8,19,bitmap1);
+    SetSrc(8,0,5,19);
+    Tilebitmap(title_x+8,title_y,title_w-14,19,bitmap1);
+    SetSrc(13,0,6,19);
+    Bitmap(title_x+title_w-7,title_y,6,19,bitmap1);
+    SetSrc(0,0,0,0);
+    SetLgop(PG_LGOP_NONE);
+  };
+
+  bgfill = Copy(default::fNop);
+}
+
+object label.dlgtitle {
+  bgfill = fillstyle {
+    h = h - 4;
+  };
+  align = PG_A_LEFT;
+  fgcolor = 0x706C5A;
+  font = Copy(panelbar::font);
+}
+
+
+/********************************** Buttons */
+
+object button {
+  bgfill = Copy(default::fExpand);
+  bitmap1 = LoadBitmap("data/button_white.png");
+  width = 24;
+  height = 24;
+  srcw = 24;
+  srch = 24;
+  left_sz = 11;
+  right_sz = 12;
+  top_sz = 11;
+  bottom_sz = 12;
+}  
+
+object button.on bitmap1 = LoadBitmap("data/button_bright.png");
+
+object checkbox {
+  width = 18;
+  height = 18;
+  spacing = 0;
+  align = PG_A_LEFT;
+
+  bgfill = fillstyle {
+    fDarkInterlace(x,y,w,h);
+    Bitmap(x,y,18,18,bitmap1);
+    x = x + 20;
+  };
+
+  bitmap1 = LoadBitmap("data/checkbox_off.png");
+}
+
+object checkbox.on bitmap1 = LoadBitmap("data/checkbox_on.png");
+object radiobutton bitmap1 = LoadBitmap("data/radiobutton_off.png");
+object radiobutton.on bitmap1 = LoadBitmap("data/radiobutton_on.png");
+
+object checkbox.on.nohilight parent = PGTH_O_CHECKBOX_ON;
+object checkbox.hilight parent = PGTH_O_CHECKBOX;
+object radiobutton.on.nohilight parent = PGTH_O_RADIOBUTTON_ON;
+object radiobutton.hilight parent = PGTH_O_RADIOBUTTON;
+
+/********************************** Scroll */
+
+object scroll width = 14;
+
+object scroll.v {
+  bitmap1 = LoadBitmap("data/scrollbar_v.png");
+  bitmap2 = LoadBitmap("data/scrollthumb_v.png");
+
+  bgfill = fillstyle {
+    /* Limit the minimum size */
+    h = h<22 ? 22 : h;
+
+    /* Standard background */
+    fDarkInterlace(x,y,w,h);
+    
+    /* Alpha blended bar the scroll thumb slides on */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,8,10);
+    Bitmap(x+4,y+4,8,10,bitmap1);
+    SetSrc(0,10,8,1);
+    Tilebitmap(x+4,y+14,8,h-29,bitmap1);
+    SetSrc(0,11,8,11);
+    Bitmap(x+4,y+h-15,8,11,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  overlay = fillstyle {
+    /* Limit the minimum size */
+    h = h<15 ? 15 : h;
+
+    /* Scrollbar thumb, stretched vertically */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,14,6);
+    Bitmap(x+1,y,14,6,bitmap2);
+    SetSrc(0,6,14,1);
+    Tilebitmap(x+1,y+6,14,h-13,bitmap2);
+    SetSrc(0,7,14,7);
+    Bitmap(x+1,y+h-8,14,7,bitmap2);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+}
+
+object scroll.h {
+  bitmap1 = LoadBitmap("data/scrollbar_h.png");
+  bitmap2 = LoadBitmap("data/scrollthumb_h.png");
+
+  bgfill = fillstyle {
+    /* Limit the minimum size */
+    w = w<22 ? 22 : w;
+
+    /* Standard background */
+    fDarkInterlace(x,y,w,h);
+    
+    /* Alpha blended bar the scroll thumb slides on */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,10,8);
+    Bitmap(x+4,y+4,10,8,bitmap1);
+    SetSrc(10,0,1,8);
+    Tilebitmap(x+14,y+4,w-29,8,bitmap1);
+    SetSrc(11,0,11,8);
+    Bitmap(x+w-15,y+4,11,8,bitmap1);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  overlay = fillstyle {
+    /* Limit the minimum size */
+    w = w<15 ? 15 : w;
+
+    /* Scrollbar thumb, stretched horizontally */
+    SetLgop(PG_LGOP_ALPHA);
+    SetSrc(0,0,6,14);
+    Bitmap(x,y+1,6,14,bitmap2);
+    SetSrc(6,0,1,14);
+    Tilebitmap(x+6,y+1,w-13,14,bitmap2);
+    SetSrc(7,0,7,14);
+    Bitmap(x+w-8,y+1,7,14,bitmap2);
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+}
+
+object scroll.v.on bitmap2 = LoadBitmap("data/scrollthumb_v_bright.png");
+object scroll.h.on bitmap2 = LoadBitmap("data/scrollthumb_h_bright.png");
+
+/********************************** Menus */
+
+object popup.menu {
+  bitmap1 = LoadBitmap("data/menu_border.png");
+  margin = 1;
+
+  backdrop = fillstyle {
+    var bar_w,bar_h,min_size;
+
+    fDeEmphasize(0,0,0x7FFF,0x7FFF);
+
+    /* Size the decoration bars measured from x,y */
+    min_size = 27;
+    bar_w = w * 80/100;
+    bar_h = h * 30/100;
+    bar_w = bar_w>min_size ? bar_w : min_size;
+    bar_h = bar_h>min_size ? bar_h : min_size;
+
+    /* This whole thing is alpha blended */
+    SetLgop(PG_LGOP_ALPHA);
+
+    /* Top-left */
+    SetSrc(0,0,15,15);
+    Bitmap(x-10,y-10,15,15,bitmap1);
+
+    /* Top bar */
+    SetSrc(15,0,7,10);
+    Tilebitmap(x+5,y-10,bar_w-17,10,bitmap1);
+
+    /* Top bar-shadow junction */
+    SetSrc(22,0,12,10);
+    Bitmap(x+bar_w-12,y-10,12,10,bitmap1);
+
+    /* Top shadow */
+    SetSrc(34,0,9,10);
+    Tilebitmap(x+bar_w,y-10,w-bar_w-4,10,bitmap1);
+
+    /* Top-right */
+    SetSrc(43,0,11,14);
+    Bitmap(x+w-4,y-10,11,14,bitmap1);
+
+    /* Right */
+    SetSrc(47,17,7,22);
+    Tilebitmap(x+w,y+4,7,h-8,bitmap1);
+    
+    /* Bottom-right */
+    SetSrc(43,45,11,11);
+    Bitmap(x+w-4,y+h-4,11,11,bitmap1);
+    
+    /* Bottom */
+    SetSrc(17,49,22,7);
+    Tilebitmap(x+4,y+h,w-8,7,bitmap1);
+
+    /* Bottom-left */
+    SetSrc(0,45,14,11);
+    Bitmap(x-10,y+h-4,14,11,bitmap1);
+
+    /* Left bar */
+    SetSrc(0,15,10,4);
+    Tilebitmap(x-10,y+5,10,bar_h-17,bitmap1);
+
+    /* Left bar-shadow junction */
+    SetSrc(0,21,10,12);
+    Bitmap(x-10,y+bar_h-12,10,12,bitmap1);
+
+    /* Left shadow */
+    SetSrc(0,34,10,10);
+    Tilebitmap(x-10,y+bar_h,10,h-bar_h-4,bitmap1);
+
+    /* Cleanup */
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
+
+  bgfill = Copy(default::fDarkInterlace);
+}
+
+object menuitem {
+  bgfill = Copy(default::fDarkInterlace);
+  align = PG_A_LEFT;
+  height = 18;
+}
+
+object menuitem.hilight {
+  parent = PGTH_O_BASE_DISPLAY;
+  align = PG_A_LEFT;	
+  bitmap1 = LoadBitmap("data/gold_square.png");	
+}
+
+/********************************** Label */
+
+object base.display {
+  bgfill = Copy(default::fExpand);
+  bitmap1 = LoadBitmap("data/blue_square.png");
+  width = 18;
+  height = 18;
+  srcw = 18;
+  srch = 18;
+  left_sz = 5;
+  right_sz = 5;
+  top_sz = 8;
+  bottom_sz = 9;
+  margin = 3;
+}
+
+/********************************** Terminal */
+
+object terminal {
+  bitmap1 = 0;
+}
+
+/********************************** Indicator */
+
+object indicator {
+  width = 15;
+  margin = 0;
+}
+
+object indicator.h {
+  bitmap1 = LoadBitmap("data/indicator_h_gray.png");	
+  bitmap2 = LoadBitmap("data/indicator_h.png");
+
+  bgfill = fillstyle {
+    Bitmap(x,y+(h-15)/2,w,15,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
+  };
+} 
+
+object indicator.v {
+  bitmap1 = LoadBitmap("data/indicator_v_gray.png");	
+  bitmap2 = LoadBitmap("data/indicator_v.png");
+
+  bgfill = fillstyle {
+    Bitmap(x+(w-15)/2,y,15,h,bitmap1);
+  };
+    
+  overlay = fillstyle {
+    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+  };
+}
+
+/* The End */
