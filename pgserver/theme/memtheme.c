@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.9 2000/11/04 22:38:55 micahjd Exp $
+/* $Id: memtheme.c,v 1.10 2000/11/04 22:50:03 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -124,9 +124,10 @@ unsigned long theme_lookup(unsigned short object,
   struct pgmemtheme *ptheme = memtheme;
   struct pgmemtheme_thobj *pobj;
   struct pgmemtheme_prop *pprop;
-  unsigned short obj = object;
+  unsigned short obj;
 
   while (ptheme) {
+    obj = object;
 
     /* Search this theme, using the theme object hierarchy */
     pobj = find_thobj(ptheme,obj);
