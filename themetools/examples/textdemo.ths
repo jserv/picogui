@@ -1,0 +1,9 @@
+/* Little theme that changes some built-in strings */
+
+object default {
+  string.ok = "Make it so!";
+  string.cancel = "Go away";
+  string.yes = "Yep";
+  string.no = "Nope";
+}
+
