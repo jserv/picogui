@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
- A hackish little client for the announceBot that accepts email messages from stdin.
+ A hackish little client for the announceBot that accepts email messages from stdin.  
  This is meant to be used from a .forward file.
  The message should have a subject of the form "Announce <channel>".
  Every non-blank line of the body will be sent as a message to the bot.
