@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.6 2002/11/30 20:27:30 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.7 2002/12/03 03:20:10 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -148,7 +148,7 @@ void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *p
   glScalef(DATA->scale,DATA->scale,DATA->scale);
   glRotatef(angle,0,0,-1);
   glTranslatef(g->x,g->y,0);
-  
+
   if (g->texture != gl_global.current_texture) {
     glBindTexture(GL_TEXTURE_2D, g->texture);
     gl_global.current_texture = g->texture;
@@ -163,7 +163,6 @@ void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *p
   glTexCoord2f(g->tx1,g->ty2);
   glVertex2f(0,g->h);
   glEnd();
-
   
   advance = g->advance * DATA->scale + 0.5;
   switch (angle) {
