@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.5 2001/08/04 07:55:43 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.6 2001/08/04 08:33:01 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -10,7 +10,8 @@
  * - The directory separator is assumed to be '/'
  * - The user's home directory is retrieved through $HOME
  * - Multiple drives (as in DOS) are not supported
- * 
+ * - Unix functions are used to implement the file tools and validate
+ *   files for the PG_FILE_MUST* flags
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -44,7 +45,7 @@
 #include <dirent.h>
 #include <sys/stat.h>   /* stat() */
 #include <unistd.h>
-#include <ctype.h>
+#include <errno.h>      /* Check errors when validating a filename */
 
 /* This is the size of the buffer files are returned in */
 #define FILEMAX 512
@@ -725,13 +726,54 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
     
     /* Buttons... */
 
-    if (evt.from==wOk || evt.from==wCancel)
+    if (evt.from==wCancel)
       break;
 
-    if (evt.from==wUp) {
+    else if (evt.from==wOk) {
+      struct stat st;
+
+      /* Put together a full path for the final file name */
+      if (dat.wFile)
+	dat.sFileName = pgGetWidget(dat.wFile,PG_WP_TEXT);
+      filepicker_fullpath(pgGetString(dat.sFileName));
+    
+      /* Validate it */
+      
+      if (stat(filepicker_buf,&st) && (flags & (PG_FILE_MUSTEXIST | 
+						PG_FILE_MUSTREAD  |
+						PG_FILE_MUSTWRITE))) {
+	pgMessageDialog("Error","The selected file does not exist",0);
+	continue;
+      }
+
+      if (flags & PG_FILE_MUSTREAD) {
+	int file = open(filepicker_buf,O_RDONLY);
+	if (file<0) {
+	  pgMessageDialogFmt("Error",0,"Error reading file:\n%s",
+			     sys_errlist[errno]);
+	  continue;
+	}
+	close(file);
+      }
+
+      if (flags & PG_FILE_MUSTWRITE) {
+	int file = open(filepicker_buf,O_RDWR);
+	if (file<0) {
+	  pgMessageDialogFmt("Error",0,"Error writing file:\n%s",
+			     sys_errlist[errno]);
+	  continue;
+	}
+	close(file);
+      }
+
+      /* Good! We're all done */
+      break;
+    }
+
+    else if (evt.from==wUp) {
       /* Go up one level: chop off the slash until we have only one */
       p = strrchr(filepicker_dir,'/');
-      if (p) {
+      if (p && p[1]) {
 	if (p==filepicker_dir)
 	  p[1] = 0;
 	else
@@ -766,15 +808,6 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
       }
     }
   }
-
-  /* Put together a full path for the final file name */
-  if (evt.from!=wCancel) {
-    if (dat.wFile)
-      dat.sFileName = pgGetWidget(dat.wFile,PG_WP_TEXT);
-    filepicker_fullpath(pgGetString(dat.sFileName));
-  }    
-
-  /* FIXME: Validate file name */
 
   /* Destroy the directory context and dialog context */
   pgLeaveContext();

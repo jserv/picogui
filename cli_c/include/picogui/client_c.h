@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.59 2001/08/03 12:54:59 micahjd Exp $
+/* $Id: client_c.h,v 1.60 2001/08/04 08:33:01 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -186,7 +186,7 @@ typedef int (*pgfilter)(const char *string,const char *pattern);
 //! Default flags for a file open dialog box
 #define PG_FILEOPEN     PG_FILE_MUSTREAD
 //! Default flags for a file save dialog box
-#define PG_FILESAVE    (PG_FILE_MUSTWRITE | PG_FILE_SAVEBTN | PG_FILE_FIELD)
+#define PG_FILESAVE    (PG_FILE_SAVEBTN | PG_FILE_FIELD)
 
 /*!
  * \brief A structure representing data, loaded or mapped into memory
