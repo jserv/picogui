@@ -14,7 +14,6 @@ bin_PROGRAMS = pgserver
 pgserver_SOURCES = pgmain.c
 
 pgserver_LDADD = \
-	@LIB_OS@		\
 	gcore/libgcore.a	\
 	widget/libwidget.a 	\
 	appmgr/libappmgr.a	\
@@ -27,6 +26,7 @@ pgserver_LDADD = \
 	vidbase/libvidbase.a	\
 	input/libinput.a	\
 	formats/libformats.a	\
+	@LIB_OS@		\
 	$(DRIVER_LIBS)
 
 EXTRA_DIST = \
