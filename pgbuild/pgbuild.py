@@ -40,6 +40,7 @@ class Bootstrap:
         self.paths['bin']       = os.path.join(self.paths['root'], 'bin')
         self.paths['localConf'] = os.path.join(self.paths['root'], 'conf')
         self.paths['packages']  = os.path.join(self.paths['root'], 'src')
+        self.paths['doc']       = os.path.join(self.paths['root'], 'doc')
         
         # Set the name of the two packages PGBuild requires for bootstrapping
         self.packages['build'] = "build-dev"
