@@ -110,10 +110,10 @@ runtime = [
               content = [ 'bin/atomicnav' ],
               help = "Atomic Web Navigator" ),
 
-    Runtime ('libpgboard.so', 'pgboard shared library',
-             content = ['lib/libpgboard.so.0.0.0',
-                        'lib/libpgboard.so.0',
-                        'lib/libpgboard.so']),
+    SharedRuntime ('library', 'pgboard shared library',
+                   content = ['lib/libpgboard.so.0.0.0',
+                              'lib/libpgboard.so.0',
+                              'lib/libpgboard.so']),
     ]
 
 
