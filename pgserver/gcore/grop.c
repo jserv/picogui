@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.49 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: grop.c,v 1.50 2002/01/28 07:59:30 lonetech Exp $
  *
  * grop.c - grop-list management
  *
@@ -181,8 +181,18 @@ void grop_free(struct gropnode **headpp) {
 
 /* Set up a grop context for rendering to a divnode */
 void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
+  struct gropnode *p;
+
   memset(ctx,0,sizeof(struct gropctxt));
   ctx->headpp = &div->grop;
+  /* set current to the last gropnode */
+  p=*ctx->headpp;
+  if(p)
+   {
+    while(p->next)
+      p=p->next;
+    ctx->current=p;
+   }
   ctx->w = div->w;
   ctx->h = div->h;
 }

@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.23 2002/01/28 06:27:45 lonetech Exp $
+/* $Id: textbox_document.c,v 1.24 2002/01/28 07:59:32 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -31,7 +31,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/font.h>
 #include <pgserver/textbox.h>
-#include <string.h>	/* strncmp() */
+#include <string.h>
 
 /************************* Supported format loaders */
 
@@ -244,6 +244,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   struct fontdesc *fd;
   s16 tw,th;
   handle hstr;
+  struct gropnode *node;
 
   /*** First thing to do is make sure we have a valid insertion point. */
 
@@ -264,24 +265,51 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     errorcheck;
   }
 
-  /* No grop? */
+  /* No grop context */
   if (!c->c_gctx.current) {
     gropctxt_init(&c->c_gctx,c->c_div->div);
     c->c_gx = c->c_gy = 0;
+
+    if(!c->c_div->div->grop) {
+      /* Add font */
+      if (c->f_top && c->f_top->fontdef) {
+	c->f_top->font_refcnt++;
+	addgrop(&c->c_gctx,PG_GROP_SETFONT);
+	c->c_gctx.current->param[0] = c->f_top->fontdef;
+      }
+      /* Add color */
+      if (c->f_top) {
+	addgrop(&c->c_gctx,PG_GROP_SETCOLOR);
+	c->c_gctx.current->param[0] = c->f_top->color;
+      }
+    }
   }
   
-  /* Add font */
-  if (c->f_top && c->f_top->fontdef) {
-    c->f_top->font_refcnt++;
-    addgrop(&c->c_gctx,PG_GROP_SETFONT);
-    c->c_gctx.current->param[0] = c->f_top->fontdef;
-  }
-  /* Add color */
-  if (c->f_top) {
-    addgrop(&c->c_gctx,PG_GROP_SETCOLOR);
-    c->c_gctx.current->param[0] = c->f_top->color;
-  }
+  /* Make sure we're at a text gropnode */
+  if(c->c_gctx.current && c->c_gctx.current->type==PG_GROP_TEXT)
+   {
+    const char **oldstr;
+    size_t ol, nl;
 
+    hstr=c->c_gctx.current->param[0];
+    e=rdhandlep(&oldstr, PG_TYPE_STRING | hflag, c->widget->owner, hstr);
+    errorcheck;
+    ol=strlen(*oldstr);
+    nl=strlen(str);
+    e=g_realloc(oldstr, ol+nl+1);
+    errorcheck;
+    strcpy(*oldstr+ol, str);
+    if(!(hflag&HFLAG_NFREE))
+      g_free(str);
+    str=*oldstr;
+   }
+  else
+   {
+    e = mkhandle(&hstr,PG_TYPE_STRING | hflag,c->widget->owner,str);
+    errorcheck;
+    addgropsz(&c->c_gctx,PG_GROP_TEXT,c->c_gx,c->c_gy,1,1);
+    c->c_gctx.current->param[0] = hstr;
+   }
   /* Measure the text */
   if (c->f_top && c->f_top->fontdef)
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,c->widget->owner,
@@ -292,15 +320,12 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
   sizetext(fd,&tw,&th,str);
   th = fd->font->ascent + fd->font->descent + fd->interline_space + fd->margin;
 
-  /* Add a text gropnode at the cursor */
-  e = mkhandle(&hstr,PG_TYPE_STRING | hflag,c->widget->owner,str);
-  errorcheck;
-  addgropsz(&c->c_gctx,PG_GROP_TEXT,c->c_gx,c->c_gy,1,1);
-  c->c_gctx.current->param[0] = hstr;
+  c->c_gctx.current->r.w=tw;
+  c->c_gctx.current->r.h=th;
 
   /* Update cursor and preferred size. Add the width of a space to
    * the preferred size so we have space between words. */
-  c->c_gx += tw;
+  c->c_gx = tw;
   c->c_div->div->pw = c->c_gx;
   if (th > c->c_div->div->ph)
     c->c_div->div->ph = th;
