@@ -57,7 +57,7 @@ class PackageVersion(object):
         """Get a Repository class for the fastest mirror of this package version"""
         if not self.repository:
             import PGBuild.Repository
-            self.repository = PGBuild.Repository.open(self.findMirror(progress).absoluteURI)
+            self.repository = PGBuild.Repository.open(self.config, self.findMirror(progress).absoluteURI)
         return self.repository
 
     def getLocalPath(self):

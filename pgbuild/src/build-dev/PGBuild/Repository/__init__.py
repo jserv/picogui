@@ -23,7 +23,7 @@ with methods to determine if the working copy is up to date and update it.
 # 
 _svn_id = "$Id$"
 
-def open(url):
+def open(config, url):
     """Repository factory- given a URL, this guesses what type of repository
        it points to and instantiates the proper Repository object for it.
        """
@@ -33,12 +33,12 @@ def open(url):
     # Anything ending in .tar, .tar.gz, or .tar.bz2 is a tar file
     if path[-7:] == ".tar.gz" or path[-8:] == ".tar.bz2" or path[-4:] == ".tar":
         import PGBuild.Repository.Tar
-        return PGBuild.Repository.Tar.Repository(url)
+        return PGBuild.Repository.Tar.Repository(config, url)
 
     # Assume any remaining URLs with a http, https, or svn scheme are subversion repositories
     if scheme == "http" or scheme == "https" or scheme == "svn":
         import PGBuild.Repository.Subversion
-        return PGBuild.Repository.Subversion.Repository(url)
+        return PGBuild.Repository.Subversion.Repository(config, url)
     import PGBuild.Errors
     raise PGBuild.Errors.ConfigError("Unable to determine repository type for the URL '%s'" % url)
 

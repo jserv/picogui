@@ -94,6 +94,10 @@ class OptionParser(optik.OptionParser):
         ############# Package management
         
         packageGroup = self.add_option_group("Package Management")
+        packageGroup.add_option("--force-minisvn", dest="forceMiniSVN", action="store_true",
+                                help="Forces the downloading of packages using the standalone " +
+                                "MiniSVN Subversion client even if a full Subversion command " +
+                                "line client is detected.")
         packageGroup.add_option("--nuke", dest="nuke", action="store_true",
                                 help="Unconditionally deletes local copies of all non-bootstrap packages.")
         packageGroup.add_option("-m", "--merge", dest="merge", action="append", metavar="PACKAGE",

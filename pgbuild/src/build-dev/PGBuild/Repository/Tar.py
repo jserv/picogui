@@ -29,7 +29,8 @@ import os, tarfile, urllib2, shutil
 import PGBuild.Repository
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, url):
+    def __init__(self, config, url):
+        self.config = config
         self.url = url
 
         # Detect the type of compression, based on the file extension

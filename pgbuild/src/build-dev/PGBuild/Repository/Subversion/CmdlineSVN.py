@@ -123,7 +123,8 @@ version = detectVersion()
 
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, url):
+    def __init__(self, config, url):
+        self.config = config
         self.url = url
 
     def download(self, destination, progress):

@@ -23,14 +23,15 @@ using only the Python standard library and MiniDAV.
 # 
 _svn_id = "$Id$"
 
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse
 from MiniDAV import DavObject
 import os, re, time
 import pickle
 import PGBuild.Repository
 
 class Repository(PGBuild.Repository.RepositoryBase):
-    def __init__(self, url):
+    def __init__(self, config, url):
+        self.config = config
         self.url = url
         self.root = None
 
