@@ -71,6 +71,7 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
   unsigned char op, reg;
   u16 grop;
 
+  /* This thing must be told about SKIP/SKIP_IF... */
   /* Initialize stack; 4 positions loaded for x y w h */
   fsstkpos = 4;
   while(p<plimit)
@@ -164,9 +165,24 @@ g_error check_fillstyle(const unsigned char *fs, u32 fssize)
 	  --fsstkpos;
 	case PGTH_OPCMD_LOGICAL_NOT:
 	  /* 1 argument, 1 result */
+	  /* this doesn't work right now, due to the introduction of
+	     SKIP/SKIP_IF
 	  if(fsstkpos<1)
 	    return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
 	  break;
+      case PGTH_OPCMD_EXTENDED:
+	/* extended command */
+	op = *(p++);
+	switch (op) {
+	  case PGTH_EXCMD_SKIP_IF:
+	    --fsstkpos;
+	  case PGTH_EXCMD_SKIP:
+	    --fsstkpos;
+	    break;
+	  default:
+	    return mkerror(PG_ERRT_BADPARAM,67);  /* Bad bytecode */
+	}
+	break;
 	default:
 	  return mkerror(PG_ERRT_BADPARAM,67);  /* Bad bytecode */
       }
@@ -532,6 +548,25 @@ g_error exec_fillstyle_inner(struct gropctxt *ctx,u16 state,
 	p += 2;
 	e = exec_fillstyle_inner(ctx,state,fsb);
 	errorcheck;
+	break;
+
+      case PGTH_OPCMD_EXTENDED:
+	/* extended command */
+	op = *(p++);
+	switch (op) {
+
+	case PGTH_EXCMD_SKIP_IF:
+	  if (!fsstack[--fsstkpos]) {
+	    --fsstkpos;
+	    break;
+	  }
+	  /* else proceed to EXCMD_SKIP */
+
+	case PGTH_EXCMD_SKIP:
+	  p += (s32)fsstack[--fsstkpos];
+	  break;
+
+	}
 	break;
 
       }

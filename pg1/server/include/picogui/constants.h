@@ -644,7 +644,13 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_GETWIDGET     0x3C   //!< args: widget, property; returns value of property
 #define PGTH_OPCMD_CALL          0x3D   //!< folowed by 2-byte thobj and 2-byte property, args: x,y,w,h
 #define PGTH_OPCMD_LOCALCALL     0x3E   //!< folowed by 2-byte property, args: x,y,w,h
-/* NOTE: The next opcmd is the last one, use it for expansion! */
+#define PGTH_OPCMD_EXTENDED      0x3F   //!< Extended command follows
+
+
+/* Extended commands: these take two bytes
+ */
+#define PGTH_EXCMD_SKIP          0x01   //!< Move instruction pointer (relative to current position)
+#define PGTH_EXCMD_SKIP_IF       0x02   //!< Like SKIP, but only if the top of the stack is nonzero
 
 /* End fillstyles */
 //! \}
