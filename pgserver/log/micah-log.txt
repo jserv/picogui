@@ -49,7 +49,17 @@ separate theme object to create a checkbox's look and workings.
       * net/requests.inc,include/picogui/network.h,net/dispatch.c: Added a new
         request, getmode, that returns a pgmodeinfo structure with details on
 	the current video mode
+	
+      * cli_c/include/picogui/client_c.h: Added pgGetVideoMode prototype
+      
+      * cli_c/src/api.c: Added pgGetVideoMode implementation
 
+      * cli_c/src/netcore.c: Added some measure of SIGSEGV and SIGFPE handling
+        via PicoGUI's error handler mechanism
+	
+      * widget/field.c: Added PG_WP_TEXT set capability, fields are now
+        read/write
+      
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, I'm on spring break now! So, aside from the multiplayer gaming, I have

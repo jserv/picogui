@@ -17,9 +17,8 @@ speedup options: pointers vs handles. etc
 
 -- development
 
-demo disk
-
-help for menuconfig
+demo disk?
+other ports?
 
 -- graphics
 
@@ -34,7 +33,8 @@ terminal theme support
 
 compressed bitmaps, more bitmap formats
 
-gropheap
+Intelligent heap management including gropnode/divnode/widget/handlenode
+heaps and relocating handles
 
 app placement
 
@@ -60,3 +60,5 @@ PicoGUI Bugs
 - retest all video drivers
 - tiled blit() src_x and src_y ignored in most drivers
 - pgGetText of non-text handles crashes server
+- video applet & depth switching crashes/incompletenesses
+- memory leak (doesn't delete app_info)
