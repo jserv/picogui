@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.61 2001/11/25 02:47:35 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.62 2001/11/30 02:52:11 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -89,6 +89,11 @@ void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
 
 void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 			   s16 *x,s16 *y,hwrcolor *col,char **txt,
+			   struct quad **clip, s16 *lgop, s16 *angle) {
+}
+
+void def_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
+			   s16 *x,s16 *y,hwrcolor *col,int *c,
 			   struct quad **clip, s16 *lgop, s16 *angle) {
 }
 
@@ -1885,6 +1890,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->font_getglyph = &def_font_getglyph;
   vid->font_sizetext_hook = &def_font_sizetext_hook;
   vid->font_outtext_hook = &def_font_outtext_hook;
+  vid->font_outchar_hook = &def_font_outchar_hook;
 }
 
 /* The End */

@@ -371,3 +371,4 @@ CONFIG_X11_XFT
       that supports this, and you need the libXft library and headers
       installed. If you are using this option, there is no need to
       compile any fonts into pgserver.
+

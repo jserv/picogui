@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.16 2001/11/25 03:54:14 micahjd Exp $
+/* $Id: x11.c,v 1.17 2001/11/30 02:52:11 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -434,16 +434,13 @@ void x11_message(u32 message, u32 param, u32 *ret) {
 /******************************************** XFreeType text rendering */
 #ifdef CONFIG_X11_XFT
 
-/* We only keep 1 byte here, filling it in later with the character code */
-u16 x11_font_bitmap;
-
 struct font const x11_font = {
-   w: 1, 
-   h: 1,
+   w: 10, 
+   h: 10,
    defaultglyph: ' ',
    ascent: 1,
    descent: 0,
-   bitmaps: (u8 *) &x11_font_bitmap,
+   bitmaps: NULL,
    glyphs: NULL,
 };
 
@@ -460,28 +457,33 @@ struct fontstyle_node x11_font_style = {
    boldw: 0
 };
 
-void x11_xft_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
-		      s16 lines, s16 angle, hwrcolor c, struct quad *clip,
-		      s16 lgop) {
-  s16 ch = *(s16 *)chardat;
-  struct x11bitmap *xb = (struct x11bitmap *) dest;
+void x11_xft_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
+			       s16 *x,s16 *y,hwrcolor *col,int *c,
+			       struct quad **clip, s16 *lgop, s16 *angle) {
+  s16 ch = (s16) *c;
+  XftFont *font = (XftFont *) (*fd)->extra;
+  struct x11bitmap *xb = (struct x11bitmap *) *dest;
   XftColor color;
-  static XftFont *xftfont;
-  pgcolor pgc = vid->color_hwrtopg(c);
+  pgcolor pgc = vid->color_hwrtopg(*col);
+  XGlyphInfo xgi;
   
-  if (!xftfont) 
-    xftfont = XftFontOpen(xdisplay, 0,
-			  XFT_FAMILY, XftTypeString, "lucidux",
-			  XFT_SIZE, XftTypeInteger, h,
-			  0);
-
   color.color.red = getred(pgc) << 8;
   color.color.green = getgreen(pgc) << 8;
   color.color.blue = getblue(pgc) << 8;
   color.color.alpha = 0x00FFFF;
-  color.pixel = c;
+  color.pixel = *col;
 
-  XftDrawString16(xb->xftd, &color, xftfont, x, y + h,&ch, 1);  
+  XftTextExtents16(xdisplay,font,&ch,1,&xgi);
+
+  /* Draw character- XFreeType measures from the bottom-left, so add height */
+  XftDrawString16(xb->xftd,&color,font, *x, *y + xgi.height,&ch, 1);  
+
+  /* Update cursor position */
+  *x += 10;
+  *y += xgi.yOff;
+
+  /* Disable normal rendering */
+  *lgop = PG_LGOP_NULL;
 }
 
 void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, 
@@ -521,6 +523,27 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
     XftTextExtents8(xdisplay,font,*txt,strlen(*txt),&xgi);
   *y += xgi.height;
 
+  /* Do we have clipping?
+   * FIXME: XFreeType clipping is slow
+   */
+  if (*clip) {
+    Region clipreg;
+    XRectangle rect;
+    
+    rect.x = (*clip)->x1;
+    rect.y = (*clip)->y1;
+    rect.width = (*clip)->x2 - (*clip)->x1 + 1;
+    rect.height = (*clip)->y2 - (*clip)->y1 + 1;
+    
+    clipreg = XCreateRegion();
+    XUnionRectWithRegion(&rect,clipreg,clipreg);
+    XftDrawSetClip(xb->xftd,clipreg);
+    XDestroyRegion(clipreg);  
+  }
+  else
+    XftDrawSetClip(xb->xftd,NULL);
+
+  /* Draw text */
   if ((*fd)->style & PG_FSTYLE_ENCODING_UNICODE)  
     XftDrawStringUtf8(xb->xftd,&color,font,*x,*y,*txt,strlen(*txt));
   else
@@ -532,33 +555,36 @@ void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
 
 void x11_xft_font_newdesc(struct fontdesc *fd, char *name,
 			  int size, int flags) {
+  XftFont *f;
 
   /* a little trickery to make the font look legit */
   fd->font = (struct font *) &x11_font;
   fd->italicw = 0;
   fd->fs = &x11_font_style;
 
+  /* Default size */
+  if (!size)
+    size = 10;
+
+  /* Default family */
+  if (!name)
+    name = "lucidux";
+
   /* Allocate an XftFont */
-  fd->extra = (void *) XftFontOpen(xdisplay, 0,
-				   XFT_FAMILY, XftTypeString, "lucidux",
-				   XFT_SIZE, XftTypeInteger, 15,
-				   0);
+  f = XftFontOpen(xdisplay, 0,
+		  XFT_FAMILY, XftTypeString, name,
+		  XFT_PIXEL_SIZE, XftTypeInteger, size,
+		  XFT_SLANT,XftTypeInteger,(flags & PG_FSTYLE_ITALIC) ?
+		      XFT_SLANT_ITALIC : XFT_SLANT_ROMAN,
+		  XFT_WEIGHT,XftTypeInteger,(flags & PG_FSTYLE_BOLD) ?
+		      XFT_WEIGHT_BOLD : XFT_WEIGHT_LIGHT,
+		  0);
+  fd->extra = (void *) f;
 }
 
-struct fontglyph const *x11_xft_font_getglyph(struct fontdesc *fd, int ch) {
-  /* Fake glyph and bitmap to return */
-  static struct fontglyph fakeglyph;
-  
-  fakeglyph.encoding  = ch;
-  fakeglyph.bitmap    = 0;
-  x11_font_bitmap = ch;
-  fakeglyph.dwidth    = 1;
-  fakeglyph.w         = 1;
-  fakeglyph.h         = 1;
-  fakeglyph.x         = 0;
-  fakeglyph.y         = 0;
-  
-  return &fakeglyph;
+struct fontglyph *x11_xft_font_getglyph(struct fontdesc *fd, int c) {
+  static struct fontglyph dummy_fg;
+  return &dummy_fg;
 }
 
 #endif /* CONFIG_X11_XFT */
@@ -757,11 +783,11 @@ g_error x11_regfunc(struct vidlib *v) {
   v->message = &x11_message;
 
 #ifdef CONFIG_X11_XFT
-  v->charblit = &x11_xft_charblit;
   v->font_newdesc = &x11_xft_font_newdesc;
-  v->font_getglyph = &x11_xft_font_getglyph;
   v->font_sizetext_hook = &x11_xft_font_sizetext_hook;
   v->font_outtext_hook = &x11_xft_font_outtext_hook;
+  v->font_outchar_hook = &x11_xft_font_outchar_hook;
+  v->font_getglyph = &x11_xft_font_getglyph;
 #endif
 
   if (!get_param_int("video-x11","defaultellipse",0)) {

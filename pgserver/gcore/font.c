@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.41 2001/11/24 13:03:19 micahjd Exp $
+/* $Id: font.c,v 1.42 2001/11/30 02:52:10 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -78,9 +78,17 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 	     s16 lgop, s16 angle) {
    int i,j;
    s16 cel_w; /* Total width of this character cel */
-   struct fontglyph const *g = VID(font_getglyph)(fd,c);
+   struct fontglyph const *g;
    u8 *glyph;
    s16 u,v;   /* Displacement (in font coordinate space) of character from the cursor position */
+
+   VID(font_outchar_hook)(&dest,&fd,x,y,&col,&c,&clip,&lgop,&angle);
+
+   /* Test this here so the hook can set lgop to disable normal rendering */
+   if (lgop == PG_LGOP_NULL)
+     return;
+
+   g = VID(font_getglyph)(fd,c);
 
    cel_w = g->dwidth + fd->boldw + fd->interchar_space;
    

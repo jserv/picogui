@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.17 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: videotest.c,v 1.18 2001/11/30 02:52:10 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -289,7 +289,9 @@ void testpat_text(void) {
 	return;
       if (c>'~')
 	c = ' ';
+      printf("x before = %d\n",x);
       outchar(vid->display,fd,&x,&y,0,c++,NULL,PG_LGOP_NONE,0);
+      printf("x after = %d\n",x);
    }
 }
    

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.62 2001/11/24 13:03:19 micahjd Exp $
+/* $Id: video.h,v 1.63 2001/11/30 02:52:10 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -234,6 +234,16 @@ struct vidlib {
    */
   void (*font_outtext_hook)(hwrbitmap *dest, struct fontdesc **fd,
 			    s16 *x,s16 *y,hwrcolor *col,char **txt,
+			    struct quad **clip, s16 *lgop, s16 *angle);
+
+  /* Optional
+   *   Called before outchar, giving the driver an opportunity to modify
+   *   or observe the data sent to it
+   *
+   * Default implementation: none
+   */
+  void (*font_outchar_hook)(hwrbitmap *dest, struct fontdesc **fd,
+			    s16 *x,s16 *y,hwrcolor *col,int *c,
 			    struct quad **clip, s16 *lgop, s16 *angle);
 
   /***************** Colors */
