@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.118 2002/09/28 10:58:10 micahjd Exp $
+/* $Id: button.c,v 1.119 2002/10/07 03:31:16 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -322,6 +322,14 @@ g_error button_set(struct widget *self,int property, glob data) {
   case PG_WP_DISABLED:
     DATA->disabled = data;
     set_widget_rebuild(self);
+    break;
+
+    /* The standard PG_WP_THOBJ property can implicitly set the individual theme states */
+  case PG_WP_THOBJ:
+    widget_set(self,PG_WP_THOBJ_BUTTON,data);
+    widget_set(self,PG_WP_THOBJ_BUTTON_ON,theme_lookup(data,PGTH_P_OBJECT_ON));
+    widget_set(self,PG_WP_THOBJ_BUTTON_ON_NOHILIGHT,theme_lookup(data,PGTH_P_OBJECT_ON_NOHILIGHT));
+    widget_set(self,PG_WP_THOBJ_BUTTON_HILIGHT,theme_lookup(data,PGTH_P_OBJECT_HILIGHT));
     break;
 
   case PG_WP_THOBJ_BUTTON:

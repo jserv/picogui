@@ -469,6 +469,7 @@ int main(int argc, char **argv){
   pgSetWidget(pglButton,
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
+//	      PG_WP_THOBJ,pgFindThemeObject("button.launch"),
 	      PG_WP_TEXT,pgNewString("Launch"),
 	      PG_WP_NAME,pgNewString("PGL-Launcher"),
 	      0);

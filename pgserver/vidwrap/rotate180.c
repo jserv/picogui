@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.11 2002/10/02 20:38:47 micahjd Exp $
+/* $Id: rotate180.c,v 1.12 2002/10/07 03:31:16 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -105,32 +105,38 @@ void rotate180_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 void rotate180_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		    hwrbitmap src,s16 src_x,s16 src_y,
 		    s16 lgop) {
-   s16 bw,bh,sx2,sy2;
+   s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bw,&bh);
-
-   /* Avoid divide by zero in case of an empty source bitmap */
-   if (!(bw && bh))
-     return;
-   
-   sx2 = bw-(w%bw)-src_x;
-   sy2 = bh-(h%bh)-src_y;
-   
+   (*vid->bitmap_getsize)(src,&bw,&bh);   
    (*vid->blit)(dest,dx-dest_x-w,dy-dest_y-h,w,h,
-		src,sx2,sy2,lgop);
+		src,bw-w-src_x,bh-h-src_y,lgop);
 }
-void rotate180_tileblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
-			s16 dest_w,s16 dest_h,
-			hwrbitmap src,s16 src_x,s16 src_y,
-			s16 src_w,s16 src_h,s16 lgop) {
+void rotate180_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+			  hwrbitmap src,s16 src_x,s16 src_y,
+			  s16 lgop) {
+   s16 bw,bh;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&bw,&bh);   
+   (*vid->scrollblit)(dest,dx-dest_x-w,dy-dest_y-h,w,h,
+		      src,bw-w-src_x,bh-h-src_y,lgop);
+}
+void rotate180_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
+			 s16 dest_w,s16 dest_h,
+			 hwrbitmap src,s16 src_x,s16 src_y,
+			 s16 src_w,s16 src_h,s16 xo,s16 yo,s16 lgop) {
    s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bw,&bh);
-   (*vid->tileblit)(dest,dx-dest_x-dest_w,dy-dest_y-dest_h,dest_w,dest_h,
-		    src,bw-src_w-src_x,bh-src_h-src_y,src_w,src_h,
-		    lgop);
+
+   /* See the explanation in rotate90_multiblit */
+
+   (*vid->multiblit)(dest,dx-dest_x-dest_w,dy-dest_y-dest_h,dest_w,dest_h,
+		     src,bw-src_w-src_x,bh-src_h-src_y,src_w,src_h,
+		     src_w - ((xo + dest_w) % src_w), src_h - ((yo + dest_h) % src_h),
+		     lgop);
 }
 void rotate180_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
@@ -220,7 +226,8 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->fellipse = &rotate180_fellipse;
    vid->gradient = &rotate180_gradient;
    vid->blit = &rotate180_blit;
-   vid->tileblit = &rotate180_tileblit;
+   vid->scrollblit = &rotate180_scrollblit;
+   vid->multiblit = &rotate180_multiblit;
    vid->charblit = &rotate180_charblit;
    vid->coord_logicalize = &rotate180_coord_logicalize;
    vid->coord_physicalize = &rotate180_coord_logicalize;

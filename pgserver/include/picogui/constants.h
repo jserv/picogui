@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.157 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: constants.h,v 1.158 2002/10/07 03:31:16 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -481,7 +481,13 @@ typedef unsigned long pghandle;
 #define PGTH_P_CURSOR_WIDTH  41  //!< Width of the text editing cursor 
 #define PGTH_P_BORDER_SIZE   42  //!< Width of outer border on a panel widget
 #define PGTH_P_BORDER_FILL   43  //!< Fillstyle for the outer border
+#define PGTH_P_OBJECT_ON     60  /* Subobjects for the button widget */
+#define PGTH_P_OBJECT_ON_NOHILIGHT 61
+#define PGTH_P_OBJECT_HILIGHT 62
 
+/* These should be removed when the standard dialogs are redone,
+ * in favor of sticking to custom theme objects!
+ */
 #define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_CANCEL        1002   //!< Icon property (usually in PGTH_O_DEFAULT)

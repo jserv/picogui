@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.25 2002/10/02 20:38:47 micahjd Exp $
+/* $Id: rotate90.c,v 1.26 2002/10/07 03:31:16 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -110,26 +110,87 @@ void rotate90_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 void rotate90_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
-   s16 bw,sx2;
+   s16 bw,foo;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&sx2,&bw);
-   sx2 = bw-(w%bw)-src_x;
+   (*vid->bitmap_getsize)(src,&foo,&bw);
 
    (*vid->blit)(dest,dest_y,dy-dest_x-w,h,w,
-		src,src_y,sx2,lgop);
+		src,src_y,bw-src_x-w,lgop);
 }
-void rotate90_tileblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
+void rotate90_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+			 hwrbitmap src,s16 src_x,s16 src_y,
+			 s16 lgop) {
+   s16 bw,foo;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&foo,&bw);
+
+   (*vid->scrollblit)(dest,dest_y,dy-dest_x-w,h,w,
+		src,src_y,bw-src_x-w,lgop);
+}
+void rotate90_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
 		       s16 dest_w,s16 dest_h,
 		       hwrbitmap src,s16 src_x,s16 src_y,
-		       s16 src_w,s16 src_h,s16 lgop) {
+		       s16 src_w,s16 src_h,s16 xo,s16 yo,s16 lgop) {
    s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bh,&bw);
-   (*vid->tileblit)(dest,dest_y,dy-dest_x-dest_w,dest_h,dest_w,
-		    src,src_y,bw-src_w-src_x,src_h,src_w,
-		    lgop);
+   
+   /* It makes it easier to think about this if dest_* is a clipping
+    * rectangle and (dest_x - xo, dest_y - yo) is an anchor for the top-left
+    * of the original source rectangle. The src_* and dest_* rectangles get
+    * transformed just like a normal rectangle, but we have to calculate a new
+    * xo,yo relative to the original xo,yo and to the two clipping rectangles.
+    *
+    * This shows the destination rectangle in the middle, overlapping a set of
+    * tiled source rectangles.
+    *
+    *  Hardware coordinates           Logical coordinates
+    *
+    *  +---> X                        X      
+    *  |                                     
+    *  |                              ^
+    *  v                              |      
+    *                                 |
+    *  Y                              +---> Y
+    *
+    * 
+    *  +----------+-----~----+----------+
+    *  |F         |yo'       |          |
+    *  |      A   |          |       B  |
+    *  |       +--------~-----------+   |
+    *  |       |  |          |      |   |
+    *  |       |  |          |      |   |
+    *  |  xo'  |  |          |      |   |
+    *  +-------|--+-----~----+------|---+
+    *  |       |  |          |      |   |
+    *  |       |  |          |      |   |
+    *  <       <  <          <      <   <
+    *  >       >  >          >      >   >
+    *  |       |  |          |      |   |
+    *  |  yo   |  |          |      |   |
+    *  +-------|--+-----~----+------|---+
+    *  |       |  |          |      |   |
+    *  |       +--------~-----------+   |
+    *  |      D   |          |       C  |
+    *  |          |xo        |          |
+    *  |          |          |          |
+    *  |E         |          |          |
+    *  +----------+-----~----+----------+
+    *
+    *  The distance between E and F will be an integer multiple of src_w
+    *  This distance will equal xo + dest_w + yo'
+    *  xo' = yo
+    *  yo' = src_w - ((xo + dest_w) % src_w)
+    *
+    */
+
+   (*vid->multiblit)(dest, dest_y, dy-dest_x-dest_w, dest_h, dest_w,
+		     src, src_y, bw-src_w-src_x, src_h, src_w,
+		     yo, src_w - ((xo + dest_w) % src_w),
+		     lgop);
 }
 void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
@@ -234,7 +295,8 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->fellipse = &rotate90_fellipse;
    vid->gradient = &rotate90_gradient;
    vid->blit = &rotate90_blit;
-   vid->tileblit = &rotate90_tileblit;
+   vid->scrollblit = &rotate90_scrollblit;
+   vid->multiblit = &rotate90_multiblit;
    vid->charblit = &rotate90_charblit;
    vid->coord_logicalize = &rotate90_coord_logicalize;
    vid->coord_physicalize = &rotate90_coord_physicalize;

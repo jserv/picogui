@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.36 2002/09/28 04:06:55 micahjd Exp $
+/* $Id: render.c,v 1.37 2002/10/07 03:31:16 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -378,10 +378,10 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
   if (r->scroll.x < 0) {
     s16 w = r->clip.x2 - r->clip.x1 + 1 + r->scroll.x;
     if (w>0)
-      VID(blit) (r->output,r->clip.x1,r->clip.y1,
-		 w,r->clip.y2 - r->clip.y1 + 1,
-		 r->output,r->clip.x1 - r->scroll.x,r->clip.y1,
-		 PG_LGOP_NONE);
+      VID(scrollblit) (r->output,r->clip.x1,r->clip.y1,
+		       w,r->clip.y2 - r->clip.y1 + 1,
+		       r->output,r->clip.x1 - r->scroll.x,r->clip.y1,
+		       PG_LGOP_NONE);
   }
 
   /* Scroll the region right */
@@ -861,10 +861,9 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			  n->param[0])) || !bit) break;
      VID(bitmap_getsize) (bit,&bw,&bh);
-     VID(blit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		(r->src.x+r->csrc.x)%bw,
-		(r->src.y+r->csrc.y)%bh,r->lgop);
-     
+     VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		     0,0,bw,bh,(r->src.x+r->csrc.x)%bw,
+		     (r->src.y+r->csrc.y)%bh,r->lgop);     
      break;
    
     case PG_GROP_BLUR:
@@ -874,13 +873,17 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     case PG_GROP_TILEBITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
 			   n->param[0])) || !bit) break;
-      VID(tileblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		     r->src.x+r->csrc.x,
-		     r->src.y+r->csrc.y,
-		     r->src.w,
-		     r->src.h,
-		     r->lgop);
-		     
+
+      /* Clip the source rectangle */
+      VID(bitmap_getsize) (bit,&bw,&bh);
+      if (r->src.x < 0) r->src.x = 0;
+      if (r->src.y < 0) r->src.y = 0;
+      if (r->src.w > (bw - r->src.x)) r->src.w = bw - r->src.x;
+      if (r->src.h > (bh - r->src.y)) r->src.h = bh - r->src.y;
+
+      VID(multiblit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		      r->src.x,r->src.y,r->src.w,r->src.h,
+		      r->csrc.x % r->src.w,r->csrc.y % r->src.h,r->lgop);     
       break;
       
     case PG_GROP_GRADIENT:

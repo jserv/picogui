@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.29 2002/04/02 21:16:52 micahjd Exp $
+/* $Id: linear8.c,v 1.30 2002/10/07 03:31:16 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -356,45 +356,6 @@ void linear8_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
   }
 }
 
-void linear8_tileblit(hwrbitmap dest,
-		      s16 dest_x,s16 dest_y,s16 dest_w,s16 dest_h,
-		      hwrbitmap sbit,
-		      s16 src_x,s16 src_y,s16 src_w,s16 src_h,
-		      s16 lgop) {
-
-  u8 *src_top,*dst,*dest_line,*src_line;
-  s16 dw,sw,sh;
-  struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
-   
-  /* def_tileblit really isn't that bad, and I suspect tileblits with an
-   * LGOP will be pretty rare. Only instance I can think of that they may
-   * be useful is with PG_LGOP_MULTIPLY to texturize something, but that would
-   * require fast hardware anyway! */
-
-  if (!FB_ISNORMAL(dest,lgop)) {
-     def_tileblit(dest,dest_x,dest_y,dest_w,dest_h,srcbit,
-		  src_x,src_y,src_h,src_h,lgop);
-     return;
-  }
-     
-  src_top = srcbit->bits + src_y*srcbit->pitch + src_x;
-  dest_line = LINE(dest_y) + dest_x;
-   
-  /* This horrifying loop scans across the destination rectangle one
-   * line at at time, copying the source bitmap's scanline and letting
-   * it wrap around as many times as needed.
-   * These scanlines are repeated for the height of the destination rectangle,
-   * wrapping to the top of the source bitmap when necessary.
-   */
-  while (dest_h)
-     for (src_line=src_top,sh=src_h;sh && dest_h;
-	  sh--,dest_h--,src_line+=srcbit->pitch,dest_line+=FB_BPL)
-       for (dst=dest_line,dw=dest_w;dw>0;dw-=sw,dst+=sw) {
-	 sw = (src_w < dw ? src_w : dw);
-	 memcpy(dst,src_line,sw);
-       }
-}
-
 /* Ugh. Evil but necessary... I suppose... */
 void linear8_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
   if (!FB_ISNORMAL(dest,lgop)) {
@@ -418,6 +379,8 @@ void linear8_blit(hwrbitmap dest,
   unsigned char *dst;
   struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
   s16 i,offset_dst;
+  s16 offset_src;
+  unsigned char *src;
   
   if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
@@ -437,131 +400,25 @@ void linear8_blit(hwrbitmap dest,
      return;
   }
    
-  /* Calculations needed by both normal and tiled blits */
   dst = LINE(dst_y) + dst_x;
   offset_dst = FB_BPL - w;
+  src = srcbit->bits + src_x + src_y*srcbit->pitch;
+  offset_src = srcbit->pitch - w;
 
-  /* The following little macro mess is to repeat the
-     loop using different logical operations.
-     (Putting the switch inside the loop would be
-     easier to read, but much slower)
-
-     You still have to admit that this blitter is _much_ better
-     written than the one on the old SDL driver...
-
-     This loop uses __memcpy for the normal blits, and for lgop blits
-     it uses loops, performing as much as possible 4 bytes at a time
-  */
-
-  /* Normal blit loop */
 #define BLITLOOP(op)                                               \
     for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
       for (i=w;i;i--,src++,dst++)                                  \
 	*dst op *src;                                              \
     }
   
-#if 0 /* This attempt at a 32-bit blitter is broke */
-#define BLITLOOP(op)                                               \
-    for (;h;h--,src+=offset_src,dst+=offset_dst) {                 \
-      for (i=w>>2;i;i--,src+=4,dst+=4)                             \
-	*((u32 *)dst) op *((u32 *)src);        \
-      for (i=w&3;i;i--,src++,dst++)                                \
-	*dst op *src;                                              \
-    }
-#endif
-   
-  /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
-   * on a tile boundary, instead of tiling a bitmap section */
-#define TILEBLITLOOP(op)                                           \
-   while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
-	 src = src_line + src_x;                                          \
-	 swm = (swp < w) ? swp : w;                                       \
-	 for (dw=w;dw;) {                                                 \
-	    for (sw=swm;sw;sw--,src++,dst++,dw--)                         \
-	      *dst op *src;                                               \
-	    src = src_line;                                               \
-	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
-	 }                                                                \
-      }                                                                   \
-      sh = srcbit->h;                                                     \
-      src_line = srcbit->bits;                                            \
-   }
-
-#if 0 /* This attempt at a 32-bit blitter is broke */
-#define TILEBLITLOOP(op)                                                  \
-   while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {       \
-	 src = src_line + src_x;                                          \
-	 swm = (swp < w) ? swp : w;                                       \
-	 for (dw=w;dw;) {                                                 \
-	    for (sw=swm>>2;sw;sw--,dw-=4,src+=4,dst+=4)                   \
-	      *((u32 *)dst) op *((u32 *)src);         \
-	    for (sw=swm&3;sw;sw--,src++,dst++,dw--)                       \
-	      *dst op *src;                                               \
-	    src = src_line;                                               \
-	    swm = (srcbit->pitch < dw) ? srcbit->pitch : dw;              \
-	 }                                                                \
-      }                                                                   \
-      sh = srcbit->h;                                                     \
-      src_line = srcbit->bits;                                            \
-   }
-#endif
-   
-  /* Is this a normal or tiled blit? */
-  if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
-    unsigned char *src,*src_line;
-    s16 dw,sh,swm,sw,swp;
-     
-    /* A few calculations for tiled blits */
-    src_x %= srcbit->w;
-    src_y %= srcbit->h;
-    src_line = srcbit->bits + src_y * srcbit->w; 
-    sh = srcbit->h - src_y;
-    swp = srcbit->w - src_x;
-
-    switch (lgop) {
-
-    case PG_LGOP_NONE:  
-       while (h) {
-	  for (;sh && h;sh--,h--,src_line+=srcbit->pitch,dst+=offset_dst) {
-	     src = src_line + src_x;
-	     swm = (swp < w) ? swp : w;
-	     for (dw=w;dw;) {
-		__memcpy(dst,src,swm);
-		dst += swm;
-		src = src_line;
-		dw -= swm;
-		swm = (srcbit->w < dw) ? srcbit->w : dw;
-	     }
-	  }
-	  sh = srcbit->h;
-	  src_line = srcbit->bits;
-       }
-       break;
-
-    case PG_LGOP_OR:         TILEBLITLOOP(|=);                   break;
-    case PG_LGOP_AND:        TILEBLITLOOP(&=);                   break;
-    case PG_LGOP_XOR:        TILEBLITLOOP(^=);                   break;
-    }
-  }
-  else {                                        /* Normal */
-    s16 offset_src;
-    unsigned char *src;
-
-    /* Only needed for normal blits */
-    src = srcbit->bits + src_x + src_y*srcbit->pitch;
-    offset_src = srcbit->pitch - w;
-
-    switch (lgop) {
-    case PG_LGOP_NONE: 
-       for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)
-	 __memcpy(dst,src,w);
-       break;
-    case PG_LGOP_OR:         BLITLOOP(|=);                   break;
-    case PG_LGOP_AND:        BLITLOOP(&=);                   break;
-    case PG_LGOP_XOR:        BLITLOOP(^=);                   break;
-    }
+  switch (lgop) {
+  case PG_LGOP_NONE: 
+    for (;h;h--,src+=srcbit->pitch,dst+=FB_BPL)
+      __memcpy(dst,src,w);
+    break;
+  case PG_LGOP_OR:         BLITLOOP(|=);                   break;
+  case PG_LGOP_AND:        BLITLOOP(&=);                   break;
+  case PG_LGOP_XOR:        BLITLOOP(^=);                   break;
   }
 }
 
@@ -578,7 +435,6 @@ void setvbl_linear8(struct vidlib *vid) {
   vid->gradient       = &linear8_gradient;
 #endif
   vid->charblit       = &linear8_charblit;
-  vid->tileblit       = &linear8_tileblit;
   vid->pixel          = &linear8_pixel;
   vid->getpixel       = &linear8_getpixel;
   vid->blit           = &linear8_blit;

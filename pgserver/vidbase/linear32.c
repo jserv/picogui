@@ -1,4 +1,4 @@
-/* $Id: linear32.c,v 1.7 2002/04/02 14:10:42 micahjd Exp $
+/* $Id: linear32.c,v 1.8 2002/10/07 03:31:16 micahjd Exp $
  *
  * Video Base Library:
  * linear32.c - For 32bpp linear framebuffers
@@ -127,7 +127,9 @@ void linear32_blit(hwrbitmap dest,
   u32 *dst;
   struct stdbitmap *srcbit = (struct stdbitmap *) sbit;
   int i,offset_dst;
-  
+  int offset_src;
+  u32 *src;
+
   if (!FB_ISNORMAL(dest,PG_LGOP_NONE)) {
      def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
      return;
@@ -149,21 +151,10 @@ void linear32_blit(hwrbitmap dest,
      return;
   }
    
-  /* Calculations needed by both normal and tiled blits */
   dst = PIXELADDR(dst_x,dst_y);
   offset_dst = (FB_BPL>>2) - w;
-
-  /* The following little macro mess is to repeat the
-     loop using different logical operations.
-     (Putting the switch inside the loop would be
-     easier to read, but much slower)
-
-     You still have to admit that this blitter is _much_ better
-     written than the one on the old SDL driver...
-
-     This loop uses __memcpy for the normal blits, and for lgop blits
-     it uses loops, performing as much as possible 4 bytes at a time
-  */
+  src = ((u32*)srcbit->bits) + src_x + src_y*(srcbit->pitch>>2);
+  offset_src = (srcbit->pitch>>2) - ((w*srcbit->bpp)>>5);
 
   /* Normal blit loop */
 #define BLITLOOP                                                   \
@@ -172,24 +163,6 @@ void linear32_blit(hwrbitmap dest,
 	OP(dst,src);                                               \
     }
   
-  /* Tiled blit loop - similar to tileblit() but always restarts the bitmap
-   * on a tile boundary, instead of tiling a bitmap section */
-#define TILEBLITLOOP                                                      \
-   while (h) {                                                            \
-      for (;sh && h;sh--,h--,src_line+=(srcbit->pitch>>2),dst+=offset_dst) { \
-	 src = src_line + src_x;                                          \
-	 swm = (swp < w) ? swp : w;                                       \
-	 for (dw=w;dw;) {                                                 \
-	    for (sw=swm;sw;sw--,src++,dst++,dw--)                         \
-	      OP(dst,src);                                                \
-	    src = src_line;                                               \
-	    swm = (srcbit->w < dw) ? srcbit->w : dw;                      \
-	 }                                                                \
-      }                                                                   \
-      sh = srcbit->h;                                                     \
-      src_line = (u32*) srcbit->bits;                                     \
-   }
-
   /* Operator to perform fast alpha blending */
 #ifdef CONFIG_FAST_ALPHA
 #define ALPHA_OP(d,s)                                                  \
@@ -203,105 +176,37 @@ void linear32_blit(hwrbitmap dest,
    }                     
 #endif
 
-  /* Is this a normal or tiled blit? */
-  if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y)) {   /* Tiled */
-    u32 *src,*src_line;
-    int dw,sh,swm,sw,swp;
-     
-    /* A few calculations for tiled blits */
-    src_x %= srcbit->w;
-    src_y %= srcbit->h;
-    src_line = ((u32*)srcbit->bits) + src_y*(srcbit->pitch>>2); 
-    sh = srcbit->h - src_y;
-    swp = srcbit->w - src_x;
-
-    switch (lgop) {
-
-    case PG_LGOP_NONE:  
-       while (h) {
-	  for (;sh && h;sh--,h--,src_line+=srcbit->pitch>>2,dst+=offset_dst) {
-	     src = src_line + src_x;
-	     swm = (swp < w) ? swp : w;
-	     for (dw=w;dw;) {
-		__memcpy(dst,src,swm<<2);
-		dst += swm;
-		src = src_line;
-		dw -= swm;
-		swm = (srcbit->w < dw) ? srcbit->w : dw;
-	     }
-	  }
-	  sh = srcbit->h;
-	  src_line = (u32*) srcbit->bits;
-       }
-       break;
-
-    case PG_LGOP_OR:
+  switch (lgop) {
+  case PG_LGOP_NONE: 
+    for (;h;h--,src+=(srcbit->pitch>>2),dst+=(FB_BPL>>2))
+      __memcpy(dst,src,w<<2);
+    break;
+    
+  case PG_LGOP_OR:
 #define OP(d,s) (*d|=*s)
-      TILEBLITLOOP;
+    BLITLOOP;
 #undef OP
-      break;
-
-    case PG_LGOP_AND:
+    break;
+    
+  case PG_LGOP_AND:
 #define OP(d,s) (*d&=*s)
-      TILEBLITLOOP;
+    BLITLOOP;
 #undef OP      
-      break;
-
-    case PG_LGOP_XOR:
+    break;
+    
+  case PG_LGOP_XOR:
 #define OP(d,s) (*d^=*s)
-      TILEBLITLOOP;
+    BLITLOOP;
 #undef OP
-      break;
-
+    break;
+    
 #ifdef CONFIG_FAST_ALPHA
-    case PG_LGOP_ALPHA:
+  case PG_LGOP_ALPHA:
 #define OP(d,s) ALPHA_OP(d,s)
-      TILEBLITLOOP;
+    BLITLOOP;
 #undef OP
-      break;
+    break;
 #endif
-    }
-  }
-  else {                                        /* Normal */
-    int offset_src;
-    u32 *src;
-
-    /* Only needed for normal blits */
-    src = ((u32*)srcbit->bits) + src_x + src_y*(srcbit->pitch>>2);
-    offset_src = (srcbit->pitch>>2) - ((w*srcbit->bpp)>>5);
-
-    switch (lgop) {
-    case PG_LGOP_NONE: 
-       for (;h;h--,src+=(srcbit->pitch>>2),dst+=(FB_BPL>>2))
-	 __memcpy(dst,src,w<<2);
-       break;
-       
-    case PG_LGOP_OR:
-#define OP(d,s) (*d|=*s)
-      BLITLOOP;
-#undef OP
-      break;
-
-    case PG_LGOP_AND:
-#define OP(d,s) (*d&=*s)
-      BLITLOOP;
-#undef OP      
-      break;
-      
-    case PG_LGOP_XOR:
-#define OP(d,s) (*d^=*s)
-      BLITLOOP;
-#undef OP
-      break;
-      
-#ifdef CONFIG_FAST_ALPHA
-    case PG_LGOP_ALPHA:
-#define OP(d,s) ALPHA_OP(d,s)
-      BLITLOOP;
-#undef OP
-      break;
-#endif
-    }
   }
 }
 

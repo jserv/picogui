@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.12 2002/10/02 20:38:47 micahjd Exp $
+/* $Id: rotate270.c,v 1.13 2002/10/07 03:31:16 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -110,38 +110,37 @@ void rotate270_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
 void rotate270_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
-   s16 bw,sy2;
+   s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bw,&sy2);
-   sy2 = bw-((h + src_y)%bw);
-
+   (*vid->bitmap_getsize)(src,&bw,&bh);
    (*vid->blit)(dest,dx-dest_y-h,dest_x,h,w,
-		      src,sy2,src_x,lgop);
+		src,bw-h-src_y,src_x,lgop);
 }
 void rotate270_scrollblit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
 		   hwrbitmap src,s16 src_x,s16 src_y,
 		   s16 lgop) {
-   s16 bh,sy2;
-   s16 dx,dy;
-   (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bh,&sy2);
-   sy2 = bh-(h%bh)-src_y;
-   
-   (*vid->scrollblit)(dest,dx-dest_y-h,dest_x,h,w,
-		      src,sy2,src_x,lgop);
-}
-void rotate270_tileblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
-		       s16 dest_w,s16 dest_h,
-		       hwrbitmap src,s16 src_x,s16 src_y,
-		       s16 src_w,s16 src_h,s16 lgop) {
    s16 bw,bh;
    s16 dx,dy;
    (*vid->bitmap_getsize)(dest,&dx,&dy);
-   (*vid->bitmap_getsize)(src,&bh,&bw);
-   (*vid->tileblit)(dest,dx-dest_y-dest_h,dest_x,dest_h,dest_w,
-		    src,bh-src_h-src_y,src_x,src_h,src_w,
-		    lgop);
+   (*vid->bitmap_getsize)(src,&bw,&bh);
+   (*vid->scrollblit)(dest,dx-dest_y-h,dest_x,h,w,
+		      src,bw-h-src_y,src_x,lgop);
+}
+void rotate270_multiblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
+			 s16 dest_w,s16 dest_h,
+			 hwrbitmap src,s16 src_x,s16 src_y,
+			 s16 src_w,s16 src_h,s16 xo,s16 yo,s16 lgop) {
+   s16 sw,sh,dw,dh;
+   (*vid->bitmap_getsize)(dest,&dw,&dh);
+   (*vid->bitmap_getsize)(src,&sw,&sh);
+
+   /* See the explanation in rotate90_multiblit */
+
+   (*vid->multiblit)(dest,dw-dest_y-dest_h,dest_x,dest_h,dest_w,
+		     src,sw-src_y-src_h,src_x,src_h,src_w,
+		     src_h - ((yo + dest_h) % src_h), xo,
+		     lgop);
 }
 void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
 		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
@@ -260,7 +259,7 @@ void vidwrap_rotate270(struct vidlib *vid) {
    vid->fellipse = &rotate270_fellipse;
    vid->gradient = &rotate270_gradient;
    vid->blit = &rotate270_blit;
-   vid->tileblit = &rotate270_tileblit;
+   vid->multiblit = &rotate270_multiblit;
    vid->charblit = &rotate270_charblit;
    vid->scrollblit = &rotate270_scrollblit;
    vid->coord_logicalize = &rotate270_coord_logicalize;

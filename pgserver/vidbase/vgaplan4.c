@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.2 2002/10/02 20:46:57 micahjd Exp $
+/* $Id: vgaplan4.c,v 1.3 2002/10/07 03:31:16 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -878,64 +878,6 @@ vgaplan4_screen_blit(hwrbitmap dest, s16 dst_x, s16 dst_y,
    }
 }
 
-/* blitting from screen to offscreen or vice versa is
-   much slower than within one space, so this makes
-   one copy between them.
-   As a side effect, the number of blit operations
-   is cut down vastly. */
-static inline void vgaplan4_do_tileblit(hwrbitmap dest,
-	               s16 x, s16 y, s16 w, s16 h,
-		       s16 sx, s16 sy, s16 sw, s16 sh,
-		       void (*blitfunc)(hwrbitmap,s16,s16,s16,s16,
-			       		hwrbitmap,s16,s16,s16))
-{
-  if (!(sw && sh))
-	return;
-
-  /* copy to full width */  
-  for (;sw<w;sw<<=1)
-       blitfunc (dest,x+sw,y,(w-sw<sw ? w-sw:sw),(h<sh ? h:sh),
-		       dest,x,y,PG_LGOP_NONE);
-
-  /* copy to full height */
-  for (;sh<h;sh<<=1)
-       blitfunc (dest,x,y+sh,w,(h-sh<sh ? h-sh:sh),dest,x,y,PG_LGOP_NONE);
-}
-
-/* tileblit has not received much testing, may break if I missed
-   something. */
-local void vgaplan4_tileblit(hwrbitmap dest,
-	               s16 x, s16 y, s16 w, s16 h,
-		       hwrbitmap sbit,
-		       s16 sx, s16 sy, s16 sw, s16 sh,
-		       s16 lgop)
-{
-  int dest_is_vga = (FB_VGAMEM == FB_MEM);
-  int source_is_vga = (FB_VGAMEM == FB_SMEM);
-
-  /* build a small jump table */
-  typedef void (*blit_t)(hwrbitmap,s16,s16,s16,s16,hwrbitmap,s16,s16,s16);
-  static const blit_t blitfunc_table[4][2] = {
-	  { linear4_blit, linear4_blit }, 			/* offscreen */
-	  { vgaplan4_blit_from_screen, linear4_blit }, 		/* from vga  */
-	  { vgaplan4_blit_to_screen, vgaplan4_screen_blit },	/* to vga    */
-	  { vgaplan4_screen_blit, vgaplan4_screen_blit },	/* onscreen  */
-  };
-  const blit_t *blitfunc = blitfunc_table[dest_is_vga << 1 | source_is_vga];
-  
-  /* other lgops can't be implemented like this */  
-  if (lgop != PG_LGOP_NONE) {
-	def_tileblit(dest,x,y,w,h,sbit,sx,sy,sw,sh,lgop);
-	return;
-  }
-
-  /* blit source once to dest, this is usually the slow part */
-  blitfunc[0] (dest,x,y,(w < sw ? w : sw),(h < sh ? h : sh),sbit,sx,sy,lgop);
-
-  /* blit from there to the rest of dest */
-  vgaplan4_do_tileblit(dest,x,y,w,h,sx,sy,sw,sh,blitfunc[1]);
-}
-
 /* multiplexer for the various special blit calls */
 local void vgaplan4_blit(hwrbitmap dest,
 		  s16 dst_x, s16 dst_y,s16 w, s16 h,
@@ -951,17 +893,7 @@ local void vgaplan4_blit(hwrbitmap dest,
    } 
 
    if (dest_is_vga && ! source_is_vga) {
-     if ((sbit->w < w || sbit->h < h) 
-	 && src_x == 0 && src_y == 0 
-	 && lgop == PG_LGOP_NONE)
-     {
-          vgaplan4_blit_to_screen(dest,dst_x,dst_y,sbit->w < w ? sbit->w : w,
-		         sbit->h < h ? sbit->h : h,sbit,src_x,src_y,lgop);
-	  vgaplan4_do_tileblit(dest,dst_x,dst_y,w,h,dst_x,dst_y,
-			  sbit->w,sbit->h,vgaplan4_screen_blit);
-     } else {
-          vgaplan4_blit_to_screen(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
-     }
+     vgaplan4_blit_to_screen(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
      return;
    } 
 
@@ -1205,9 +1137,6 @@ void setvbl_vgaplan4(struct vidlib *vid) {
    vid->bar            = &vgaplan4_bar;
    vid->rect           = &vgaplan4_rect;
    vid->blit           = &vgaplan4_blit;
-#ifdef EXPERIMENTAL_LGOPS
-   vid->tileblit       = &vgaplan4_tileblit;
-#endif
    vid->scrollblit     = &vgaplan4_scrollblit;
    vid->line           = &vgaplan4_line;
    vid->charblit       = &vgaplan4_charblit;

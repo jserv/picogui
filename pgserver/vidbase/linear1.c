@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.21 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: linear1.c,v 1.22 2002/10/07 03:31:16 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -302,15 +302,10 @@ void linear1_blit(hwrbitmap dest,
     case PG_LGOP_INVERT_AND:
       break;
     default:
-      default_blitter:
       def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
       return;
    }
 
-   /* Currently there is no tile blitter, so let defaultvbl handle it */
-   if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))
-     goto default_blitter;   
-      
    /* Initializations */ 
    src = srcline = srcbit->bits + (src_x>>3) + src_y*srcbit->pitch;
    dst = dstline = PIXELBYTE(dst_x,dst_y);

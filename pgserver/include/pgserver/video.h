@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.92 2002/10/02 22:00:32 micahjd Exp $
+/* $Id: video.h,v 1.93 2002/10/07 03:31:16 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -134,6 +134,10 @@ extern struct sprite *spritelist;
 */
 
 struct vidlib {
+
+  /* IMPORTANT:
+   *   when adding new primitives to the vidlib, update the rotation wrappers if necessary!
+   */
 
   /***************** Initializing and video modes */
 
@@ -389,17 +393,16 @@ struct vidlib {
   
   /* Very Reccomended
    *   Blits a bitmap to screen, optionally using lgop.
-   *   If w and/or h is bigger than the source bitmap, it
-   *   should tile.
-   *   If the source and destination rectangles overlap, the result
-   *   may be undefined.
+   *   If the source and destination rectangles overlap, the result is undefined.
+   *   This does _not_ tile or stretch bitmaps,
+   *   so don't go past the edge of the source bitmap.
    * 
    * Default implementation: pixel!
    */
   void (*blit)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	       s16 src_x, s16 src_y, s16 lgop);
 
-  /* Optional
+  /* Reccomended
    *   A version of blit() with the restriction on overlapping source
    *   and destination rectangles removed
    *   Also note that this does _not_ need to support tiling, and
@@ -412,16 +415,17 @@ struct vidlib {
 		     s16 src_x, s16 src_y, s16 lgop);
 
   /* Reccomended
-   *   Blits a bitmap or a section of a bitmap repeatedly
-   *   to cover an area. Used by many bitmap themes.
-   *   The difference between blit and tileblit is that blit restarts tiles
-   *   at the beginning of the bitmap, and tileblit restarts tiles at the
-   *   beginning of the tiled section
+   *   Blits a bitmap or a section of a bitmap, wrapping around the edges of the
+   *   source bitmap if necessary to cover the destination area.
+   *   If the source and destination rectangles overlap, the result is undefined.
+   *   x,y,w,h is the destination rectangle, sx,sy,sw,sh is the source rectangle,
+   *   xo,yo is the amount of the first tile to skip in each axis. This function
+   *   replaces the old tiling functionality of blit() and tileblit()
    *
    * Default implementation: Many calls to blit()!
    */
-  void (*tileblit)(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
-		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop);
+  void (*multiblit)(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		    hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 
   /* Reccomended
    *   Used for character data.  Blits 1bpp data from
@@ -683,11 +687,13 @@ void def_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop);
 void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 	      s16 src_x, s16 src_y, s16 lgop);
-void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
-		  hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop);
+void def_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop);
 void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		  s16 lgop);
+void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+		    s16 src_x, s16 src_y, s16 lgop);
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
@@ -713,8 +719,6 @@ void linear32_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
 void linear32_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 void linear32_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		   s16 src_x, s16 src_y, s16 lgop);
-void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
-		    s16 src_x, s16 src_y, s16 lgop);
 void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
 void def_fpolygon(hwrbitmap dest, s32* array, s16 xoff, s16 yoff , hwrcolor c, s16 lgop);
