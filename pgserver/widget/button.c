@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.115 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: button.c,v 1.116 2002/09/27 22:55:37 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -552,11 +552,11 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
 				  box->activemutex))) && old) {
 
 	      /* Turn it off */
-	      ((struct btndata *)(old->data))->on = 0;
+	      ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->on = 0;
 	      div_setstate(old->in->div,
-			   ((struct btndata *)(old->data))->over ?
-			   ((struct btndata *)(old->data))->state_hilight :
-			   ((struct btndata *)(old->data))->state,0);
+			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->over ?
+			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->state_hilight :
+			   ((struct btndata *)(old->data[widgettab[PG_WIDGET_BUTTON].subclass_num]))->state,0);
 	    }
 	    
 	    /* We're the new active widget */
