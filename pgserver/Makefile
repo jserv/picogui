@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2000/06/02 07:41:32 micahjd Exp $
+# $Id: Makefile,v 1.14 2000/06/04 08:53:14 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -111,6 +111,10 @@ ifeq ($(strip $(VIDLIB)),sdl)
 	# Libraries and includes for SDL
 	CFLAGS := $(CFLAGS) $(shell sdl-config --cflags)
 	LDFLAGS := $(LDFLAGS) $(shell sdl-config --libs)
+endif
+ifeq ($(strip $(VIDLIB)),svgalib)
+	# SVGAlib and vgagl
+	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 endif
 
 # Hardware-specific source files

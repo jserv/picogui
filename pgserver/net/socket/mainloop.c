@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.9 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: mainloop.c,v 1.10 2000/06/04 08:53:14 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -66,10 +66,10 @@ void windows_inputpoll_hack(void);
   /*************************************** Initialization */
 
   /* Subsystem initialization and error check */
+  if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
   if (prerror(dts_new()).type != ERRT_NONE) exit(1);
   if (prerror(req_init()).type != ERRT_NONE) exit(1);
   if (prerror(appmgr_init()).type != ERRT_NONE) exit(1);
-  if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
   if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
 
 #ifndef WINDOWS
