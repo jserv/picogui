@@ -66,7 +66,7 @@ void post_event(int event,struct widget *from,s32 param,int owner,const char *da
 
     FD_CLR(owner,&evtwait);
 #if defined(DEBUG_NET) || defined(DEBUG_EVENT)
-    printf("Client (#%d) removed from waiting list, sending event %d\n",owner,event);
+    fprintf(stderr, "Client (#%d) removed from waiting list, sending event %d\n",owner,event);
 #endif
      
     rsp.type = htons(PG_RESPONSE_EVENT);
@@ -109,7 +109,7 @@ void post_event(int event,struct widget *from,s32 param,int owner,const char *da
 	cb->out = cb->q;
 
 #ifdef DEBUG_NET
-      printf("*** Event queue overflow!\n");
+      fprintf(stderr, "*** Event queue overflow!\n");
 #endif
     }
   }

@@ -129,7 +129,7 @@ union gl_camera {
  * the last OpenGL error was.
  */
 #ifdef DEBUG_FILE
-#define gl_errorcheck printf( "%s @ %d: %s\n", __FUNCTION__, __LINE__,gluErrorString(glGetError()))
+#define gl_errorcheck fprintf(stderr, "%s @ %d: %s\n", __FUNCTION__, __LINE__,gluErrorString(glGetError()))
 #else
 #define gl_errorcheck
 #endif

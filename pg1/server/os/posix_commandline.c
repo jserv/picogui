@@ -191,52 +191,52 @@ g_error commandline_help(void) {
 /* Invoked by the -l option */
 g_error commandline_list(void) {
 #ifdef CONFIG_TEXT
-  printf("\n   Video drivers:");
+  fprintf(stderr, "\n   Video drivers:");
   {
     struct vidinfo *p = videodrivers;
     while (p->name) {
-      printf(" %s",p->name);
+      fprintf(stderr, " %s",p->name);
       p++;
     }
   }
 
-  printf("\n\n   Input drivers:");
+  fprintf(stderr, "\n\n   Input drivers:");
   {
     struct inputinfo *p = inputdrivers;
     while (p->name) {
-      printf(" %s",p->name);
+      fprintf(stderr, " %s",p->name);
       p++;
     }
   }
 	
-  printf("\n\n    Font engines:");
+  fprintf(stderr, "\n\n    Font engines:");
   {
     struct fontengine *p = fontengine_list;
     while (p->name) {
-      printf(" %s",p->name);
+      fprintf(stderr, " %s",p->name);
       p++;
     }
   }
 
 #ifdef CONFIG_FONTENGINE_BDF
-  printf("\n\n       BDF fonts:");
+  fprintf(stderr, "\n\n       BDF fonts:");
   {
     struct bdf_fontstyle_node *p = bdf_fontstyles;
     while (p) {
-      printf(" %s%d[",p->name,p->size);
+      fprintf(stderr, " %s%d[",p->name,p->size);
       if (p->normal)
-	printf("n");
+	fprintf(stderr, "n");
       if (p->bold)
-	printf("b");
+	fprintf(stderr, "b");
       if (p->italic)
-	printf("i");
+	fprintf(stderr, "i");
       if (p->bolditalic)
-	printf("I");
+	fprintf(stderr, "I");
       if (p->flags & PG_FSTYLE_FIXED)
-	printf("f");
+	fprintf(stderr, "f");
       if (p->flags & PG_FSTYLE_DEFAULT)
-	printf("d");
-      printf("]");
+	fprintf(stderr, "d");
+      fprintf(stderr, "]");
       p = p->next;
     }
   }
@@ -323,29 +323,29 @@ g_error commandline_list(void) {
 #endif
        );
 
-  printf("\n    App managers:");
+  fprintf(stderr, "\n    App managers:");
   {
     struct appmgr **p = appmgr_modules;
     while (*p) {
-      printf(" %s",(*p)->name);
+      fprintf(stderr, " %s",(*p)->name);
       p++;
     }
   }
 
-  printf("\n\n  Bitmap formats:");
+  fprintf(stderr, "\n\n  Bitmap formats:");
   {
     struct bitformat *p = bitmap_formats;
     char name[5] = {0,0,0,0,0};
     while (p->name[0]) {
       memcpy(name,p->name,4);
-      printf(" %s[",name);
+      fprintf(stderr, " %s[",name);
       if (p->detect)
-	printf("d");
+	fprintf(stderr, "d");
       if (p->load)
-	printf("l");
+	fprintf(stderr, "l");
       if (p->save)
-	printf("s");
-      printf("]");
+	fprintf(stderr, "s");
+      fprintf(stderr, "]");
       p++;
     }
   }

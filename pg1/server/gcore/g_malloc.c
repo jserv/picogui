@@ -57,8 +57,8 @@ g_error memoryleak_trace(void) {
   
 #ifdef DEBUG_MEMORY
   for(i=0;i<memref;i++)
-    printf("!%d #%d %p %s\n", memtrack[i].size, i,
-	   memtrack[i].mem, memtrack[i].where);
+    fprintf(stderr, "!%d #%d %p %s\n", memtrack[i].size, i,
+	    memtrack[i].mem, memtrack[i].where);
 #endif
   
   return mkerror(PG_ERRT_MEMORY,56);  /* Memory leak */
@@ -94,7 +94,7 @@ g_error g_malloc(void **p,size_t s) {
   memtrack[memref-1].mem=*p;
   memtrack[memref-1].size=s;
   memtrack[memref-1].where=where;
-  printf("+%d #%d (%ld) %p %s\n",s,memref,memamt,*p,where);
+  fprintf(stderr, "+%d #%d (%ld) %p %s\n",s,memref,memamt,*p,where);
 #endif
 
   return success;
@@ -142,7 +142,7 @@ void g_dfree(const void *p, const char *where) {
 #ifdef CONFIG_EFENCE
   }
 #endif
-  printf("-%d #%d (%ld) %p %s\n",s,memref,memamt,adr,where);
+  fprintf(stderr, "-%d #%d (%ld) %p %s\n",s,memref,memamt,adr,where);
 #endif
 #endif
   free((void*)p);
@@ -213,7 +213,7 @@ g_error g_realloc(void **p,size_t s) {
   memtrack[pos].mem=*p;
   memtrack[pos].size=s;
   memtrack[pos].where=where;
-  printf("* [%d -> %d] #%d (%ld) %p %s\n",from,s,memref,memamt,*p,where);
+  fprintf(stderr, "* [%d -> %d] #%d (%ld) %p %s\n",from,s,memref,memamt,*p,where);
 #endif
 
   return success;

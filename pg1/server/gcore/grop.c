@@ -49,12 +49,12 @@ g_error gropnode_alloc(struct gropnode **n) {
    num_grops++;
 #endif
 #ifdef DEBUG_MEMORY 
-  printf("gropnode_alloc : ");
+  fprintf(stderr, "gropnode_alloc : ");
 #endif
 
    if (grop_zombie_list) {
 #ifdef DEBUG_MEMORY
-   printf("using zombie list\n");
+   fprintf(stderr, "using zombie list\n");
 #endif
 
       /* re-use a zombie grop */
@@ -65,7 +65,7 @@ g_error gropnode_alloc(struct gropnode **n) {
    }
       
 #ifdef DEBUG_MEMORY
-   printf("allocating memory\n");
+   fprintf(stderr, "allocating memory\n");
 #endif
   return g_malloc((void**)n,sizeof(struct gropnode));
 };
@@ -75,13 +75,13 @@ void gropnode_free(struct gropnode *n) {
    num_grops--;
 #endif
 #ifdef DEBUG_MEMORY 
-  printf("gropnode_free(%p) : ",n);
+  fprintf(stderr, "gropnode_free(%p) : ",n);
 #endif
       
    /* Can we just stick it in the zombie list? */
    if (grop_zombie_count < CONFIG_MAX_ZOMBIEGROPS) {
 #ifdef DEBUG_MEMORY
-   printf("adding to zombie list\n");
+   fprintf(stderr, "adding to zombie list\n");
 #endif
    
       n->next = grop_zombie_list;
@@ -91,7 +91,7 @@ void gropnode_free(struct gropnode *n) {
    }
     
 #ifdef DEBUG_MEMORY
-   printf("freeing memory\n");
+   fprintf(stderr, "freeing memory\n");
 #endif
    
    /* Do it the old-fasioned way */
@@ -161,9 +161,9 @@ void grop_free(struct gropnode **headpp) {
 
 #ifdef DEBUG_MEMORY
   static int lock = 0;
-  printf("-> grop_free(%p = &%p)\n",headpp,*headpp);
+  fprintf(stderr, "-> grop_free(%p = &%p)\n",headpp,*headpp);
   if (lock)
-    printf("     -- grop_free lock triggered --\n");
+    fprintf(stderr, "     -- grop_free lock triggered --\n");
   lock = 1;
 #endif
 
@@ -177,7 +177,7 @@ void grop_free(struct gropnode **headpp) {
   *headpp = NULL;
 
 #ifdef DEBUG_MEMORY
-  printf("<- grop_free()\n");
+  fprintf(stderr, "<- grop_free()\n");
   lock = 0;
 #endif
 }

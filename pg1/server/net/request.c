@@ -99,7 +99,7 @@ void closefd(int fd) {
   }
   
 #ifdef DEBUG_NET 
-  printf("Close. fd = %d\n",fd);
+  fprintf(stderr, "Close. fd = %d\n",fd);
 #endif
   handle_cleanup(fd,-1);
   close(fd);
@@ -195,7 +195,7 @@ void readfd(int from) {
     r = recv(from,((unsigned char*)(&buf->req))+buf->header_size,
 	     sizeof(buf->req)-buf->header_size,0);
 #ifdef DEBUG_NET
-    printf("recv header = %d (have %d out of %d)\n",r,buf->header_size,
+    fprintf(stderr, "recv header = %d (have %d out of %d)\n",r,buf->header_size,
 	   sizeof(buf->req));
 #endif
     if (r<=0) {
@@ -242,7 +242,7 @@ void readfd(int from) {
 	}
 
 #ifdef DEBUG_NET
-	printf("Using a dynamic packet buffer\n");
+	fprintf(stderr, "Using a dynamic packet buffer\n");
 #endif
       }
     }
@@ -376,7 +376,7 @@ struct conbuf *find_conbuf(int fd) {
 int send_response(int to,const void *data,size_t len) {
   if (send(to,data,len,0)!=len) {
 #ifdef DEBUG_NET
-    printf("Error in send()\n");
+    fprintf(stderr, "Error in send()\n");
 #endif
     closefd(to);
     return 1;
@@ -563,9 +563,9 @@ void net_iteration(void) {
       len = sizeof(struct sockaddr_in);
       if((fd = accept(s, (void *)&ec, &len)) == -1) {
 #ifdef DEBUG_NET
-	printf("accept() returned -1\n");
+	fprintf(stderr, "accept() returned -1\n");
 #ifdef WINDOWS
-	printf("WSAGetLastError() = %d\n",WSAGetLastError());
+	fprintf(stderr, "WSAGetLastError() = %d\n",WSAGetLastError());
 #endif
 #endif
       }
@@ -578,7 +578,7 @@ void net_iteration(void) {
 	if ((fd+1)>con_n) con_n = fd+1;
 
 #ifdef DEBUG_NET
-	printf("Accepted. fd = %d, con_n = %d\n",fd,con_n);
+	fprintf(stderr, "Accepted. fd = %d, con_n = %d\n",fd,con_n);
 #endif
       
 	newfd(fd);
@@ -594,7 +594,7 @@ void net_iteration(void) {
 	  FD_CLR(fd,&evtwait);
 	  
 #ifdef DEBUG_NET
-	  printf("Incoming. fd = %d\n",fd);
+	  fprintf(stderr, "Incoming. fd = %d\n",fd);
 #endif
 	  
 	  readfd(fd);

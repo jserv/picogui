@@ -806,24 +806,24 @@ void ft_font_listing(void) {
   struct ft_face_id *f;
 
   for (f=ft_facelist;f;f=f->next) {
-    printf("%-50s",f->relative_path);
+    fprintf(stderr, "%-50s",f->relative_path);
     ft_style_print(&f->fs);
-    printf("\n");
+    fprintf(stderr, "\n");
   }
 }
 
 void ft_style_print(const struct font_style *fs) {
   struct ft_flag *flag;
   
-  printf("%s:%d",fs->name,fs->size);
+  fprintf(stderr, "%s:%d",fs->name,fs->size);
 
   for (flag=ft_styleflags;flag->name;flag++)
     if (flag->value & fs->style)
-      printf(":%s",flag->name);
+      fprintf(stderr, ":%s",flag->name);
 
   for (flag=ft_repflags;flag->name;flag++)
     if (flag->value & fs->representation)
-      printf(":%s",flag->name);
+      fprintf(stderr, ":%s",flag->name);
 }
 
 /* Scan a human-readable style string back into a

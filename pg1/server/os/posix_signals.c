@@ -115,7 +115,7 @@ void signals_handler(int sig) {
 
 #ifdef DEBUG_SIGTRACE   /* Print some extra info about the signal before quitting */
     if (siginfo)
-      printf("*** PicoGUI Oops!\n"
+      fprintf(stderr, "*** PicoGUI Oops!\n"
 	     "***          si_signo: %d (%p)\n"
 	     "***          si_errno: %d\n"
 	     "***           si_code: %d\n"

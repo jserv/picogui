@@ -627,7 +627,7 @@ void divtree_size_and_calc(struct divtree *dt) {
   
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG_VIDEO
-    printf("divnode_recalc(%p)\n",dt->head);
+    fprintf(stderr, "divnode_recalc(%p)\n",dt->head);
 #endif
 
     divnode_recalc(&dt->head,NULL);
@@ -674,7 +674,7 @@ void r_dtupdate(struct divtree *dt) {
 
   if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
 #ifdef DEBUG_VIDEO
-    printf("divnode_redraw\n");
+    fprintf(stderr, "divnode_redraw\n");
 #endif
 
     if (dt->flags & DIVTREE_ALL_NONTOOLBAR_REDRAW)

@@ -57,7 +57,7 @@ g_error globals_init(void) {
   hwrbitmap defaultcursor_bitmap, defaultcursor_bitmask;
 
 #ifdef DEBUG_INIT
-   printf("Init: globals: default font\n");
+   fprintf(stderr, "Init: globals: default font\n");
 #endif
 
   /* Allocate default font */
@@ -67,7 +67,7 @@ g_error globals_init(void) {
   errorcheck;
 
 #ifdef DEBUG_INIT
-   printf("Init: globals: cursor sprite bitmaps\n");
+   fprintf(stderr, "Init: globals: cursor sprite bitmaps\n");
 #endif
 
 #ifdef CONFIG_FORMAT_XBM
@@ -94,7 +94,7 @@ g_error globals_init(void) {
 #endif
    
 #ifdef DEBUG_INIT
-   printf("Init: globals: cursor sprite\n");
+   fprintf(stderr, "Init: globals: cursor sprite\n");
 #endif
 
   /* Make handles */
@@ -104,7 +104,7 @@ g_error globals_init(void) {
   errorcheck;
 
 #ifdef DEBUG_INIT
-  printf("Init: globals: strings\n");
+  fprintf(stderr, "Init: globals: strings\n");
 #endif
   
   /* Default strings */
@@ -112,7 +112,7 @@ g_error globals_init(void) {
   errorcheck;
 
 #ifdef DEBUG_INIT
-   printf("Init: globals: success\n");
+   fprintf(stderr, "Init: globals: success\n");
 #endif
 
   return success;
