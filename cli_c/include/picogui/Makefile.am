@@ -9,5 +9,5 @@ include_HEADERS = \
 install-data-hook:
 	if ! test x"@PGSERVER_DIR@" = x$(prefix) ; then \
 		echo "Copying pgserver's include files ..." ; \
-		cp ${PGSERVER_DIR}/include/picogui/*.h ${includedir}/ ; \
+		cp ${PGSERVER_DIR}/include/picogui/*.h ${includedir}/ || true; \
 	fi
