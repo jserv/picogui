@@ -3,7 +3,7 @@
  * -- Micah
  */
 
-obj default name = "Swrilypond Background";
+obj default name = "Swirlypond Background";
 
 object background {
    bitmap1 = LoadBitmap("data/swirlypond.jpeg");
