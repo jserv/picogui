@@ -1,4 +1,4 @@
-/* $Id: bmp.c,v 1.12 2002/02/02 20:01:22 lonetech Exp $
+/* $Id: bmp.c,v 1.13 2002/04/02 21:16:51 micahjd Exp $
  *
  * bmp.c - Functions to detect and load files compatible with the Windows BMP
  *         file format. This format is good for palettized images and/or
@@ -105,6 +105,9 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   int x,y,shift,mask,index;
   u8 byte;
   pgcolor c, c2, colortable[MAXPALETTE];
+#ifdef CONFIG_DITHER
+  hwrdither dither;
+#endif
 
   /* Load the headers. Fileheader is after "BM", infoheader is after that */
   if (datalen < FILEHEADER_LEN + INFOHEADER_LEN)
@@ -184,6 +187,12 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   e = (*vid->bitmap_new) (hbmp,w,h,vid->bpp);
   errorcheck;
 
+#ifdef CONFIG_DITHER
+  /* Start dithering */
+  e = vid->dither_start(&dither, *hbmp, 1,0,0,w,h);
+  errorcheck;
+#endif
+
   /* If we're converting from < 8bpp, make a mask */
   mask = (1<<bpp)-1;
 
@@ -231,11 +240,15 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	      break;
 	  }
 	
+#ifdef CONFIG_DITHER
+	  vid->dither_store(dither, c, PG_LGOP_NONE);
+#else
 	  /* Convert and store c. This method is not the fastest, but
 	   * it will always work and it's easy. If more speed is needed here,
 	   * we could use a pixel-pushing loop like the PNM driver does.
 	   */
 	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+#endif
 	}
 	/* Pad to a 32-bit boundary */
 	x = (rasterdata-linebegin) & 0x03;
@@ -249,8 +262,10 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       /*datalen=offset+ihdr->image_size;*/
       c=colortable[0];
       for(y=0;y<h;y++)
-	for(x=0;x<w;x++)
+	for(x=0;x<w;x++) {
+	  /* FIXME: We can't do dithering for RLE images yet */
 	  (*vid->pixel) (*hbmp,x,y,(*vid->color_pgtohwr)(c),PG_LGOP_NONE);
+	}
       x=0;
       y=h-1;
       while(rasterdata+1<data+datalen)
@@ -345,6 +360,10 @@ g_error bmp_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       return mkerror(PG_ERRT_BADPARAM,41);      /* RLE data cut short */
   }
       
+#ifdef CONFIG_DITHER
+  vid->dither_finish(dither);
+#endif
+
   return success;
 }
 

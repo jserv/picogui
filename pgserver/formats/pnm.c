@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.13 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: pnm.c,v 1.14 2002/04/02 21:16:51 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -84,6 +84,9 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   int val,bit,r,g,b;
   g_error e;
   g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
+#ifdef CONFIG_DITHER
+  hwrdither dither;
+#endif
 
   ascskip(&data,&datalen);
   if (!datalen) return efmt;
@@ -133,6 +136,12 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Set up the bitmap */
   e = vid->bitmap_new(hbmp,w,h,vid->bpp);
   errorcheck;
+
+#ifdef CONFIG_DITHER
+  /* Start dithering */
+  e = vid->dither_start(&dither, *hbmp, 0,0,0,w,h);
+  errorcheck;
+#endif
 
   /* Read in the values, convert colors, output them... */
   for (y=0;y<h;y++) {
@@ -193,10 +202,18 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       }
 
       /* Store it in the picogui bitmap */
+#ifdef CONFIG_DITHER
+      vid->dither_store(dither, mkcolor(r,g,b), PG_LGOP_NONE);
+#else
       vid->pixel(*hbmp,x,y,VID(color_pgtohwr)(mkcolor(r,g,b)),PG_LGOP_NONE);
+#endif
     }
   }
-  
+
+#ifdef CONFIG_DITHER
+  vid->dither_finish(dither);
+#endif
+
   return success;
 }
 

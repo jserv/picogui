@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.28 2002/03/26 03:56:57 instinc Exp $
+/* $Id: linear8.c,v 1.29 2002/04/02 21:16:52 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -147,8 +147,9 @@ void linear8_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,
 }
 
 /* Gradients look really cheesy in 8bpp anyway, so just
- * fake it with a rectangle
+ * fake it with a rectangle. Unless of course we have dithering...
  */
+#ifndef CONFIG_DITHER_GRADIENTS
 void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 		      pgcolor c1, pgcolor c2,s16 lgop) {
   hwrcolor c;
@@ -160,6 +161,7 @@ void linear8_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
 
   linear8_rect(dest,x,y,w,h,c,lgop);
 }
+#endif
 
 /* Like charblit, but rotate 90 degrees anticlockwise whilst displaying
  *
@@ -572,7 +574,9 @@ void setvbl_linear8(struct vidlib *vid) {
   vid->bar            = &linear8_bar;
   vid->line           = &linear8_line;
   vid->rect           = &linear8_rect;
+#ifndef CONFIG_DITHER_GRADIENTS
   vid->gradient       = &linear8_gradient;
+#endif
   vid->charblit       = &linear8_charblit;
   vid->tileblit       = &linear8_tileblit;
   vid->pixel          = &linear8_pixel;

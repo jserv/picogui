@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.82 2002/03/29 20:09:23 micahjd Exp $
+/* $Id: video.h,v 1.83 2002/04/02 21:16:52 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -74,7 +74,29 @@ struct stdbitmap {
   /* Should 'bits' be freed also when bitmap is freed? */
   u16 freebits;    
 };  /* NOTE: Allocating freebits as u16 is overkill, but this struct
-     * must be word-aligned! */
+     * _must_ be word-aligned! */
+
+#ifdef CONFIG_DITHER
+/* This can be a hardware-specific dithering structure,
+ * but usually it's a stddither pointer.
+ */
+typedef struct stddither *hwrdither;
+
+/* Structure for keeping track of the state of an image being dithered.
+ * This one is for the default floyd-steinberg dithering, but it can be
+ * overridden. All buffers are indexed by channel.
+ */
+struct stddither {
+  int *current_line[3];  /* Buffer for this line, pixel values * 16     */
+  int *next_line[3];     /* Buffer for the next line                    */
+  int *current[3];       /* Current position in current_line buffer     */
+  int *below[3];         /* Current position in next_line buffer        */
+  int x,y,w,h;           /* Destination rectangle                       */
+  int dy;                /* Delta for y motion                          */
+  int i;                 /* Iteration counter for the line              */
+  hwrbitmap dest;        /* Where to render to                          */
+};
+#endif /* CONFIG_DITHER */
 
 /* A group of functions to deal with one bitmap format */
 struct bitformat {
@@ -508,6 +530,29 @@ struct vidlib {
    * Default implementation: stdbitmap
    */
   g_error (*bitmap_get_groprender)(hwrbitmap bmp, struct groprender **rend);
+
+#ifdef CONFIG_DITHER
+
+  /* Optional
+   *   Start writing dithered data into a bitmap. Returns a dithering structure
+   *   that's used to keep track of the position in the image. It's assumed that
+   *   image data will be fed in top-down unless vflip is 1, in which case it's
+   *   assumed bottom-up.
+   */
+  g_error (*dither_start)(hwrdither *d, hwrbitmap dest, int vflip, 
+			  int x, int y, int w, int h);
+
+  /* Optional
+   *   Dither this pixel and store it in the bitmap
+   */
+  void (*dither_store)(hwrdither *d, pgcolor pixel, s16 lgop);
+
+  /* Optional
+   *   Free the dithering structure
+   */
+  void (*dither_finish)(hwrdither *d);
+
+#endif /* CONFIG_DITHER */
 
   /***************** Sprites */
 

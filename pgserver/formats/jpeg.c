@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.12 2002/03/26 17:44:59 instinc Exp $
+/* $Id: jpeg.c,v 1.13 2002/04/02 21:16:51 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -205,7 +205,6 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   struct stdbitmap **bmp = (struct stdbitmap **) hbmp;
   g_error e;
   int i,r,g,b,x,y;
-  hwrcolor hc;
 
   int pixels;
   int bytes;
@@ -213,6 +212,9 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   struct jpeg_decompress_struct cinfo; 
   struct jpeg_error_mgr jerr; 
   JSAMPARRAY buffer;		/* Output row buffer */
+#ifdef CONFIG_DITHER
+  hwrdither dither;
+#endif
 
   g_error efmt = mkerror(PG_ERRT_BADPARAM,48);
 
@@ -239,9 +241,15 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 #endif
 
   /* Set up the bitmap */
-  e = VID (bitmap_new) ((hwrbitmap *)bmp,cinfo.output_width,
-			cinfo.output_height,vid->bpp);
+  e = vid->bitmap_new((hwrbitmap *)bmp,cinfo.output_width,
+		      cinfo.output_height,vid->bpp);
   errorcheck;
+
+#ifdef CONFIG_DITHER
+  /* Start dithering */
+  e = vid->dither_start(&dither, *bmp, 0,0,0,cinfo.output_width,cinfo.output_height);
+  errorcheck;
+#endif
 
   /* Make a one-row-high sample array that will go away when done with image */
   buffer = (*cinfo.mem->alloc_sarray)
@@ -266,20 +274,19 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	r = g = b = (*buffer)[i++];
       }
 
-      /* Convert to hwrcolor */
-      hc = (*vid->color_pgtohwr) (mkcolor(r,g,b));
-
-      /* Get the video driver to set the pixel.
-       * This is slower than the funky loop used in the pnm loader,
-       * but since JPEG decompression is slow anyway it doesn't really
-       * matter as much.
-       */
-      (*vid->pixel) (*bmp,x,y,hc,PG_LGOP_NONE);
+#ifdef CONFIG_DITHER
+      vid->dither_store(dither, mkcolor(r,g,b), PG_LGOP_NONE);
+#else
+      vid->pixel(*bmp,x,y,vid->color_pgtohwr(mkcolor(r,g,b)),PG_LGOP_NONE);
+#endif
     }
     y++;
   }
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
+#ifdef CONFIG_DITHER
+  vid->dither_finish(dither);
+#endif
 
   return success;
 }

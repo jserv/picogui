@@ -1,4 +1,4 @@
-/* $Id: gif.c,v 1.5 2002/03/26 04:20:59 instinc Exp $
+/* $Id: gif.c,v 1.6 2002/04/02 21:16:51 micahjd Exp $
  *
  * gif.c - Read only GIF loader based on libungif
  *
@@ -965,6 +965,29 @@ void transcribe_line(hwrbitmap b, GifFileType *f, int y,
   }
 }
 
+#ifdef CONFIG_DITHER
+/* Transcribe one scanline from the GIF to the picogui bitmap */
+void dither_transcribe_line(hwrdither d, GifFileType *f, 
+		     int transparent_flag, int transparent_color) {
+  pgcolor c;
+  u8 pixel;
+  GifColorType *color;
+  int x;
+
+  for (x=0;x<f->Image.Width;x++) {
+    DGifGetPixel(f, &pixel);
+    color = f->SColorMap->Colors + (pixel % f->SColorMap->ColorCount);
+    if (transparent_flag) {
+      c = mkcolora(pixel==transparent_color ? 0 : 127,color->Red,color->Green,color->Blue);
+    }
+    else {
+      c = mkcolor(color->Red,color->Green,color->Blue);
+    }
+    vid->dither_store(d,c,PG_LGOP_NONE);
+  }
+}
+#endif
+
 /****************** PicoGUI public functions */
 
 bool gif_detect(const u8 *data, u32 datalen) {
@@ -982,12 +1005,15 @@ bool gif_detect(const u8 *data, u32 datalen) {
 g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   GifFileType *f = DGifOpenFileMemory(data,datalen);
   GifRecordType RecordType;
-  int y;
+  int x,y;
   g_error e;
   GifByteType *Extension;
   int ExtCode;
   int transparent_color = 0;
   int transparent_flag = 0;
+#ifdef CONFIG_DITHER
+  hwrdither dither;
+#endif
   
   if (!f)
     return mkerror(PG_ERRT_IO,72);   /* Error reading GIF */
@@ -1055,6 +1081,50 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     DGifCloseFile(f);
   errorcheck;
 
+#ifdef CONFIG_DITHER
+
+  /* Start dithering */
+  e = vid->dither_start(&dither, *hbmp, 0,0,0,f->Image.Width, f->Image.Height);
+  errorcheck;
+
+  /* Interlaced images are a pain to dither, we have to create a temporary buffer
+   * to read them in to, then dither from there. Noninterlaced gifs are simple.
+   */
+  if (f->Image.Interlace) {
+    hwrbitmap tempbmp;
+
+    e = vid->bitmap_new(&tempbmp, f->Image.Width, f->Image.Height, 32);
+    errorcheck;
+
+    for (y=0;y<f->Image.Height;y+=8)
+      transcribe_line(tempbmp, f, y, transparent_flag, transparent_color);
+
+    for (y=4;y<f->Image.Height;y+=8)
+      transcribe_line(tempbmp, f, y, transparent_flag, transparent_color);
+
+    for (y=2;y<f->Image.Height;y+=4)
+      transcribe_line(tempbmp, f, y, transparent_flag, transparent_color);
+
+    for (y=1;y<f->Image.Height;y+=2)
+      transcribe_line(tempbmp, f, y, transparent_flag, transparent_color);
+
+    for (y=0;y<f->Image.Height;y++)
+      for (x=0;x<f->Image.Width;x++)
+	vid->dither_store(dither, vid->getpixel(tempbmp,x,y),PG_LGOP_NONE);
+    
+    vid->bitmap_free(tempbmp);
+  }
+  else {
+    /* Non-interlaced */
+    
+    for (y=0;y<f->Image.Height;y++)
+      dither_transcribe_line(dither, f, transparent_flag, transparent_color);
+  }
+  
+  vid->dither_finish(dither);
+
+#else /* !CONFIG_DITHER */
+
   if (f->Image.Interlace) {
     /* Interlaced */
     
@@ -1076,6 +1146,8 @@ g_error gif_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     for (y=0;y<f->Image.Height;y++)
       transcribe_line(*hbmp, f, y, transparent_flag, transparent_color);
   }
+
+#endif /* CONFIG_DITHER */
   
   DGifCloseFile(f);
   return success;

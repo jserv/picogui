@@ -166,14 +166,18 @@ if [ "$CONFIG_FAST_ALPHA" = "y" ]; then
           5-5-5       CONFIG_FAST_ALPHA_555 \
           4-4-4       CONFIG_FAST_ALPHA_444" 5-6-5
 fi  
-bool 'Fast blurring (16bpp 5-6-5 only)' CONFIG_FAST_BLUR
+bool 'Fast blurring (16bpp 5-6-5 only)'                  CONFIG_FAST_BLUR
 bool 'Faster blurring (16bpp 5-6-5 only, lower quality)' CONFIG_FASTER_BLUR
-bool 'Dont write to VRAM with memcpy (16bpp only)' CONFIG_NO_VRAM_MEMCPY
-bool 'Planar VGA framebuffer @ 4bpp'  CONFIG_VBL_VGAPLAN4
-bool 'Very slow VBL (for debugging)' CONFIG_VBL_SLOWVBL
-bool '90 degree video rotation'   CONFIG_ROTATE
-bool '180 degree video rotation'  CONFIG_ROTATE180
-bool '270 degree video rotation'  CONFIG_ROTATE270
+bool 'Floyd-steinberg image dithering'                   CONFIG_DITHER
+if [ "$CONFIG_DITHER" = "y" ]; then
+  bool '  Also dither gradients (slow)'                  CONFIG_DITHER_GRADIENTS
+fi
+bool 'Dont write to VRAM with memcpy (16bpp only)'       CONFIG_NO_VRAM_MEMCPY
+bool 'Planar VGA framebuffer @ 4bpp'                     CONFIG_VBL_VGAPLAN4
+bool 'Very slow VBL (for debugging)'                     CONFIG_VBL_SLOWVBL
+bool '90 degree video rotation'                          CONFIG_ROTATE
+bool '180 degree video rotation'                         CONFIG_ROTATE180
+bool '270 degree video rotation'                         CONFIG_ROTATE270
 choice 'Base rotation angle' \
    	"0                      CONFIG_ROTATIONBASE_0 \
 	 90	       		CONFIG_ROTATIONBASE_90 \

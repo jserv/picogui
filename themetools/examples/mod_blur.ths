@@ -1,9 +1,17 @@
-object default name = "Blurry transparent dialog boxes";
+/* $Id: mod_blur.ths,v 1.3 2002/04/02 21:16:52 micahjd Exp $
+ *
+ * Give popup boxes a blurry background, with various hilighting and drop shadows :)
+ *
+ * -- Micah Dowty
+ */
 
+object default name = "Modifier: Blurry transparent dialog boxes";
+
+/*
+ * The actual popup. Do rendering in the backdrop fillstyle so it shouldn't be drawn more than once
+ */
 object popup { 
-  width = 350;
-  height = 150;
-  margin = 12;
+  margin = 8;
   bitmap1 = LoadBitmap("data/shadow.pgm");
 
   backdrop = fillstyle {
@@ -75,7 +83,7 @@ object popup {
     w = w - 30;
     h = h - 30;
 
-    Blur(x,y,w,h,16);
+    Blur(x,y,w,h,8);
     SetLgop(PG_LGOP_ALPHA);
     SetColor(PGCF_ALPHA | PGC_WHITE | (30<<24));
     Rect(x,y,w,h);
@@ -86,7 +94,24 @@ object popup {
 
   };
   bgfill = fillstyle {
+    /* Only the opaque parts should go in "bgfill", in this case
+     * it's a simple 1-pixel black border
+     */
     Frame(x,y,w,h);
   };
 }
 
+/*
+ * Make menuitems transparent, to show off the background
+ */
+
+object menuitem {
+  bgfill = fillstyle {
+    Nop();
+  };
+  fgcolor = 0x000000;
+  align = PG_A_CENTER;
+}
+
+
+/* The End */

@@ -1,4 +1,4 @@
-/* $Id: png.c,v 1.2 2002/01/30 12:03:15 micahjd Exp $
+/* $Id: png.c,v 1.3 2002/04/02 21:16:51 micahjd Exp $
  *
  * png.c - Use the libpng library to load PNG graphics into PicoGUI 
  *
@@ -75,6 +75,9 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   png_colorp palette;
   int num_palette;
   png_colorp pp;
+#ifdef CONFIG_DITHER
+  hwrdither dither;
+#endif
 
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (!png_ptr)
@@ -123,6 +126,12 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);    
   errorcheck;
 
+#ifdef CONFIG_DITHER
+  /* Start dithering */
+  e = vid->dither_start(&dither, *hbmp, 0,0,0,width,height);
+  errorcheck;
+#endif
+
   /* Transcribe it into a picogui bitmap. 
    * This method is slow, but ensures compatibility 
    */
@@ -163,12 +172,19 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 	break;
 	
       }
+#ifdef CONFIG_DITHER
+      vid->dither_store(dither, c, PG_LGOP_NONE);
+#else
       vid->pixel(*hbmp,x,y,VID(color_pgtohwr)(c),PG_LGOP_NONE);
+#endif
     }
   }
 
   /* Clean up */
   png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
+#ifdef CONFIG_DITHER
+  vid->dither_finish(dither);
+#endif
   return success;
 }
 
