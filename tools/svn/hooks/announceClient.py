@@ -7,11 +7,9 @@
 from twisted.internet import reactor, protocol
 
 class AnnounceClient(protocol.Protocol):
-    """Once connected, send a message, then print the result."""
-    
     def connectionMade(self):
         import sys
-        self.transport.write("Announce %s %s\r\n" % (sys.argv[2], " ".join(sys.argv[3:])))
+        self.transport.write("Announce %s %s\r\n" % (sys.argv[2], " ".join(sys.argv[3:]).split('\n')[0]))
         self.transport.loseConnection()
     
     def connectionLost(self, reason):
