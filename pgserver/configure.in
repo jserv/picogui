@@ -9,14 +9,14 @@ AM_PGUI_CROSSCOMPILE
 
 dnl Get the configuration file for the system
 
-AC_ARG_WITH(config,
+AC_ARG_WITH(profile,
 [  --with-profile=<config file>   Use given profile for server customization],,
   test -f profile.user || cp "${srcdir}/profile.defaults" profile.user
-  with_config="profile.user")
+  with_profile="profile.user")
 
 
 dnl normalize the path somehow
-CONFIG_FILE=$with_config
+CONFIG_FILE=$with_profile
 CONFIG_FILE=`echo $CONFIG_FILE`
 
 case "$CONFIG_FILE" in
@@ -28,7 +28,7 @@ esac
 AC_MSG_CHECKING([if the configuration file is readable])
 
 if test -r "$CONFIG_FILE" ; then
-  AC_MSG_RESULT($with_config)
+  AC_MSG_RESULT($with_profile)
 else
   AC_MSG_RESULT($CONFIG_FILE not found)
   AC_MSG_ERROR([cannot find configuration file])
@@ -237,7 +237,7 @@ echo "--------------------------------------------------"
 echo "$PACKAGE, version $VERSION"
 echo "--------------------------------------------------"
 echo
-echo "Profile read from: $with_config"
+echo "Profile read from: $with_profile"
 echo
 echo "widgets:  $WIDGET"
 echo "debug:    $DEBUGGING"
