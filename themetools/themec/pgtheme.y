@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.39 2002/01/05 16:51:46 micahjd Exp $
+/* $Id: pgtheme.y,v 1.40 2002/01/24 03:09:19 lonetech Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -87,7 +87,6 @@
 %type <fsn>      fsarglist
 %type <fsn>      fsstmt
 %type <fsn>      fsstmt_list
-%type <fsn>      fsexp
 %type <fsn>      fsvar_list
 %type <fsn>      fsdecl
 %type <fsn>      fsdecl_list
@@ -98,20 +97,19 @@
 %type <constn>   constnode_list
 
    /* Reserved words */
-%token OBJ PROP FILLSTYLE VAR SHIFTR SHIFTL COLORADD COLORSUB COLORDIV COLORMULT
-%token CLASS EQUAL NOT LTEQ GTEQ
+%token OBJ PROP FILLSTYLE VAR COLORADD COLORSUB COLORDIV COLORMULT CLASS 
 
 %right '?' ':'
 %left OR
 %left AND
 %left '|'
 %left '&'
-%left EQUAL NOT LTEQ GTEQ '<' '>'
+%left EQUAL NOTEQ
+%left LTEQ GTEQ '<' '>'
 %left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
-%right '!'
-%nonassoc UMINUS
+%nonassoc '!' UMINUS UPLUS
 %left CLASS
 
 %start unitlist
@@ -130,7 +128,7 @@ unit: objectdef
 		      insist on ending object definitions with a ';' */
     ;
 
-property_stmt: PROP propdef_list {$$=$2}
+property_stmt: PROP propdef_list { }
              ;
 
 propdef_list: propdef
@@ -154,6 +152,22 @@ propdef: UNKNOWNSYM {
   else
     yyerror("memory allocation error");  
 }
+       | UNKNOWNSYM '=' constexp {
+  /* Add a new node to the symbol table */
+  struct symnode *n;
+
+  n = malloc(sizeof(struct symnode));
+  if (n) {
+    n->type = PROPERTY;
+    n->name = $1;
+    n->value = $3;
+    n->next = symtab_head;
+    symtab_head = n;
+  }
+  else
+    yyerror("memory allocation error");
+}
+       ;
 
 objectdef:  OBJ thobj compound_stmt      { 
   /* Add to the list of objects */
@@ -218,8 +232,6 @@ objectdef:  OBJ thobj compound_stmt      {
   else
     yyerror("memory allocation error");  
 }
-
-
          ;
 
 compound_stmt:  statement                { $$ = $1; }
@@ -260,13 +272,13 @@ stmt_list: statement               { $$ = $1; }
 
 thobj: THOBJ          { $$ = $1; }
      | PROPERTY       { yyerror("Property found in place of theme object"); } 
-     | UNKNOWNSYM     { $$ = 0; }
+     // | UNKNOWNSYM     { $$ = 0; }
      ;
 
 property: PROPERTY
         | constexp    { $$ = $1; }
         | THOBJ       { yyerror("Theme object found in place of property"); }
-        | UNKNOWNSYM  { $$ = 0; }
+        // | UNKNOWNSYM  { $$ = 0; }
         ;
 
 propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
@@ -436,17 +448,36 @@ constnode: constexp {
 
 constexp: constexp '+' constexp { $$ = $1 + $3; }
         | constexp '-' constexp { $$ = $1 - $3; }
-        | constexp '*' constexp { $$ = $1 * $3; }
         | constexp '&' constexp { $$ = $1 & $3; }
         | constexp '|' constexp { $$ = $1 | $3; }
+	| constexp LTEQ constexp { $$ = $1 <= $3; }
+	| constexp GTEQ constexp { $$ = $1 >= $3; }
+	| constexp '<' constexp { $$ = $1 < $3; }
+	| constexp '>' constexp { $$ = $1 > $3; }
+	| constexp EQUAL constexp { $$ = $1 == $3; }
+	| constexp NOTEQ constexp { $$ = $1 != $3; }
         | constexp SHIFTL constexp { $$ = $1 << $3; }
         | constexp SHIFTR constexp { $$ = $1 >> $3; }
+	| constexp OR constexp { $$ = $1 || $3; }
+	| constexp AND constexp { $$ = $1 && $3; }
+	| '!' constexp { $$ = !$2; }
+	| '-' constexp %prec UMINUS { $$ = 0-$2; }
+	| '+' constexp %prec UPLUS { $$ = $2; }
+        | constexp '*' constexp { $$ = $1 * $3; }
         | constexp '/' constexp {
 	  if ($3 == 0)
 	    yyerror("Divide by zero");
 	  else
 	    $$ = $1 / $3; }
         | '(' constexp ')' { $$ = $2; }
+	| constexp '?' constexp ':' constexp { 
+	  fprintf(stderr,"Warning on %s:%d: question-colon with only constants",
+	      filename,lineno);
+	  if (yytext[0])
+	    fprintf(stderr," at \"%s\"\n",yytext);
+	  else
+	    fprintf(stderr,"\n");
+	  $$ = $1 ? $3 : $5; }
         | NUMBER
 	//	| UNKNOWNSYM            { $$ = 0; }
         ;
@@ -603,22 +634,23 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp '>' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GT)); }
      | fsexp AND fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_AND)); }
      | fsexp OR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_OR)); }
-     | fsexp '!' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
-     | fsexp NOT fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_EQ)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
+     | '!' fsexp  { $$ = fsnodecat($2, fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
+     | fsexp NOTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_EQ)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
      | fsexp LTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_GT)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
      | fsexp GTEQ fsexp  { $$ = fsnodecat(fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_LT)),fsnewnode(PGTH_OPCMD_LOGICAL_NOT)); }
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
-     | '-' NUMBER %prec UMINUS { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = 0-$2; }     
-     | NUMBER             { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }
-     | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
+     | '-' fsexp %prec UMINUS { $$ = fsnodecat(fsnodecat(0,$2),fsnewnode(PGTH_OPCMD_MINUS)); }
+     | '+' fsexp %prec UPLUS { $$ = $2; }     
+     | constexp       { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }
+     | FSVAR          { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      | fsprop              { $$ = $1; }
      | COLORADD '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORADD)); }
      | COLORSUB '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORSUB)); }
      | COLORMULT '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORMULT)); }
      | COLORDIV '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORDIV)); }
      | fsexp '?' fsexp ':' fsexp { $$ = fsnodecat(fsnodecat(fsnodecat($5,$3),$1),
-						  fsnewnode(PGTH_OPCMD_QUESTIONCOLON)); }
+					 fsnewnode(PGTH_OPCMD_QUESTIONCOLON)); }
      ;
 
 fsprop: THOBJ CLASS PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
