@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.31 2002/11/07 07:59:55 micahjd Exp $
+/* $Id: x11input.c,v 1.32 2002/11/08 05:02:01 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -265,6 +265,7 @@ int x11input_fd_activate(int fd) {
   if (need_resize) {
     if ((xb = x11_get_window(resizing_window)))
       x11_acknowledge_resize((hwrbitmap)xb, new_width, new_height);
+    update(NULL,1);
   }
   return 1;
 }

@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.8 2002/11/07 22:36:52 micahjd Exp $
+/* $Id: x11_window.c,v 1.9 2002/11/08 05:02:02 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -106,10 +106,10 @@ g_error x11_create_window(hwrbitmap *hbmp) {
 void x11_window_free(hwrbitmap window) {
   struct x11bitmap **b;
 
-  if (XB(window)->frontbuffer)
-    x11_bitmap_free((hwrbitmap) XB(window)->frontbuffer);
-
   if (VID(is_rootless)()) {
+    if (XB(window)->frontbuffer)
+      x11_bitmap_free((hwrbitmap) XB(window)->frontbuffer);
+
     /* Remove it from the window list */
     for (b=&x11_window_list;*b;b=&(*b)->next_window)
       if (*b == XB(window)) {
@@ -324,8 +324,6 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
     /* If this is monolithic mode, we need to set the video mode to match */
     if ((!VID(is_rootless)()) && (vid->xres!=w || vid->yres!=h))
       video_setmode(w, h, vid->bpp, PG_FM_ON,0); 
-
-    update(NULL,1);
   }
 }
 
