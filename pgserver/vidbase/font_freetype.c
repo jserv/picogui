@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.17 2002/10/14 12:09:46 micahjd Exp $
+/* $Id: font_freetype.c,v 1.18 2002/10/14 15:23:25 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdio.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -55,6 +56,7 @@ u8 *ft_pick_gamma_table(hwrcolor c);
 
 struct ft_face_id {
   const char *file_path;
+  const char *relative_path;  /* Path relative to our scanning path */
   struct font_style fs;
   struct ft_face_id *next;
 };
@@ -70,10 +72,9 @@ struct freetype_fontdesc {
 FT_Library         ft_lib;
 struct ft_face_id* ft_facelist;
 FT_Int32           ft_glyph_flags;
-const char*        ft_default_name;
-int                ft_default_size;
+struct font_style  ft_default_fs;
+struct font_style  ft_default_fixed_fs;
 int                ft_minimum_size;
-int                ft_dpi;
 FTC_Manager        ft_cache_manager;
 FTC_ImageCache     ft_image_cache;
 FTC_CMapCache      ft_cmap_cache;
@@ -87,14 +88,14 @@ struct pair26_6 {
  * of these bits defines the priority of the various
  * attributes
  */
-#define FCMP_TYPE     (1<<4)
-#define FCMP_FIXEDVAR (1<<3)
-#define FCMP_NAME     (1<<2)
-#define FCMP_DEFAULT  (1<<1)
+#define FCMP_TYPE     (1<<3)
+#define FCMP_FIXEDVAR (1<<2)
+#define FCMP_NAME     (1<<1)
 #define FCMP_STYLE    (1<<0)
 
-void ft_face_scan(const char *directory);
-void ft_face_load(const char *file);
+void ft_face_scan(const char *directory, int base_len);
+int ft_face_scan_list(const char *file, const char *path);
+void ft_face_load(const char *file, int base_len);
 int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs);
 void ft_get_face_style(FT_Face f, struct font_style *fs);
 void ft_get_descriptor_face(struct font_descriptor *self, FT_Face *aface);
@@ -104,12 +105,16 @@ void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g);
 void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
 			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
 void ft_font_listing(void);
+void ft_style_print(const struct font_style *fs);
+void ft_style_scan(struct font_style *fs, const char *str);
+char *ft_strdup(const char *str);
 
 /************************************************* Initialization ***/
 
 g_error freetype_engine_init(void) {
   g_error e;
   struct ft_face_id *f;
+  const char *path;
   
   if (FT_Init_FreeType(&ft_lib))
     return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
@@ -129,15 +134,6 @@ g_error freetype_engine_init(void) {
   if (FTC_CMapCache_New(ft_cache_manager,&ft_cmap_cache))
     return mkerror(PG_ERRT_IO,119);   /* Error initializing font engine */
 
-  /* Scan for available faces 
-   * FIXME: This is slow, provide a way to store the scan results on disk
-   */
-  ft_facelist = NULL;
-  ft_face_scan(get_param_str(CFGSECTION,"path","/usr/share/fonts"));
-  
-  if (!ft_facelist)
-    return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
-
   /* Custom glyph flags */
   ft_glyph_flags = ftc_image_format_bitmap;
   if (get_param_int(CFGSECTION,"no_hinting",0))
@@ -148,10 +144,9 @@ g_error freetype_engine_init(void) {
     ft_glyph_flags |= ftc_image_flag_autohinted;
 
   /* Default font and sizing config */
-  ft_default_size = get_param_int(CFGSECTION,"default_size",12);
-  ft_default_name = get_param_str(CFGSECTION,"default_name","Helmet");
+  ft_style_scan(&ft_default_fs,get_param_str(CFGSECTION,"default","Helmet:14"));
+  ft_style_scan(&ft_default_fixed_fs,get_param_str(CFGSECTION,"default_fixed","Nimbus Mono L:12:bold"));
   ft_minimum_size = get_param_int(CFGSECTION,"minimum_size",5);
-  ft_dpi = get_param_int(CFGSECTION,"dpi",72);
 
   /* Gamma config/initialization */
 #ifdef CONFIG_FREETYPE_GAMMA
@@ -161,6 +156,22 @@ g_error freetype_engine_init(void) {
 		       atof(get_param_str(CFGSECTION,"dark_gamma","0.75")));
   ft_gamma_light_dark_threshold = 3*get_param_int(CFGSECTION,"gamma_light_dark_threshold",128);
 #endif
+
+  /* Scan for available faces  */
+  ft_facelist = NULL;
+  path = get_param_str(CFGSECTION,"path","/usr/share/fonts");
+  if (ft_face_scan_list(get_param_str(CFGSECTION,"scan_list",NULL),path))
+    ft_face_scan(path, strlen(path));
+  
+  /* Dump scanned list if we're asked to */
+  if (get_param_int(CFGSECTION,"dump_list",0)) {
+    ft_font_listing();
+    /* It's ok to exit here, fonts are initialized before drivers */
+    exit(0);
+  }
+
+  if (!ft_facelist)
+    return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
 
   return success;
 }
@@ -181,17 +192,17 @@ void freetype_engine_shutdown(void) {
   FT_Done_FreeType(ft_lib);
 }
 
+/* Callback for loading font faces on demand */
 static FT_Error ft_face_requester( FTC_FaceID   face_id,
 				   FT_Library   library,
 				   FT_Pointer   request_data,
 				   FT_Face     *aface ) {
-  struct ft_face_id *f = (struct ft_face_id *) face_id;
-  
+  struct ft_face_id *f = (struct ft_face_id *) face_id;  
   return FT_New_Face( library, f->file_path, 0, aface );
 }
 
 /* Call ft_face_load for all fonts in a directory, recursively */
-void ft_face_scan(const char *directory) {
+void ft_face_scan(const char *directory, int base_len) {
   DIR *d = opendir(directory);
   struct dirent *dent;
   char buf[NAME_MAX];
@@ -215,19 +226,20 @@ void ft_face_scan(const char *directory) {
     if (stat(buf,&st) < 0)
       continue;
     if (S_ISDIR(st.st_mode)) {
-      ft_face_scan(buf);
+      ft_face_scan(buf,base_len);
       continue;
     }
 
     /* Otherwise, try to load it */
-    ft_face_load(buf);
+    ft_face_load(buf,base_len);
   }
 
   closedir(d);
 }
 
-/* Store a ft_face_id for the specified font if it loads */
-void ft_face_load(const char *file) {
+/* Store a ft_face_id for the specified font if it loads 
+ */
+void ft_face_load(const char *file, int base_len) {
   FT_Face face;
   struct ft_face_id *pfid;
 
@@ -235,7 +247,7 @@ void ft_face_load(const char *file) {
    * since the face cache uses the _pointer_ as the cache key, not
    * the contents!
    */
-  if (iserror(g_malloc((void**)&pfid, sizeof(struct ft_face_id))))
+  if (iserror(g_malloc((void**) &pfid, sizeof(struct ft_face_id))))
     return;
 
   pfid->file_path = file;
@@ -248,15 +260,66 @@ void ft_face_load(const char *file) {
    * the face name and path!
    */
   ft_get_face_style(face, &pfid->fs);
-  if (iserror(g_malloc((void**)&pfid->file_path, strlen(file)+1)))
-    return;
-  if (iserror(g_malloc((void**)&pfid->fs.name, strlen(face->family_name)+1)))
-    return;
-  strcpy((char*)pfid->file_path,file);
-  strcpy((char*)pfid->fs.name,face->family_name);
+  pfid->file_path = ft_strdup(file);
+  pfid->fs.name = ft_strdup(pfid->fs.name);
+  pfid->relative_path = pfid->file_path + base_len + 1;
 
   pfid->next = ft_facelist;
   ft_facelist = pfid;
+}
+
+/* Try to scan a file full of font face information, return nonzero on failure.
+ * The fonts' paths are assumed to be relative to 'path'
+ */
+int ft_face_scan_list(const char *file, const char *path) {
+  FILE *f;
+  char buf[NAME_MAX+80]; /* Big enough for a big path plus the style itself */
+  char *filename;
+  char *style;
+  struct ft_face_id *pfid;
+
+  if (!(f = fopen(file,"r")))
+    return 1;
+
+  while (fgets(buf, sizeof(buf)-1, f)) {
+    /* Chop off newline */
+    if (!*buf)
+      continue;
+    buf[strlen(buf)-1] = 0;
+
+    /* Split the line into file and style */
+    filename = buf;
+    style = strchr(buf,' ');
+    if (!style)
+      continue;
+    while (*style) {
+      if (isspace(*style))
+	*style = 0;
+      else
+	break;
+      style++;
+    }
+    
+    /* Allocate our new face ID node */
+    if (iserror(g_malloc((void**) &pfid, sizeof(struct ft_face_id))))
+      return 1;
+
+    /* Allocate a buffer for the path */
+    if (iserror(g_malloc((void**) &pfid->file_path, strlen(filename)+strlen(path)+2)))
+      return 1;
+    strcpy((char*) pfid->file_path, path);
+    strcat((char*) pfid->file_path, "/");
+    strcat((char*) pfid->file_path, filename);
+    pfid->relative_path = pfid->file_path + strlen(path) + 1;
+
+    /* Process the style string */
+    ft_style_scan(&pfid->fs, style);
+
+    pfid->next = ft_facelist;
+    ft_facelist = pfid;
+  }
+
+  fclose(f);
 }
 
 
@@ -482,10 +545,23 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
 
   if (!fs) {
     fs = &defaultfs;
-    defaultfs.name = ft_default_name;
+    defaultfs.name = NULL;
     defaultfs.size = 0;
     defaultfs.style = PG_FSTYLE_DEFAULT;
     defaultfs.representation = 0;
+  }
+
+  /* If they asked for a default font, give it to them */
+  if (fs->style & PG_FSTYLE_DEFAULT) {
+    int saved_size = fs->size;
+    int saved_style = fs->style;
+
+    memcpy(&defaultfs,
+	   fs->style & PG_FSTYLE_FIXED ? &ft_default_fixed_fs : &ft_default_fs,
+	   sizeof(defaultfs));
+    defaultfs.size = saved_size;
+    defaultfs.style |= saved_style;
+    fs = &defaultfs;
   }
 
   /* Pick the closest font face */
@@ -498,7 +574,8 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   }
   DATA->face = closest;
 
-  DATA->size = fs->size ? fs->size : ft_default_size;
+  DATA->size = fs->size ? fs->size : 
+    (fs->style & PG_FSTYLE_FIXED ? &ft_default_fixed_fs : &ft_default_fs)->size;
   if (DATA->size < ft_minimum_size)
     DATA->size = ft_minimum_size;
   DATA->flags = fs->style;
@@ -537,10 +614,10 @@ int ft_fontcmp(const struct ft_face_id *f, const struct font_style *fs) {
     result |= FCMP_NAME;
   if ((f->fs.style&PG_FSTYLE_FIXED)==(fs->style&PG_FSTYLE_FIXED))
     result |= FCMP_FIXEDVAR;
-  if ((f->fs.style&PG_FSTYLE_DEFAULT) && (fs->style&PG_FSTYLE_DEFAULT)) 
-    result |= FCMP_DEFAULT;
   if ((f->fs.style&PG_FSTYLE_STYLE_MASK)==(fs->style&PG_FSTYLE_STYLE_MASK)) 
     result |= FCMP_STYLE;
+  if ((f->fs.style&PG_FSTYLE_TYPE_MASK)==(fs->style&PG_FSTYLE_TYPE_MASK)) 
+    result |= FCMP_TYPE;
 
   return result;
 }
@@ -669,6 +746,138 @@ void ft_get_face_style(FT_Face f, struct font_style *fs) {
     fs->style |= PG_FSTYLE_CONDENSED;
 }
 
+
+/************************************************* Human-readable styles ***/
+
+/* This uses the same format as cli_python, i.e.
+ *  name:size:flags
+ */
+
+struct ft_flag {
+  const char *name;
+  int value;
+};
+
+struct ft_flag ft_styleflags[] = {
+  {"fixed",              PG_FSTYLE_FIXED},
+  {"default",            PG_FSTYLE_DEFAULT},
+  {"symbol",             PG_FSTYLE_SYMBOL},
+  {"subset",             PG_FSTYLE_SUBSET},
+  {"encoding isolatin1", PG_FSTYLE_ENCODING_ISOLATIN1},
+  {"encoding ibm",       PG_FSTYLE_ENCODING_IBM},
+  {"doublespace",        PG_FSTYLE_DOUBLESPACE},
+  {"bold",               PG_FSTYLE_BOLD},
+  {"italic",             PG_FSTYLE_ITALIC},
+  {"underline",          PG_FSTYLE_UNDERLINE},
+  {"strikeout",          PG_FSTYLE_STRIKEOUT},
+  {"grayline",           PG_FSTYLE_GRAYLINE},
+  {"flush",              PG_FSTYLE_FLUSH},
+  {"doublewidth",        PG_FSTYLE_DOUBLEWIDTH},
+  {"italic2",            PG_FSTYLE_ITALIC2},
+  {"encoding unicode",   PG_FSTYLE_ENCODING_UNICODE},
+  {"condensed",          PG_FSTYLE_CONDENSED},
+  {NULL,0}
+};
+
+struct ft_flag ft_repflags[] = {
+  {"bitmap normal",      PG_FR_BITMAP_NORMAL},
+  {"bitmap bold",        PG_FR_BITMAP_BOLD},
+  {"bitmap italic",      PG_FR_BITMAP_ITALIC},
+  {"bitmap bolditalic",  PG_FR_BITMAP_BOLDITALIC},
+  {"scalable",           PG_FR_SCALABLE},
+  {NULL,0}
+};
+
+void ft_font_listing(void) {
+  struct ft_face_id *f;
+
+  for (f=ft_facelist;f;f=f->next) {
+    printf("%-50s",f->relative_path);
+    ft_style_print(&f->fs);
+  }
+}
+
+void ft_style_print(const struct font_style *fs) {
+  struct ft_flag *flag;
+  
+  printf("%s:%d",fs->name,fs->size);
+
+  for (flag=ft_styleflags;flag->name;flag++)
+    if (flag->value & fs->style)
+      printf(":%s",flag->name);
+
+  for (flag=ft_repflags;flag->name;flag++)
+    if (flag->value & fs->representation)
+      printf(":%s",flag->name);
+
+  printf("\n");
+}
+
+/* Scan a human-readable style string back into a
+ * struct font_style, dynamically allocating the name.
+ */
+void ft_style_scan(struct font_style *fs, const char *str) {
+  const char *p;
+  int token_len;
+  struct ft_flag *flag;
+  memset(fs,0,sizeof(*fs));
+
+  if (!str || !*str)
+    return;
+
+  /* The text before the first colon is the name */
+  p = strchr(str,':');
+  if (!p) {
+    /* No colon? Assume it's a bare name */
+    fs->name = ft_strdup(str);
+    return;
+  }
+  if (p!=str) {
+    if (iserror(g_malloc((void**) &fs->name, p-str+1)))
+      return;
+    strncpy((char*) fs->name, str, p-str);
+  }
+  str = p+1;
+
+  /* The text between this colon and the next is the size */
+  fs->size = atoi(str);
+  p = strchr(str,':');
+  if (!p)
+    return;
+  str = p+1;
+
+  /* Now the rest of the string can be any of the flags */
+  for (;;) {
+    p = strchr(str,':');
+    if (p)
+      token_len = p - str;
+    else
+      token_len = strlen(str);
+
+    /* Now scan for the flag value */
+    for (flag=ft_styleflags;flag->name;flag++)
+      if (!strncasecmp(flag->name,str,token_len) && !flag->name[token_len])
+	fs->style |= flag->value;
+    for (flag=ft_repflags;flag->name;flag++)
+      if (!strncasecmp(flag->name,str,token_len) && !flag->name[token_len])
+	fs->representation |= flag->value;
+
+    if (p) 
+      str = p+1;
+    else
+      break;
+  }
+}
+
+/* g_malloc and strcpy wrapper, returns NULL on failure */
+char *ft_strdup(const char *str) {
+  char *s;
+
+  if (iserror(g_malloc((void**) &s, strlen(str)+1)))
+    return NULL;
+  strcpy(s,str);
+  return s;
+}
 
 /************************************************* Registration ***/
 

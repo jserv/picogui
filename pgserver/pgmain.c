@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.42 2002/10/12 15:50:26 micahjd Exp $
+/* $Id: pgmain.c,v 1.43 2002/10/14 15:23:13 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -473,6 +473,11 @@ int main(int argc, char **argv) {
       }
     } 
 
+#ifdef DEBUG_INIT
+    printf("Init: font\n");
+#endif
+    if (iserror(prerror(font_init())))   return 1;
+
     /* Input filters should be initialized before video drivers,
      * since some video drivers may need to set up their own input
      * filters. (sdlgl, particularly.)
@@ -545,10 +550,6 @@ int main(int argc, char **argv) {
 
     /* Subsystem initialization and error check */
 
-#ifdef DEBUG_INIT
-    printf("Init: font\n");
-#endif
-    if (iserror(prerror(font_init())))   return 1;
 #ifdef DEBUG_INIT
     printf("Init: divtree\n");
 #endif

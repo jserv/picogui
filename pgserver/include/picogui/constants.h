@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.163 2002/10/13 13:04:11 micahjd Exp $
+/* $Id: constants.h,v 1.164 2002/10/14 15:23:16 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -178,6 +178,10 @@
                                        PG_FSTYLE_ITALIC|\
                                        PG_FSTYLE_CONDENSED)
 
+/* Styles that shouldn't be used unless requested */
+#define PG_FSTYLE_TYPE_MASK          (PG_FSTYLE_SUBSET|\
+                                      PG_FSTYLE_SYMBOL)
+
 //! \}
 
 /*!
@@ -197,7 +201,7 @@
 #define PG_FR_BITMAP_BOLD          (1<<1)    //!< Bitmapped font with bold
 #define PG_FR_BITMAP_ITALIC        (1<<2)    //!< Bitmapped font with italic
 #define PG_FR_BITMAP_BOLDITALIC    (1<<3)    //!< Bitmapped font with bold and italic
-#define PG_FR_SCALABLE             (1<<4)    //!< Wishful thinking :)
+#define PG_FR_SCALABLE             (1<<4)    //!< TrueType, Type1, or other outline font
 
 //! \}
 

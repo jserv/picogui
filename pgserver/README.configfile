@@ -535,22 +535,31 @@ quoted appropriately. For example:
   make them look worse.
   Defaults on
 
-- default_name
-  Family name of the default font
-  Defaults to "Helmet" (included in the OpenOffice fonts)
+- default
+  Style for the default font. The style format used is name:size:flags, with
+  all sections optional, same as cli_python.
+  Defaults to "Helmet:14" (included in the OpenOffice fonts)
 
-- default_size
-  Size (in pixels) of the default font.
-  Defaults to 12
+- default_fixed
+  Style for the default fixed width font.
+  Defaults to "Nimbus Mono L:12:bold" (included in the Ghostscript fonts)
 
 - minimum_size
   Force all fonts to be at least this big
   Defaults to 5
 
-- dpi
-  The DPI to use for setting font sizes. Normally this is 72 so fonts
-  are measured in pixels, but this can be modified to scale all screen fonts.
-  Defaults to 72
+- dump_list
+  If nonzero, list all the fonts found at startup then exit. The font filename
+  relative to the 'path', followed by the style descriptor (see above)
+  is output on one line.
+
+- scan_list
+  If a filename is specified for this property and the file exists, that file
+  is scanned for font styles instead of manually scanning 'path'. The format
+  is the same as used in dump_list above, so you can redirect pgserver's output
+  from dump_list into a file for use with scan_list.
+  Note that you can specify dump_list and scan_list at the same time, and you
+  should get the same list back as output, though probably in a different order.
 
 - light_gamma
   Set the gamma correction for antialiased rendering,
@@ -582,9 +591,6 @@ quoted appropriately. For example:
 - max_bytes
   Maximum number of bytes to use for cached data
   Defaults to the Freetype default
-
-- list
-  If nonzero, list all the fonts found at startup then exit
 
 --- The End ---
 
