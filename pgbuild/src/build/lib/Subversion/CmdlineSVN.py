@@ -75,7 +75,7 @@ def openSvn(args):
     try:
         return ptyopen(cmdline)
     except:
-        return os.popen(cmdline, 'r', 1)   # Line buffered if possible
+        return os.popen(cmdline)
 
 def expandStatus(line):
     if len(line) < 2:
