@@ -1,4 +1,4 @@
-/* $Id: gl_primitives.c,v 1.4 2002/11/25 06:49:39 micahjd Exp $
+/* $Id: gl_primitives.c,v 1.5 2002/12/03 02:53:39 micahjd Exp $
  *
  * gl_primitives.c - OpenGL driver for picogui
  *                   Implement standard picogui primitives using OpenGL
@@ -416,6 +416,12 @@ int gl_grop_render_postsetup_hook(struct divnode **div, struct gropnode ***listp
   /* Push an OpenGL translation matrix to move to the divnode's origin */
   glPushMatrix();
   glTranslatef(rend->output_rect.x, rend->output_rect.y, 0);
+
+  /* Move the clipping rectangle to be relative to this new matrix */
+  rend->clip.x1 -= rend->output_rect.x;
+  rend->clip.y1 -= rend->output_rect.y;
+  rend->clip.x2 -= rend->output_rect.x;
+  rend->clip.y2 -= rend->output_rect.y;
 
   return 0;
 }
