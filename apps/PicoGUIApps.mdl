@@ -26,6 +26,8 @@ depends = [ 'picoguiclient',
             
             ]
 
+declare = [ 'option/picoguiapps/debug' ]
+
 runtime = [
     Runtime ( 'pterm', 'Terminal',
               content = [ 'bin/pterm' ],
@@ -128,6 +130,9 @@ def prepare (module, platform, project):
 
     command = command + " --with-rm=%s" % \
               project.modules ['resourcemanager'].install_path (platform, project)
+
+    if project.value ['option/picoguiapps/debug'] :
+        command += ' --enable-debug'
 
     message ("running: %s" % command)
 
