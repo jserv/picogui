@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.46 2003/04/12 22:43:24 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.47 2003/04/13 03:06:20 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -280,7 +280,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
     /* Receive streamed data from client */ 
   case PG_TRIGGER_STREAM:
     
-    if (!iserror(pgstring_new(&str, PGSTR_ENCODE_ASCII, param->stream.size, param->stream.data))) {
+    if (!iserror(pgstring_new(&str, PGSTR_ENCODE_UTF8, param->stream.size, param->stream.data))) {
       textbox_write(self,str);
       pgstring_delete(str);
       paragraph_scroll_to_cursor(DATA->doc->crsr);
@@ -509,7 +509,7 @@ g_error textbox_getformat(struct widget *self, struct pgstring **fmt) {
      * first time. It is a pgserver-owned handle, cleaned up at exit.
      */
     if (!default_format) {
-      e = pgstring_wrap(&default_format, PGSTR_ENCODE_UTF8, "plaintext");
+      e = pgstring_wrap(&default_format, PGSTR_ENCODE_ASCII, "plaintext");
       errorcheck;
     }
     h = default_format;

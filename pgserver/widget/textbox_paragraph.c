@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.29 2003/03/10 23:48:27 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.30 2003/04/13 03:06:20 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -108,9 +108,9 @@ g_error paragraph_new(struct paragraph **par, struct divnode *div) {
   (*par)->div = div;
 
   /* Make an empty string 
-   * FIXME: pgstring needs to be cleaned up and enhanced to support the other formats correctly
+   * FIXME: This should start with ASCII and move up to UTF8 or UCS-16 when necessary, to improve speed
    */
-  e = pgstring_new(&(*par)->content,PGSTR_ENCODE_ASCII,0,NULL);
+  e = pgstring_new(&(*par)->content,PGSTR_ENCODE_UTF8,0,NULL);
   errorcheck;
 
   /* Create the first line */ 
