@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.29 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: sdlfb.c,v 1.30 2001/11/09 08:53:42 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -661,7 +661,7 @@ g_error sdlfb_sdc_char(char c) {
   /* Plot a character */
   if (c!='\n' && c!='\r' && c!='\b') {
     outchar(&sdlsdc_bits,fd,&sdlsdc_cx,&sdlsdc_cy,sdlsdc_hfg,c,NULL,
-	    0,0,PG_LGOP_NONE,0);
+	    PG_LGOP_NONE,0);
     
     /* Update the screen */
     SDL_UpdateRect(sdl_vidsurf,
