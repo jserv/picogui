@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.30 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.31 2001/03/22 01:44:07 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -630,10 +630,10 @@ g_error def_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
 g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
    struct stdbitmap *destbit,*srcbit;
    u8 *src,*srcline,*dest;
-   u8 oshift,shift,mask;
-   u8 shiftset  = 8-vid->bpp;
-   u8 subpixel  = ((1<<(8/vid->bpp))-1);
-   u8 subpixel2 = ((1<<(1+vid->bpp))-1);
+   int oshift,shift,mask;
+   int shiftset  = 8-vid->bpp;
+   int subpixel  = ((8/vid->bpp)-1);
+   int subpixel2 = ((1<<vid->bpp)-1);
    g_error e;
    int h,i,x,y;
    hwrcolor c;
@@ -693,7 +693,7 @@ g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
 	  case 2:
 	  case 4:
 	    *dest &= ~mask;
-	    *dest |= (c & mask) << shift;
+	    *dest |= (c << shift) & mask;
 	    break; 
 	    
 	  case 8:

@@ -1,0 +1,8 @@
+2001-03-21    Micah Dowty <micahjd@users.sourceforge.net>
+
+Shortly after committing the rotation code with runtime mode switching, I
+found a few bugs...
+      
+      * vidbase/defaultvbl.c: Fixed some faulty logic in
+        def_bitmap_rotate90() that broke rotation in modes less than 8bpp
+	
