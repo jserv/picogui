@@ -1,4 +1,4 @@
-/* $Id: pgstring.h,v 1.3 2002/10/11 12:32:37 micahjd Exp $
+/* $Id: pgstring.h,v 1.4 2002/10/29 08:15:45 micahjd Exp $
  *
  * pgstring.h - String data type to handle various encodings
  *
@@ -60,7 +60,7 @@ struct pgstring {
 };
 
 struct pgstr_iterator {
-  u32 offset;                 /* Byte offset within a buffer */
+  s32 offset;                 /* Byte offset within a buffer */
   void *buffer;               /* Format-specific buffer pointer */
   unsigned int invalid:1;     /* Nonzero if this is outside the string */
 };
@@ -180,7 +180,17 @@ g_error pgstring_resize(struct pgstring *str, u32 size);
  *   0 if a==b
  *  >0 if a>b
  */
-int pgstring_iteratorcmp(struct pgstr_iterator *a, struct pgstr_iterator *b);
+int pgstring_iteratorcmp(struct pgstring *str, struct pgstr_iterator *a,
+			 struct pgstr_iterator *b);
+
+/* Return 0 if the cursor is still inside the string,
+ * If the cursor is before the beginning of the string return
+ * a negative number equal to the number of characters before,
+ * likewise return a positive number indicating the number
+ * of characters after if the cursor is after the end of the string.
+ */
+int pgstring_eof(struct pgstring *str, struct pgstr_iterator *p);
+
 
 #endif /* __PGSTRING_H */
 /* The End */

@@ -1,6 +1,11 @@
-/* $Id: pgstring.c,v 1.9 2002/10/26 19:03:28 micahjd Exp $
+/* $Id: pgstring.c,v 1.10 2002/10/29 08:15:41 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
+ *
+ *    FIXME: Most of the code here needs to be reworked into an 
+ *           architecture similar to the video drivers, where there
+ *           are default implementations that may be overridden by the
+ *           individual implementations.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -294,7 +299,8 @@ void pgstring_chrcpy(struct pgstring *deststr, struct pgstring *srcstr,
  *   0 if a==b
  *  >0 if a>b
  */
-int pgstring_iteratorcmp(struct pgstr_iterator *a, struct pgstr_iterator *b) {
+int pgstring_iteratorcmp(struct pgstring *str,
+			 struct pgstr_iterator *a, struct pgstr_iterator *b) {
   /* FIXME: Update this for textbuffers */
   if (a->offset == b->offset)
     return 0;
@@ -302,6 +308,23 @@ int pgstring_iteratorcmp(struct pgstr_iterator *a, struct pgstr_iterator *b) {
     return -1;
   return 1;
 }
+
+/* Return 0 if the cursor is still inside the string,
+ * If the cursor is before the beginning of the string return
+ * a negative number equal to the number of characters before,
+ * likewise return a positive number indicating the number
+ * of characters after if the cursor is after the end of the string.
+ */
+int pgstring_eof(struct pgstring *str, struct pgstr_iterator *p) {
+  /* FIXME: this needs to be overhauled for textbuffers et. al. also */
+
+  if (p->offset < 0)
+    return p->offset;
+  else if (p->offset >= str->num_bytes)
+    return p->offset - str->num_bytes + 1;
+  return 0;
+}
+
 
 /******************************************************** Insertion/deletion */
 

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.23 2002/10/29 04:52:20 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.24 2002/10/29 08:15:46 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -154,6 +154,17 @@ g_error textbox_set(struct widget *self,int property, glob data) {
       document_nuke(DATA->doc);
       break;
 
+    case PG_INSERT_ATCURSOR:
+      break;
+
+    case PG_INSERT_PREPEND:
+      document_seek(DATA->doc, 0, PGSEEK_SET);
+      break;
+
+    case PG_INSERT_APPEND:
+      document_seek(DATA->doc, 0, PGSEEK_END);
+      break;
+
     }
     e = textbox_getformat(self,&fmt);
     errorcheck;
@@ -213,8 +224,6 @@ glob textbox_get(struct widget *self,int property) {
 }
 
 void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
-  struct paragraph *par;
-
   if (DATA->readonly)
     return;
 
@@ -250,24 +259,10 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_DOWN:
     if (param->mouse.chbtn != 1)
       return;
-    par = document_get_div_par(param->mouse.cursor->ctx.div_under);
-    if (par) {
-      paragraph_hide_cursor(DATA->doc->crsr);
-      DATA->doc->crsr = &par->cursor;
-      paragraph_movecursor(DATA->doc->crsr, par,
-			   param->mouse.x - par->div->div->r.x,
-			   param->mouse.y - par->div->div->r.y);
-      paragraph_show_cursor(DATA->doc->crsr);
-      request_focus(self);
-    }
-    else {
-      /* They clicked outside of all paragraphs. Assume this means
-       * they clicked after the end of the document, and position the
-       * cursor at the document's end.
-       * FIXME: This could also mean a click within the document's margin!
-       */
-      
-    }
+    paragraph_hide_cursor(DATA->doc->crsr);
+    document_mouseseek(DATA->doc, &param->mouse);
+    paragraph_show_cursor(DATA->doc->crsr);
+    request_focus(self);
     break;
 
   case PG_TRIGGER_KEYUP:
@@ -288,16 +283,12 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 
       case PGKEY_LEFT:
 	paragraph_hide_cursor(DATA->doc->crsr);
-	document_seek(DATA->doc,-1,PGSEEK_CUR);
-	if (document_eof(DATA->doc))
-	  document_seek(DATA->doc,1,PGSEEK_CUR);
+	document_bounded_seek(DATA->doc,-1,PGSEEK_CUR);
 	break;
 
       case PGKEY_RIGHT:
 	paragraph_hide_cursor(DATA->doc->crsr);
-	document_seek(DATA->doc,1,PGSEEK_CUR);
-	if (document_eof(DATA->doc))
-	  document_seek(DATA->doc,-1,PGSEEK_CUR);
+	document_bounded_seek(DATA->doc,1,PGSEEK_CUR);
 	break;
 
       case PGKEY_UP:
@@ -328,19 +319,12 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
 
     if (param->kbd.flags & PG_KF_FOCUSED) {
       param->kbd.consume++;
-      if (param->kbd.key == PGKEY_BACKSPACE) {
-	paragraph_seekcursor(DATA->doc->crsr, -1);
-	if (document_eof(DATA->doc))
-	  document_seek(DATA->doc,1,PGSEEK_CUR);
-	else
-	  paragraph_delete_char(DATA->doc->crsr);
-      }
-      else if (param->kbd.key == PGKEY_DELETE) {
+      if (param->kbd.key == PGKEY_BACKSPACE)
+	document_backspace_char(DATA->doc);
+      else if (param->kbd.key == PGKEY_DELETE)
 	document_delete_char(DATA->doc);
-      }
-      else {
+      else
 	document_insert_char(DATA->doc, param->kbd.key, NULL);
-      }
       paragraph_wrap(DATA->doc->crsr->par,0);
     }
     break;

@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.16 2002/10/28 01:00:21 micahjd Exp $
+/* $Id: textbox.h,v 1.17 2002/10/29 08:15:45 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -33,6 +33,7 @@
 #include <pgserver/divtree.h>
 #include <pgserver/render.h>
 #include <pgserver/paragraph.h>
+#include <pgserver/input.h>
 
 struct textbox_document {
   struct paragraph *par_list;     /* Doubly-linked list of paragraphs */
@@ -57,14 +58,7 @@ void document_delete(struct textbox_document *doc);
 
 /************************* Editing */
 
-/* Note that textbox_frontend provides all interactive editing. These functions
- * don't bother doing anything with the cursor or user interaction. This interface
- * is used under textbox_frontend, and in the format loaders.
- *
- * Note that it's fine for textbox_frontend to muck with the paragraph object directly
- * because it must manage visual things like cursor blink, mouse interaction, and that
- * can easily be done independent of the entire document's structure. However,
- * format loaders should only use this interface.
+/* This document interface is shared between the textbox_frontend and all text formats.
  */
 
 /* Insert a character/string at the current cursor location.
@@ -80,10 +74,22 @@ g_error document_insert_string(struct textbox_document *doc, struct pgstring *st
  */
 void document_seek(struct textbox_document *doc, s32 offset, int whence);
 
-/* Seek up/down in the document, snapping the cursor to the nearest character */
+/* Like document_seek, but bound it at the edges of the document.
+ * document_eof() will never be set after calling this.
+ */
+void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence);
+
+/* Seek up/down in the document, snapping the cursor to the nearest character
+ * This is bounded to the document edges.
+ */
 void document_lineseek(struct textbox_document *doc, s32 offset);
 
-/* Return true if the current cursor location is not valid */
+/* Return 0 if the cursor is still inside the document,
+ * If the cursor is before the beginning of the document return
+ * a negative number equal to the number of characters before,
+ * likewise return a positive number indicating the number
+ * of characters after if the cursor is after the end of the doc.
+ */
 int document_eof(struct textbox_document *doc);
 
 /* Delete the character after the cursor. If there's no cursor to delete,
@@ -91,8 +97,17 @@ int document_eof(struct textbox_document *doc);
  */
 void document_delete_char(struct textbox_document *doc);
 
+/* Delete the cursor before the cursor
+ * This doesn't allow the action if it's at the edge of the document.
+ */
+void document_backspace_char(struct textbox_document *doc);
+
 /* Retrieve the paragraph associated with a divnode */
 struct paragraph *document_get_div_par(struct divnode *div);
+
+/* Seek the cursor to the mouse location */
+void document_mouseseek(struct textbox_document *doc, struct trigparam_mouse *m);
+
 
 /************************* Text format loaders */
 

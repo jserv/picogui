@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.45 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: input.h,v 1.46 2002/10/29 08:15:44 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -146,7 +146,7 @@ g_error cursor_retheme(void);
 /* Trigger param union */
 union trigparam {
 
-  struct {
+  struct trigparam_mouse {
     int x,y,btn;  /* Current mouse status */
     int chbtn;    /* Changed buttons */
     int pressure;
@@ -182,7 +182,7 @@ union trigparam {
 
   } mouse;
 
-  struct {
+  struct trigparam_kbd {
     int key;      /* PGKEY_* constant */
     int mods;     /* PGMOD_* constant */
     int flags;    /* PG_KF_* constants */
@@ -195,7 +195,7 @@ union trigparam {
 
   } kbd;
 
-  struct {
+  struct trigparam_stream {
     u32 size;
     u8 *data;
   } stream;

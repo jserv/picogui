@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.13 2002/10/29 04:52:20 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.14 2002/10/29 08:15:49 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -206,7 +206,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     else {
       for (i=line->char_width;i;i--) {
 	draw_cursor = par->cursor.visible && 
-	  !pgstring_iteratorcmp(&p, &par->cursor.iterator);
+	  !pgstring_iteratorcmp(par->content, &p, &par->cursor.iterator);
 	ch = paragraph_decode_meta(par, &p, (void**) &meta);
 	if (meta) 
 	  paragraph_apply_metadata(meta, &fmt);
@@ -223,7 +223,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
        * whitespace)
        */
       if ((!line->next) && par->cursor.visible &&
-	  !pgstring_iteratorcmp(&p, &par->cursor.iterator))
+	  !pgstring_iteratorcmp(par->content, &p, &par->cursor.iterator))
 	  paragraph_render_cursor(r,&par->cursor,xy.x,xy.y,fmt.fd);
 
       /* Next line */
@@ -662,7 +662,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
 
   /* Skip until we get to the beginning of the change */
   if (skip_to) {
-    while (pgstring_iteratorcmp(&p,skip_to)) {
+    while (pgstring_iteratorcmp(par->content, &p,skip_to)) {
       ch = paragraph_decode_meta(par, &p, (void**) &meta);
       if (meta) 
 	paragraph_apply_metadata(meta, &fmt);
@@ -715,7 +715,7 @@ void paragraph_rerender_line(struct groprender *r, struct gropnode *n,
   for (;i>=0;i--) {
 
     draw_cursor = par->cursor.visible && 
-      !pgstring_iteratorcmp(&p, &par->cursor.iterator);
+      !pgstring_iteratorcmp(par->content, &p, &par->cursor.iterator);
    
     ch = paragraph_decode_meta(par, &p, (void**) &meta);
     if (meta) 
@@ -816,14 +816,16 @@ void paragraph_validate_cursor_line(struct paragraph_cursor *crsr) {
       paragraph_validate_line_cache(crsr->par, crsr->line);
 
     /* Cursor before this line? */
-    if (pgstring_iteratorcmp(&crsr->iterator, &crsr->line->cache.iterator) < 0) {
+    if (pgstring_iteratorcmp(crsr->par->content, &crsr->iterator,
+			     &crsr->line->cache.iterator) < 0) {
       crsr->line = crsr->line->prev;
       DBG("previous line\n");
     }
       
     /* After this line? */
     else if (crsr->line->next && 
-	     (pgstring_iteratorcmp(&crsr->iterator, &crsr->line->next->cache.iterator) >= 0)) {
+	     (pgstring_iteratorcmp(crsr->par->content, &crsr->iterator, 
+				   &crsr->line->next->cache.iterator) >= 0)) {
       crsr->line = crsr->line->next;
       DBG("next line");
     }

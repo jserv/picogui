@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.47 2002/10/28 01:00:21 micahjd Exp $
+/* $Id: textbox_document.c,v 1.48 2002/10/29 08:15:46 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -56,6 +56,7 @@ struct txtformat text_formats[] = {
 #endif
   { NULL, NULL, NULL }
 };
+
 
 /******************************************************** Public Methods */
 
@@ -183,7 +184,12 @@ g_error document_insert_string(struct textbox_document *doc, struct pgstring *st
  * If this seeks past the end of the stream, document_eof will return true
  */
 void document_seek(struct textbox_document *doc, s32 offset, int whence) {
+  DBG("(%p, %d, %d), iterator offset before is %d\n", doc, offset, whence,
+      doc->crsr->iterator.offset);
+
   paragraph_seekcursor(doc->crsr,offset);
+
+  DBG("iterator offset after is %d\n", doc->crsr->iterator.offset);
 }
 
 /* Seek up/down in the document, snapping the cursor to the nearest character */
@@ -204,9 +210,24 @@ void document_lineseek(struct textbox_document *doc, s32 offset) {
   /* FIXME: finish this function */
 }
 
-/* Return true if the current cursor location is not valid */
+
+/* Return 0 if the cursor is still inside the document,
+ * If the cursor is before the beginning of the document return
+ * a negative number equal to the number of characters before,
+ * likewise return a positive number indicating the number
+ * of characters after if the cursor is after the end of the doc.
+ */
 int document_eof(struct textbox_document *doc) {
-  return doc->crsr->iterator.invalid;
+  int i = pgstring_eof(doc->crsr->par->content, &doc->crsr->iterator);
+
+  /* Allow one extra character past the end to be valid, since
+   * we need a way to put the cursor at the end of the document.
+   */
+  if (i > 0)
+    i--;
+
+  DBG("returning %d\n",i);
+  return i;
 }
 
 /* Delete the character after the cursor. If there's no cursor to delete,
@@ -238,6 +259,45 @@ struct paragraph *document_get_div_par(struct divnode *div) {
   
   return par;
 }
+
+/* Seek the cursor to the mouse location */
+void document_mouseseek(struct textbox_document *doc, struct trigparam_mouse *m) {
+  struct paragraph *par;
+  
+  par = document_get_div_par(m->cursor->ctx.div_under);
+  if (par) {
+    doc->crsr = &par->cursor;
+    paragraph_movecursor(doc->crsr, par,
+			 m->x - par->div->div->r.x,
+			 m->y - par->div->div->r.y);
+  }
+  else {
+    /* They clicked outside of all paragraphs. Assume this means
+     * they clicked after the end of the document, and position the
+     * cursor at the document's end.
+     * FIXME: This could also mean a click within the document's margin!
+     */
+    document_seek(doc,0,PGSEEK_END);
+  }
+}
+
+/* Delete the cursor before the cursor */
+void document_backspace_char(struct textbox_document *doc) {
+  document_seek(doc,-1,PGSEEK_CUR);
+  if (document_eof(doc))
+    document_seek(doc,1,PGSEEK_CUR);
+  else
+    document_delete_char(doc);
+}
+
+/* Like document_seek, but bound it at the edges of the document.
+ * document_eof() will never be set after calling this.
+ */
+void document_bounded_seek(struct textbox_document *doc, s32 offset, int whence) {
+  document_seek(doc,offset,whence);
+  document_seek(doc,-document_eof(doc),PGSEEK_CUR);
+}
+
 
 /******************************************************** Internal functions */
 
