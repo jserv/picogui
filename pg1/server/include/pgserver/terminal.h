@@ -60,6 +60,7 @@ struct terminal_state {
   unsigned int insert_mode:1;
   unsigned int x10_mouse:1;
   unsigned int x11_mouse:1;
+  unsigned int crlf_mode:1;
 };
 
 /* All internal data for the terminal widget, accessed with the DATA macro 

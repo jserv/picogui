@@ -188,9 +188,13 @@ void term_char(struct widget *self,u8 c) {
       return;
       
     case '\n':
+    case '\013':
+    case '\014':
       DBG("newline\n");
       DATA->current.crsry++;
       DATA->clamp_flag = 0;
+      if (DATA->current.crlf_mode)
+	DATA->current.crsrx = 0;
       break;
 
     case '\r':
@@ -914,7 +918,8 @@ void term_ecmaset(struct widget *self,int n,int enable) {
     
     /* ESC [ 20 h - Automatically follow echo of LF, VT, or FF with CR */
   case 20:
-    DBG("-UNIMPLEMENTED- CR echo set to %d\n", enable);
+    DBG("CR echo set to %d\n", enable);
+    DATA->current.crlf_mode = enable;
     break;
 
   default:
