@@ -54,6 +54,7 @@ open_section DRIVER
 
 add_if_true svgagl.c     $DRIVER_SVGAGL
 add_if_true ez328.c      $DRIVER_EZ328
+add_if_true ez328vga.c   $DRIVER_EZ328VGA
 add_if_true sdl.c        $DRIVER_SDL
 add_if_true sdlfb.c      $DRIVER_SDLFB
 add_if_true svgafb.c     $DRIVER_SVGAFB
