@@ -20,6 +20,7 @@ EmbeddedPGserver::EmbeddedPGserver(int argc, char **argv) {
   setParam("pgserver", "dragsolid", "1");
   setParam("video-sdlgl", "caption", "JetEngine");
   setParam("opengl", "continuous", "1");
+  setParam("pgserver", "appmgr", "null");
 
   /* Load without a config file */
   e = pgserver_init(PGINIT_NO_CONFIGFILE, argc, argv);

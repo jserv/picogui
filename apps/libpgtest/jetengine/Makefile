@@ -26,12 +26,24 @@ CXXFLAGS += -I/usr/include/python2.2 -g
 # symbols from libpython.a
 LDFLAGS += -export-dynamic
 
+# Ugly hack... this will be relative to our data/src directory
+XWTCOMPILE = ../../../../../cli_python/PicoGUI/sample/xwtcompile.py
 
-$(BIN): $(OBJS)
+
+$(BIN): $(OBJS) data/holographic.th data/mainmenu.wt data/hud.wt
 	$(CXX) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 
 
 %.o: %.cpp $(HEADERS)
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) $< -o $@
 
+data/holographic.th: data/src/holographic.ths
+	cd data/src && themec holographic.ths && mv holographic.th ..
+
+data/mainmenu.wt: data/src/mainmenu.xwt
+	cd data/src && $(XWTCOMPILE) mainmenu.xwt ../mainmenu.wt
+
+data/hud.wt: data/src/mainmenu.xwt
+	cd data/src && $(XWTCOMPILE) hud.xwt ../hud.wt
+
 clean:
-	rm $(OBJS) $(BIN)
+	rm $(OBJS) $(BIN) data/holographic.th

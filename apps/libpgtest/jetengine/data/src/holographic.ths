@@ -1,0 +1,13 @@
+/*
+ * "Holographic" theme, designed for in-game use with OpenGL
+ * -- Micah Dowty
+ */
+
+object default {
+  name = "Holographic";
+
+  bgfill = fillstyle {
+    Nop();
+  };
+}
+

@@ -1,11 +1,10 @@
-import sys, time, PicoGUI
-
-print "Python path:"
-print sys.path
+import PicoGUI
 
 print "Starting python thread..."
 
-app = PicoGUI.Application("Foo");
+app = PicoGUI.TemplateApp(open("data/hud.wt").read())
+app.server.mktheme(open("data/holographic.th","rb").read());
+
 app.run()
 
 print "Python thread ending"

@@ -20,13 +20,11 @@ PythonThread::PythonThread(char *path,char *modulename_) {
   Py_Initialize();
   addPath(path);
   
-  running = true;
   thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
 
 PythonThread::~PythonThread() {
-  running = false;
-  SDL_WaitThread(thread,NULL);
+  SDL_KillThread(thread);
   Py_Finalize();
 }
 

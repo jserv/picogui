@@ -22,7 +22,6 @@ class PythonThread {
 
   SDL_Thread *thread;
   char *modulename;
-  bool running;
 };
 
 class PythonException : public SimpleException {
