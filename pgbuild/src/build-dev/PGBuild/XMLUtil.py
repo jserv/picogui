@@ -172,7 +172,15 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None):
         dest = open(str(dest), "w")
         needClose = 1
 
-    
+    dest.write("<?xml version="1.0" ?>\n")
+
+    if comment:
+        dest.write("\n<!--\n")
+        for line in comment.split("\n"):
+            dest.write("\t%s" % line)
+        dest.write("-->\n\n")
+
+    # FIXME: finish this!
 
     if needClose:
         dest.close()
