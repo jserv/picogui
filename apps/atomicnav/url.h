@@ -1,4 +1,4 @@
-/* $Id: url.h,v 1.4 2002/01/07 09:05:51 micahjd Exp $
+/* $Id: url.h,v 1.5 2002/01/07 19:25:50 micahjd Exp $
  *
  * url.h - framework for parsing and retrieving URLs
  *
@@ -27,6 +27,8 @@
 
 #ifndef __H_URL
 #define __H_URL
+
+#include <picogui.h>
 
 /********************************* Structure */
 
@@ -65,25 +67,25 @@ struct url {
   /* Progress. -1 for unknown, or a number between 0 and 100 */
   int progress;
 
-  /* By the time status is URL_STATUS_READ we should know the
+  /* By the time status is URL_STATUS_READ we'd like to know the
    * content type and size
    */
   char *type;
   unsigned long size;
 
-  /* this is a block of data that may be used by the protocol */
-  void *proto_extra;
-
   /* When this process is done, the URL's data will be here */
-  void *data;
+  struct pgmemdata data;
 
   /* Amount of data read so far */
-  unsigned long size_received;
+  unsigned long bytes_received;
 
   /* If this URL is currently loading it will be in a linked list
    * of URLs to check in our pgCustomizeSelect handler
    */
   struct url *next;
+
+  /* Extra data may be needed by the protocol handler */
+  void *extra;
 };
 
 /********************************* Constants */

@@ -1,4 +1,4 @@
-/* $Id: url.c,v 1.3 2002/01/07 06:28:08 micahjd Exp $
+/* $Id: url.c,v 1.4 2002/01/07 19:25:50 micahjd Exp $
  *
  * url.c - framework for parsing and retrieving URLs
  *
@@ -93,9 +93,14 @@ struct url * url_new(struct browserwin *browser, const char *name) {
     name++;
     u->port = atoi(name);
     p = strchr(name,'/');
-    if (!p)
-      return u;
-    name = p;
+    if (!p) {
+      /* No more string left...
+       * Just for convenience point the following checks at an empty string
+       */
+      name = "";
+    }
+    else 
+      name = p;
   }
 
   /* Everything after the port will be considered the path
@@ -133,6 +138,7 @@ struct url * url_new(struct browserwin *browser, const char *name) {
   if (!*h) {
     /* Didn't find a protocol */
     browserwin_errormsg(browser,"Unsupported protocol.");
+    url_setstatus(u,URL_STATUS_ERROR);
     url_delete(u);
     return NULL;
   }
@@ -157,7 +163,6 @@ void url_delete(struct url *u) {
   if (u->filename); free(u->filename);
   if (u->anchor);   free(u->anchor);
   if (u->type);     free(u->type);
-  if (u->data);     free(u->data);
   free(u);
 }
 
@@ -190,7 +195,7 @@ void url_deactivate(struct url *u) {
 /* Update progress indicators associated with the URL */
 void url_progress(struct url *u) {
   if (u->size > 0)
-    u->progress = u->size_received * 100 / u->size;
+    u->progress = u->bytes_received * 100 / u->size;
   else
     u->progress = -1;
   if (u->progress_change)

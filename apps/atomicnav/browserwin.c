@@ -1,4 +1,4 @@
-/* $Id: browserwin.c,v 1.5 2002/01/07 09:39:04 micahjd Exp $
+/* $Id: browserwin.c,v 1.6 2002/01/07 19:25:50 micahjd Exp $
  *
  * browserwin.c - User interface for a browser window in Atomic Navigator
  *
@@ -56,8 +56,10 @@ int btnGo(struct pgEvent *evt) {
 int btnStop(struct pgEvent *evt) {
   struct browserwin *w = (struct browserwin *) evt->extra;
 
-  if (w->page)
-    w->page->handler->stop(w->page);
+  if (w->page) {
+    url_delete(w->page);
+    w->page = NULL;
+  }
 }
 
 int btnBack(struct pgEvent *evt) {
@@ -77,8 +79,7 @@ void pageStatus(struct url *u) {
 
   /* Done loading a page? */
   if (u->status == URL_STATUS_DONE) {
-    pghandle page = pgDataString(pgFromTempMemory(u->data,u->size));
-    u->data = NULL;
+    pghandle page = pgDataString(u->data);
 
     pgSetWidget(u->browser->wView,
 		PG_WP_TEXTFORMAT, pgNewString("HTML"),
