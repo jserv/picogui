@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.14 2002/03/16 10:20:24 micahjd Exp $
+/* $Id: serial40x4.c,v 1.15 2002/06/20 08:45:00 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -76,6 +76,7 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/font.h>
 #include <pgserver/render.h>
+#include <pgserver/timer.h>
 #include <pgserver/configfile.h>
 
 #include <unistd.h>
@@ -199,6 +200,14 @@ u8 const cg2[] = {
 
 /******************************************** Implementations */
 
+void serial40x4_loadfonts(void) {
+  /* Download custom characters to the LCD */
+  write(lcd_fd,"\\1\\g",4);
+  write(lcd_fd,cg1,64);
+  write(lcd_fd,"\\2\\g",4);
+  write(lcd_fd,cg2,64);
+}
+
 g_error serial40x4_init(void) {
    g_error e;
 
@@ -219,11 +228,7 @@ g_error serial40x4_init(void) {
    if (lcd_fd<=0)
      return mkerror(PG_ERRT_IO,46);
     
-   /* Download custom characters to the LCD */
-   write(lcd_fd,"\\1\\g",4);
-   write(lcd_fd,cg1,64);
-   write(lcd_fd,"\\2\\g",4);
-   write(lcd_fd,cg2,64);
+   serial40x4_loadfonts();
    
    return success;
 }
@@ -243,13 +248,38 @@ void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
    /* Output buffer big enough to hold one frame with worst-case encoding */
    u8 outbuf[2048];
    u8 *outp = outbuf;
-   
+   int full_update = 0;
+   static u32 last_time = 0;
+   u32 now;
+
+   /* To make sure the LCD stays consistent, do a full update if it's been
+    * more than 5 seconds since the last one. This ensures that transmission
+    * errors don't effect the LCD, and if the LCD is plugged in after starting
+    * PicoGUI it will synchronize. Note that this is kind of crufty.. I'll improve the
+    * protocol when I rewrite this driver.
+    */
+   now = getticks();
+   if (now > 5000+last_time) {
+     full_update = 1;
+     last_time = now;
+   }
+
+   /* If this is a full update, resend the fonts */
+   if (full_update)
+     serial40x4_loadfonts();
+
    /* start comparing the buffers */
    i_lcd = -1;
    oldp = lcd_shadow;
    newp = FB_MEM;
    for (i=0;i<256;oldp++,newp++,i++) {
-      if (*oldp == *newp)
+
+      /* Only update changed areas, unless it's a full update */
+      if (!full_update && *oldp == *newp)
+	continue;
+
+      /* Don't bother updating the areas past the right edge of the screen */
+      if ((i & 0x3F) >= 40)
 	continue;
       
       /* Move the hardware cursor if necessary*/
