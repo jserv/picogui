@@ -8,10 +8,8 @@ else
 
 SUBDIRS =		\
 	atomicnav	\
+	pgl		\
 	pgtuxphone	\
 	picomail
-
-# not working at this time:
-#	pgl		\
 
 endif

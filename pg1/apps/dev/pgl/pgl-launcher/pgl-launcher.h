@@ -30,5 +30,8 @@ typedef struct{
   char *appName;
   char *exeName;
   char *appIcon;
+  char *variantName;
+  int optionCount;
+  char **appOptions;
 } pgllApp;
 
