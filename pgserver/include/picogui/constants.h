@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.83 2001/09/03 05:31:43 micahjd Exp $
+/* $Id: constants.h,v 1.84 2001/09/08 19:26:03 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -808,6 +808,7 @@ typedef unsigned long pghandle;
 #define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
+#define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

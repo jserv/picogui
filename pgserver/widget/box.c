@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.16 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: box.c,v 1.17 2001/09/08 19:26:03 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -29,23 +29,22 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
+#define MARGIN_OVERRIDE ((int)self->data)
+
 void box_resize(struct widget *self) {
    int m;
    
-   /* Transparent boxen have the same margin as a button
-    * (necessary for grids to look good) */
-   if (self->in->div->build)
-     m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
-   else
-     m = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING) >> 1;
-   
-   /* No minimum size */
-   self->in->ph = 0;
-   self->in->pw = 0;
+   if (!MARGIN_OVERRIDE) {
 
-   /* Handle the margin ourselves */
-   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
-   self->in->div->split = m;
+     /* Transparent boxen have the same margin as a button
+      * (necessary for grids to look good) */
+     if (self->in->div->build)
+       m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+     else
+       m = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING) >> 1;
+     
+     self->in->div->split = m;
+   }
 }
 
 g_error box_install(struct widget *self) {
@@ -57,9 +56,12 @@ g_error box_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_BOX;
 
+  MARGIN_OVERRIDE = 0;
+  
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
 
@@ -72,31 +74,28 @@ void box_remove(struct widget *self) {
 }
 
 g_error box_set(struct widget *self,int property, glob data) {
-   switch (property) {
-      
-    case PG_WP_TRANSPARENT:
-      self->in->div->build = data ? NULL : (&build_bgfill_only);
-      break;	
-
-    case PG_WP_STATE:
-      self->in->div->state = data;
-      break;
-      
-    default:
-      return mkerror(ERRT_PASS,0);
-   }
-   return sucess;
+  switch (property) {
+    
+  case PG_WP_TRANSPARENT:
+    self->in->div->build = data ? NULL : (&build_bgfill_only);
+    break;	
+    
+  case PG_WP_MARGIN:
+    self->in->div->split = data;
+    MARGIN_OVERRIDE = 1;       /* Prevent automatic setting of margins */
+    break;
+    
+  default:
+    return mkerror(ERRT_PASS,0);
+  }
+  return sucess;
 }
 
 glob box_get(struct widget *self,int property) {
   switch (property) {
 
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
-
-  case PG_WP_SIZE:
-    resizewidget(self);
-    return self->in->split;
+  case PG_WP_MARGIN:
+    return self->in->div->split;
 
   }
   return 0;
