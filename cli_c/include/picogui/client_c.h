@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.56 2001/07/31 02:29:37 micahjd Exp $
+/* $Id: client_c.h,v 1.57 2001/08/01 11:20:26 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -568,6 +568,43 @@ unsigned long pgGetInactivity(void);
  * This function frees the memory in the PicoGUI server associated with \p object.
  */
 void pgDelete(pghandle object);
+
+/*!
+ * \brief Duplicate an object that has a handle
+ *
+ * \param object A handle to one of several types of PicoGUI objects
+ *
+ * Some objects simply can't be duplicated: For example, it would not make
+ * sense to duplicate a widget, driver, or theme. At the time of this
+ * writing, the only object type for which duplication is implemented is the
+ * string object.
+ *
+ * \sa pgDelete, pgNewString
+ */
+pghandle pgDup(pghandle object);
+
+/*!
+ * \brief Change the handle context of an object
+ *
+ * \param object A handle to any PicoGUI object
+ * \param delta The value to add to the context level
+ * 
+ * A positive delta value increases the object's context, equivalent to
+ * adding extra pgEnterContext() layers. The delta value may be negative, to
+ * 'send' the handle to a higher-level context. For example, you may want
+ * to return data from a dialog box:
+ * \code
+pgEnterContext();
+pgDialogBox("My Dialog");
+... Allocate lots of memory ...
+pgChangeContext(important_data,-1);
+pgLeaveContext();
+return important_data;
+ * \endcode
+ *
+ * \sa pgEnterContext, pgLeaveContext
+ */
+void pgChangeContext(pghandle object, short delta);
 
 //!  Give a widget the keyboard focus 
 void pgFocus(pghandle widget);

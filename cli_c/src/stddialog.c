@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.2 2001/07/30 04:42:06 micahjd Exp $
+/* $Id: stddialog.c,v 1.3 2001/08/01 11:20:27 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -181,6 +181,69 @@ int pgMenuFromArray(pghandle *items,int numitems) {
 
   /* Return event */
   return pgGetPayload(pgGetEvent()->from);
+}
+
+/* Like a messge dialog, with an input field */
+const char *pgInputDialog(const char *title, const char *message,
+			  const char *deftxt) {
+  pghandle wToolbar,wField,wOk,wCancel,from;
+  const char *str = NULL;
+
+  /* New context for us! */
+  pgEnterContext();
+
+  /* Create the important widgets */
+  pgDialogBox(title);
+  wToolbar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      0);
+  wField = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      0);
+  wField = pgNewWidget(PG_WIDGET_FIELD,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_BOTTOM,
+	      PG_WP_TEXT,pgNewString(deftxt),
+	      0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE,PG_S_ALL,
+	      PG_WP_TEXT,pgNewString(message),
+	      0);
+
+  /* buttons */
+  wCancel = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+				       PGTH_P_STRING_CANCEL),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_HOTKEY_CANCEL),
+	      0);
+  wOk = pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+				       PGTH_P_STRING_OK),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+					 PGTH_P_HOTKEY_OK),
+	      0);
+
+  /* Run */
+  pgFocus(wField);
+  for (;;) {
+    from = pgGetEvent()->from;
+    if (from == wOk) {
+      str = pgGetString(pgGetWidget(wField,PG_WP_TEXT));
+      break;
+    }
+    else if (from == wCancel)
+      break;
+  }
+  pgLeaveContext();
+  return str;
 }
 
 /* The End */

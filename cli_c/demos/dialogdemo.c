@@ -9,8 +9,25 @@
 #include <picogui.h>
 #include <time.h>     /* time() is used in our little joke */
 
+/* For storing the date */
 pghandle wDate;
 int year,month,day;
+
+pghandle wInputBtn;
+
+/******************* String input */
+
+int btnInput(struct pgEvent *evt) {
+  const char *str;
+
+  str = pgInputDialog("Input Test",
+		      "What... is the air-speed velocity of\n"
+                      "an unladen swallow?",
+                      pgGetString(pgGetWidget(wInputBtn,PG_WP_TEXT)));
+
+  if (str)
+    pgReplaceText(wInputBtn,str);
+}
 
 /******************* Date picker */
 
@@ -126,6 +143,14 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnDate,NULL);
+
+  /* Text input */
+  wInputBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgInputDialog: Enter a string"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnInput,NULL);
 
 
   pgEventLoop();

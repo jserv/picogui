@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.18 2001/07/28 10:42:12 micahjd Exp $
+/* $Id: api.c,v 1.19 2001/08/01 11:20:27 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -691,5 +691,21 @@ pghandle pgLoadDriver(const char *name) {
   /* Return the new handle */
   return _pg_return.e.retdata;
 }
+
+pghandle pgDup(pghandle object) {
+  object = htonl(object);
+  _pg_add_request(PGREQ_DUP,&object,sizeof(object));
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+}
+
+void pgChangeContext(pghandle object, short delta) {
+  struct pgreqd_chcontext arg;
+  arg.handle = htonl(object);
+  arg.delta  = htons(delta);
+  arg.dummy  = 0;
+  _pg_add_request(PGREQ_CHCONTEXT,&arg,sizeof(arg));
+}
+
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.35 2001/08/01 11:05:30 micahjd Exp $
+/* $Id: network.h,v 1.36 2001/08/01 11:20:27 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -36,6 +36,8 @@
 #ifndef PGSERVER
 typedef unsigned short u16;
 typedef unsigned long  u32;
+typedef signed short   s16;
+typedef signed long    s32;
 #endif
 
 /******* Packet structures */
