@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.14 2000/12/31 16:52:32 micahjd Exp $
+/* $Id: video.h,v 1.15 2001/01/14 19:41:06 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -83,6 +83,13 @@ struct cliprect {
    signed short int x1,y1,x2,y2;
 };
 
+/* NOTE: font.h must be included here. It relies on structures defined
+ * earlier, but font_* below need font.h.
+ * 
+ * Messy, isn't it...
+ */
+#include <pgserver/font.h>
+
 /* This structure contains a pointer to each graphics function
    in use, forming a definition for a driver. Initially, all functions
    point to default implementations. It is only necessary for a driver
@@ -126,6 +133,17 @@ struct vidlib {
   unsigned char *fb_mem;
   unsigned int fb_bpl;   /* Bytes Per Line */
 
+  /***************** Fonts */
+   
+  /* Optional
+   *   Called when a new fontdesc is created. The video driver
+   *   may choose to modify the font or cache things or something
+   * 
+   * Default implementation: none
+   */
+  void (*font_newdesc)(struct fontdesc *fd);
+  
+   
   /***************** Colors */
 
   /* Reccomended
@@ -437,6 +455,7 @@ hwrcolor textcolors[16];   /* Table for converting 16 text colors
 /** Generic functions from the default VBL that other VBLs might find useful */
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags);
+void def_font_newdesc(struct fontdesc *fd);
 void emulate_dos(void);
 void def_update(int x,int y,int w,int h);
 hwrcolor def_color_pgtohwr(pgcolor c);

@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.12 2001/01/07 04:06:17 micahjd Exp $
+/* $Id: font.c,v 1.13 2001/01/14 19:41:04 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -274,6 +274,9 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
     fd->italicw = closest->ulineh / fd->skew; 
   }
 
+  /* Let the video driver transmogrify it if necessary */
+  (*vid->font_newdesc)(fd);
+   
   return sucess;
 }
 

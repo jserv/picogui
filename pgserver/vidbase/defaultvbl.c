@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.7 2001/01/14 18:42:12 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.8 2001/01/14 19:41:06 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -36,8 +36,13 @@
 #include <pgserver/video.h>
 #include <pgserver/font.h>
 
+/******* no-op functions */
+
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
   return mkerror(PG_ERRT_BADPARAM,72);
+}
+
+void def_font_newdesc(struct fontdesc *fd) {
 }
 
 void emulate_dos(void) {
@@ -45,6 +50,8 @@ void emulate_dos(void) {
 
 void def_update(int x,int y,int w,int h) {
 }
+
+/******* colors */
 
 hwrcolor def_color_pgtohwr(pgcolor c) {
   if (vid->bpp<8) {
@@ -995,6 +1002,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->close = &emulate_dos;
   vid->color_pgtohwr = &def_color_pgtohwr;
   vid->color_hwrtopg = &def_color_hwrtopg;
+  vid->font_newdesc = &def_font_newdesc;
   vid->addpixel = &def_addpixel;
   vid->subpixel = &def_subpixel;
   vid->clear = &def_clear;

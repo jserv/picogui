@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.8 2001/01/13 02:16:09 micahjd Exp $
+/* $Id: linear8.c,v 1.9 2001/01/14 19:41:06 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -583,21 +583,8 @@ void linear8_unblit(int src_x,int src_y,
 
 /* Load our driver functions into a vidlib */
 void setvbl_linear8(struct vidlib *vid) {
-  /* We take the default for these */
-  vid->setmode            = &def_setmode;
-  vid->close              = &emulate_dos;
-  vid->update             = &def_update;
-  vid->bitmap_loadxbm     = &def_bitmap_loadxbm;
-  vid->bitmap_loadpnm     = &def_bitmap_loadpnm;
-  vid->bitmap_new         = &def_bitmap_new;
-  vid->bitmap_free        = &def_bitmap_free;
-  vid->bitmap_getsize     = &def_bitmap_getsize;
-  vid->sprite_show        = &def_sprite_show;
-  vid->sprite_hide        = &def_sprite_hide;
-  vid->sprite_update      = &def_sprite_update;
-  vid->sprite_showall     = &def_sprite_showall;
-  vid->sprite_hideall     = &def_sprite_hideall;
-  vid->sprite_protectarea = &def_sprite_protectarea;
+  /* Start with the defaults */
+  setvbl_default(vid);
    
   /* In this linear8 driver, replacing the default version */
   vid->color_pgtohwr  = &linear8_color_pgtohwr;
