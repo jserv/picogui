@@ -1,0 +1,107 @@
+/*
+ * Example of how small the picogui theme file gets when defining a cube,
+ * one light, a background, and some initialization.
+ *
+ * For comparison:
+ *  -rw-r--r--    1 micah    micah       34036 Mar  5 22:21 cube.blend
+ *  -rw-r--r--    1 micah    micah        1806 Mar  5 22:24 cube.dxf
+ *  -rw-r--r--    1 micah    micah         361 Mar  5 22:24 cube.obj
+ *  -rw-r--r--    1 micah    micah        1831 Mar  5 22:24 cube.wrl
+ *  -rw-r--r--    1 micah    micah         456 Mar  5 23:05 gl_smallcube.th
+ */
+
+object background {
+
+/* Fillstyle */
+  bgfill = fillstyle {
+    var s, u;
+
+    /*** Blue background fill */
+    
+    SetColor(0x8282BC);
+    Rect(x,y,w,h);
+
+    /*** Setup */
+
+    u  = 1<<16;        /* Unit */    
+    s  = (w/4)<<16;    /* Size of the cube */
+
+    Gl_pushmatrix();
+    Gl_enable(GL_DEPTH_TEST);
+    Gl_depthfunc(GL_LESS);
+    Gl_disable(GL_BLEND);
+    Gl_enable(GL_LIGHT1);
+    Gl_enable(GL_LIGHTING);
+    Gl_lightfv(GL_LIGHT1, GL_AMBIENT,1,0, 0x0A000,0x0A000,0x0A000);
+    Gl_lightfv(GL_LIGHT1, GL_DIFFUSE,1,0, 0x10000,0x10000,0x12000);
+
+    /*** Transformations */
+    
+    Gl_translatef(w<<15,h<<15,s);          /* Float above the divnode */
+
+    /* Set up the light relative to the cube's center.
+     * Hover it in front of the cube for nice shading effects.
+     */
+    Gl_lightfv(GL_LIGHT1, GL_POSITION,1,0, 0,0,w<<15);
+
+    Gl_rotatef(28,0,0,0, u,0,0);             /* Small vertical tilt */
+    Gl_rotatef(28,0,0,0, 0,u,0); 
+    Gl_translatef(-(s>>1),-(s>>1),-(s>>1));  /* Center on the origin */
+
+    /*** Cube */
+    
+    Gl_begin(GL_QUADS);
+    
+    /* Right */
+    Gl_normal3f(u,0,0);
+    Gl_vertex3f(s,0,0);
+    Gl_vertex3f(s,s,0);
+    Gl_vertex3f(s,s,s);
+    Gl_vertex3f(s,0,s);
+    
+    /* Left */
+    Gl_normal3f(-u,0,0);
+    Gl_vertex3f(0,0,0);
+    Gl_vertex3f(0,s,0);
+    Gl_vertex3f(0,s,s);
+    Gl_vertex3f(0,0,s);
+    
+    /* Bottom */
+    Gl_normal3f(0,u,0);
+    Gl_vertex3f(0,s,0);
+    Gl_vertex3f(s,s,0);
+    Gl_vertex3f(s,s,s);
+    Gl_vertex3f(0,s,s);
+    
+    /* Top */
+    Gl_normal3f(0,-u,0);
+    Gl_vertex3f(0,0,0);
+    Gl_vertex3f(s,0,0);
+    Gl_vertex3f(s,0,s);
+    Gl_vertex3f(0,0,s);
+    
+    /* Front */
+    Gl_normal3f(0,0,-u);
+    Gl_vertex3f(0,0,0);
+    Gl_vertex3f(s,0,0);
+    Gl_vertex3f(s,s,0);
+    Gl_vertex3f(0,s,0);
+    
+    /* Back */
+    Gl_normal3f(0,0,u);
+    Gl_vertex3f(0,0,s);
+    Gl_vertex3f(s,0,s);
+    Gl_vertex3f(s,s,s);
+    Gl_vertex3f(0,s,s);
+    
+    Gl_end();
+
+    /*** Cleanup */
+    
+    Gl_disable(GL_DEPTH_TEST);
+    Gl_disable(GL_LIGHTING);
+    Gl_popmatrix();
+  };
+}
+
+/* The End */
