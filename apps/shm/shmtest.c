@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 				      "It is then displayed in an ordinary bitmap widget "
 				      "that is refreshed every frame.\n\n"),
 	      0);
-  bitmapwidget = pgNewWidget(PG_WIDGET_BITMAP,0,0);
+  bitmapwidget = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(bitmapwidget,
 	      PG_WP_BITMAP,bitmap,
 	      PG_WP_SIDE, PG_S_ALL,

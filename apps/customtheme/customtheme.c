@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
   wTB = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
 
-  pgNewWidget(PG_WIDGET_BITMAP,0,0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("data/dustpuppy.pnm")),

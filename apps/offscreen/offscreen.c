@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   bit = pgCreateBitmap(100,100);
 
   /* Display the bitmap with a bitmap widget */
-  pgNewWidget(PG_WIDGET_BITMAP,0,0);
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_BITMAP,bit,
 	      PG_WP_SIDE,PG_S_LEFT,
