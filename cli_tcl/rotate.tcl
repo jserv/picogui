@@ -1,7 +1,9 @@
 #!/usr/bin/tclsh
 source picogui.tcl
 
-pgConnect localhost 0
+if {[catch {pgui connect -server localhost -display 0}] ==0} {
+	exit 1
+}
 
 set rot [lindex $argv 0]
 set fmode $pg_fm(on)

@@ -9,6 +9,21 @@ set connection 0
 set defaultparent 0
 set defaultrship inside
 
+set envnames [array names env]
+if {[lsearch $envnames PGSERVER] !=-1} {
+	set display [split $env(PGSERVER) ":"]
+} else {
+	set display {"" ""}
+}
+set server [lindex $display 0]
+set display [lindex $display 1]
+if { $server == "" } {
+	set server localhost
+}
+if {$display==""} {
+	set display 0
+}
+
 proc pgGetResponse {} {
 	global pg_response pg_request connection pg_eventcoding
 	set data [read $connection 12]
@@ -37,17 +52,6 @@ proc pgGetResponse {} {
 proc pack_pgrequest { id size type {dummy 0} } {
 	set req [binary format "IISS" $id $size $type $dummy]
 	return $req
-}
-proc pgConnect {server display} {
-	global connection
-	set port [expr 30450 + $display] 
-	if { [catch {set sock [socket $server $port]}] != 0 } {
-		return
-	}
-	set data [read $sock 8]
-	binary scan $data "ISS" magic protover dummy
-	fconfigure $sock -translation binary
-	set connection $sock
 }
 proc send_packet {packet} {
 	global connection
@@ -162,12 +166,6 @@ proc pgThemeLookup {object property} {
 	global pg_request
 	send_packet [pack_pgrequest 1 4 $pg_request(thlookup)]
 	send_packet [binary format "SS" $object $property]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
-proc pgEnterContext {} {
-	global pg_request
-	send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
@@ -334,4 +332,30 @@ proc pgAttach {widget rship parent} {
 	send_packet [binary format "IISS" $parent $widget $pg_derive($rship) 0]
 	array set ret [pgGetResponse]
 	return $ret(data)
+}
+proc pgEnterContext {} {
+	global pg_request
+	send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
+	array set ret [pgGetResponse]
+	return $ret(data)
+}
+proc pgui {command args} {
+	global connection display server
+	array set aa $args
+	if {$command == "connect"} {
+		if {[lsearch $args -display]==-1} {
+			set aa(-display) $display
+		}
+		if {[lsearch $args -server]==-1} {
+			set aa(-server) $server
+		}
+		set port [expr 30450 + $aa(-display)] 
+		if { [catch {set connection [socket $aa(-server) $port]}] != 0} {
+			set connection 0
+			return
+		}
+		fconfigure $connection -translation binary
+		set data [read $connection 8]
+		binary scan $data "ISS" magic protover dummy
+	}
 }

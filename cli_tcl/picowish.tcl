@@ -41,6 +41,8 @@ proc toplevel {name args} {
 	global ids
 	set id [pgCreateWidget popup]
 	set ids($name) $id
+	set defaultparent_$id $id
+	set defaultrship_$id inside
 	tk alias $name toplevelfunctions $name $id
 	mapfunction $name $name
 }
@@ -56,12 +58,14 @@ proc getparent {name} {
 pgConnect localhost 0
 set id [pgRegisterApp "picowish" $pg_app(normal)]
 set ids(.) $id
+set defaultparent_$id $id
+set defaultrship_$id inside
 
 #create the command named . in the tk namespace
 tk alias . toplevelfunctions . $id
 #map the . function to the current namespace
 mapfunction . .
-
+puts [info vars]
 #just some sample test code
 set button [pgCreateWidget button]
 pgSetText $button "Hello"

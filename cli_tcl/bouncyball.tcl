@@ -3,9 +3,12 @@ source picogui.tcl
 
 set NUMFRAMES 13
 set imagebase "../apps/bouncyball/data/ball%02d.jpeg"
-pgConnect localhost 0
+
+#pgui connect -server localhost -display 0
+pgui connect
 if { $connection == 0 } {
 	puts "unable to connect to display"
+	exit 1
 }
 
 pgEnterContext

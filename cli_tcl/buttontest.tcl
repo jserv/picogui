@@ -1,6 +1,6 @@
 #!/usr/bin/tclsh
 source picogui.tcl
-pgConnect localhost 0
+pgui connect localhost 0
 
 pgRegisterApp "Button Test" $pg_app(normal)
 set l [pgNewButton "Hello World"]

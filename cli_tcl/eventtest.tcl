@@ -1,6 +1,6 @@
 #!/usr/bin/tclsh
 source picogui.tcl
-pgConnect localhost 0
+pgui connect localhost 0
 
 pgRegisterApp "Event Test" $pg_app(normal)
 set b [pgNewWidget canvas]

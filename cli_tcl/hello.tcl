@@ -1,6 +1,6 @@
 #!/usr/bin/tclsh
 source picogui.tcl
-pgConnect localhost 0
+pgui connect localhost 0
 
 pgRegisterApp "Greetings" $pg_app(normal)
 set l [pgNewLabel "Hello World"]
