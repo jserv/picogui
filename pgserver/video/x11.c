@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.22 2002/01/22 12:25:09 micahjd Exp $
+/* $Id: x11.c,v 1.23 2002/02/02 00:06:47 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -353,7 +353,7 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     if (!sxb->tile) {
       vid->bitmap_new( (hwrbitmap*)&sxb->tile,
 		       (X11_TILESIZE/sxb->w + 1) * sxb->w,
-		       (X11_TILESIZE/sxb->h + 1) * sxb->h );
+		       (X11_TILESIZE/sxb->h + 1) * sxb->h, vid->bpp );
       def_blit((hwrbitmap)sxb->tile,0,0,sxb->tile->w,
 	       sxb->tile->h,(hwrbitmap)sxb,0,0,PG_LGOP_NONE);
     }
@@ -651,7 +651,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
     
     /* Fully double-buffered */
   case 1:
-    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
+    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres,vid->bpp);
     errorcheck;  
     vid->display = (hwrbitmap) x11_backbuffer;
     vid->update = &x11_buffered_update;
@@ -660,7 +660,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
     /* Only double-buffer sprites */
   case 2:
-    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
+    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres,vid->bpp);
     errorcheck;  
     vid->display = (hwrbitmap) &x11_display;
     vid->update = &x11_nonbuffered_update;
