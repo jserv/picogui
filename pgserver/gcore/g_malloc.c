@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.21 2002/03/03 11:21:11 micahjd Exp $
+/* $Id: g_malloc.c,v 1.22 2002/03/03 18:34:48 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -123,14 +123,18 @@ void g_dfree(const void *p, const char *where) {
    * zero bytes, so to keep efence from aborting us, don't resize
    * this if it would be sizing to zero bytes.
    */
+#ifdef CONFIG_EFENCE
   if (memref) {
+#endif
     memtrack=realloc(memtrack, sizeof(*memtrack)*memref);
     if(memref && memtrack==NULL)
       {
 	guru("Aieee! Memory tracker ran out of memory!");
 	exit(234);
       }
+#ifdef CONFIG_EFENCE
   }
+#endif
   printf("-%d #%ld (%ld) %p %s\n",s,memref,memamt,adr,where);
 #endif
 #endif
