@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------*/
-/* $Id: mc68328digi.h,v 1.1 2001/02/23 14:59:28 pney Exp $
+/* $Id: mc68328digi.h,v 1.2 2001/03/07 18:34:57 pney Exp $
  *
  * linux/drivers/char/mc68328digi.h - Touch screen driver.
  *                                    Header file.
@@ -93,10 +93,17 @@ struct ts_pen_info {
 
 /* Structure that define touch screen parameters */
 struct ts_drv_params {
-  int x_ratio;     /*                        */
-  int y_ratio;     /* Calibration parameters */
+  int x_ratio_num; /*                        */
+  int x_ratio_den; /*                        */
+  int y_ratio_num; /*                        */
+  int y_ratio_den; /*                        */
   int x_offset;    /*                        */
   int y_offset;    /*                        */
+  int xy_invert;   /*                        */
+  int x_min;       /*                        */
+  int y_min;       /*                        */
+  int x_max;       /*                        */
+  int y_max;       /*                        */
   int mv_thrs;     /* minimum delta move to considere the pen start to move */
   int follow_thrs; /* minimum delta move to follow the pen move when the pen
                     * is moving
