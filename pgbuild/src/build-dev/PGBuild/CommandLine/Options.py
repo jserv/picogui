@@ -26,6 +26,7 @@ import optik
 import PGBuild
 import PGBuild.Config
 
+
 class HelpFormatter(optik.IndentedHelpFormatter):
     """Custom help formatting- provides some extra information about
        the program above the 'usage' line.
@@ -40,6 +41,18 @@ class HelpFormatter(optik.IndentedHelpFormatter):
         
     def format_usage(self, usage):
         return "%s\n\nusage: %s\n" % (PGBuild.about, usage)
+
+
+class Option(optik.Option):
+    """Subclass optik's Option in order to add new action types"""
+
+    ACTIONS = optik.Option.ACTIONS + ("uncount",)
+    STORE_ACTIONS = optik.Option.STORE_ACTIONS + ("uncount",)
+
+    def take_action(self, action, dest, opt, value, values, parser):
+        if action == "uncount":
+            setattr(values, dest, values.ensure_value(dest, 0) - 1)
+
     
 class OptionsXML:
     """Convert options from the supplied hash into XML, suitable
@@ -68,14 +81,15 @@ def parse(config, argv):
 
     parser = optik.OptionParser(formatter=HelpFormatter(),
                                 usage="%prog [options] [targets] ...",
-                                version=PGBuild.version)
+                                version=PGBuild.version,
+                                option_class=Option)
 
     ############# General options
 
     parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
                       help="report progress in more detail")    
-    parser.add_option("-q", "--quiet", action="store_const", dest="verbosity", const=0,
-                      help="suppress all noncritical output")    
+    parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
+                      help="report progress in less detail")    
 
     ############# Configuration management
 
