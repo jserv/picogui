@@ -17,9 +17,23 @@
   This has the side effect of making sure our code can handle XML
   processing instructions.
 -->
-<?xml-stylesheet type="text/xsl" href="conf.xsl"?>
+<?xml-stylesheet type="text/xsl" href="pgbuild.xsl"?>
 
-<sources>
+<!--
+  The PGBuild tag marks data that should be mounted into
+  PGBuild's config database. It should be the root of all
+  XML documents used for PGBuild configuration.
+
+  This tag has several optional attributes:
+
+    title   - A descriptive title for this configuration tree
+    root    - The location that this tag should be merged into
+              the main configuration tree at, specified as an
+              XPath. Defaults to "/"
+    author  - Author or maintainer of the configuration
+    version - Configuration version
+-->
+<pgbuild title="PicoGUI sources list">
 
   <!-- 
     pgbuild uses the concept of 'sites' to keep all the URIs in
@@ -114,4 +128,4 @@
     </package>
 
   </packages>
-</sources>
+</pgbuild>

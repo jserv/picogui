@@ -11,7 +11,7 @@ using PGBuild. It is comprised of sources from multiple locations:
     v0.1
 
     These modules are for the PyXPath parser. The XML XPath
-    language is used in PGBuild to specify configuration tags.
+    language is used extensively in PGBuild's configuration system.
     See http://www.handshake.de/~dieter/pyprojects/pyxpath.html
 
   - PGBuild

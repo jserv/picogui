@@ -1,0 +1,75 @@
+/* CSS for PGBuild configuration files, with a picogui.org-like look */
+
+body {
+  font: 80% Verdana, Helvetica, Arial, sans-serif;
+  background: #eef4eb;
+  color: Black;
+  margin: 0;
+  padding: 0;
+}
+
+.heading {
+  background: White;
+  border-bottom: 1px solid Black;
+  padding: 0.2em;
+  margin: 0em 0em 2.0em 0em;
+}
+
+.title {
+  padding: 0.2em 1.0em;
+  font: 180% bold;
+}
+
+span.section {
+  background: #dee7ec;
+  border: 1px solid #8CACBB;
+  border-bottom: #dee7ec 1px solid;
+  color: #436976;
+  font: 120% Bold;
+  margin: 1.5em 2em 0em 2em;
+  padding: 0em 2em;
+}
+
+div.sectionTop {
+  background: #dee7ec;
+  border-bpttom: 1px solid Black;
+  padding: 0.4em;
+  margin: 0em;
+}
+
+div.section {
+  background: White;
+  border: 1px solid #8CACBB;
+  margin: 0em 1.5em 2.0em 1.5em;
+}
+
+div.odd {
+  padding: 0.5em;
+}
+
+div.even {
+  padding: 0.5em;
+  background: #eef2fa;
+}
+
+span.itemTag {
+  color: #A00000;
+  margin: 0em 0em 0em 0.5em;
+  border: 1px solid #8CACBB;
+  padding: 0em 0.2em;
+  background: White;
+  float: right;
+}
+
+.item {
+  font: 120% Bold;
+}
+
+.itemDetail {
+  margin: 0.5em;  
+  border: 1px dotted #8CACBB;
+}
+
+li {
+  margin: 0.2em;
+}
