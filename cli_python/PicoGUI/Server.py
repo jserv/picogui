@@ -288,6 +288,9 @@ class Server(object):
             self._fonts[spec] = self.mkfont(family, style, size)
         return self._fonts[spec]
 
+    def close_connection(self):
+        self._connection.close()
+
     def __getattr__(self, name):
         # this resolves all undefined names - in our case, requests
         name = name.lower()
