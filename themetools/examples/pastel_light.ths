@@ -1,4 +1,4 @@
-/* $Id: pastel_light.ths,v 1.1 2001/03/26 03:42:00 micahjd Exp $
+/* $Id: pastel_light.ths,v 1.2 2001/03/30 07:14:53 micahjd Exp $
  *
  * Light blues and greens, nothing too complicated.
  *
@@ -87,5 +87,18 @@ object rotatebtn bitmap1 = LoadBitmap("data/pastel_rotatebtn.pnm");
 object rotatebtn.hilight bitmap1 = LoadBitmap("data/pastel_rotatebtn_on.pnm");
 object zoombtn bitmap1 = LoadBitmap("data/pastel_zoombtn.pnm");
 object zoombtn.hilight bitmap1 = LoadBitmap("data/pastel_zoombtn_on.pnm");
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1,PG_LGOP_NONE,0,0);
+      x = x + 16;
+   };
+   bitmap1 = LoadBitmap("data/check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/check_checked.pnm");
+
 
 /* The End */
