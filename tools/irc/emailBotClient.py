@@ -72,7 +72,7 @@ class AnnounceClient(protocol.Protocol):
         messages = mailMsg.get_payload().split("\n")[:40]
         subjectFields[1] = subjectFields[1].lower()
         if subjectFields[1][0] == "#":
-            subjectFields[1] = subjectFields[1:]
+            subjectFields[1] = subjectFields[1][1:]
 
         if not subjectFields[1] in badChannels:
 
