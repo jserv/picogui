@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: handle.c,v 1.38 2001/05/14 03:35:19 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -301,40 +301,34 @@ struct handlenode *htree_find(handle id) {
   return NULL;
 }
 
-/* Returns a sequence of handle number ordered from left to right on the
-   layers of a perfectly balanced binary tree.  This eliminates the need
-   for balancing a tree when a new item is added (initially) 
-   and gives a nicerly-balanced tree in general
-
-   Might find a new way to do this later.  Handle numbers are completely
-   arbitrary so i could analyze the tree to figure out what the easiest
-   place to put a node would be...
+/* This function generates a number for a new handle.
+ * It must return a number appropriate to the handle size, as defined
+ * in handle.h, and _never_ return zero (null handle) or the largest possible
+ * value (unknown but very annoying reason? always causes handle error)
+ * 
+ * There have been many ways to do this. At first, I used a method that seemed
+ * like a good idea at the time, but under most circumstances didn't really
+ * help.
+ * 
+ * The best way would be to find 'holes' in the handle tree and create handle
+ * numbers specifically to fill in the tree without rebalancing.
+ * Almost as good might be using pseudorandom numbers.
+ * 
+ * The current implementation just uses steadily increasing numbers that wrap
+ * around, checking them for Bad Things before returning them.
+ * Might improve this later, but at least the current implementation is less
+ * error-prone than the last
  */
 handle newhandle(void) {
-  static int layer = 0;
-  static handle remaining = 0;
-  static handle skip;
-  static handle value;
-  handle ret;
+  static handle h = 1;
 
   do {
-    if (layer > HANDLE_BITS) {
-      layer = remaining = 0;
-    }
-    
-    if (!remaining) {
-      remaining = 1 << layer; 
-      skip = HANDLE_SIZE >> layer;
-      value = HANDLE_SIZE >> ++layer;
-    }    
-    
-    ret = value;
-    remaining--;
-    value += skip;
+     h++;
+     if (h >= (HANDLE_SIZE-1))
+       h = 1;
+  } while (htree_find(h));
 
-  } while (htree_find(ret));
-  
-  return ret;
+  return h;
 }
 
 /* Free any object in a handlenode */
