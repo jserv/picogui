@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.46 2001/07/30 05:10:53 micahjd Exp $
+/* $Id: div.c,v 1.47 2001/08/03 13:13:14 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -62,12 +62,19 @@ void divnode_recalc(struct divnode *n) {
        /* Get margin value */
        margin = theme_lookup(n->owner->in->div->state,PGTH_P_MARGIN);
 
-       /* If the size is zero, default to the preferred size */
+       /* If the size is zero, default to the preferred size 
+	*
+	* This preferred size has already accounted for the popup's 
+	* border, but we add this in again ourselves below.
+	*
+	* Simplest way to avoid adding it in twice is to subtract
+	* it from the preferred size.
+	*/
 
        if (!w)
-	 w = max(n->div->cw,n->div->pw);
+	 w = max(n->div->cw,n->div->pw) - (margin<<1);
        if (!h)
-	 h = max(n->div->ch,n->div->ph);
+	 h = max(n->div->ch,n->div->ph) - (margin<<1);
 
        /* Special positioning codes */
 

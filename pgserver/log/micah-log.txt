@@ -1,3 +1,18 @@
+2001-08-03    Micah Dowty <micahjd@users.sourceforge.net>
+
+While adding that PGREQ_DUP code, I fixed what I'm now almost positive was
+the cause of that dreaded handle bug! In mkhandlep(), the 'group' handle
+for each handlenode was not initialized.
+I have finished the string input dialog and a font picker dialog. Added a
+new API to get info on available fontstyles. I got a file picker dialog
+almost completely working outside the client lib source, then copied all 500
+lines of it into the client lib.
+I apologize for the sparse logs the last couple of days. I've been furiously
+trying to catch up with Smartdata's schedule. Most of the more recent items
+have been taking much longer than they estimated.
+
+      * cli_c/src/dlg_filepicker.c: Finishing up the file picker dialog  
+
 2001-08-01    Micah Dowty <micahjd@users.sourceforge.net>
 
 I've been working on the standard dialogs out of CVS, at least for
