@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.9 2000/06/10 00:31:36 micahjd Exp $
+/* $Id: global.c,v 1.10 2000/06/10 05:09:14 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -204,7 +204,7 @@ g_error appmgr_register(struct app_info *i) {
   /* Insert it */
   dest->next = applist;
   applist = dest;
-  
+
   return sucess;
 }
 
