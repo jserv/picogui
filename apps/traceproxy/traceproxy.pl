@@ -25,6 +25,13 @@
 		findwidget checkevent sizebitmap appmsg undef
 		);
 
+@rshiplist =  qw(deprecated_before after inside before);
+@widgetlist = qw(toolbar label scroll indicator bitmap
+		 button panel popup box field background
+		 menuitem terminal canvas checkbox
+		 flatbutton listitem submenuitem radiobutton
+		 textbox);
+
 
 %evtcoding = (0x001,'activate',
 	      0x002,'deactivate',
@@ -179,13 +186,8 @@ sub dumprequest {
     if ($reqtype==2) { 
 	# MKWIDGET
 	my ($rship,$type,$parent) = unpack("nnN",$data);
-	print " relationship = ".qw(deprecated_before after inside
-				    before)[$rship]."\n";
-	print " type = ".qw(toolbar label scroll indicator bitmap
-			    button panel popup box field background
-			    menuitem terminal canvas checkbox
-			    flatbutton listitem submenuitem radiobutton
-			    textbox)[$type]."\n";
+	print " relationship = ".$rshiplist[$rship]."\n";
+	print " type = ".$widgetlist[$type]."\n";
 	printf " parent = %d (0x%X)\n", $parent;  
     }
     # Pick apart a batch packet
