@@ -67,3 +67,10 @@ P: 1024D/C53D9218    D006 AE8A 7B78 FBF1 4284  EBB8 763D D1FC C53D 9218
 D: Misc. stuff.
 D: Mainly for running Waba with PicoGUI (see http://waba.sourceforge.net/)
 S: (see web site)
+
+N: Philippe Ney
+E: philippe.ney@smartdata.ch
+W: http://www.smartdata.ch/
+D: Misc. stuff.
+D: Start C port of client _with_ Micah. Port on uClinux.
+S: Lausanne, Switzerland
