@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.9 2003/03/21 02:06:32 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.10 2003/03/21 03:58:50 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -561,21 +561,10 @@ int term_misc_code(struct widget *self,u8 c) {
   if (DATA->escbuf_pos == 1)
 
     switch (c) { 
-      /* ESC 7 - save state */
-    case '7':
-      DBG("save state\n");
-      memcpy(&DATA->saved,&DATA->current,sizeof(DATA->saved));
-      return 1;
-
-      /* ESC 8 - restore state */
-    case '8':
-      DBG("restore state\n");
-      memcpy(&DATA->saved,&DATA->saved,sizeof(DATA->current));
-      return 1;
 
       /* ESC c - reset */
     case 'c':
-      DBG("reset\n");
+      DBG("-UNIMPLEMENTED- reset\n");
       /* Hmm.. what to do here? */
       return 1;
 
@@ -593,8 +582,7 @@ int term_misc_code(struct widget *self,u8 c) {
 
       /* ESC H - set tabstop */
     case 'H':
-      DBG("set tabstop\n");
-      /* FIXME: Implement this */
+      DBG("-UNIMPLEMENTED- set tabstop\n");
       return 1;
 
       /* ESC M - reverse linefeed */
@@ -602,12 +590,61 @@ int term_misc_code(struct widget *self,u8 c) {
       DBG("reverse linefeed\n");
       DATA->current.crsry--;
       return 1;
+
+      /* ESC Z - DEC private information, return ESC [ ? 6 c */
+    case 'Z':
+      {
+      static const char *response = "\e[?6c";
+      DBG("DEC private information, identify as VT102\n");
+      post_event(PG_WE_DATA,self,strlen(response),0,(char*)response);      
+      }
+      return 1;
+
+      /* ESC 7 - save state */
+    case '7':
+      DBG("save state\n");
+      memcpy(&DATA->saved,&DATA->current,sizeof(DATA->saved));
+      return 1;
+
+      /* ESC 8 - restore state */
+    case '8':
+      DBG("restore state\n");
+      memcpy(&DATA->saved,&DATA->saved,sizeof(DATA->current));
+      return 1;
+
+      /* ESC > - Set numeric keypad mode */
+    case '>':
+      DBG("ignoring request to set numeric keypad mode\n");
+      return 1;
+
+      /* ESC = - Set application keypad mode */
+    case '=':
+      DBG("ignoring request to set application keypad mode\n");
+      return 1;
     }
+
 
   /****** Two-character codes */
 
   if (DATA->escbuf_pos == 2)
     switch (DATA->escapebuf[0]) { 
+
+      /* % - Select ISO 646/8859 vs Unicode */
+    case '%':
+      switch (c) {
+      case '@':
+	DBG("-UNIMPLEMENTED- disable UTF-8 mode\n");
+	break;
+      case 'G':
+      case '8':
+	DBG("-UNIMPLEMENTED- enable UTF-8 mode\n");
+	break;
+      default:
+	DBG("-ERROR- Unknown ESC % code\n");
+	break;
+      }
+      return 1;
+
       /* ( - Set G0 character set */
     case '(':
       DBG("Set G0 character set to '%c'\n", c);
@@ -647,7 +684,25 @@ int term_misc_code(struct widget *self,u8 c) {
        * double-height/width chars, not supported */
       return 1;
 
+      /* ]R - Reset palette */
+    case ']':
+      if (c == 'R') {
+	DBG("-UNIMPLEMENTED- reset palette\n");
+	return 1;
+      }
+      break;
     }
+
+  /* Wonky code that doesn't fit anywhere else... */
+  if (DATA->escbuf_pos == 9 && DATA->escapebuf[0] == ']' && DATA->escapebuf[1] == 'P') {
+    char digits[8];
+    memcpy(digits, DATA->escapebuf+2, 6);
+    digits[6] = c;
+    digits[7] = 0;
+
+    DBG("-UNIMPLEMENTED- set palette '%s'\n", digits);
+    return 1;
+  }
 
   return 0;
 }
