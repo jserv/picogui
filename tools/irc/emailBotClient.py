@@ -209,28 +209,23 @@ if __name__ == '__main__':
                         #print "found socket = " + socketName
                 f.close()
 
-            if lastBotID != "":
-                # we did not find the channel
-                if socketName == socketBaseName:
-                    # we always choose the last bot to be started for joining channels
-                    socketName = socketBaseName + "." + lastBotID;
+            # we did not find the channel
+            if socketName == socketBaseName:
+                # we always choose the last bot to be started for joining channels
+                socketName = socketBaseName + "." + lastBotID;
                 #print "socketName is " + socketName
+                
+            # now launch the client object for the channel-specific bot
+            f = AnnounceClientFactory()
+            reactor.connectUNIX(socketName, f)
+            reactor.run()
             
-                # now launch the client object for the channel-specific bot
+            # and now if we are not the first bot, send there, so it goes into the main channels
+            if socketName != socketBaseName + ".1":
+                socketName = socketBaseName + ".1"
                 f = AnnounceClientFactory()
                 reactor.connectUNIX(socketName, f)
                 reactor.run()
-
-                # and now if we are not the first bot, send there, so it goes into the main channels
-                if socketName != socketBaseName + ".1":
-                    socketName = socketBaseName + ".1"
-                    f = AnnounceClientFactory()
-                    reactor.connectUNIX(socketName, f)
-                    reactor.run()
-            else:
-                # no channel lists found?!?
-                pass
-            
         except IndexError:
             # this command does not relate to a channel
             pass
