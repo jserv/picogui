@@ -59,7 +59,6 @@ fe_print_text_textbox (struct session *sess, char *text)
 	int under = 0, bold = 0, color = 0,
 		comma, k, i = 0, j = 0, len = strlen (text);
 	unsigned char *newtext = malloc (len + 1024);
-	struct fe_pg_gui *gui=(struct fe_pg_gui *)sess->gui;
 	pghandle pgstr;
 
 	newtext[0] = 0;
@@ -144,11 +143,11 @@ fe_print_text_textbox (struct session *sess, char *text)
 			if (reverse)
 			{
 				reverse = FALSE;
-				strcpy (&newtext[j], "\\033[27m");
+				strcpy (&newtext[j], "\\e[27m");
 			} else
 			{
 				reverse = TRUE;
-				strcpy (&newtext[j], "\\033[7m");
+				strcpy (&newtext[j], "\\e[7m");
 			}
 			j += strlen (newtext+j);
 #endif
@@ -254,7 +253,7 @@ jump:
 
 	/* ouput into textbox */
 	pgstr=pgNewString(newtext);
-	pgSetWidget(gui->output, PG_WP_TEXT, pgstr, 0);
+	pgSetWidget(sess->gui->output, PG_WP_TEXT, pgstr, 0);
 	pgDelete(pgstr);
 	free (newtext);
 }
@@ -268,13 +267,14 @@ fe_print_text_terminal (struct session *sess, char *text)
 	int dotime = FALSE;
 	char num[8];
 	int reverse = 0, under = 0, bold = 0, color = 0,
-		comma, k, i = 0, j = 0, len = strlen (text);
+		comma, k, i = 0, j = 2, len = strlen (text);
 	unsigned char *newtext = malloc (len + 1024);
-	struct fe_pg_gui *gui=(struct fe_pg_gui *)sess->gui;
 
 	if (prefs.timestamp)
 	{
-		newtext[0] = 0;
+		newtext[0] = '\r';
+		newtext[1] = '\n';
+		newtext[2] = 0;
 		j += timecat (newtext);
 	}
 	while (i < len)
@@ -292,7 +292,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 			if (!isdigit (text[i]))
 			{
 				color = FALSE;
-				newtext[j] = '\033';
+				newtext[j] = '\e';
 				j++;
 				newtext[j] = '[';
 				j++;
@@ -313,7 +313,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 					int col, mirc;
 					color = TRUE;
 					num[k] = 0;
-					newtext[j] = '\033';
+					newtext[j] = '\e';
 					j++;
 					newtext[j] = '[';
 					j++;
@@ -352,11 +352,11 @@ fe_print_text_terminal (struct session *sess, char *text)
 			if (reverse)
 			{
 				reverse = FALSE;
-				strcpy (&newtext[j], "\033[27m");
+				strcpy (&newtext[j], "\e[27m");
 			} else
 			{
 				reverse = TRUE;
-				strcpy (&newtext[j], "\033[7m");
+				strcpy (&newtext[j], "\e[7m");
 			}
 			j = strlen (newtext);
 			break;
@@ -364,11 +364,11 @@ fe_print_text_terminal (struct session *sess, char *text)
 			if (under)
 			{
 				under = FALSE;
-				strcpy (&newtext[j], "\033[24m");
+				strcpy (&newtext[j], "\e[24m");
 			} else
 			{
 				under = TRUE;
-				strcpy (&newtext[j], "\033[4m");
+				strcpy (&newtext[j], "\e[4m");
 			}
 			j = strlen (newtext);
 			break;
@@ -376,11 +376,11 @@ fe_print_text_terminal (struct session *sess, char *text)
 			if (bold)
 			{
 				bold = FALSE;
-				strcpy (&newtext[j], "\033[22m");
+				strcpy (&newtext[j], "\e[22m");
 			} else
 			{
 				bold = TRUE;
-				strcpy (&newtext[j], "\033[1m");
+				strcpy (&newtext[j], "\e[1m");
 			}
 			j = strlen (newtext);
 			break;
@@ -392,7 +392,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 			}
 			break;
 		case '\017':				  /* reset all */
-			strcpy (&newtext[j], "\033[m");
+			strcpy (&newtext[j], "\e[m");
 			j += 3;
 			reverse = FALSE;
 			bold = FALSE;
@@ -403,8 +403,7 @@ fe_print_text_terminal (struct session *sess, char *text)
 			j++;
 			break;
 		case '\n':
-			newtext[j] = '\r';
-			j++;
+			newtext[j++] = '\r';
 			if (prefs.timestamp)
 				dotime = TRUE;
 		default:
@@ -413,22 +412,22 @@ fe_print_text_terminal (struct session *sess, char *text)
 		i++;
 	 jump:
 	}
+	if(newtext[j-1]=='\n')
+		j-=2;
 	newtext[j] = 0;
 	if(reverse||bold||under||color)
 	{
-		strcpy(newtext+j, "\033[m");
+		strcpy(newtext+j, "\e[m");
 		j+=3;
 	}
 
-	pgWriteData(gui->output, pgFromTempMemory(newtext,j));
+	pgWriteData(sess->gui->output, pgFromTempMemory(newtext,j));
 }
 
 void
 fe_print_text (struct session *sess, char *text)
 {
-	struct fe_pg_gui *gui=(struct fe_pg_gui *)sess->gui;
-
-	switch(gui->output_type)
+	switch(sess->gui->output_type)
 	{
 		case PG_WIDGET_TEXTBOX:
 			fe_print_text_textbox(sess, text);

@@ -42,28 +42,32 @@ static GSList *se_list;			  /* socket event list */
 static int se_list_count;
 static pghandle pgEmptyString;
 
-static void
-send_command (char *cmd)
-{
-	handle_command (cmd, sess_list->data, TRUE, FALSE);
-}
-
 static int
 fieldActivate(struct pgEvent *evt)
 {
-	/* TODO: check if buffer is only read */
 	char *cmd;
 	pghandle handle;
 
 	handle=pgGetWidget(evt->from, PG_WP_TEXT);
-	if(handle)
+	if(handle&&(cmd=strdup(pgGetString(pgGetWidget(evt->from, PG_WP_TEXT)))))
 	{
-		cmd=strdup(pgGetString(pgGetWidget(evt->from, PG_WP_TEXT)));
-		send_command(cmd);
-		free(cmd);
 		pgSetWidget(evt->from, PG_WP_TEXT, pgEmptyString, 0);
+		/* Must do handle_command last because it may be /close */
+		handle_command (cmd, evt->extra, TRUE, FALSE);
+		free(cmd);
 	}
 	return 0;
+}
+
+static int
+evtClose(struct pgEvent *evt)
+{
+	if(evt->extra)
+		fe_close_window(evt->extra);
+	else
+		pgDelete(evt->from);
+	/* 1 prevents us from exiting */
+	return 1;
 }
 
 static int done_intro = 0;
@@ -72,35 +76,43 @@ void
 fe_new_window (struct session *sess)
 {
 	char buf[512];
-	pghandle scroll;
-	struct fe_pg_gui *gui=NULL;
+	pghandle scroll, rightbox;
 	short int output_type=PG_WIDGET_TERMINAL;
 
-	gui = (struct fe_pg_gui*) sess->gui = malloc(sizeof(struct fe_pg_gui));
-	memset(gui, 0, sizeof(*gui));
+	sess->gui = malloc(sizeof(struct session_gui));
+	memset(sess->gui, 0, sizeof(struct session_gui));
 	/* App */
-	gui->app = pgRegisterApp(PG_APP_NORMAL, "PicoGUI X-Chat", 0);
-	gui->input = pgNewWidget(PG_WIDGET_FIELD, PGDEFAULT, PGDEFAULT);
+	sess->gui->app = pgRegisterApp(PG_APP_NORMAL, "X-Chat ["VERSION"]", 0);
+	fe_set_title(sess);
+	pgBind(PGDEFAULT, PG_WE_CLOSE, evtClose, sess);
+	sess->gui->input = pgNewWidget(PG_WIDGET_FIELD, PGDEFAULT, PGDEFAULT);
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_BOTTOM, 0);
-	pgBind(PGDEFAULT, PG_WE_ACTIVATE, fieldActivate, NULL);
+	pgBind(PGDEFAULT, PG_WE_ACTIVATE, fieldActivate, sess);
 	pgFocus(PGDEFAULT);
 	/* Chat area */
-	pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
+	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
+	sess->gui->userlistinfo=pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, 0);
+	scroll=pgNewWidget(PG_WIDGET_SCROLL, PGDEFAULT, PGDEFAULT);
+	sess->gui->userlist=pgNewWidget(PG_WIDGET_LIST, PGDEFAULT, PGDEFAULT);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_LEFT, 0);
+	pgSetWidget (scroll, PG_WP_BIND, sess->gui->userlist, PGDEFAULT);
 	/* FIXME - scrollbar gets overdrawn */
 	/* this is a textbox bug. another one is that wrapped text somehow 
 	 * winds up after all other text. */
+	rightbox=pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, rightbox);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, PGDEFAULT);
-	pgSetWidget(scroll, PG_WP_SIDE, PG_S_RIGHT, 0);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_RIGHT, 0);
 	/* FIXME - preference? */
-	gui->output_type = output_type;
-	gui->output = pgNewWidget(output_type, PGDEFAULT, PGDEFAULT);
-	pgSetWidget(scroll, PG_WP_BIND, gui->output, 0);
+	sess->gui->output_type = output_type;
+	sess->gui->output = pgNewWidget(output_type, PGDEFAULT, PGDEFAULT);
+	pgSetWidget(scroll, PG_WP_BIND, sess->gui->output, 0);
 	switch(output_type) {
 		case PG_WIDGET_TEXTBOX:
 			/* set the textbox to autoscroll, append HTML */
 			pgSetWidget(PGDEFAULT, PG_WP_AUTOSCROLL, 1,
-				PG_WP_SIDE, PG_S_LEFT,
+				PG_WP_SIDE, PG_S_ALL,
 				PG_WP_TEXTFORMAT, pgNewString("+HTML"), 0);
 			break;
 		case PG_WIDGET_TERMINAL:
@@ -108,8 +120,8 @@ fe_new_window (struct session *sess)
 			/* FIXME: need to prevent PG_TRIGGER_ACTIVATE */
 			pgSetWidget(PGDEFAULT, PG_WP_TRIGGERMASK,
 				pgGetWidget(PGDEFAULT, PG_WP_TRIGGERMASK) &
-				~PG_TRIGGER_DOWN, 0);
-			/* FIXME: hide cursor */
+				~PG_TRIGGER_DOWN, PG_WP_SIDE, PG_S_ALL, 0);
+			/* FIXME: hide cursor (not implemented in terminal) */
 			break;
 	}
 
@@ -472,20 +484,31 @@ fe_exit (void)
 void
 fe_new_server (struct server *serv)
 {
-	serv->gui = malloc (4);
+	serv->gui = malloc (sizeof(struct server_gui));
 }
 
 void
 fe_message (char *msg, int wait)
 {
-	puts (msg);
+	if(wait)
+		pgMessageDialog("X-Chat", msg, PGDEFAULT);
+	else
+	{
+		pghandle text;
+
+		pgRegisterApp(PG_APP_NORMAL, "X-Chat message", 0);
+		pgBind(PGDEFAULT, PG_WE_CLOSE, evtClose, NULL);
+		pgNewWidget(PG_WIDGET_TEXTBOX, PGDEFAULT, PGDEFAULT);
+		pgSetWidget(PGDEFAULT, PG_WP_TEXT, text=pgNewString(msg), 0);
+		pgDelete(text);
+	}
 }
 
 void
 fe_close_window (struct session *sess)
 {
+	pgDelete(sess->gui->app);
 	kill_session_callback (sess);
-	pgExitEventLoop();
 }
 
 void
@@ -498,9 +521,44 @@ void
 fe_add_rawlog (struct server *serv, char *text, int outbound)
 {
 }
+
+static int
+setTopic(struct pgEvent *evt)
+{
+	struct session *sess=evt->extra;
+	pghandle topichandle;
+	char *topic, *cmd;
+
+	topichandle=pgGetWidget(evt->from, PG_WP_TEXT);
+	if(topichandle)
+	{
+		topic=pgGetString(topichandle);
+		cmd=malloc(strlen(topic)+8);
+		if(cmd)
+		{
+			sprintf(cmd, "/topic %s", topic);
+			handle_command (cmd, sess, FALSE, FALSE);
+			free(cmd);
+		}
+	}
+	return 0;
+}
+
 void
 fe_set_topic (struct session *sess, char *topic)
 {
+	pghandle str;
+
+	if(!sess->gui->topic)
+	{
+		sess->gui->topic = pgNewWidget(PG_WIDGET_FIELD, PG_DERIVE_BEFORE,
+				sess->gui->input);
+		pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_TOP, 0);
+		pgBind(PGDEFAULT, PG_WE_ACTIVATE, setTopic, sess);
+	}
+	str=pgNewString(topic);
+	pgSetWidget(sess->gui->topic, PG_WP_TEXT, str, 0);
+	pgDelete(str);
 }
 void
 fe_cleanup (void)
@@ -568,6 +626,12 @@ fe_progressbar_end (struct session *sess)
 void
 fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 {
+	pghandle label;
+
+	label=pgCreateWidget(PG_WIDGET_LABEL);
+	pgSetWidget(PGDEFAULT, PG_WP_TRANSPARENT, 1, PG_WP_TEXT,
+			pgNewString(newuser->nick), 0);
+	pgListInsertAt(sess->gui->userlist, label, row);
 }
 void
 fe_userlist_remove (struct session *sess, struct User *user)
@@ -580,6 +644,8 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 void
 fe_userlist_numbers (struct session *sess)
 {
+	pgReplaceTextFmt(sess->gui->userlistinfo, "@%d +%d %d",
+			sess->ops, sess->voices, sess->total);
 }
 void
 fe_userlist_clear (struct session *sess)
@@ -644,6 +710,37 @@ fe_set_channel (struct session *sess)
 void
 fe_set_title (struct session *sess)
 {
+	int type=sess->type;
+
+	if(sess->server->connected == FALSE && sess->type != SESS_DIALOG)
+		type = SESS_SHELL;	/* force default */
+
+	switch (type)
+	{
+		case SESS_DIALOG:
+			pgReplaceTextFmt(sess->gui->app,
+					"X-Chat ["VERSION"]: Dialog with %s @ %s",
+					sess->channel, sess->server->servername);
+			break;
+		case SESS_SERVER:
+			pgReplaceTextFmt(sess->gui->app, "X-Chat ["VERSION"]: %s @ %s",
+					sess->server->nick, sess->server->servername);
+			break;
+		case SESS_CHANNEL:
+			pgReplaceTextFmt(sess->gui->app,
+					"X-Chat ["VERSION"]: %s @ %s / %s (%s)",
+					sess->server->nick, sess->server->servername,
+					sess->channel, sess->current_modes);
+			break;
+		case SESS_NOTICES:
+		case SESS_SNOTICES:
+			pgReplaceTextFmt(sess->gui->app,
+					"X-Chat ["VERSION"]: %s @ %s (notices)",
+					sess->server->nick, sess->server->servername);
+			break;
+		default:
+			pgReplaceText(sess->gui->app, "X-Chat ["VERSION"]");
+	}
 }
 void
 fe_set_nonchannel (struct session *sess, int state)
@@ -656,6 +753,12 @@ fe_set_nick (struct server *serv, char *newnick)
 void
 fe_change_nick (struct server *serv, char *nick, char *newnick)
 {
+	struct session *sess = find_dialog (serv, nick);
+	if (sess)
+	{
+		safe_strcpy (sess->channel, newnick, CHANLEN);
+		fe_set_title (sess);
+	}
 }
 void
 fe_ignore_update (int level)

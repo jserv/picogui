@@ -1,8 +1,11 @@
-struct fe_pg_gui {
-	pghandle app;
-	pghandle output;
+struct session_gui {
+	pghandle app, topic, output, input, userlistinfo, userlist;
 	short int output_type;
-	pghandle input;
+};
+
+struct server_gui {
+	/* not yet implemented */
+	pghandle app;
 };
 
 typedef int (*socket_callback) (void *source, int condition, void *user_data);
