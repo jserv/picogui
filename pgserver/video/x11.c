@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.36 2002/11/04 05:38:07 micahjd Exp $
+/* $Id: x11.c,v 1.37 2002/11/04 06:05:36 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -43,8 +43,7 @@ Display *xdisplay;
 struct x11bitmap {
   Drawable d;
   s16 w,h;
-  struct groprender *rend;   /* Context for pgRender() */
-  struct x11bitmap *tile;    /* Cached tile            */
+  struct groprender *rend;
 } x11_display;
 
 /* This is our back-buffer when we double-buffer. Even if we're not
@@ -123,6 +122,7 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   return c;
 #endif
 }
+
 
 /******************************************** Standard primitives */
 
@@ -307,8 +307,6 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
 
 void x11_bitmap_free(hwrbitmap bmp) {
   struct x11bitmap *xb = (struct x11bitmap *) bmp;
-  if (xb->tile)
-    x11_bitmap_free((hwrbitmap) xb->tile);
   if (xb->rend)
     g_free(xb->rend);
   XFreePixmap(xdisplay,xb->d);
@@ -328,35 +326,7 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     return;
   }
 
-#if 0  /* FIXME: Tiling is not handled blit any more, it's handled by
-	*        the multiblit primitive. Move this tiling code to multiblit,
-	*        and make it handle source rectangles smartly.
-	*/
-  /* If we're tiling, expand the bitmap to the minimum tile size
-   * if necessary, and cache it. Then, if the tile is still smaller
-   * than our blit size send it to the default blitter to be
-   * decomposed into individual tiles.
-   */
-
-  if ((w > sxb->w || h > sxb->h) && 
-      (sxb->w < X11_TILESIZE || sxb->h < X11_TILESIZE)) {
-    /* Create a pre-tiled image */
-    if (!sxb->tile) {
-      vid->bitmap_new( (hwrbitmap*)&sxb->tile,
-		       (X11_TILESIZE/sxb->w + 1) * sxb->w,
-		       (X11_TILESIZE/sxb->h + 1) * sxb->h, vid->bpp );
-      def_blit((hwrbitmap)sxb->tile,0,0,sxb->tile->w,
-	       sxb->tile->h,(hwrbitmap)sxb,0,0,PG_LGOP_NONE);
-    }
-    sxb = sxb->tile;
-  }
-
-  if (w > sxb->w || h > sxb->h)
-    def_blit(dest,x,y,w,h,(hwrbitmap) sxb,src_x,src_y,lgop);
-  else
-#endif /* 0 */
-
-    XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
+  XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
 /* The default sprite code is fine on slow LCDs, or
