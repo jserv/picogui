@@ -1,13 +1,17 @@
 /* This is an example
    theme file */
 
-obj default bgfill = fillstyle {
-  var z,foo=2340;
-  var bar = 0x25;
-
-  x = 2+x;
-  Rect(1,2,(foo+1+1+1+1+1+1)>>2,2);
-  Null(bar);
+obj default {
+  bgfill = fillstyle {
+    Frame(x,y,w,h,fgcolor);
+    x = x+1;
+    y = y+1;
+    w = w-2;
+    h = h-2;
+    Rect(x,y,w,h,default:bgcolor);
+  };
+  fgcolor = 0x000000;
+  bgcolor = 0xFFFFFF;
 };
 
 obj button.on bgcolor = 5;

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.12 2000/10/08 06:13:43 micahjd Exp $
+/* $Id: pgtheme.l,v 1.13 2000/10/08 18:47:25 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -58,7 +58,7 @@ var             { return VAR; }
   /* Next the constant symbol table */
   return symlookup(yytext,&yylval.num);
 }
-[-+*/()=;{},\&\|]        { return yytext[0]; }
+[-+*/()=;{},\&\|:]        { return yytext[0]; }
 
 \"([^\"\n\\]*(\\.)*)+[\"\n] { 
   char *a,*b;

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.14 2000/10/08 09:00:50 micahjd Exp $
+/* $Id: pgtheme.y,v 1.15 2000/10/08 18:47:25 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -75,6 +75,7 @@
 %type <fsn>      fsdecl_list
 %type <fsn>      fsbody
 %type <fsn>      fsvar
+%type <fsn>      fsprop
 
    /* Reserved words */
 %token OBJ FILLSTYLE VAR SHIFTR SHIFTL
@@ -84,6 +85,7 @@
 %left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
+%left ':'
 
 %start unitlist
 
@@ -227,30 +229,6 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
   memset(req,0,sizeof(struct pgrequest));
   req->type = htons(PGREQ_MKFILLSTYLE);
 
-  /* FIXME: Fix this optimizer later... */
-#if 0
-  /* Run an optimization pass through the opcode
-     list, using two symbols of lookahead */
-
-  p = $3;
-  before = &$3;
-  while (p->next) {    /* Loop through tokens */
-    while (p->next) {  /* Optimize completely */
-      la1 = p->next;
-      la2 = la1->next;
-      
-      /* two-symbol optimizations */
-      if (p->op == PGTH_OPCMD_LONGLITERAL &&
-	  p->param == 0 &&
-	  la1->op == PGTH_OPCMD_PLUS)
-	*before = p->next->next;      /* Skip 2 tokens */
-
-    }
-    p = p->next;
-    before = &p->next;
-  }
-#endif
-
   /* Transcribe the fsnodes into real opcodes */
 
   p = $3;
@@ -379,7 +357,12 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
      | NUMBER              { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }     
      | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
+     | fsprop              { $$ = $1; }
      ;
+
+fsprop: THOBJ ':' PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
+      | PROPERTY           { $$ = fsnewnode(PGTH_OPCMD_LOCALPROP); $$->param = $1; }
+      ;
 
 %%
 
