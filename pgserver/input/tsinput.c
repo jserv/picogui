@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.15 2001/06/04 16:36:06 bauermeister Exp $
+/* $Id: tsinput.c,v 1.16 2001/06/04 16:52:23 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -240,7 +240,7 @@ g_error tsinput_init(void) {
 
     /* env var will override default values (but only in ChipSlice!!) */
     if( pg_ts_env = (char*)getenv(PG_TS_ENV_NAME) ) {
-      sscanf(pg_ts_env, "%d %d %d %d, %d, %d",
+      sscanf(pg_ts_env, "%d %d %d %d %d %d",
 	     &mx1, &my1, &mx2, &my2, &offx, &offy);
 #  ifdef DEBUG_INIT
       printf("%s: taking m1 and m2 points for env var: '%s'\n",
