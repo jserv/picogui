@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.19 2003/03/19 19:21:03 lalo Exp $
+/* $Id: managedwindow.c,v 1.20 2003/03/19 22:24:15 lalo Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -84,6 +84,7 @@ void managedwindow_remove(struct widget *self) {
 }
 
 g_error managedwindow_set(struct widget *self,int property, glob data) {
+  hwrbitmap bit;
   struct pgstring *str;
   s16 x,y;
 
