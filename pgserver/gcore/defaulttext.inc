@@ -121,3 +121,4 @@
 /* 113 */ "Bad CRC-32 checksum in widget template",
 /* 114 */ "Widget template length mismatch",
 /* 115 */ "Incomplete request in widget template",
+/* 116 */ "Computer try to suck watermelon through straw, computer go boom.",

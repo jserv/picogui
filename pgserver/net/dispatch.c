@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.91 2002/04/09 21:20:16 micahjd Exp $
+/* $Id: dispatch.c,v 1.92 2002/04/11 08:44:59 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1174,11 +1174,17 @@ g_error rqh_sizebitmap(int owner, struct pgrequest *req,
   e = rdhandle((void**) &bit,PG_TYPE_BITMAP,owner,ntohl(arg->h));
   errorcheck;
 
-  e = VID(bitmap_getsize) (bit,&w,&h);
-  errorcheck;
-  
-  /* Pack w and h into ret */
-  *ret = (((u32)w)<<16) | h;
+  if (bit) {
+    
+    e = VID(bitmap_getsize) (bit,&w,&h);
+    errorcheck;
+    
+    /* Pack w and h into ret */
+    *ret = (((u32)w)<<16) | h;
+    
+  }
+  else
+    *ret = 0;
 
   return success;
 }

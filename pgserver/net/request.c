@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.46 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: request.c,v 1.47 2002/04/11 08:44:59 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -234,28 +234,45 @@ void readfd(int from) {
 				     buf->req.size+1)))) {
 
 	  /* Oops, the client asked for too much memory!
-	     Bad client!
-	     Make them disappear.
-	  */
-	  closefd(from);
-	  return;
+	   * Discard this packet and send an error later.
+	   */
+	  buf->data = buf->data_stat;
+	  buf->data_dyn = NULL;
+	  buf->no_buffer = 1;
 	}
+	else {
+	  /* Allocated successfully */
+	  buf->data = buf->data_dyn;
+	}
+
 #ifdef DEBUG_NET
 	printf("Using a dynamic packet buffer\n");
 #endif
-	buf->data = buf->data_dyn;
       }
       
       /* Null-terminate it. Only YOU can prevent runaway strings! */
-      buf->data[buf->req.size] = 0;
+      if (!buf->no_buffer)
+	buf->data[buf->req.size] = 0;
     }
 
     if (buf->data_size < buf->req.size) {
       /* NOW we can get the packet data */
       
       errno = 0;
-      r = recv(from,buf->data+buf->data_size,
-	       buf->req.size-buf->data_size,0);      
+      if (buf->no_buffer) {
+	/* We need to fake the recieve since there's
+	 * nowhere to put the packet. Just dump it
+	 * into the static buffer.
+	 */
+	r = recv(from,buf->data,
+		 (buf->req.size-buf->data_size) > PKTBUF_LEN ?
+		 PKTBUF_LEN : (buf->req.size-buf->data_size),0);
+      }
+      else {
+	r = recv(from,buf->data+buf->data_size,
+		 buf->req.size-buf->data_size,0);      
+      }
+
 #ifdef DEBUG_NET
       printf("recv data = %d\n",r);
 #endif
@@ -273,17 +290,55 @@ void readfd(int from) {
 
     /* Are we there yet? */
     if (buf->data_size >= buf->req.size) {
-      /* Yahoo! */
-      if (dispatch_packet(from,&buf->req,buf->data))
-	closefd(from);
-      else {
-	/* Reset the structure for another packet */
-	g_free(buf->data_dyn);
-	buf->data_dyn = NULL;
-	buf->data_size = buf->header_size = 0;
-	buf->data = NULL;
+      if (buf->no_buffer) {
+	/* The packet finished, but we had nowhere to store it.
+	 * Send an error message to that effect..
+	 */
+
+	/* FIXME: This is messy, clean it up
+	 *        when the network code is reorganized...
+	 */
+
+	int errlen;
+	struct pgresponse_err rsp;
+	const char *errmsg;
+	g_error e;
+
+	e = mkerror(PG_ERRT_IO,116);  /* Incoming packet was too big */
+
+	errlen = strlen(errmsg = errortext(e));
+	rsp.type = htons(PG_RESPONSE_ERR);
+	rsp.id = htonl(buf->req.id);
+	rsp.errt = htons(errtype(e));
+	rsp.msglen = htons(errlen);
+	
+	/* Send the error */
+	if (send_response(from,&rsp,sizeof(rsp)) | 
+	    send_response(from,errmsg,errlen))
+	  closefd(from);
+	else {
+	  /* Reset the structure for another packet */
+	  g_free(buf->data_dyn);
+	  buf->data_dyn = NULL;
+	  buf->data_size = buf->header_size = 0;
+	  buf->data = NULL;
+	  buf->no_buffer = 0;
+	}	
       }
-    }   
+      else {
+	/* Yahoo, got a complete packet! */
+	if (dispatch_packet(from,&buf->req,buf->data))
+	  closefd(from);
+	else {
+	  /* Reset the structure for another packet */
+	  g_free(buf->data_dyn);
+	  buf->data_dyn = NULL;
+	  buf->data_size = buf->header_size = 0;
+	  buf->data = NULL;
+	}
+      }
+    }  
+ 
   }
 }
 

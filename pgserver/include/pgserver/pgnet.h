@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.23 2002/03/26 07:30:31 instinc Exp $
+/* $Id: pgnet.h,v 1.24 2002/04/11 08:44:59 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -139,9 +139,14 @@ struct conbuf {
   unsigned int header_size;
 
   /* If the prep work for receiving data is done, this is either
-     equal to data_stat or data_dyn.  NULL if the prep hasn't been done yet
-  */
+   * equal to data_stat or data_dyn.  NULL if the prep hasn't been done yet.
+   */
   unsigned char *data;
+
+  /* This flag is set if the data buffer really hasn't been allocated, and the
+   * network code should discard the incoming packet and send an error afterwards.
+   */
+  unsigned int no_buffer : 1;
 
   struct conbuf *next;
 };
