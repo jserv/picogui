@@ -7,6 +7,7 @@ import os
 statDir = "/home/commits/stats"
 mtbcSubdir = 'mtbc'
 channelFile = "/home/commits/channels.list"
+commandLog = "/home/commits/commands.log"
 
 # List out the subdirs explicitly so we can set the order-
 # the first one here is used as the sort key, and for definatively
@@ -80,5 +81,25 @@ def readStats():
         except IOError:
             projectMTBC[project] = None
     totalMTBC = projectMTBC['commits']
+
+def readLatestCommands(n=20):
+    """Read the n latest commands, returning a list of (command, project, message) tuples"""
+    f = open(commandLog)
+    
+    # Go to the end, and read backwards for n+1 newlines
+    f.seek(-1,2)
+    for i in xrange(n+1):
+        while f.read(1) != "\n":
+            f.seek(-2,1)
+        f.seek(-2,1)
+    f.readline()
+            
+    # Parse up some lines
+    results = []
+    for i in xrange(n):
+        line = f.readline().strip()
+        results.append(line.split(" ", 2))
+    f.close()
+    return results
 
 readStats()

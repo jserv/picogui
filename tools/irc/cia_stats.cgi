@@ -107,6 +107,20 @@ print """
   </div>
 </div>
 
+<div><span class="section">Most recent commits</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+    <ul>
+"""
+for command in readLatestCommands():
+    if command[0] == "Announce":
+        print "<li><b>%s</b>: %s</li>" % (command[1], command[2])
+print """
+    </ul>
+  </div>
+</div>
+
 <div><span class="section">Channels the bot is currently in</span></div>
 <div class="section">
   <div class="sectionTop"></div>
