@@ -1,4 +1,4 @@
-cli_lua for PicoGUI v0.5 
+cli_lua for PicoGUI v0.6 
 (Hope it's half way to release 1)
 Same LICENSE as Lua (BSD like)
 
@@ -14,3 +14,7 @@ To test, run ./sol -f demo.lua
 Howard Fan Hongjian
 Oct, 2002
 fanhow@hotpop.com
+
+-- change log --
+31Oct2002 v0.5 - first release
+03Nov2002 v0.6 - Added Shade and Canvas ops
