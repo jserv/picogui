@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.37 2002/01/18 11:48:23 micahjd Exp $
+/* $Id: request.c,v 1.38 2002/01/18 11:53:12 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -92,7 +92,9 @@ void closefd(int fd) {
   if (pointer_owner==fd)
    {
     pointer_owner = 0;
+#ifdef CONFIG_TOUCHSCREEN
     touchscreen_calibrated = 1;
+#endif
    }
   if (sysevent_owner==fd)
     sysevent_owner = 0;
