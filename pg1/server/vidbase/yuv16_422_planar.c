@@ -242,6 +242,74 @@ void yuv16_422_planar_scrollblit(hwrbitmap dest,
   }
 }
 
+
+void yuv16_422_planar_slab (hwrbitmap dest, 
+			    s16 x, s16 y, s16 w,
+			    hwrcolor c, s16 lgop)
+{
+  struct stdbitmap * dstbit = (struct stdbitmap *) dest;
+
+  if (yuv16_422_planar_is_offscreen (dstbit->bits)) {
+    /* we are offscreen */
+    def_slab (dest, x, y, w, c, lgop);
+    return;
+  }
+  else {
+    unsigned long r = getred(c);
+    unsigned long g = getgreen(c);
+    unsigned long b = getblue(c);
+    unsigned long a = getalpha(c);
+    int i;
+
+    size_t offset = (dstbit->pitch) * y + x;
+    
+    u8 * dst_y  = dstbit->bits + offset;
+    u8 * dst_uv = dstbit->bits + yuv16_422_planar_y_plane_size 
+      + (offset &~ 1);
+
+    switch (lgop) {      
+    case PG_LGOP_NONE: {
+      int y, cb, cr;
+      
+      /*
+       * Alpha is null...We're transparent
+       */
+      if (!a) {
+	y = 0;
+	cb = 0;
+	cr = 0;
+      } else
+	rgb_to_ycbcr (r, g, b, & y, & cb, & cr);
+
+      memset (dst_y, (char) y, w);
+      if (cb == cr) {
+	memset (dst_uv, (char) cb, w * 2);
+      } else {
+	for (i = 0; i < w; i += 2) {
+	  * dst_uv++ = (char) cb;
+	  * dst_uv   = (char) cr;
+	}
+      }
+
+      if (c == 0) {
+	memset (yuv16_rgb_shadow_buffer, 0, w * sizeof (c));
+      } else {
+	for (i = 0; i < w; i++) {
+	  yuv16_rgb_shadow_buffer [offset + i] = c;
+	}
+      }
+      
+      break; 
+    }
+    
+    default:
+      /* Not supported yet */
+      def_slab (dest, x, y, w, c, lgop);
+      return;
+    }
+  }
+}
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -261,6 +329,7 @@ void setvbl_yuv16_422_planar(struct vidlib *vid) {
   vid->pixel         = &yuv16_422_planar_pixel;
   vid->getpixel      = &yuv16_422_planar_getpixel;
   vid->scrollblit    = &yuv16_422_planar_scrollblit;
+  vid->slab          = &yuv16_422_planar_slab;
 }
 
 void yuv16_422_planar_close (void) { 
