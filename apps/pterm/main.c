@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.18 2002/04/11 16:21:55 gobry Exp $
+/* $Id: main.c,v 1.19 2002/04/22 10:22:19 bornet Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -41,6 +41,7 @@ int ptyfd;                  /* file descriptor of the pty master */
 pghandle wTerminal,wPanel;  /* Widgets */
 char *title = "Terminal";
 int terminalHasFont = 0;
+int bSwapDeleteBackspace = 0;   /* if you need to swap delete and backspace */
 
 /****************************** UI functions ***/
 
@@ -66,6 +67,19 @@ int btnFont(struct pgEvent *evt) {
 
 /* Recieves data from the pgBind association */
 int termInput(struct pgEvent *evt) {
+
+    /* switch the delete and backspace if needed */
+    if (bSwapDeleteBackspace && evt->e.data.size) {
+	switch (*(evt->e.data.pointer)) {
+	case PGKEY_BACKSPACE:
+	    *(evt->e.data.pointer) = PGKEY_DELETE;
+	    break;
+	case PGKEY_DELETE:
+	    *(evt->e.data.pointer) = PGKEY_BACKSPACE;
+	    break;
+	}
+    }
+
    /* Write the input character to the subprocess */
    write(ptyfd,evt->e.data.pointer,evt->e.data.size);
    return 0;
@@ -134,6 +148,7 @@ void printHelp(void) {
        "\n"
        "  -f size      Try to use a font of the given size (in pixels)\n"
        "  -t title     Set the window title\n"
+       "  -s           swap delete and backspace\n"
        "  -p           Pause after subprocess exits");
  
   exit(1);
@@ -165,6 +180,10 @@ int main(int argc, char **argv) {
 	argc--;
 	argv++;
 	title = *argv;
+	break;
+	
+      case 's':             /* swap delete and backspace */
+	bSwapDeleteBackspace = 1;
 	break;
 	
       case 'p':             /* Pause */
