@@ -96,10 +96,10 @@ class Progress(PGBuild.UI.None.Progress):
             bullet = ' '
 
     def _warning(self, text):
-        self._textBlock("Warning: " + text, ('bold', 'brown'))
+        self._textBlock("Warning:\n" + text, ('bold', 'brown'))
             
     def _error(self, text):
-        self._textBlock("Error: " + text, ('bold', 'red'))
+        self._textBlock("Error:\n" + text, ('bold', 'red'))
 
     def _message(self, text):
         self._textBlock(text)

@@ -21,19 +21,37 @@ Defines common exception classes for PGBuild
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-class InternalError(Exception):
+class Error(Exception):
     def __init__(self, args=None):
         self.args = args
 
-class ConfigError(Exception):
+class InternalError(Error):
+    """Internal errors are generally ignored by PGBuild, so that
+       the full trace is available without any fidgeting.
+       """
     def __init__(self, args=None):
         self.args = args
 
-class UserError(Exception):
+class ExternalError(Error):
+    """External errors are generally converted into a more
+       user-friendly form so that trivial problems don't scare
+       users away :)
+       """
     def __init__(self, args=None):
         self.args = args
 
-class EnvironmentError(Exception):
+class ConfigError(ExternalError):
+    explanation = "There was a problem with the configuration"
+    def __init__(self, args=None):
+        self.args = args
+
+class UserError(ExternalError):
+    explanation = "A problem was found with the user-supplied settings"
+    def __init__(self, args=None):
+        self.args = args
+
+class EnvironmentError(ExternalError):
+    explanation = "There was a problem with the build environment"
     def __init__(self, args=None):
         self.args = args
 

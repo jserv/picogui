@@ -21,6 +21,9 @@ Base classes for all UI modules, doesn't implement any UI at all.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
+import PGBuild.Errors
+
+
 class Progress:
     """Base class for progress reporting. This manages verbosity levels and other such
        tedium, passing on the actual message output to a subclass to handle.
@@ -115,7 +118,7 @@ class Progress:
             
     def error(self, text, unimportance=-5):
         if self._outputTest(unimportance):
-            self._warning(text)
+            self._error(text)
 
     def _message(self, text):
         """Hook for displaying a generic message"""
@@ -167,12 +170,27 @@ class Interface:
         self.cleanup()
 
     def exception(self, exc_info):
-        """This is called when PGBuild.Main catches an exception. The default implementation
-           transparently passes it along, but this gives subclasses a chance to reformat
-           the exception in a way that makes sense for a particular UI.
+        """This is called when PGBuild.Main catches an exception. This default
+           implementation gives subclasses a chance to clean up, then tries to convert
+           the exception into an error for the Progress class if it's one of our types.
            """
         self.cleanup()
-        self._exception(exc_info)
+        if isinstance(exc_info[1], PGBuild.Errors.ExternalError):
+            # Pretty-print ExternalErrors a bit, hiding the details that might scare people
+            message = ""
+            try:
+                message += exc_info[0].explanation + "\n"
+            except AttributeError:
+                pass
+            try:
+                message += exc_info[1].args
+            except AttributeError:
+                pass
+            if not message:
+                message = str(exc_info[1])
+            self.progress.error(message)
+        else:
+            self._exception(exc_info)
 
     def _exception(self, exc_info):
         raise exc_info[0], exc_info[1], exc_info[2]
