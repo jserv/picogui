@@ -30,7 +30,7 @@
  *
  */
 
-#include "picogui.h"
+#include <picogui.h>
 #include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
