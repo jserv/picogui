@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.77 2002/02/06 07:35:06 micahjd Exp $
+/* $Id: div.c,v 1.78 2002/02/06 19:25:53 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -551,19 +551,35 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        divnode_divscroll(n->div);
 
+#if 0 /* oops.. this breaks stuff */
        /* Only rebuild if the size has changed */
        if (n->div->ox != n->div->x || n->div->oy != n->div->y ||
 	   n->div->ow != n->div->w || n->div->oh != n->div->h)
 	 div_rebuild(n->div);
+       else
+	 printf("eek! old(%d,%d,%d,%d) new(%d,%d,%d,%d)\n",
+		n->div->ox,n->div->oy,n->div->ow,n->div->oh,
+		n->div->x,n->div->y,n->div->w,n->div->h);
+#else
+       div_rebuild(n->div);
+#endif
      }     
      if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
        n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
        divnode_divscroll(n->next);
 
+#if 0 /* oops.. this breaks stuff */
        /* Only rebuild if the size has changed */
        if (n->next->ox != n->next->x || n->next->oy != n->next->y ||
 	   n->next->ow != n->next->w || n->next->oh != n->next->h)
 	 div_rebuild(n->next);
+       else
+	 printf("eek! old(%d,%d,%d,%d) new(%d,%d,%d,%d)\n",
+		n->next->ox,n->next->oy,n->next->ow,n->next->oh,
+		n->next->x,n->next->y,n->next->w,n->next->h);
+#else
+       div_rebuild(n->next);
+#endif
      }
      
      /* We're done */
