@@ -52,6 +52,12 @@ def _getSize(s, server, reverse=0):
             return (int(fraction[0])<<8) | int(fraction[1]), _getSize
         return int(s), _getSize
 
+def _pairAt16bits(p, server, reverse=0):
+    if reverse:
+        return p >> 16, p & 0xffff
+    else:
+        return (p[0] << 16) + p[1], {}
+
 #################################################################
 # unique values
 
@@ -445,8 +451,8 @@ _constants = {
         }),
         'popup is submenu':		(65, {
         }),
-        'cursor position':		(66, {
-        }),
+        'cursor position':		(66,
+            _pairAt16bits),
         'hotkey modifiers':		(67,
 	    _modifier_consts),    
     },

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.44 2003/03/23 23:26:22 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.45 2003/03/29 05:13:39 lalo Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -131,6 +131,8 @@ void textbox_resize(struct widget *self) {
 g_error textbox_set(struct widget *self,int property, glob data) {
   g_error e;
   struct pgstring *str;
+  int i;
+  struct paragraph *p;
 
   switch (property) {
 
@@ -181,6 +183,18 @@ g_error textbox_set(struct widget *self,int property, glob data) {
     paragraph_scroll_to_cursor(DATA->doc->crsr);
     break;
 
+  case PG_WP_CURSOR_POSITION:
+    paragraph_hide_cursor(DATA->doc->crsr);
+    i = data >> 16;
+    for (p=DATA->doc->par_list;i && p;p=p->next) {
+      i--;
+    }
+    DATA->doc->crsr = &p->cursor;
+    DATA->doc->crsr->iterator.offset = (data & 0xff);
+    paragraph_show_cursor(DATA->doc->crsr);
+    paragraph_scroll_to_cursor(DATA->doc->crsr);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -191,6 +205,8 @@ glob textbox_get(struct widget *self,int property) {
   g_error e;
   struct pgstring *str;  
   struct pgstring *fmt;
+  int i;
+  struct paragraph *p;
 
   switch (property) {
 
@@ -232,6 +248,14 @@ glob textbox_get(struct widget *self,int property) {
 
     return DATA->doc_string;
 
+  case PG_WP_CURSOR_POSITION:
+    i = 0;
+    for (p=DATA->doc->par_list;p;p=p->next) {
+      if(p == DATA->doc->crsr->par)
+	break;
+      i++;
+    }
+    return (i<<16) + DATA->doc->crsr->iterator.offset;
   }
   return widget_base_get(self,property);
 }
