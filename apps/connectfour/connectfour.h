@@ -41,9 +41,6 @@ int dummy(struct pgEvent *evt);
 /* Non-Event stuff */
 int redraw();
 void drawpiece(int x, int y, int type);
-void win(int x, int y, int direction);
-void lose(int x, int y, int direction);
-void catsgame();
 void victoryline(int x, int y, int direction);
 
 
@@ -70,6 +67,10 @@ typedef struct board
 
 }board;
 
+void catsgame(struct board *it);
+void win(struct board *it, int x, int y, int direction);
+void lose(struct board *it, int x, int y, int direction);
+void endofgame(struct board *it);
 int putpiece(int location,int type,struct board *foot);
 
 #endif /* __CONNECTFOUR_H__ */

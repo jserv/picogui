@@ -37,6 +37,7 @@
 
 pghandle info;
 pghandle canvas;
+pghandle title;
 
 int main(int argc, char **argv)
 { 
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
  
   srand(time(NULL));
   pgInit(argc,argv);
-  pgRegisterApp(PG_APP_NORMAL,"Connect Four",0);
+  title = pgRegisterApp(PG_APP_NORMAL,"Connect Four",0);
    
   bar = pgNewWidget(PG_WIDGET_TOOLBAR,0,0);
   canvas  = pgNewWidget(PG_WIDGET_CANVAS,0,0);
@@ -101,6 +102,7 @@ int NewGame(struct pgEvent *evt)
       return;
       break;
     }
+  pgReplaceTextFmt(title,"Connect Four - AI Level %d",ail);
   if(!(evt->extra == NULL)) free(evt -> extra);
   evt -> extra = malloc(sizeof(board));
   memset(evt -> extra,0,sizeof(board)); 
@@ -154,17 +156,17 @@ int piecedrop(struct pgEvent *evt)
     return 0;
   
   loc = wincheck(evt->extra);
-  if(loc == 1) catsgame();
+  if(loc == 1) catsgame(evt -> extra);
   else if(loc)
     {
-      win((loc / 10)%10,loc%10,loc/100);
+      win(evt ->extra,(loc / 10)%10,loc%10,loc/100);
       return 0;
     }
   aicall(evt->extra);
   loc = wincheck(evt->extra);
-  if(loc == 1) catsgame();
+  if(loc == 1) catsgame(evt -> extra);
   else if(loc)
-    lose((loc / 10)%10,loc%10,loc/100);
+    lose(evt->extra,(loc / 10)%10,loc%10,loc/100);
   return 0;
 }
 
@@ -199,24 +201,30 @@ void drawpiece(int x, int y, int type)
   pgWriteCmd(canvas,PGCANVAS_INCREMENTAL,0);
 }
 
-void win(int x, int y, int direction)
+void win(struct board *it, int x, int y, int direction)
 {
-  pgReplaceTextFmt(info,"Game Over...  You Won");
+  pgReplaceTextFmt(info,"You Beat AI level %d", it->ailevel);
   victoryline(x,y,direction);
-  pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+  endofgame(it);
 }
 
-void lose(int x, int y, int direction)
+void lose(struct board *it, int x, int y, int direction)
 {
-  pgReplaceTextFmt(info,"Game Over... You Lose");
+  pgReplaceTextFmt(info,"You Lost to AI level %d",it->ailevel);
   victoryline(x,y,direction);
-  pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+  endofgame(it);
 }
 
-void catsgame()
+void catsgame(struct board *it)
 {
   pgReplaceTextFmt(info,"Cat's game");
+  endofgame(it);
+}
+
+void endofgame(struct board *it)
+{
   pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+  pgReplaceTextFmt(title,"Connect Four");
 }
 
 void victoryline(int x, int y, int direction)
