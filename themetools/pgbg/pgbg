@@ -9,13 +9,13 @@
 #
 
 if (!@ARGV) {
-    $id = '$Id: pgbg,v 1.3 2002/03/29 16:36:26 micahjd Exp $';
+    $id = '$Id: pgbg,v 1.4 2002/03/31 12:49:20 micahjd Exp $';
     print <<EOF;
 
 Create a PicoGUI background theme
 $id
 
-usage: pgbg [-i <image file>] [-c <color>] [-e] [-p]
+usage: pgbg [-i <image file>] [-c <color>] [-e] [-p] [-q <quality>]
             [-s <width>x<height>] [-f <format>] [-o <file>]
 
      <image file>: Use this image in the background
@@ -26,6 +26,7 @@ usage: pgbg [-i <image file>] [-c <color>] [-e] [-p]
            <file>: Write out this compiled theme file. If not specified, loads
                    the theme into pgserver
 	       -p: Preview the theme on the default PicoGUI server
+               -q: Quality, for outputting jpeg/png files
 EOF
 exit(1);
 }
@@ -62,6 +63,9 @@ while ($opt = shift @ARGV) {
     elsif ($opt eq "-o") {
 	$output = shift @ARGV;
     }
+    elsif ($opt eq "-q") {
+	$quality = shift @ARGV;
+    }
     else {
 	die "Bad argument '$opt'\n";
     }
@@ -75,10 +79,13 @@ if (defined $size or defined $format) {
 	$format = $1;
     }
     if (defined $size) {
-	$geom = "-geometry $size";
+	$geom = "-scale $size";
+    }
+    if (defined $quality) {
+	$qual = "-quality $quality";
     }
     $tempimage = "/tmp/pgbg_tmpfile.$format";
-    system("convert $image $geom $tempimage");
+    system("convert $image $geom $qual $tempimage");
     $image = $tempimage;
 } 
 
