@@ -39,7 +39,10 @@ print_time = False
 exit_status = 0
 
 class BuildTask(SCons.Taskmaster.Task):
-    """An SCons build task."""
+    """An SCons build task. Note that this is mostly copied from SCons.Script.BuildTask,
+       but since the original code contained a lot of print'ing and sys.stdout.write,
+       subclassing wouldn't have been effective.
+       """
     def display(self, message):
         self.progress.messsage('scons: ' + message)
 
