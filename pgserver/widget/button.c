@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.19 2000/06/09 21:54:34 micahjd Exp $
+/* $Id: button.c,v 1.20 2000/06/09 23:10:47 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -47,6 +47,7 @@ struct btndata {
 #define DATA ((struct btndata *)(self->data))
 
 void resizebutton(struct widget *self);
+void buttonstate(struct widget *self);
 
 void button(struct divnode *d) {
   int ex,ey,ew,eh,x,y,txt_h;
@@ -126,6 +127,43 @@ void button(struct divnode *d) {
     grop_null(&d->grop);
   
   addelement(d,&current_theme[E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
+
+  buttonstate(self);
+}
+
+/* Find the current visual state and apply it */
+void buttonstate(struct widget *self) {
+  int state,x,y;
+
+  /* This code for updating the button's appearance modifies
+     the grops directly because it does not need a recalc, only
+     a single-node redraw. Recalcs propagate like a virus, and
+     require recreating grop-lists.
+     Redraws don't spread to other nodes, and they are very fast.
+  */
+  x = DATA->x;
+  y = DATA->y;
+  if (DATA->on && DATA->over) {
+    state = STATE_ACTIVATE;
+    x += ON_OFFSET;
+    y += ON_OFFSET;
+  }
+  else if (DATA->over)
+    state = STATE_HILIGHT;
+  else
+    state = STATE_NORMAL;
+  applystate(self->in->div->grop,
+	     &current_theme[E_BUTTON_BORDER],state);
+  applystate(self->in->div->grop->next,
+	     &current_theme[E_BUTTON_FILL],state);
+  applystate(self->in->div->grop->next->next->next->next->next,
+	     &current_theme[E_BUTTON_OVERLAY],state);
+  self->in->div->grop->next->next->x = x;
+  self->in->div->grop->next->next->next->x = x;
+  self->in->div->grop->next->next->y = y;
+  self->in->div->grop->next->next->next->y = y;
+  self->in->div->grop->next->next->next->next->x = x+DATA->dxt;
+  self->in->div->grop->next->next->next->next->y = y+DATA->dyt;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -276,7 +314,7 @@ glob button_get(struct widget *self,int property) {
 }
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
-  int event=-1,state,x,y;
+  int event=-1;
 
   /* Figure out the button's new state */
   switch (type) {
@@ -317,35 +355,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   if (self->in->div->grop_lock || !self->in->div->grop)
     return;
 
-  /* This code for updating the button's appearance modifies
-     the grops directly because it does not need a recalc, only
-     a single-node redraw. Recalcs propagate like a virus, and
-     require recreating grop-lists.
-     Redraws don't spread to other nodes, and they are very fast.
-  */
-  x = DATA->x;
-  y = DATA->y;
-  if (DATA->on && DATA->over) {
-    state = STATE_ACTIVATE;
-    x += ON_OFFSET;
-    y += ON_OFFSET;
-  }
-  else if (DATA->over)
-    state = STATE_HILIGHT;
-  else
-    state = STATE_NORMAL;
-  applystate(self->in->div->grop,
-	     &current_theme[E_BUTTON_BORDER],state);
-  applystate(self->in->div->grop->next,
-	     &current_theme[E_BUTTON_FILL],state);
-  applystate(self->in->div->grop->next->next->next->next->next,
-	     &current_theme[E_BUTTON_OVERLAY],state);
-  self->in->div->grop->next->next->x = x;
-  self->in->div->grop->next->next->next->x = x;
-  self->in->div->grop->next->next->y = y;
-  self->in->div->grop->next->next->next->y = y;
-  self->in->div->grop->next->next->next->next->x = x+DATA->dxt;
-  self->in->div->grop->next->next->next->next->y = y+DATA->dyt;
+  buttonstate(self);
 
   /* Update, THEN send the event. */
 
