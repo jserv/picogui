@@ -42,7 +42,7 @@ AM_CONDITIONAL(OPENGL, test x$opengl = xtrue)
 
 dnl Check for user-specified pgserver installation path
 PGSERVER_CFLAGS=""
-PGSERVER_INCLUDES="${includedir}/include"
+PGSERVER_INCLUDES="${includedir}"
 
 AC_ARG_WITH(pgserver,
 	[  --with-pgserver=...        prefix of the pgserver installation path],
