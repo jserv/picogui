@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.68 2002/11/06 06:40:32 micahjd Exp $
+/* $Id: popup.c,v 1.69 2002/11/06 07:46:24 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -70,6 +70,13 @@ void clip_popup(struct divnode *div) {
     div->r.w = div->calc.w = ntb.r.x+ntb.r.w - div->calc.x;
   if (div->calc.y+div->calc.h >= ntb.r.y+ntb.r.h)
     div->r.h = div->calc.h = ntb.r.y+ntb.r.h - div->calc.y;
+  
+  if (VID(is_rootless)()) {
+    /* In rootless mode, we can shrinkwrap our containing window to the popup */
+    div->r.x = div->calc.x = 0;
+    div->r.y = div->calc.y = 0;
+    VID(window_set_size)(div->owner->dt->display,div->r.w,div->r.h);
+  }
 }
 
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
@@ -195,8 +202,6 @@ void popup_remove(struct widget *self) {
 
   oldflags = self->in->div->flags;
 
-  r_divnode_free(self->in);
-
   /* We must use our saved divtree pointer to delete the divtree
    * instead of self->dt, since by this time the widget has been
    * detatched from the divtree. Our self->dt and all our childrens'
@@ -311,9 +316,7 @@ void popup_trigger(struct widget *self,s32 type,union trigparam *param) {
 }
 
 void popup_resize(struct widget *self) {
-  printf("Popup size %dx%d\n",self->in->child.w,self->in->child.h);
-  if (self->in->child.w && self->in->child.h)
-    VID(window_set_size)(DATA->my_dt->display,self->in->child.w,self->in->child.h);
+  /* This space intentionally left blank */
 }
 
 /* The End */
