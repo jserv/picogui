@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.19 2001/10/21 10:40:55 micahjd Exp $
+/* $Id: render.c,v 1.20 2001/11/15 14:48:58 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -420,18 +420,32 @@ void gropnode_map(struct groprender *r, struct gropnode *n) {
    switch (r->maptype) {
     case PG_MAP_NONE:
       break;
-    
-    case PG_MAP_SCALE:
-      n->r.x = n->r.x * r->output_rect.w / r->map.w;
-      n->r.y = n->r.y * r->output_rect.h / r->map.h;
-      if (n->type != PG_GROP_TEXT) {
+       
+   case PG_MAP_SCALE:
+     if(n->type==PG_GROP_FPOLYGON) {
+       s32* arr;
+       int i;
+       if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			    n->param[0])) || !arr) break;
+       for(i=1;i<=arr[0];i+=2) {
+	 arr[i  ] = arr[i  ] * r->output_rect.w / r->map.w;
+	 arr[i+1] = arr[i+1] * r->output_rect.h / r->map.h;
+       }
+       n->r.x = n->r.x * r->output_rect.w / r->map.w;
+       n->r.y = n->r.y * r->output_rect.h / r->map.h;
+     } 
+     else {
+       n->r.x = n->r.x * r->output_rect.w / r->map.w;
+       n->r.y = n->r.y * r->output_rect.h / r->map.h;
+       if (n->type != PG_GROP_TEXT) {
 	 if (n->type != PG_GROP_BAR)
 	   n->r.w = n->r.w * r->output_rect.w / r->map.w;
 	 if (n->type != PG_GROP_SLAB)
 	   n->r.h = n->r.h * r->output_rect.h / r->map.h;
-      }
-      break;
-      
+       }
+     }
+     return;
+       
    }
 
    /* Add mapping offset */
@@ -622,6 +636,7 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
 
 void gropnode_draw(struct groprender *r, struct gropnode *n) {
    char *str;
+   u32 *arr;
    hwrbitmap bit;
    s16 bw,bh;
    hwrcolor c;
@@ -825,12 +840,25 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
             ); 
      break; 
 
-	case PG_GROP_VIDUPDATE:
-	  if (r->output == vid->display)
-	    VID(update)(n->r.x,n->r.y,n->r.w,n->r.h);
-	  break;
-			  
-	}
+   case PG_GROP_VIDUPDATE:
+     if (r->output == vid->display)
+       VID(update)(n->r.x,n->r.y,n->r.w,n->r.h);
+     break;
+	
+   case PG_GROP_FPOLYGON:
+     if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			  n->param[0])) || !arr) break;
+     VID(fpolygon) (r->output,
+ 		    arr,
+		    n->r.x,
+ 		    n->r.y,
+		    c,
+		    r->lgop
+ 		    );
+     break;
+     
+		  
+   }
 }
 
 

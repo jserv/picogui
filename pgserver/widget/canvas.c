@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.28 2001/11/15 11:17:42 micahjd Exp $
+/* $Id: canvas.c,v 1.29 2001/11/15 14:48:58 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -329,6 +329,31 @@ void canvas_command(struct widget *self, unsigned short command,
       else {
 	 if (numparams<5) return;
 	 if (numparams>(NUMGROPPARAMS+5)) numparams = NUMGROPPARAMS+5;
+	 if(params[0]==PG_GROP_FPOLYGON) {
+	   s32* arr;
+	   s16 i,hix,lox,hiy,loy;
+	   if (iserror(rdhandle((void**)&arr,PG_TYPE_ARRAY,-1,
+			     params[5])) || !arr) break;
+	   i=0;
+	   hix=arr[1];
+	   lox=arr[1];
+	   hiy=arr[2];
+	   loy=arr[2];
+	   for(i=1;i<=arr[0];i+=2) {
+	     if(arr[i]<lox)
+	       lox=arr[i];
+	     else if(arr[i]>hix)
+	       hix=arr[i];
+	     if(arr[i+1]<loy)
+	       loy=arr[i+1];
+	     else if(arr[i+1]>hiy)
+	       hiy=arr[i+1];
+	   }
+	   params[1]=lox;
+	   params[2]=loy;
+	   params[3]=hix-lox;
+	   params[4]=hiy-loy;
+	 }
 	 addgropsz(CTX,params[0],params[1],params[2],params[3],params[4]);
 	 for (i=5;i<numparams;i++)
 	   CTX->current->param[i-5] = params[i];

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.55 2001/11/15 06:22:28 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.56 2001/11/15 14:48:58 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -508,8 +508,306 @@ void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lg
     SYMLINE(x,y); 
   } 
 } 
-#undef SYMLINE 
- 
+#undef SYMLINE
+
+#if 1
+
+struct poly_line_info {
+  s16 x0,y0,x1,y1;  /* From to */
+  s16 fraction; /* Derivative position */
+  s16 dx,dy; /* Derivitive respect to.. */
+  s16 stepx; /* Stepping, sy always==1 */
+};
+
+#define NEXT(X) ((X+1>=num_coords)?0:X+1)
+#define PREV(X) ((X-1<0)?num_coords-1:X-1)
+
+#define XAT(INDEX) (array[(INDEX<<1)+1])
+#define YAT(INDEX) (array[(INDEX<<1)+2])
+
+#define HLINE(A,B) ((YAT(A)==YAT(B))?1:0)
+
+#define X0() (mptr->x0)
+#define Y0() (mptr->y0) 
+#define X1() (mptr->x1)
+#define Y1() (mptr->y1)
+#define FR() (mptr->fraction)
+#define DX() (mptr->dx)
+#define DY() (mptr->dy)  
+#define SX() (mptr->stepx)
+
+
+int polygon_simple_compare ( struct poly_line_info* a, struct poly_line_info* b )
+{
+    return b->y1 - a->y1;
+}
+
+void def_fpolygon (hwrbitmap dest, s32* array, s16 xoff, s16 yoff, hwrcolor c, s16 lgop) {
+  /* Idea:
+   * We run a series of scanlines traversing in the y direction,
+   * calculating Bresenhams along the way for each polyline.
+   * We only calculate the bresenhams for "presently active" polylines
+   * and they act as "on/off" markers for horizontal lines
+   * that will form the polygon.
+   *
+   * The first step is to create the polylines.  There is
+   * a potential for N polylines where N is the number of vertices
+   * in the polygon.  However, horizontal lines are ignored and subtracted
+   * from the total number of polylines.
+   *
+   * Future optimizations:
+   * 1) Move the horizontal/vertical logic into some goto label
+   *    sort of thing to optimize code size.  (This *should* be
+   *    done by the compiler, but I haven't checked the assembly
+   *    output) Revision, I looked at the assembly output, and it
+   *    isn't centralizing it.
+   *    Down to 2.45k from 6k on Intel
+   *
+   */
+  static tester=0;
+  s16 num_coords=array[0]>>1;
+  s16 nplines=num_coords; // First set nplines to max number
+  s16 i,j,k,n,t,hi,lo,m;
+  hi=lo=YAT(0);
+  k=XAT(0);
+  for(i=1;i<num_coords;i++) {
+    j=YAT(i);
+    m=XAT(i);
+    if(j>hi)
+      hi=j;
+    else if(j<lo)
+      lo=j;
+    if(m<k)
+      k=m;
+    if(HLINE(i,NEXT(i))==1) {
+      nplines--;
+    }
+  }
+  xoff-=k;
+  yoff-=lo;
+  hi+=yoff;
+  lo+=yoff;
+  /* Now we know how many polylines we will need */
+  {
+    struct poly_line_info mpoly[nplines]; /* Each of these has 16bytes worth of data */
+    struct poly_line_info* mptr=mpoly;
+    s16 vert[nplines];
+    /* First stick info in the poly_lines in order */
+    j=0;
+    for(i=0;i<num_coords;i++) {
+      k=NEXT(i);
+      if((HLINE(i,k))!=1) {
+	/* Do all the setup for the Bresenham for this line */
+	m=i;
+	if(YAT(k)<YAT(m)) {
+	  m=k;
+	  k=i;
+	  n=NEXT(m);
+	  t=PREV(k);
+	} else {
+	  n=PREV(m);
+	  t=NEXT(k);
+	}
+
+	X0()=XAT(m)+xoff;
+	Y0()=YAT(m)+yoff;
+	X1()=XAT(k)+xoff;
+	Y1()=YAT(k)+yoff;
+
+	k=DX()=X1()-X0();
+	DY()=Y1()-Y0(); /* Always positive */
+
+	if(DX()<0) {
+	  DX()=-(DX()<<1);
+	  SX()=-1;
+	} else {
+	  DX()=DX()<<1;
+	  SX()=1;
+	}
+	DY()=DY()<<1;
+
+	FR()=(DX()>DY())? DY()-(DX()>>1) : -(DY()>>1) ;
+	/* Remove horizontal odd parity x deltas for YO...
+	   in this case, we remove our highest physically
+	   point.  (Lowest numerical Y), We also need
+	   to push the algorithm forward (FIXME)
+	 */
+	if((YAT(t)+yoff)>=Y1()) {
+	  Y1()--;
+	}
+	if(HLINE(m,n)==1) {
+	  n=XAT(n)+xoff-X0();
+	  if((n | k)<0 && (n & k)>0) { /* DX Parity Calculation */
+	    /* Increase Y max, effectively killing the top point. */
+	    Y0()++;
+	    if(DX()>DY()) { /* Horiz major axis */
+	      while(1) {
+		if(FR()>=0) {
+		  FR()+=DY() - DX();
+		  X0()+=SX();
+		  break;
+		}
+		X0()+=SX();
+		FR()+=DY();
+	      }
+	    } else { /* Vert major axis */
+	      if(FR() >= 0) { 
+		X0()+=SX();
+		FR() -= DY();
+	      }
+	      FR()+=DX();
+	    }
+	  }
+	}
+      	mptr++;	
+      }
+    }
+    mptr=mpoly;
+    qsort(mpoly,nplines,sizeof(struct poly_line_info),&polygon_simple_compare);
+    m=0;
+    while(lo <= hi) {
+      t=0;
+      mptr=mpoly;
+      for(i=0; i<nplines ;i++,mptr++) {
+	/* Traverse the polylines */
+	/* First conditional here skips the present line if it isn't
+	 * relevant yet, or has passed its relevancy
+	 */
+	if(Y0()>lo) {
+	  continue;
+	}
+	if(Y1()<lo) {
+	  nplines--;
+	  break;;
+	}
+	/* Now we calculate some Bresenhams, and add some points. */
+	
+	if(DX()>DY()) { /* Horiz major axis */
+	  n=X0();
+	  while(1) {
+	    if(FR()>=0) {
+	      if(SX()>0)
+		n=X0();
+	      Y0()++;
+	      FR()+=DY() - DX();
+	      X0()+=SX();
+	      break;
+	    }
+	    X0()+=SX();
+	    FR()+=DY();
+	  }
+	} else { /* Vert major axis */
+	  if(FR() >= 0) { 
+	    X0()+=SX();
+	    FR() -= DY();
+	  }
+	  Y0()++;
+	  FR()+=DX();
+	  n=X0();
+	}
+
+	for(j=0;j<t;j++){
+	  if(vert[j]>=n) {
+	    for(k=t;k>=j;k--)
+	      vert[k+1]=vert[k];
+	    break;
+	  }
+	}
+	t++;
+	vert[j]=n;
+      }
+      t=t>>1;
+      for(j=0;j<t;j++) {
+	k=j<<1;
+	(*vid->slab) (dest,vert[k],lo,vert[k+1]-vert[k]+1,c,lgop);
+      }
+      
+      lo++;
+    }
+  }
+}
+
+#undef NEXT
+#undef PREV
+#undef XAT
+#undef YAT
+#undef HLINE
+#undef X0
+#undef Y0
+#undef X1
+#undef Y1
+#undef FR
+#undef DX
+#undef DY
+#undef SX
+
+#else
+
+
+struct poly_line_info {
+  s16 x0,y0,x1,y1;  /* From to */
+  s16 fraction; /* Derivative position */
+  s16 dx,dy; /* Derivitive respect to.. */
+  s16 stepx; /* Stepping, sy always==1 */
+};
+
+#define NEXT(X) ((X+1>=array[0])?0:X+1)
+#define PREV(X) ((X-1<0)?array[0]-1:X-1)
+
+#define XAT(INDEX) (array[(INDEX<<1)+1])
+#define YAT(INDEX) (array[(INDEX<<1)+2])
+
+#define HLINE(A,B) ((YAT(A)==YAT(B))?1:0)
+
+#define X0() (mptr->x0)
+#define Y0() (mptr->y0) 
+#define X1() (mptr->x1)
+#define Y1() (mptr->y1)
+#define FR() (mptr->fraction)
+#define DX() (mptr->dx)
+#define DY() (mptr->dy)  
+#define SX() (mptr->stepx)
+
+
+int polygon_simple_compare ( struct poly_line_info* a, struct poly_line_info* b )
+{
+    return b->y1 - a->y1;
+}
+
+void def_fpolygon (hwrbitmap dest, s16* array, hwrcolor c, s16 lgop) {
+  s16 i,j,k,n,t,hi,lo,m,x0,x1,y0,y1;
+  hi=YAT(0);
+  for(i=1;i<array[0];i++) {
+    j=YAT(i);
+    if(j>hi)
+      hi=j;
+  }
+  /* If we have a trapezoid, it's always going to be to the
+     next position.  Whether that is right or left horizontally
+     has to be determined. */
+  m=NEXT(hi);
+  if(HLINE(hi,m)==1) {
+    /* We've got a trapezoid */
+    while(1) {
+      k=NEXT(m);
+      if(HLINE(m,k)==1) {/* Okay, it's valid, but the programmer is
+			    a retard */
+	for(i=m;i<array[0];i++) {
+	  XAT(i)=XAT(i+1);
+	  YAT(i)=YAT(i+1);
+	}
+	array[0]--;
+	m=(k<m)?k:k-1;
+      } else
+	break;
+    }
+    
+  } else {
+  }
+}
+
+#endif 
+
 void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop) {
   /*
@@ -1519,6 +1817,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->scrollblit = &def_scrollblit;
   vid->ellipse = &def_ellipse; 
   vid->fellipse = &def_fellipse; 
+  vid->fpolygon = &def_fpolygon;
 #ifdef CONFIG_FORMAT_XBM
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
 #endif

@@ -1,5 +1,7 @@
 /* This is the actual table of request handlers, included in some
- * macro junk by dispatch.c */
+ * macro junk by dispatch.c.  Must be in order as stipulated by
+ * by PGREQ in network.h.
+ */
 
 RQH(ping)
 RQH(update)
