@@ -30,7 +30,7 @@ class stream(object):
     handle = self.next_handle
     self.next_handle += 1
     # 2 below is for PG_RESPONSE_RET
-    response = struct.pack('!HxxLL', 2, handle, handle + 0x800000L)
+    response = struct.pack('!HxxLL', 2, handle, handle + 0x80000000L)
     self.pending_responses += response
     return handle
 
