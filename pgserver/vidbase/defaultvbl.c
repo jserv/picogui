@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.15 2001/02/12 05:29:17 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.16 2001/02/14 01:47:05 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -960,7 +960,7 @@ void def_sprite_show(struct sprite *spr) {
    printf("def_sprite_show\n");
 #endif
    
-  if (spr->onscreen || !spr->visible) return;
+  if (spr->onscreen || !spr->visible || !vid->xres) return;
    
   /* Clip to a divnode */
   if (spr->clip_to) {

@@ -1,6 +1,7 @@
-/* $Id: null.c,v 1.1 2001/01/16 02:07:19 micahjd Exp $
+/* $Id: null.c,v 1.2 2001/02/14 01:47:05 micahjd Exp $
  *
- * null.c - A dummy driver that produces no actual output
+ * null.c - A dummy driver that produces no actual output but can do
+ *          some error checking and debuggative things
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -28,7 +29,11 @@
 #ifdef DRIVER_NULL
 
 #include <pgserver/video.h>
-        
+
+#ifdef DEBUG_VIDEO
+int driver_initialized;
+#endif
+
 /******************************************** Implementations */
 
 g_error null_init(int xres,int yres,int bpp,unsigned long flags) {
@@ -36,13 +41,36 @@ g_error null_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->xres = xres;
    vid->yres = yres;
    vid->bpp  = bpp;
-
+   
+#ifdef DEBUG_VIDEO
+   driver_initialized = 1;
+#endif
+   
    return sucess;
 }
 
-void null_pixel(int x,int y,hwrcolor c) {}
+#ifdef DEBUG_VIDEO
+void null_close(void) {
+   driver_initialized = 0;
+}
+#endif
+
+void null_pixel(int x,int y,hwrcolor c) {
+#ifdef DEBUG_VIDEO
+   if (!driver_initialized)
+     printf("Null driver: pixel set when uninitialized\n",x,y);
+   if (x<0 || y<0 || (x>=vid->xres) || (y>=vid->yres))
+     printf("Null driver: pixel out of bounds at %d,%d\n",x,y);
+#endif
+}
 
 hwrcolor null_getpixel(int x,int y) {
+#ifdef DEBUG_VIDEO
+   if (!driver_initialized)
+     printf("Null driver: pixel get when uninitialized\n",x,y);
+   if (x<0 || y<0 || (x>=vid->xres) || (y>=vid->yres))
+      printf("Null driver: getpixel out of bounds at %d,%d\n",x,y);
+#endif
    return 0;
 }
 
@@ -52,6 +80,9 @@ g_error null_regfunc(struct vidlib *v) {
    setvbl_default(v);
    
    v->init = &null_init;
+#ifdef DEBUG_VIDEO
+   v->close = &null_close;
+#endif
    v->pixel = &null_pixel;
    v->getpixel = &null_getpixel;
    return sucess;

@@ -1,3 +1,11 @@
+---- Tuesday, February 13
+
+There's something wrong with the tile blits... (in all video drivers?)
+
+Anyway, wrote a remote input driver (mouse only) for gpm
++ apps/pgremote/gpmremote.c
+
+
 ---- Monday, February 12
 
 To reduce the size of pgserver and make it better suited for low-bpp

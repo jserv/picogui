@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.3 2001/02/13 04:05:12 micahjd Exp $
+/* $Id: linear4.c,v 1.4 2001/02/14 01:47:05 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -37,7 +37,7 @@
  * lookup table might be implemented later if really needed.
  */
 #define LINE(y)        ((y)*vid->fb_bpl+vid->fb_mem)
-#define PIXELBYTE(x,y)   (((x)>>1)+LINE(y))
+#define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
 
 /* Table of masks used to isolate one pixel within a byte */
 unsigned const char notmask[] = { 0x0F, 0xF0 };
