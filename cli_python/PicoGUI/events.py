@@ -93,6 +93,11 @@ class Event(object):
     def _decode_xy(self, data):
         self.x = data >> 16
         self.y = data & 0xffff
+        # Convert from unsigned to signed
+        if self.x & 0x8000:
+            self.x -= 0x10000
+        if self.y & 0x8000:
+            self.y -= 0x10000
 
     def _decode_pointer(self, data):
         self.x = data & 0xfff
