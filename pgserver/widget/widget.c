@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.34 2000/08/06 00:50:53 micahjd Exp $
+/* $Id: widget.c,v 1.35 2000/08/06 00:56:47 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -274,17 +274,17 @@ void install_hotkey(struct widget *self,long hotkey) {
 
   if ((!self->hotkey) && hotkey) {
     /* Add to the hotkey widget list if this is our first hotkey */
-    self->hknext = dts->top->hkwidgets;
-    dts->top->hkwidgets = self;
+    self->hknext = self->dt->hkwidgets;
+    self->dt->hkwidgets = self;
   }
   else if (self->hotkey && (!hotkey)) {
     /* Remove us from the list */
-    if (dts->top->hkwidgets) {
-      if (self==dts->top->hkwidgets) {
-	dts->top->hkwidgets = self->hknext;
+    if (self->dt->hkwidgets) {
+      if (self==self->dt->hkwidgets) {
+	self->dt->hkwidgets = self->hknext;
       }
       else {
-	struct widget *p = dts->top->hkwidgets;
+	struct widget *p = self->dt->hkwidgets;
 	while (p->hknext)
 	  if (p->hknext == self) {
 	    /* Take us out */
