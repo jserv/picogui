@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.1 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: dispatch.c,v 1.2 2000/06/08 05:28:28 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -49,6 +49,7 @@ DEF_REQHANDLER(wait)
 DEF_REQHANDLER(themeset)
 DEF_REQHANDLER(register)
 DEF_REQHANDLER(mkpopup)
+DEF_REQHANDLER(sizetext)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -68,6 +69,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(themeset)
   TAB_REQHANDLER(register)
   TAB_REQHANDLER(mkpopup)
+  TAB_REQHANDLER(sizetext)
   TAB_REQHANDLER(undef)
 };
 
@@ -398,6 +400,34 @@ g_error rqh_mkpopup(int owner, struct uipkt_request *req,
   if (e.type != ERRT_NONE) return e;
   
   *ret = h;
+
+  return sucess;
+}
+
+g_error rqh_sizetext(int owner, struct uipkt_request *req,
+		     void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_sizetext *arg = (struct rqhd_sizetext *) data;
+  struct fontdesc *fd;
+  char *txt;
+  int w,h;
+  g_error e;
+
+  if (req->size < (sizeof(struct rqhd_sizetext))) 
+    return mkerror(ERRT_BADPARAM,"rqhd_sizetext too small");
+
+  if (arg->font)
+    e = rdhandle((void**) &fd,TYPE_FONTDESC,owner,ntohl(arg->font));
+  else
+    e = rdhandle((void**) &fd,TYPE_FONTDESC,-1,defaultfont);
+  if (e.type != ERRT_NONE) return e;
+
+  e = rdhandle((void**) &txt,TYPE_STRING,owner,ntohl(arg->text));
+  if (e.type != ERRT_NONE) return e;
+
+  sizetext(fd,&w,&h,txt);
+
+  /* Pack w and h into ret */
+  *ret = w<<16 | h;
 
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.4 2000/06/08 00:15:57 micahjd Exp $
+/* $Id: popup.c,v 1.5 2000/06/08 05:28:28 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -48,16 +48,19 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt) {
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
 
-  /* Clip the size to the screen */
-  if (x<0) x=0; if (y<0) y=0;
-  if (x+w>=HWR_WIDTH) w = HWR_WIDTH-x-1;
-  if (y+h>=HWR_HEIGHT) h = HWR_HEIGHT-y-1;
-
-  /* Positioning */
-  (*wgt)->in->div->x = x;
-  (*wgt)->in->div->y = y;
-  (*wgt)->in->div->w = w;
-  (*wgt)->in->div->h = h;
+  /* Positioning, centering, and clipping */
+  if (((signed short)x)==-1) x=(HWR_WIDTH>>1)-(w>>1); /*-1 centers */ 
+  if (((signed short)y)==-1) y=(HWR_HEIGHT>>1)-(h>>1);
+  (*wgt)->in->div->x = x-current_theme[E_POPUP_BORDER].width;
+  (*wgt)->in->div->y = y-current_theme[E_POPUP_BORDER].width;
+  (*wgt)->in->div->w = w+(current_theme[E_POPUP_BORDER].width<<1);
+  (*wgt)->in->div->h = h+(current_theme[E_POPUP_BORDER].width<<1);
+  if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
+  if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
+  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= HWR_WIDTH)
+    (*wgt)->in->div->w = HWR_WIDTH-(*wgt)->in->div->x-1;
+  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= HWR_HEIGHT)
+    (*wgt)->in->div->h = HWR_HEIGHT-(*wgt)->in->div->y-1;
 
   /* If this is the first popup layer (after the root layer) dim the screen */
   if (dts->top->next==dts->root)
