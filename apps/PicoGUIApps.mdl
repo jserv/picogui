@@ -35,7 +35,7 @@ runtime = [
               depends = [ 'picoguiserver/server',
                           'picoguiapps/fitaly',
                           'pocketguiapps/sd_finder_run' ],
-              rcscript = "# start pgboard\nsleep 2\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
+              rcscript = "# start pgboard\nsleep 3\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
                          ( prefix, prefix )),
     Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
               depends = [ 'picoguiserver/server',
