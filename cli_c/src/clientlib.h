@@ -1,4 +1,4 @@
-/* $Id: clientlib.h,v 1.2 2001/03/16 04:10:03 micahjd Exp $
+/* $Id: clientlib.h,v 1.3 2001/03/30 10:35:35 micahjd Exp $
  *
  * clientlib.h - definitions used only within the client library code itself
  *
@@ -40,6 +40,7 @@
 #include <netdb.h>
 #include <stdio.h>    /* for fprintf() */
 #include <malloc.h>
+#include <signal.h>
 
 #ifndef UCLINUX
 #  include <alloca.h> /* for uClinux 'alloca' is in malloc.h */

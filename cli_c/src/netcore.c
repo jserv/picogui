@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $
+/* $Id: netcore.c,v 1.3 2001/03/30 10:35:35 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -168,6 +168,21 @@ void _pg_defaulterr(unsigned short errortype,const char *msg) {
     exit(errortype);
   pgUpdate(); /* In case this happens in a wierd place, go ahead and update. */
   in_defaulterr = 0;
+}
+
+/* Some 'user friendly' default sig handlers */
+void _pgsig(int sig) {
+   switch (sig) {
+    
+    case SIGSEGV:
+      clienterr("Segmentation Fault");
+      return;
+    
+    case SIGFPE:
+      clienterr("Floating Point Exception");
+      return;
+      
+   }
 }
 
 /* Put a request into the queue */
@@ -472,7 +487,9 @@ void pgInit(int argc, char **argv)
   /* Set default handlers */
   pgSetErrorHandler(&_pg_defaulterr);
   _pgselect_handler = &select;
-
+  signal(SIGSEGV,&_pgsig);
+  signal(SIGFPE,&_pgsig);
+   
   /* Default tunables */
   hostname = getenv("pgserver");
   if ((!hostname) || (!*hostname))
@@ -496,7 +513,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.2 2001/03/16 04:10:03 micahjd Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.3 2001/03/30 10:35:35 micahjd Exp $\n");
 	exit(1);
       }
       
