@@ -1,4 +1,4 @@
-/* $Id: dvbl_color.c,v 1.2 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: dvbl_color.c,v 1.3 2002/04/15 01:05:12 micahjd Exp $
  *
  * dvbl_color.c - This file is part of the Default Video Base Library,
  *                providing the basic video functionality in picogui but
@@ -277,11 +277,15 @@ hwrcolor def_color_pgtohwr(pgcolor c) {
 pgcolor def_color_hwrtopg(hwrcolor c) {
   if (c & PGCF_ALPHA) {
     /* ARGB conversion, un-premultiply the RGB color */
-    return mkcolora( getalpha(c),
-		     (getred(c)   << 7) / getalpha(c),
-		     (getgreen(c) << 7) / getalpha(c),
-		     (getblue(c)  << 7) / getalpha(c)
-		     );
+
+    int alpha = getalpha(c);
+    if (alpha)
+      return mkcolora( alpha,
+		       (getred(c)   << 7) / alpha,
+		       (getgreen(c) << 7) / alpha,
+		       (getblue(c)  << 7) / alpha
+		       );
+    return mkcolora(0,0,0,0);
   }
   else if (vid->bpp==1) {
     return c ? 0xFFFFFF : 0x000000;  

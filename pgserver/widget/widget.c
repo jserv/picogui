@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.173 2002/04/13 20:02:45 micahjd Exp $
+/* $Id: widget.c,v 1.174 2002/04/15 01:05:12 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -116,6 +116,15 @@ int pointer_owner;
 int sysevent_owner;
    
 int timerlock = 0;
+
+/* To save space, instead of checking whether the divtree is valid every time
+ * we have to set a divtree flag, assign unattached widgets a fake divtree
+ */
+struct divnode fakedt_head;
+struct divtree fakedt = {
+  head: &fakedt_head
+};
+
 /******** Widget interface functions */
  
 g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner) {
@@ -124,10 +133,13 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
 
    DBG("type %d, container %d, owner %d\n",type,container,owner);
 
+   if (!dt)
+     dt = &fakedt;
+
    //
    // Check the type.
    //
-   if ( (!dt) || type > PG_WIDGETMAX )
+   if ( type > PG_WIDGETMAX )
       return mkerror(PG_ERRT_BADPARAM, 20);
 
 #ifdef DEBUG_KEYS
@@ -190,13 +202,11 @@ void r_widget_setcontainer(struct widget *w, handle oldcontainer,
 }
  
 g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
-  struct divnode *div;
 
   DBG("widget %p, container %d, owner %d\n",w,container,owner);
   
-  /* Initial error checking */
-  if ( (!dt) || (!where) || (w->owner != owner) )
-     return  mkerror(PG_ERRT_BADPARAM,20);
+  if (!dt)
+    dt = &fakedt;
 
   /* Change the container and divtree of this and all child widgets */
   if (w->sub && *w->sub && (*w->sub)->owner)
@@ -220,22 +230,28 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
     }
     else if ( w->where )
       *w->where = NULL;
+    if (w->out)
+      *w->out = NULL;
 
     /* Take off all the unnecessary divscroll flags */
-    r_div_unscroll(div);
+    r_div_unscroll(w->in);
   }
   
   /* Add the widget to the divtree */
-  *w->out = *where;
-  *where = w->in;
-  w->where = where;
-  if (w->out && *w->out && (*w->out)->owner) {
-    (*w->out)->owner->where = w->out;
-  }
-  
-  /* Resize for the first time */
-  resizewidget(w);
+  if (where) {
+    *w->out = *where;
+    *where = w->in;
+    w->where = where;
+    if (w->out && *w->out && (*w->out)->owner) {
+      (*w->out)->owner->where = w->out;
+    }
 
+    /* Resize for the first time */
+    resizewidget(w);
+  }
+  else
+    w->where = NULL;
+  
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_FORCE_CHILD_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
   return success;
@@ -248,6 +264,12 @@ g_error widget_derive(struct widget **w,
   g_error e;
 
   DBG("type %d, rship %d, parent %p, owner %d\n",type,rship,parent,owner);
+
+  /* Allow using this to detach widgets too. Makes sense, since this is called
+   * by the attachwidget request handler.
+   */
+  if (!parent)
+    return widget_attach(*w, NULL, NULL, 0, owner);
   
   switch (rship) {
 
@@ -402,7 +424,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
    char *str;
    
    if (!(w && w->def->set))
-     return mkerror(PG_ERRT_INTERNAL,23);
+     return mkerror(PG_ERRT_BADPARAM,23);   /* Bad widget in widget_set */
    
    /* If the widget has a handler, go with that */
    e = (*w->def->set)(w,property,data);

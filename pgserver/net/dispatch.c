@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.94 2002/04/12 22:19:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.95 2002/04/15 01:05:12 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -212,9 +212,6 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
   struct widget *w;
   handle h;
   g_error e;
-  /* Fake divtree to assign to unattached widgets */
-  static struct divtree fakedt;
-  static struct divnode fakedt_head;
   reqarg(createwidget);
 
   /* Don't allow direct creation of 'special' widgets that must
@@ -227,10 +224,7 @@ g_error rqh_createwidget(int owner, struct pgrequest *req,
     return mkerror(PG_ERRT_BADPARAM,58);
   }
 
-  memset(&fakedt,0,sizeof(fakedt));
-  memset(&fakedt_head,0,sizeof(fakedt_head));
-  fakedt.head = &fakedt_head;
-  e = widget_create(&w, ntohs(arg->type), &fakedt, 0, owner);
+  e = widget_create(&w, ntohs(arg->type), NULL, 0, owner);
   errorcheck;
 
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
@@ -262,10 +256,11 @@ g_error rqh_attachwidget(int owner, struct pgrequest *req,
     else
       return etmp;
   }
-  if (!parent) return mkerror(PG_ERRT_BADPARAM,59);
+
+  /* Note that if 'parent' is null here, it signifies detaching the widget */
 
   /* Don't let an app put stuff outside its root widget */
-  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
+  if (owner>=0 && parent && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
     return mkerror(PG_ERRT_BADPARAM,60);
 
   //
