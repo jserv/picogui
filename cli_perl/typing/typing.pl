@@ -126,6 +126,7 @@ NewWidget(-type => button,-inside => $tb,-bitmap=>$check,-hotkey => $PGKEY{RETUR
 	     ($key,$value) = split /:/,$_;
 	     $student{$key} = $value;
 	 }
+	 close STUDENTF;
 	 ExitEventLoop;
      }
      else {
@@ -243,9 +244,9 @@ $p = NewWidget(-type => label,-transparent => 1,-side => top,-text =>
 
 foreach (@lesson_names) {
     $p = NewWidget(-type => box,-after => $p);
-    NewWidget(-type => bitmap,-inside => $p,-side => right,
+    $boxes{$_} = NewWidget(-type => bitmap,-inside => $p,-side => right,
 	      -transparent => 1,-lgop => 'or',
-	      -bitmap => $redbox,-bitmask => $boxmask);
+	      -bitmap => $student{$_} ? $greenbox : $redbox,-bitmask => $boxmask);
     $w = NewWidget(-type => button,-side => all,
 		   -text => NewString($_),-onclick => \&setlesson);
     $setlessonto = $w if (!$setlessonto);
@@ -730,16 +731,36 @@ sub setlesson {
     my ($self) = @_;
     my ($str,$hlname);
 
-    $currentlessonwidget = $self;
-
     # This text is already stored as a handle, so don't duplicate it
-    $lessonname->SetWidget(-text => $hlname = $self->GetWidget(-text));
+    if ($self) {
+	$lessonname->SetWidget(-text => $hlname = $self->GetWidget(-text));
+    }
+    else {
+	$hlname = $lessonname->GetWidget(-text);
+    }
     $lname = $hlname->GetString;
 
     $lessontextscroll->delete if ($lessontextscroll);
 
     if ($student{$lname}) {
-	$str = "You have completed \"$lname.\" Your scores were:";
+	($ntimes,$bestaccuracy,$bestwpm,
+	 $total,$incorrect,$accuracy,$wpm) = split / /,$student{$lname};
+	$plural = 's';
+	$plural = '' if ($ntimes==1);
+
+	$str = <<EOF;
+You have completed "$lname" $ntimes time$plural.
+
+Your most recent scores are:
+    $total total keystrokes
+    $incorrect errors
+    $accuracy% accuracy
+    $wpm words per minute
+
+Your best scores for this lesson are:
+    $bestaccuracy% accuracy 
+    $bestwpm words per minute
+EOF
     }
     else {
 	$str = "You have not completed \"$lname\" yet.";
@@ -763,10 +784,53 @@ sub typechar {
 		$str = '';
 		$lessonline++;
 		if (!$lessontext[$lessonline]) {
+
+		    $congrat = '';
+
+		    # Save student data
+		    ($ntimes,$bestaccuracy,$bestwpm) = split / /,$student{$lname};
+		    if ($accuracy>$bestaccuracy) {
+			$diff = $accuracy-$bestaccuracy;
+			$bestaccuracy = $accuracy;
+			$congrat .= "You improved your accuracy by $diff%\n";
+		    }
+		    if ($wpm>$bestwpm) {
+			$diff = $wpm-$bestwpm;
+			$bestwpm = $wpm;
+			$congrat .= "You beat your speed record by $diff WPM\n";
+		    }
+		    $student{$lname} = join(' ',++$ntimes,$bestaccuracy,
+					    $bestwpm,$total,$incorrect,$accuracy,$wpm);
+		    savestudent();
+
+		    # Go away
 		    GiveKeyboard;
 		    LeaveContext;
 		    undef $tstext;
-		    Update;
+
+		    setlesson($currentlessonwidget);
+		    
+		    $boxes{$lname}->SetWidget(-bitmap => $greenbox);
+
+		    if ($ntimes!=1 and $congrat) {
+			# A cute little dialog box
+
+			EnterContext;
+			NewPopup(300,200);
+			$tb = NewWidget(-type => toolbar,-side => bottom);
+
+			NewWidget(-type=>label,-transparent=>1, -side=>top,
+				  -text=>NewString("\nGood Job!"),-font=>$bigfont);
+			NewWidget(-type=>label,-transparent=>1, -side=>all,
+				  -text=>NewString($congrat),-font => $boldfont);
+
+			NewWidget(-type => button,-bitmap=>$check,-hotkey => $PGKEY{RETURN},
+				  -bitmask=>$checkmask,-text=>NewString("Yay!"),-side=>all,
+				  -onclick => sub {LeaveContext; Update;},-inside => $tb);
+			
+			Update;
+		    }
+
 		    return;
 		}
 		$correct++;
@@ -812,6 +876,32 @@ sub typechar {
     Update;
 }
 
+sub savestudent {
+     if (open STUDENTF,'>'.$studentdir.$fname) {
+	 foreach (keys %student) {
+	     print STUDENTF "$_:$student{$_}\n";
+	 }
+	 close STUDENTF;
+     }
+     else {
+	 # This hopefully won't happen, but just in case...
+	 # This is really stupid, need to add a real error dialog
+	 # box to picogui.  Should go in a 'composite widget' library
+
+	 $err = $!;
+
+	 EnterContext;
+	 NewPopup(200,100);
+	 
+	 NewWidget(-type=>label,-transparent=>1, -side=>all,
+		   -text=>NewString("Error saving student data:\n$err"));
+	 
+	 Update;
+	 sleep 5;
+	 LeaveContext;
+	 Update;
+     }
+}
 
 ### The End ###
 
