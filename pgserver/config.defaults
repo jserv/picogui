@@ -29,6 +29,7 @@ CONFIG_VIDEOTEST=y
 # DEBUG_THEME is not set
 # DEBUG_NET is not set
 # DEBUG_INIT is not set
+# DEBUG_MEMORY is not set
 
 #
 # Fonts
@@ -48,8 +49,8 @@ FONT_CLEAN12=y
 #
 # DRIVER_FBDEV is not set
 DRIVER_SDLFB=y
-CONFIG_SDLEMU_NONE=y
-# CONFIG_SDLEMU_BLIT is not set
+# CONFIG_SDLEMU_NONE is not set
+CONFIG_SDLEMU_BLIT=y
 # CONFIG_SDLEMU_COLOR is not set
 # DRIVER_SDL is not set
 # DRIVER_SVGAFB is not set
@@ -69,11 +70,12 @@ DRIVER_SDLINPUT=y
 #
 # Video Base Libraries
 #
-# CONFIG_VBL_LINEAR1 is not set
-# CONFIG_VBL_LINEAR2 is not set
-# CONFIG_VBL_LINEAR4 is not set
+CONFIG_VBL_LINEAR1=y
+CONFIG_VBL_LINEAR2=y
+CONFIG_VBL_LINEAR4=y
 CONFIG_VBL_LINEAR8=y
-# CONFIG_VBL_LINEAR16 is not set
+CONFIG_VBL_LINEAR16=y
+CONFIG_ROTATE=y
 
 #
 # Widget Options
