@@ -1,7 +1,7 @@
 <application>
 	<box>
 		<label side="all" font=":20:bold">
-			JetEngine - PicoGUI and Python embedding demo
+			Title goes here
 		</label>
 	</box>	
 
@@ -15,13 +15,14 @@
 	     sizemode="Container fraction"
 	     size="1/3"
 	     >
-		<button side="top" text="Doodads"/>
-		<button side="top" text="Doodads"/>
-		<button side="top" text="Doodads"/>
-		<button side="top" text="Doodads"/>
-		<button side="top" text="Doodads"/>
+		<button side="top" text="These"/>
+		<button side="top" text="will"/>
+		<button side="top" text="be"/>
+		<button side="top" text="menu"/>
+		<button side="top" text="items"/>
 	</box>
 
 	<box side="all">
+		<label side="all" font=":30" text="Preview"/>
 	</box>
 </application>

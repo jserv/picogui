@@ -12,7 +12,9 @@ class Skybox : public ScriptableObject {
     void draw(void);
 
   private:
-    PGTexture *left, *right, *front, *back, *top, *bottom;
+    // always left-right-front-back-top-bottom
+    PGTexture	*sides[6];
+    int 	lists[6];
 };
 
 #endif /* _H_SKYBOX */

@@ -23,9 +23,9 @@ class game:
         self.skybox = skybox
         self.ship = ship
         
-        self.hud = hud.Hud(self)
+#        self.hud = hud.Hud(self)
         self.input = input.Input(self)
-#        self.mainmenu = mainmenu.MainMenu(self)
+        self.mainmenu = mainmenu.MainMenu(self)
 
         self.setVelocity(10)
         self.setLasers(100)
