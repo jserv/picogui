@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.134 2003/03/25 16:57:32 micahjd Exp $
+/* $Id: button.c,v 1.135 2003/03/25 17:06:05 micahjd Exp $
  *
  * button.c - generic button, with a string or a image
  *
@@ -571,10 +571,6 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
     return;
     
   case PG_TRIGGER_KEYDOWN:
-      printf("got key/mod %d/%d, need key/mod %d/%d\n",
-	     param->kbd.key, param->kbd.mods, DATA->hotkey, DATA->hotkey_modifiers);
-
-
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP.
      */
     if (param->kbd.key == DATA->hotkey && param->kbd.mods == DATA->hotkey_modifiers && 
