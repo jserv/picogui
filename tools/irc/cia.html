@@ -24,7 +24,7 @@ message=`echo "$message" | sed "1,${lineno}d"`
 projectname="<i><font color="#FF0000">project name</font></i>"
 tmpfile="/tmp/$RANDOM-$projectname"
 
-cat <<EOF >$tmpfile
+cat &lt;&lt;EOF >$tmpfile
 From: commits@<i><font color="#FF0000">project domain</font></i>
 To: commits@picogui.org
 Content-Type: text/plain;
