@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.5 2001/01/05 00:41:23 micahjd Exp $
+/* $Id: terminal.c,v 1.6 2001/01/05 02:11:09 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -123,10 +123,15 @@ void term_ecma48sgr(struct widget *self);
    with the specified character */
 void term_othercsi(struct widget *self,char c);
 
+/* Copy a rectangle between two text buffers */
+void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
+	      int dest_x,int dest_y,int dest_w,int w,int h);
+
 /********************************************** Widget functions */
 
 void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct fontdesc *fd;
+  int neww,newh;
    
   addgrop(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
@@ -141,6 +146,11 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
      DATA->celh = fd->font->h;
   }
 
+  /* Using our grop context and character cell size,
+   * calculate a good size for us */
+  neww = c->w / DATA->celw;
+  newh = c->h / DATA->celh;
+
   /* This gropnode used for incremental updating */
   addgrop(c,PG_GROP_TEXTGRID,0,0,DATA->celw,DATA->celh);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
@@ -149,6 +159,64 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   DATA->inc = c->current;
   DATA->x = c->x;
   DATA->y = c->y;
+
+  /* Resize the buffer if necessary */
+  if (neww != DATA->bufferw || newh != DATA->bufferh) {
+    char *newbuffer,*p;
+    long newbuffer_size,i;
+    /* Blit parameters */
+    int src_y,dest_y,w,h;
+
+    /* Allocate */
+    newbuffer_size = (neww*newh) << 1;
+    if (iserror(g_malloc((void **) &newbuffer,newbuffer_size+1)))
+      return;
+    newbuffer[newbuffer_size] = 0;  /* Null past the buffer itself */
+
+    /* Clear the new buffer */
+    for (p=newbuffer,i=newbuffer_size;i;i-=2) {
+      *(p++) = DATA->attr;
+      *(p++) = ' ';
+    }
+
+    /* Start off assuming the new buffer is smaller, then perform clipping */
+
+    dest_y = 0;
+    w = neww;
+    h = newh;
+    src_y = DATA->bufferh - newh;
+
+    if (src_y<0) {
+      h += src_y;
+      src_y = 0;
+    }
+    if (w>DATA->bufferw)
+      w = DATA->bufferw;
+    if (h>DATA->bufferh) {
+      src_y += h - DATA->bufferh;
+      h = DATA->bufferh;
+    }
+
+    /* Move the cursor too */
+    DATA->crsry -= src_y;
+    if (DATA->crsry < 0) {
+      src_y += DATA->crsry;
+      DATA->crsry = 0;
+    }
+
+    /* Blit! */
+    textblit(DATA->buffer,newbuffer,0,src_y,
+	     DATA->bufferw,0,dest_y,neww,w,h);
+
+    /* Free the old buffer and update the handle */
+    g_free(DATA->buffer);
+    rehandle(DATA->hbuffer,DATA->buffer = newbuffer);
+
+    /* Update the rest of our data */
+    DATA->bufferw = neww;
+    DATA->bufferh = newh;
+    DATA->buffersize = newbuffer_size;
+  }
 }
 
 g_error terminal_install(struct widget *self) {
@@ -169,10 +237,10 @@ g_error terminal_install(struct widget *self) {
   e = g_malloc((void **) &DATA->buffer,DATA->buffersize+1);
   errorcheck;
   DATA->buffer[DATA->buffersize] = 0;  /* Null past the end */
+  term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
+
   e = mkhandle(&DATA->hbuffer,PG_TYPE_STRING,-1,DATA->buffer);
   errorcheck;
-
-  term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
      
   /* Default terminal font */
   e = findfont(&DATA->font,-1,"Console",0,PG_FSTYLE_FIXED);
@@ -479,6 +547,10 @@ void term_char(struct widget *self,char c) {
   /* Handling an escape code? */
   if (DATA->escapemode) {
 
+    /* Yer supposed to ignore nulls in escape codes */
+    if (!c)
+      return;
+
     /* Too much? */
     if (DATA->escbuf_pos >= ESCAPEBUF_SIZE) {
       DATA->escapemode = 0;
@@ -510,14 +582,21 @@ void term_char(struct widget *self,char c) {
      */
 
     /* Starts with a CSI? (ESC [) 
-     * CSI codes start with CSI, then optionally list numerical arguments
-     * separated by punctuation. An alpha character identifies and terminates the code
+     * CSI codes start with CSI, an optional question mark, then optionally list numerical arguments
+     * separated by a semicolon. A char other than semicolon or a digit identifies
+     * and terminates the code
      */
     if (*DATA->escapebuf == '[' && DATA->escbuf_pos>1) {
       char *p,*endp,*num_end;
 
+      /* Ignore question mark after CSI */
+      if (DATA->escbuf_pos==2 && c=='?') {
+	DATA->escbuf_pos--;
+	return;
+      }
+
       /* If there's more, come back later */
-      if (!isalpha(c))
+      if (isdigit(c) || c==';')
 	return;
 
       /* We're ending the code */
@@ -648,6 +727,12 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
       *(p++) = DATA->attr;
       *(p++) = ' ';
    }
+
+   /* Add update rectangle for the effected lines */
+   i = (chars+fromx) / DATA->bufferh;
+   if ((chars+fromx) % DATA->bufferh)
+     i++;
+   term_updrect(self,0,fromy,DATA->bufferw,i);
 }
 
 /* Handle a parsed ECMA-48 CSI sequence */
@@ -802,8 +887,9 @@ void term_othercsi(struct widget *self,char c) {
       term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
       break;
     default:
-      term_clearbuf(self,DATA->crsrx,DATA->crsry,DATA->bufferw * 
-		    (DATA->bufferh-DATA->crsry) + DATA->bufferw - DATA->crsrx);
+      term_clearbuf(self,DATA->crsrx,DATA->crsry,
+		    (DATA->bufferw * DATA->bufferh) -
+		    (DATA->crsrx + DATA->crsry * DATA->bufferw));
     }
     break;
 
@@ -828,6 +914,22 @@ void term_othercsi(struct widget *self,char c) {
 
 
   }
+}
+
+/* Copy a rectangle between two text buffers */
+void textblit(char *src,char *dest,int src_x,int src_y,int src_w,
+	      int dest_x,int dest_y,int dest_w,int w,int h) {
+  int srcoffset = (src_w - w) << 1;
+  int destoffset = (dest_w - w) << 1;
+  int ix;
+
+  src  += (src_x + src_y * src_w) << 1;
+  dest += (dest_x + dest_y * dest_w) << 1;
+  w <<= 1;
+
+  for (;h;h--,src+=srcoffset,dest+=destoffset)
+    for (ix=w;w;w--,dest++,src++)
+      *dest = *src;
 }
 
 /* The End */
