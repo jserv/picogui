@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.6 2001/02/08 06:48:28 micahjd Exp $
+/* $Id: backend.c,v 1.7 2001/08/03 16:54:40 gobry Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
@@ -27,7 +27,7 @@
  */
 
 #include "themec.h"
-#include "y.tab.h"
+#include "pgtheme.h"
 
 /* The theme heap */
 

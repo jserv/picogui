@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.13 2001/02/08 06:48:28 micahjd Exp $
+/* $Id: main.c,v 1.14 2001/08/03 16:54:40 gobry Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #include "themec.h"
-#include "y.tab.h"
+#include "pgtheme.h"
 
 int lineno = 1;
 int errors;
