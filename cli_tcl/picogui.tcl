@@ -1,7 +1,6 @@
-set pg_response(error)	1
-set pg_response(ret)	2
-set pg_response(event)	3
-set pg_response(data)	4
+array set pg_response {error 1 ret 2 event 3 data 4}
+array set pg_s {TOP 8 BOTTOM 16 LEFT 32 RIGHT 64 ALL 2048}
+array set pg_derive {after 1 inside 2 before 3}
 
 set pg_widget(LABEL)	1
 set pg_widget(BITMAP)	4
@@ -29,23 +28,18 @@ set pg_wp(THOBJ)	25
 
 set pg_th_o(LABEL_DLGTITLE)	25
 
-set pg_derive(after)	1
-set pg_derive(inside)	2
-set pg_derive(before)	3
-
-set pg_s(TOP)		8
-set pg_s(BOTTOM)	16
-set pg_s(LEFT)		32
-set pg_s(RIGHT)		64
-set pg_s(ALL)		2048
-
 set connection 0
 
 proc pgGetResponse {} {
 	global pg_response pg_request connection
 	set data [read $connection 12]
 	binary scan $data "S" type
-	if { $type == $pg_response(ret) } {
+	if { $type == $pg_response(error) } {
+		binary scan $data "SSSSI" ret(type) ret(errt) ret(msglen) \
+			ret(dummy) ret(id)
+		set ret(msg) [read $connection $ret(msglen)]
+		return [array get ret]
+	} elseif { $type == $pg_response(ret) } {
 		binary scan $data "SSII" type dummy id data
 		return $data
 	} elseif { $type == $pg_response(event) } {
