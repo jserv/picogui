@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.5 2001/05/13 04:12:30 micahjd Exp $
+/* $Id: serial40x4.c,v 1.6 2001/05/13 06:04:33 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -7,6 +7,15 @@
  *                are sent to /dev/lcd, which can be a symbolic link to a
  *                serial port (already in the right configuration) that the
  *                LCD is attached to.
+ * 
+ * I apologize in advance for all the hardcoded font data, but the font
+ * compiler isn't quite suitable for this lcd (and there's really only
+ * two fonts you'd ever need for this thing anyway, right?)
+ * 
+ * There's no need to compile any fonts into pgserver, this driver includes
+ * two of its own. A normal 1-to-1 mapping used by default, and a 4-line-high
+ * large font. Currently, you can invoke this large font by requesting a
+ * font at least 20 pixels high in pgNewFont. This may change.
  * 
  * ------ Data format used by the serial LCD
  * 
@@ -147,6 +156,80 @@ u8 const serial40x4_font_bitmaps[256] = {
    0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF
 };
 
+/* Width table for big font */
+u8 const serial40x4_bigfont_vwtab[256] = {
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     3,3,3,3,3,3,3,3,3,3,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+};
+
+/* Table of indices to the bitmap table. */
+u32 const serial40x4_bigfont_trtab[256] = {
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0004,0x0010,0x001C,0x0028,0x0034,0x0040,0x004C,0x0058,
+   0x0064,0x0070,0x007C,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
+   0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000     
+};
+
+/* Font bitmaps for the bigfont */
+#define S ' '
+u8 const serial40x4_bigfont_bitmaps[] = {
+   S,S,S,S,                        /* 0x0000 - Space */  
+   3,2,4,0,S,0,0,S,0,3,1,4,        /* 0x0004 - 0     */
+   S,3,S,S,0,S,S,0,S,S,1,S,        /* 0x0010 - 1     */   
+   3,2,4,3,2,5,0,S,S,1,1,1,        /* 0x001C - 2     */   
+   3,2,4,S,3,5,S,3,5,3,1,4,        /* 0x0028 - 3     */   
+   3,S,3,0,S,0,3,1,0,S,S,1,        /* 0x0034 - 4     */   
+   2,2,4,0,2,4,S,S,0,3,1,4,        /* 0x0040 - 5     */   
+   3,2,4,0,2,4,0,S,0,3,1,4,        /* 0x004C - 6     */   
+   3,2,2,S,3,5,S,0,S,S,1,S,        /* 0x0058 - 7     */   
+   3,2,4,0,2,0,0,S,0,3,1,4,        /* 0x0064 - 8     */   
+   3,2,4,0,S,0,3,1,0,S,S,1,        /* 0x0070 - 9     */   
+   S,1,2,S,                        /* 0x007C - :     */   
+};
+#undef S
+
 struct font const serial40x4_font = {
    /* bitmaps = */ (u8*) &serial40x4_font_bitmaps,
    /* h = */ 1,
@@ -155,8 +238,16 @@ struct font const serial40x4_font = {
    /* vwtab = */ (u8*) &serial40x4_font_vwtab,
    /* trtab = */ (u32*) &serial40x4_font_trtab
 };
+struct font const serial40x4_bigfont = {
+   /* bitmaps = */ (u8*) &serial40x4_bigfont_bitmaps,
+   /* h = */ 4,
+   /* hspace = */ 1,
+   /* vspace = */ 0,
+   /* vwtab = */ (u8*) &serial40x4_bigfont_vwtab,
+   /* trtab = */ (u32*) &serial40x4_bigfont_trtab
+};
 
-/* Bogus fontstyle node */
+/* Bogus fontstyle nodes */
 struct fontstyle_node serial40x4_font_style = {
    /* name = */ "LCD Pseudofont",
    /* size = */ 1,
@@ -167,6 +258,19 @@ struct fontstyle_node serial40x4_font_style = {
    /* italic = */ NULL,
    /* bolditalic = */ NULL,
    /* ulineh = */ 1,
+   /* slineh = */ 0,
+   /* boldw = */ 0
+};
+struct fontstyle_node serial40x4_bigfont_style = {
+   /* name = */ "Large LCD Font",
+   /* size = */ 4,
+   /* flags = */ 0,
+   /* next = */ NULL,
+   /* normal = */ (struct font *) &serial40x4_bigfont,
+   /* bold = */ NULL,
+   /* italic = */ NULL,
+   /* bolditalic = */ NULL,
+   /* ulineh = */ 4,
    /* slineh = */ 0,
    /* boldw = */ 0
 };
@@ -306,16 +410,25 @@ void serial40x4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
     * the only way to make pterm look ok */
    if (fill)
      (*vid->pixel)(dest,dest_x,dest_y,0,lgop);
-   else
-     (*vid->pixel)(dest,dest_x,dest_y,*chardat,lgop);
+   else {
+      struct stdbitmap chbit;
+      chbit.bits = chardat;
+      chbit.w = chbit.pitch = w;
+      chbit.h = h;
+      (*vid->blit)(dest,dest_x,dest_y,w,h,(hwrbitmap) &chbit,0,0,PG_LGOP_NONE);
+   }
 }
-   
-void serial40x4_font_newdesc(struct fontdesc *fd) {
-   fd->font = (struct font *) &serial40x4_font;
+
+void serial40x4_font_newdesc(struct fontdesc *fd, char *name,
+			     int size, stylet flags) {
    fd->margin = 0;
    fd->hline = -1;
    fd->italicw = 0;
-   fd->fs = &serial40x4_font_style;
+   if (size>20)     /* Arbitrary number */
+     fd->fs = &serial40x4_bigfont_style;
+   else
+     fd->fs = &serial40x4_font_style;
+   fd->font = (struct font *) fd->fs->normal;
 }
 
 /* Like the ncurses driver, if 0x20000000 is set, it's a raw character code.

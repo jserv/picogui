@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.39 2001/05/12 20:36:33 micahjd Exp $
+/* $Id: video.h,v 1.40 2001/05/13 06:04:13 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -182,12 +182,13 @@ struct vidlib {
   /***************** Fonts */
    
   /* Optional
-   *   Called when a new fontdesc is created. The video driver
-   *   may choose to modify the font or cache things or something
+   *   Called after a new fontdesc is created. The video driver
+   *   may choose to modify the font or cache things or something.
+   *   The name,size, and flags passed to findfont are also included.
    * 
    * Default implementation: none
    */
-  void (*font_newdesc)(struct fontdesc *fd);
+  void (*font_newdesc)(struct fontdesc *fd, char *name, int size, int flags);
   
    
   /***************** Colors */

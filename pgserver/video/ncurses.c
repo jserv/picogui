@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.17 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: ncurses.c,v 1.18 2001/05/13 06:04:33 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -201,7 +201,8 @@ void ncurses_update(s16 x,s16 y,s16 w,s16 h) {
 
 /**** Hack the normal font rendering a bit so we use regular text */
 
-void ncurses_font_newdesc(struct fontdesc *fd) {
+void ncurses_font_newdesc(struct fontdesc *fd, char *name,
+			  int size, stylet flags) {
    fd->font = (struct font *) &ncurses_font;
    fd->margin = 0;
    fd->hline = -1;

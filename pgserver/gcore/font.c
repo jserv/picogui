@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.21 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: font.c,v 1.22 2001/05/13 06:04:08 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -365,7 +365,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
    }
    
    /* Let the video driver transmogrify it if necessary */
-   VID(font_newdesc) (fd);
+   VID(font_newdesc) (fd,name,size,flags);
    
    return sucess;
 }
