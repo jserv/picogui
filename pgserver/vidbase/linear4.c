@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.25 2002/07/09 10:19:48 micahjd Exp $
+/* $Id: linear4.c,v 1.26 2002/07/31 15:28:45 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -354,7 +354,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
   unsigned char ch;
   char *destline;
 
-  if (!FB_ISNORMAL(dest,lgop) || angle || lines) { /* does "lines" matter */
+  if (!FB_ISNORMAL(dest,lgop) || angle) {
 	  def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
 	  return;
   }
@@ -414,15 +414,25 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,xpix++) {
 	   if ( (xpix^dest_x)&1 ) {
 	      if (ch&0x80 && xpix>=xmin && xpix<xmax) {
+#ifdef SWAP_NYBBLES
+		 *destline &= 0x0F;
+		 *destline |= c<<4;
+#else
 		 *destline &= 0xF0;
 		 *destline |= c;
+#endif
 	      }
 	      destline++;
 	   }
 	   else {
 	      if (ch&0x80 && xpix>=xmin && xpix<xmax) {
+#ifdef SWAP_NYBBLES
+		 *destline &= 0xF0;
+		 *destline |= c;
+#else
 		 *destline &= 0x0F;
 		 *destline |= c<<4;
+#endif
 	      }
 	   }
 	}
@@ -438,6 +448,16 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
 		  for (iw=bw;iw;iw--) {
 			  ch = *(chardat++);
+#ifdef SWAP_NYBBLES
+			  if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x40) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x20) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x10) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x08) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x04) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x02) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x01) {*destline &= 0xF0; *destline |= c;    }
+#else
 			  if (ch&0x80) {*destline &= 0xF0; *destline |= c;    } destline++; 
 			  if (ch&0x40) {*destline &= 0x0F; *destline |= c<<4; }
 			  if (ch&0x20) {*destline &= 0xF0; *destline |= c;    } destline++; 
@@ -446,12 +466,23 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 			  if (ch&0x04) {*destline &= 0x0F; *destline |= c<<4; }
 			  if (ch&0x02) {*destline &= 0xF0; *destline |= c;    } destline++; 
 			  if (ch&0x01) {*destline &= 0x0F; *destline |= c<<4; }
+#endif
 		  }
 	  }
   } else {
 	  for (;hc<h;hc++, destline +=(FB_BPL-4)) {
 		  for (iw=bw;iw;iw--) {
 			  ch = *(chardat++);
+#ifdef SWAP_NYBBLES
+			  if (ch&0x80) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x40) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x20) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x10) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x08) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x04) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+			  if (ch&0x02) {*destline &= 0xF0; *destline |= c;    }
+			  if (ch&0x01) {*destline &= 0x0F; *destline |= c<<4; } destline++; 
+#else
 			  if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; }
 			  if (ch&0x40) {*destline &= 0xF0; *destline |= c;    } destline++; 
 			  if (ch&0x20) {*destline &= 0x0F; *destline |= c<<4; }
@@ -460,6 +491,7 @@ void linear4_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,s16 dest_y,s16 w,s1
 			  if (ch&0x04) {*destline &= 0xF0; *destline |= c;    } destline++; 
 			  if (ch&0x02) {*destline &= 0x0F; *destline |= c<<4; }
 			  if (ch&0x01) {*destline &= 0xF0; *destline |= c;    } destline++; 
+#endif
 		  }
 	  }
   }
