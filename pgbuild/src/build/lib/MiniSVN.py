@@ -25,31 +25,57 @@
 from urlparse import *
 import threading
 from MiniDAV import DavObject
-import os, re
+import os, re, time
+
+class DownloaderPool:
+    def __init__(self, queue, numThreads):
+        """Starts multiple DownloaderThreads and stores data shared between them."""
+        self.queue = queue
+        self.queueSem = threading.Semaphore()
+        self.numSleeping = 0
+        self.threads = []
+        self.running = True
+
+        # Create and start all threads
+        for i in xrange(numThreads):
+            thread = DownloaderThread(self)
+            self.threads.append(thread)
+            thread.start()
+
+        # Wait for all threads to quit
+        for thread in self.threads:
+            thread.join()
 
 class DownloaderThread(threading.Thread):
-    def __init__(self, queue, queueSem):
-        self.queue = queue
-        self.queueSem = queueSem
+    def __init__(self, pool):
+        self.pool = pool
         threading.Thread.__init__(self)
 
     def run(self):
         """Thread-safe queue management, to feed items into download()
            and enqueue children.
            """
-        while True:
-            self.queueSem.acquire()
-            if len(self.queue) <= 0:
-                self.queueSem.release()
-                break
-            queueItem = self.queue.pop()
-            self.queueSem.release()
+        while self.pool.running:
+            self.pool.queueSem.acquire()            
+            try:
+                queueItem = self.pool.queue.pop()
+            except IndexError:
+                # Nothing in the queue. If all the threads are in this state, we're done
+                self.pool.queueSem.release()
+                if self.pool.numSleeping == len(self.pool.threads)-1:
+                    break
+                self.pool.numSleeping += 1
+                time.sleep(0.1)
+                self.pool.numSleeping -= 1
+                continue
+            self.pool.queueSem.release()
             newItems = self.download(queueItem)
             if newItems:
-                self.queueSem.acquire()            
+                self.pool.queueSem.acquire()            
                 for item in newItems:
-                    self.queue.append(item)
-                self.queueSem.release()
+                    self.pool.queue.append(item)
+                self.pool.queueSem.release()
+        self.pool.running = False
 
     def download(self, item):
         """Download an item from the queue, returning a list of
@@ -59,7 +85,11 @@ class DownloaderThread(threading.Thread):
 
         if object.getType() == 'collection':
             # This object is a directory- recursively create it
-            os.makedirs(destination)
+            try:
+                os.makedirs(destination)
+            except OSError:
+                # We don't care if it already exists
+                pass
             print " d %s" % destination
 
         elif object.getType() == 'file':
@@ -100,22 +130,13 @@ class SVNRepository(DavObject):
         DavObject.__init__(self, url)
 
     def download(self, destination, numThreads=5):
-
         # If this repository consists of just one file, go ahead and join that to
         # the destination path.
         if len(self.getChildren()) == 0:
             suffix = re.search("/([^/]+)$", self.path).group(1)
             destination = os.path.join(destination, suffix)
 
-        queue = [(self, destination)]
-        queueSem = threading.Semaphore()
-        threads = []
-        for i in xrange(numThreads):
-            thread = DownloaderThread(queue, queueSem)
-            threads.append(thread)
-            thread.start()
-        for thread in threads:
-            thread.join()
+        DownloaderPool([(self, destination)], numThreads)
 
 
 if __name__ == '__main__':
