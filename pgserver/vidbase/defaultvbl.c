@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.32 2001/03/26 00:27:14 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.33 2001/03/26 02:20:18 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -537,19 +537,19 @@ void def_charblit_u(unsigned char *chardat,int dest_x,
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
   if (clip) {
-    if (clip->y1>(dest_y-h)) {
-      hc = clip->y1-dest_y+h; /* Do it this way so skewing doesn't mess up when clipping */
+    if (clip->y2<dest_y) {
+      hc = dest_y-clip->y2; /* Do it this way so skewing doesn't mess up when clipping */
       dest_y -= hc;
       chardat += hc*bw;
     }
     if (clip->y1>(dest_y-h))
-      h = dest_y-clip->y1-1;
+      h = dest_y-clip->y1+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
-    if (clip->x1>dest_x)
-      xmin = clip->x1-dest_x;
-    if (clip->x2<(dest_x+w))
-      xmax = clip->x2-dest_x+1;
+    if (clip->x2<dest_x)
+      xmin = dest_x-clip->x2;
+    if (clip->x1>(dest_x-w))
+      xmax = dest_x-clip->x1+1;
   }
 
   for (;hc<h;hc++,dest_y--) {
@@ -1063,7 +1063,7 @@ void def_sprite_show(struct sprite *spr) {
 */
 
    /**** A very similar debuggative cruft to test text clipping ****/
-
+/*
     {
       struct cliprect cr;
       struct fontdesc fd;
@@ -1083,7 +1083,7 @@ void def_sprite_show(struct sprite *spr) {
 //      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
       VID(update) (0,0,vid->lxres,vid->lyres);
     }
-
+*/
    
 }
 

@@ -1,3 +1,13 @@
+2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
+
+Well, I'm on spring break now! So, aside from the multiplayer gaming, I have
+plenty of time to code :)
+
+      * vidbase/defaultvbl.c: Fixed charblit_u clipping
+      
+      * Removed some obsolete themes
+
+
 2001-03-23    Micah Dowty <micahjd@users.sourceforge.net>
 
 Cleaning up a few remaining issues... After that, I'm planning on
