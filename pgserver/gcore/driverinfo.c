@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.12 2001/01/16 02:07:19 micahjd Exp $
+/* $Id: driverinfo.c,v 1.13 2001/01/20 06:59:09 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -36,6 +36,10 @@
  */
 struct vidinfo videodrivers[] = {
 
+#ifdef DRIVER_FBDEV
+  {"fbdev",&fbdev_regfunc},
+#endif
+   
 #ifdef DRIVER_SDLFB
   {"sdlfb",&sdlfb_regfunc},
 #endif

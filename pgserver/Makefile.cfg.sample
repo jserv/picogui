@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.13 2001/01/16 02:12:36 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.14 2001/01/20 06:59:08 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -69,10 +69,11 @@ FONTS := $(FONTS) font/clean.fi
 ######################################## Drivers
 
 #### Video drivers. Uncomment any number of them.
-DRV := $(DRV) -DDRIVER_SDL        # SDL driver
+DRV := $(DRV) -DDRIVER_FBDEV      # Driver for /dev/fb* framebuffer
 DRV := $(DRV) -DDRIVER_SDLFB      # For testing the linear VFBs 
-DRV := $(DRV) -DDRIVER_SVGAGL     # SVGAlib with vgagl (crufty but compatible)
+DRV := $(DRV) -DDRIVER_SDL        # SDL driver
 DRV := $(DRV) -DDRIVER_SVGAFB     # SVGAlib driver with linear framebuffer
+DRV := $(DRV) -DDRIVER_SVGAGL     # SVGAlib with vgagl (crufty but compatible)
 DRV := $(DRV) -DDRIVER_NCURSES    # PicoGUI can do text mode too!
 #DRV := $(DRV) -DDRIVER_NULL       # Dummy driver, produces no output
 

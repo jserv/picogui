@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.13 2000/11/18 07:47:07 micahjd Exp $
+/* $Id: errortext.c,v 1.14 2001/01/20 06:59:09 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -154,6 +154,12 @@ static const char *errors[] = {
 	/* 92 */ "Handle gone mushy\nCan't lift own group anymore\nWe'll figure it out",
 	/* 93 */ "Take Charge for your stuff\nString handle not my problem\nIs NULL in getstring",
 	/* 94 */ "Packet is too big\nCan't open mouth wide enough\nMouthoc() has failed",
+     
+     /* The stuff brandon hasn't been to yet... */
+     
+     /* 95 */  "Error opening framebuffer device",
+     /* 96 */  "Error mapping framebuffer device",
+     /* 97 */  "Framebuffer ioctl error",
 };
 
 #else 
@@ -255,6 +261,9 @@ static const char *errors[] = {
   /* 92 */  "Invalid handle in handle_group()",
   /* 93 */  "Dereferenced string handle is null in getstring",
   /* 94 */  "Request packet too big; memory allocation failed",
+  /* 95 */  "Error opening framebuffer device",
+  /* 96 */  "Error mapping framebuffer device",
+  /* 97 */  "Framebuffer ioctl error",
 };
 
 #endif /* HAIKU_MESSAGES */
