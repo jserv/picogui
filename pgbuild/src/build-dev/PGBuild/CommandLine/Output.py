@@ -93,12 +93,18 @@ class Progress:
         if parent:
             self.color = parent.color
             self.indentLevel = parent.indentLevel + 1
+            self.root = parent.root
         else:
             self.color = Colorizer()
             self.indentLevel = 0
+            self.root = self
+            self.lastTask = self
 
     def _printTaskHeading(self):
-        if not self.taskHeadingPrinted:
+        """We need to print a task heading if we're in a task we've never been in
+           before, or if the current task has changed.
+           """
+        if self.root.lastTask != self or not self.taskHeadingPrinted:
             if self.parent and not self.parent.taskHeadingPrinted:
                 self.parent._printTaskHeading()            
             if self.taskName:
@@ -106,6 +112,7 @@ class Progress:
                 self.color.write(" %s..." % self.taskName, ('bold', 'cyan'))
                 self.color.write("\n")
             self.taskHeadingPrinted = 1
+            self.root.lastTask = self
 
     def _outputTest(self, unimportance):
         """Test whether a message is important enough to output,
