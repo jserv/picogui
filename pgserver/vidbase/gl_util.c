@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.10 2002/12/24 11:29:49 micahjd Exp $
+/* $Id: gl_util.c,v 1.11 2002/12/24 11:40:37 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -163,6 +163,9 @@ void gl_frame(void) {
   gl_global.allow_update = 1;
   gl_frame_setup();
 
+  /* Reset OSD */
+  gl_global.osd_y = 0;
+
   /***************** Background grid */
 
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -262,9 +265,6 @@ void gl_frame_setup(void) {
 
   /* We have no idea what the current texture is now */
   gl_global.current_texture = -1;
-
-  /* Reset OSD */
-  gl_global.osd_y = 0;
 }
 
 void gl_frame_cleanup(void) {
