@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.37 2002/07/03 22:03:28 micahjd Exp $
+/* $Id: pgmain.c,v 1.38 2002/08/25 09:55:21 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -56,6 +56,7 @@ int use_sessionmgmt = 0;           /* Using session manager, exit after last cli
 int use_tpcal = 0;                 /* Run tpcal before running the session manager */
 int sessionmgr_secondary = 0;      /* Need to run session manager after tpcal */
 int sessionmgr_start = 0;          /* Start the session manager at the next iteration */
+int server_returnval = 0;          /* This is the return value pgserver will exit with */
 
 extern s32 memref;
 struct dtstack *dts;
@@ -639,7 +640,7 @@ int main(int argc, char **argv) {
   /* Check for memory leaks and, finally, exit */
   if (memref!=0)
     memoryleak_trace();
-  exit(0);
+  exit(server_returnval);
 }
 
 void request_quit(void) {

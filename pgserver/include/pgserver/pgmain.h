@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.12 2002/08/13 09:56:40 micahjd Exp $
+/* $Id: pgmain.h,v 1.13 2002/08/25 09:55:21 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -45,6 +45,7 @@ extern int use_sessionmgmt;           /* Using session manager, exit after last 
 extern int use_tpcal;                 /* Run tpcal before running the session manager */
 extern int sessionmgr_secondary;      /* Need to run session manager after tpcal */
 extern int sessionmgr_start;          /* Start the session manager at the next iteration */
+extern int server_returnval;          /* This is the return value pgserver will exit with */
 
 /* Call request_quit to exit pgserver cleanly */
 void request_quit(void);

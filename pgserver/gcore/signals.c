@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.9 2002/03/29 03:20:13 micahjd Exp $
+/* $Id: signals.c,v 1.10 2002/08/25 09:55:21 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -67,13 +67,15 @@ void signals_handler(int sig, siginfo_t *siginfo, void *context) {
 void signals_handler(int sig) {
 #endif
   static volatile u8 lock = 0;
+  int i;
 
   switch (sig) {
 
   case SIGCHLD:
     /* Wait for child so we don't have zombies */
-    waitpid(-1, NULL, WNOHANG);
-    
+    waitpid(-1, &i, WNOHANG);
+    server_returnval = WEXITSTATUS(i);
+
     /* Need to start the session manager? */
     if (sessionmgr_secondary) {
       sessionmgr_start = 1;
