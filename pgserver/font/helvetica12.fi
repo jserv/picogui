@@ -1,6 +1,5 @@
 NAME = Helvetica
 SIZE = 12
-STYLE = default
+STYLE = encoding_isolatin1 default
 NORMAL = helvetica12
 BOLD = helvetica12b
-
