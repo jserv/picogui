@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.8 2002/03/03 20:05:29 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.9 2002/03/04 21:58:24 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -334,8 +334,9 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
       i = glsrc->tw * glsrc->th;
       p = ((struct glbitmap*)tmpbit)->sb->bits;
       for (;i;i--,p++)
-	if (*p & PGCF_ALPHA)
+	if (*p & PGCF_ALPHA) {
 	  *p = (*p & 0x1FFFFFF) | ((*p & 0xFF000000)<<1);
+	}
 	else
 	  *p = *p | 0xFF000000;
 
@@ -359,7 +360,7 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, glsrc->texture);
     glBegin(GL_QUADS);
-    glColor3f(1.0f,1.0f,1.0f);
+    glColor4f(1.0f,1.0f,1.0f,1.0f);
     glNormal3f(0.0f,0.0f,1.0f);
     glTexCoord2f(tx1,ty1);
     glVertex2f(x,y);
@@ -427,6 +428,14 @@ int sdlgl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***lis
   }
 
   return 0;
+}
+
+/* No color conversion, don't premultiply alphas */
+hwrcolor sdlgl_color_pgtohwr(pgcolor c) {
+  return c;
+}
+pgcolor sdlgl_color_hwrtopg(pgcolor c) {
+  return c;
 }
 
 /* The End */

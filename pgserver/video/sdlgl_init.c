@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.7 2002/03/03 18:59:19 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.8 2002/03/04 21:58:23 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -225,6 +225,8 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->sprite_update = &sdlgl_sprite_update;
   v->sprite_protectarea = &sdlgl_sprite_protectarea;
   v->grop_render_presetup_hook = &sdlgl_grop_render_presetup_hook;
+  v->color_pgtohwr = &sdlgl_color_pgtohwr;
+  v->color_hwrtopg = &sdlgl_color_hwrtopg;
 
   if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
     v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
