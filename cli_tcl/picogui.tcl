@@ -76,10 +76,9 @@ proc pgUpdate {} {
 	return $ret(data)
 }
 proc pgNewPopupAt {x y width height} {
-	global pg_request defaultparent
+	global pg_request defaultparent pg_widget
 	send_packet [pack_pgrequest 1 4 $pg_request(createwidget)]
-	send_packet [binary format "SS" 7 0]
-#	send_packet [binary format "SSSS" $x $y $width $height ]
+	send_packet [binary format "SS" $pg_widget(popup) 0]
 	array set ret [pgGetResponse]
 	if {$defaultparent == 0} {
 		set defaultparent $ret(data)
@@ -115,7 +114,6 @@ proc pgNewWidget {type {rship 0} {parent 0}} {
 	send_packet [pack_pgrequest 1 8 $pg_request(mkwidget)]
 	send_packet [binary format "SSI" $rship $type $parent]
 	array set ret [pgGetResponse]
-	parray ret
 	set defaultparent $ret(data)
 	set defaultrship $pg_derive(after)
 	return $ret(data)
@@ -221,7 +219,7 @@ proc isInteger {test} {
 }
 proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
 	global pg_widget
-	set bitmap [pgNewWidget $pg_widget(bitmap) $rship $parent]
+	set bitmap [pgNewWidget $pg_widget(label) $rship $parent]
 	if {$image ==0} {
 		return $bitmap
 	} elseif {[isInteger $image] == 1} {

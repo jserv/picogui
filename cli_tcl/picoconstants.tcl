@@ -1,29 +1,133 @@
 package provide picoconstants 0.4
 
+array set pg_request "
+	update		1
+	mkwidget	2
+	mkbitmap	3
+	mkfont		4
+	mkstring	5
+	set		7
+	wait		13
+	register	15
+	mkpopup		16
+	setmode		21
+	getmode		22
+	mkcontext	23
+	rmcontext	24
+	getstring	26
+	thlookup	36
+	checkevent	43
+	createwidget	46
+"
+# --- From here down is complete and formated properly
 array set pg_response "
 	error	1
 	ret	2
 	event	3
 	data	4
 "
-array set pg_s "
-	top	8
-	bottom	16
-	left	32
-	right	64
-	all	2048
+array set pgth_o "
+	default				0
+	base_interactive		1
+	base_container			2
+	button				3
+	button_hilight			4
+	button_on			5
+	toolbar				6
+	scroll				7
+	scroll_hilight			8
+	indicator			9
+	panel				10
+	panelbar			11
+	popup				12
+	background			13
+	base_display			14
+	base_tlcontainer		15
+	themeinfo			16
+	label				17
+	field				18
+	bitmap				19
+	scroll_on			20
+	label_scroll			21
+	panelbar_hilight		22
+	panelbar_on			23
+	box				24
+	label_dlgtitle			25
+	label_dlgtext			26
+	closebtn			27
+	closebtn_on			28
+	closebtn_hilight		29
+	base_panelbtn			30
+	rotatebtn			31
+	rotatebtn_on			32
+	rotatebtn_hilight		33
+	zoombtn				34
+	zoombtn_on			35
+	zoombtn_hilight			36
+	popup_menu			37
+	popup_messagedlg		38
+	menuitem			39
+	menuitem_hilight		40
+	checkbox			41
+	checkbox_hilight		42
+	chekbox_on			43
+	flatbutton			44
+	flatbutton_hilight		45
+	flatbutton_on			46
+	listitem			47
+	listitem_hilight		48
+	listitem_on			49
+	chekbox_on_nohilight		50
+	submenu				51
+	submenu_hilight			52
+	radiobutton			53
+	radiobutton_hilight		54
+	radiobutton_on			55
+	radiobutton_on_nohilight	56
+	textbox				57
+	terminal			58
+	menubutton			60
+	menubutton_on			61
+	menubutton_hilight		62
+	label_hilight			63
+	box_hilight			64
+	indicator_h			65
+	indicator_v			66
+	custom				[expr 0x7FFF]
 "
-array set pg_derive "
-	after	1
-	inside	2
-	before	3
+array set pg_vid "
+	rotate90	[expr 0x0004]
+	rotate180	[expr 0x0008]
+	rotate270	[expr 0x0010]
+	rotatemask	[expr 0x001C]
+	rotbase90	[expr 0x0020]
+	rotbase180	[expr 0x0040]
+	rotbase270	[expr 0x0080]
+	rotbasemask	[expr 0x00E0]
+"
+array set pg_we "
+	activate	[expr 0x001]
+	deactivate	[expr 0x002]
+	close		[expr 0x003]
+	focus		[expr 0x004]
+	resize		[expr 0x107]
+	build		[expr 0x108]
+	pntr_down	[expr 0x204]
+	pntr_up		[expr 0x205]
+	pntr_release	[expr 0x206]
+	pntr_move	[expr 0x209]
+	appmsg		[expr 0x301]
+	data		[expr 0x306]
+	kbd_char	[expr 0x40A]
+	kbd_keyup	[expr 0x40B]
+	kbd_keydown	[expr 0x40C]
+	
 "
 array set pg_widget "
 	toolbar		0
 	label		1
 	scroll		2
 	indicator	3
-	bitmap		1
 	button		5
 	panel		6
 	popup		7
@@ -43,6 +147,18 @@ array set pg_widget "
 	simplemenu	21
 	dialogbox	22
 	messagedialog	23
+"
+array set pg_s "
+	top [expr 1<<3]
+	bottom [expr 1<<4]
+	left [expr 1<<5]
+	right [expr 1<<6]
+	all [expr 1<<11]
+"
+array set pg_derive "
+	after	1
+	inside	2
+	before	3
 "
 array set pg_wp "
 	size				1
@@ -93,61 +209,12 @@ array set pg_wp "
 	panelbar_rotate			47
 	panelbar_zoom			48
 	bitmapside			49
-	passwd				50
+	password			50
 	hotkey_flags			51
 	hotkey_consume			52
 	width				53
 	height				54
 	spacing				55
-"
-array set pg_app "
-	normal	1
-	toolbar	2
-"
-array set pg_exev "
-	pntr_up		1
-	pntr_down	2
-	pntr_noclick	4
-	pntr_move	8
-	key		16
-	char		32
-	toggle		64
-	exclusive	128
-	focus		256
-	no_hotspot	512
-"
-array set pg_eventcoding "
-	param	0
-	xy	256
-	pntr	512
-	data	768
-	kbd	1024
-	mask	3840
-"
-array set pg_request "
-	update		1
-	mkwidget	2
-	mkbitmap	3
-	mkfont		4
-	mkstring	5
-	set		7
-	wait		13
-	register	15
-	mkpopup		16
-	setmode		21
-	getmode		22
-	mkcontext	23
-	rmcontext	24
-	getstring	26
-	thlookup	36
-	checkevent	43
-	createwidget	46
-"
-array set pg_th_o "
-	label_dlgtitle	25
-"
-array set pg_fstyle "
-	bold 256
 "
 array set pg_fm "
 	set	0
@@ -155,41 +222,71 @@ array set pg_fm "
 	off	2
 	toggle	3
 "
-array set pg_vid "
-	rotate90	0x4
-	rotate180	0x8
-	rotate270	0x10
+array set pg_app "
+	normal	1
+	toolbar	2
 "
-array set pg_we "
-	activate	1
-	close		3
-	pntr_down	516
-	pntr_up		517
-	pntr_move	521
+array set pg_exev "
+	pntr_up		[expr 0x0001]
+	pntr_down	[expr 0x0002]
+	pntr_noclick	[expr 0x0004]
+	pntr_move	[expr 0x0008]
+	key		[expr 0x0010]
+	char		[expr 0x0020]
+	toggle		[expr 0x0040]
+	exclusive	[expr 0x0080]
+	focus		[expr 0x0100]
+	no_hotspot	[expr 0x0200]
 "
+array set pg_eventcoding "
+	param	[expr 0x000]
+	xy	[expr 0x100]
+	pntr	[expr 0x200]
+	data	[expr 0x300]
+	kbd	[expr 0x400]
+	mask	[expr 0xF00]
+"
+array set pg_fstyle "
+	fixed			[expr 1<<0]
+	default			[expr 1<<1]
+	symbol			[expr 1<<2]
+	subset			[expr 1<<3]
+	encoding_isolatin1	[expr 1<<4]
+	encoding_ibm		[expr 1<<5]
+	doublespace		[expr 1<<7]
+	italic			[expr 1<<9]
+	underline		[expr 1<<10]
+	strikeout		[expr 1<<11]
+	flush			[expr 1<<14]
+	doublewidth		[expr 1<<15]
+	italic2			[expr 1<<16]
+	encoding_unicode	[expr 1<<17]
+"
+set pg_fstyle(encoding_mask) [expr $pg_fstyle(encoding_isolatin1)| \
+	$pg_fstyle(encoding_ibm)|$pg_fstyle(encoding_unicode)]
 array set pg_trigger "
-	timer		1
-	pntr_relative	4
-	activate	8
-	deactivate	16
-	keyup		32
-	keydown		64
-	release		128
-	up		256
-	down		512
-	move		1024
-	enter		2048
-	leave		4096
-	drag		8192
-	char		16348
-	stream		32768
-	key_start	65536
-	nontoolbar	131072
-	pntr_status	262144
-	key		524288
-	scrollwheel	1048576
-	touchscreen	2097152
-	ts_calibrate	4194304
+	timer		[expr 1<<0]
+	pntr_relative	[expr 1<<1]
+	activate	[expr 1<<3]
+	deactivate	[expr 1<<4]
+	keyup		[expr 1<<5]
+	keydown		[expr 1<<6]
+	release		[expr 1<<7]
+	up		[expr 1<<8]
+	down		[expr 1<<9]
+	move		[expr 1<<10]
+	enter		[expr 1<<11]
+	leave		[expr 1<<12]
+	drag		[expr 1<<13]
+	char		[expr 1<<14]
+	stream		[expr 1<<15]
+	key_start	[expr 1<<16]
+	nontoolbar	[expr 1<<17]
+	pntr_status	[expr 1<<18]
+	key		[expr 1<<19]
+	scrollwheel	[expr 1<<20]
+	touchscreen	[expr 1<<21]
+	ts_calibrate	[expr 1<<22]
 "
 array set pg_triggers "
 	mouse	[expr $pg_trigger(pntr_relative)|$pg_trigger(up)| \
