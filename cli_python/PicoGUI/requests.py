@@ -2,7 +2,7 @@ import struct
 
 def pack(fmt, *args):
 	# safe (type-casting) wrapper for struct.pack
-	print 'converting %s for "%s"' % (args, fmt)
+	#print 'converting %s for "%s"' % (args, fmt)
 	processed_args = []
 	for spec in fmt:
 		if spec in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x']:
@@ -14,7 +14,7 @@ def pack(fmt, *args):
 			conv = str
 		else:
 			conv = int
-		print 'converting %s to %s for "%s"' % (`a`, conv.__name__, spec)
+		#print 'converting %s to %s for "%s"' % (`a`, conv.__name__, spec)
 		processed_args.append(conv(a))
 	return struct.pack('!' + fmt, *processed_args)
 
