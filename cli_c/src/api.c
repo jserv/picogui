@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.47 2002/09/25 04:07:44 micahjd Exp $
+/* $Id: api.c,v 1.48 2002/12/18 09:43:14 gobry Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -585,7 +585,7 @@ pghandle pgFindWidget(const char* str) {
   /* Passing the NULL terminator to the server is redundant.
    * no need for a +1 on that strlen...
    */
-  _pg_add_request(PGREQ_FINDWIDGET,(void *) str,strlen(str));
+  _pg_add_request(PGREQ_FINDWIDGET,(void *) str,strlen(str)+1);
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
