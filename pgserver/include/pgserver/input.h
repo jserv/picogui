@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.51 2003/01/01 03:43:00 micahjd Exp $
+/* $Id: input.h,v 1.52 2003/01/19 09:25:50 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -306,6 +306,7 @@ g_error ttykb_regfunc(struct inlib *i);
 g_error remorakb_regfunc(struct inlib *i);
 g_error serialmouse_regfunc(struct inlib *i);
 g_error x11input_regfunc(struct inlib *i);
+g_error vncinput_regfunc(struct inlib *i);
 g_error palmaxts_regfunc(struct inlib *i);
 g_error gpm_regfunc(struct inlib *i);
 g_error mgl2input_regfunc(struct inlib *i);

@@ -156,6 +156,7 @@ add_if_true remorakb.c           $DRIVER_REMORAKB
 add_if_true serialmouse.c        $DRIVER_SERIALMOUSE
 add_if_true ps2mouse.c           $DRIVER_PS2MOUSE
 add_if_true x11input.c           $DRIVER_X11INPUT
+add_if_true vncinput.c           $DRIVER_VNCINPUT
 add_if_true palmaxts.c	         $DRIVER_PALMAXTS
 add_if_true sc3ts.c              $DRIVER_SC3TS
 add_if_true mgl2input.c          $DRIVER_MGL2INPUT

@@ -1,4 +1,4 @@
-/* $Id: vncserver.c,v 1.3 2003/01/19 08:15:05 micahjd Exp $
+/* $Id: vncserver.c,v 1.4 2003/01/19 09:25:51 micahjd Exp $
  *
  * vncserver.c - Video driver that runs a VNC server and processes
  *               input events for multiple clients, using the
@@ -29,6 +29,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+#include <pgserver/input.h>
 #include <pgserver/configfile.h>
 #include "libvncserver/rfb.h"
 
@@ -52,8 +53,9 @@ g_error vncserver_init(void) {
 }
 
 void vncserver_close(void) {
-   if (FB_MEM)
-     g_free(FB_MEM);
+  unload_inlib(inlib_main);   /* Take out our input driver */
+  if (FB_MEM)
+    g_free(FB_MEM);
 }
 
 g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
@@ -64,7 +66,7 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
        return success;
      else {
        /* Error setting video mode
-	* (we can't stop the event thread yet)
+	* (libvncserver can't yet handle reinitializing)
 	*/
        return mkerror(PG_ERRT_BADPARAM, 47); 
      }
@@ -101,9 +103,9 @@ g_error vncserver_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
    /* Set up the RFB server */
    rfbInitServer(vncserver_screeninfo);
-   rfbRunEventLoop(vncserver_screeninfo,-1,TRUE);
    
-   return success; 
+   /* Load the input driver */
+   return load_inlib(&vncinput_regfunc,&inlib_main);
 }
  
 void vncserver_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {

@@ -35,6 +35,7 @@ EXTRA_libinput_la_SOURCES = \
 	remorakb.c \
 	serialmouse.c \
 	x11input.c \
+	vncinput.c \
 	mgl2input.c \
 	adc7843.c \
 	zaurus.c \

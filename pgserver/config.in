@@ -142,6 +142,7 @@ bool 'Compaq iPAQ H3600 touchscreen input driver'	 DRIVER_H3600TS
 bool 'Psion touchscreen (adc7843) driver'               DRIVER_ADC7843
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
 bool 'X Window System input driver'                     DRIVER_X11INPUT
+bool 'VNC Remote Framebuffer input driver'              DRIVER_VNCINPUT
 bool 'SVGAlib input driver'                             DRIVER_SVGAINPUT
 bool 'Ncurses input driver'                             DRIVER_NCURSESINPUT
 bool 'GPM input driver'			                DRIVER_GPM

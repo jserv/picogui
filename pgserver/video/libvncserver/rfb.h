@@ -1,8 +1,6 @@
 #ifndef RFB_H
 #define RFB_H
 
-#define HAVE_PTHREADS
-
 /*
  * rfb.h - header file for RFB DDX implementation.
  */
@@ -106,7 +104,9 @@ typedef unsigned long KeySym;
 #undef SOCKET
 #define SOCKET int
 #else
+#ifndef max
 #define max(a,b) (((a)>(b))?(a):(b))
+#endif
 #include <sys/time.h>
 #include <netinet/in.h>
 #define SOCKET int
