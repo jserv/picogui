@@ -792,7 +792,6 @@ function parse_config_files () {
 
 	echo "comment ''"	>>MCmenu0
 	echo "g_alt_config" 	>>MCmenu0
-	echo "s_alt_config" 	>>MCmenu0
 
 	echo "}" >>MCmenu0
 
@@ -976,68 +975,6 @@ EOM
 	rm -f help.out MCdialog.out
 }
 
-#
-# Create a menu item to store an alternate config file.
-#
-s_alt_config () {
-	echo -n "save_alt_config 'Save Configuration to an Alternate File' "\
-		 >>MCmenu
-}
-
-#
-# Get an alternate config file name and save the current
-# configuration to it.
-#
-save_alt_config () {
-	set -f  ## Switch file expansion OFF
-			
-	while true
-	do
-		$DIALOG --backtitle "$backtitle" \
-			--inputbox "\
-Enter a filename to which this configuration should be saved \
-as an alternate.  Leave blank to abort."\
-			10 55 "$ALT_CONFIG" 2>MCdialog.out
-
-		if [ "$?" = "0" ]
-		then
-			ALT_CONFIG=`cat MCdialog.out`
-
-			[ "_" = "_$ALT_CONFIG" ] && break
-
-			if eval touch $ALT_CONFIG 2>/dev/null
-			then
-				eval save_configuration $ALT_CONFIG
-				load_functions  ## RELOAD
-				break
-			else
-				echo -ne "\007"
-				$DIALOG	--backtitle "$backtitle" \
-					--infobox "Can't create file!  Probably a nonexistent directory." 3 60
-				sleep 2
-			fi
-		else
-			cat <<EOM >help.out
-
-For various reasons, one may wish to keep different PicoGUI
-configurations available on a single machine.  
-
-Entering a file name here will allow you to later retrieve, modify
-and use the current configuration as an alternate to whatever 
-configuration options you have selected at that time.
-
-If you are uncertain what all this means then you should probably
-leave this blank.
-EOM
-			$DIALOG	--backtitle "$backtitle"\
-				--title "Save Alternate Configuration"\
-				--textbox help.out $ROWS $COLS
-		fi
-	done
-
-	set +f  ## Switch file expansion ON
-	rm -f help.out MCdialog.out
-}
 
 #
 # Load config options from a file.
@@ -1262,9 +1199,6 @@ save_configuration () {
 
 	echo -n "."
 
-	DEF_CONFIG="${1:-.config}"
-	DEF_CONFIG_H="include/pgserver/autoconf.h"
-
 	CONFIG=.tmpconfig
 	CONFIG_H=.tmpconfig.h
 
@@ -1280,20 +1214,10 @@ save_configuration () {
 	echo -n "."
 	if . $CONFIG_IN >>.menuconfig.log 2>&1
 	then
-		if [ "$DEF_CONFIG" = ".config" ]
-		then
-			mv $CONFIG_H $DEF_CONFIG_H
-		fi
+	    mv -f $CONFIG   .config
+	    mv -f $CONFIG_H .config.h
 
-		if [ -f "$DEF_CONFIG" ]
-		then
-			rm -f ${DEF_CONFIG}.old
-			mv $DEF_CONFIG ${DEF_CONFIG}.old
-		fi
-
-		mv $CONFIG $DEF_CONFIG
-			
-		return 0
+	    return 0
 	else
 		return 1
 	fi
@@ -1379,14 +1303,17 @@ trap "cleanup ; exit 1" 1 2 15
 #
 # Locate default files.
 #
+
 CONFIG_IN=./config.in
 if [ "$1" != "" ] ; then
 	CONFIG_IN=$1
+	shift
 fi
 
-DEFAULTS=config.defaults
-if [ -f .config ]; then
-  DEFAULTS=.config
+DEFAULTS=.config
+if [ "$1" != "" ] ; then
+	DEFAULTS=$1
+	shift
 fi
 
 if [ -f $DEFAULTS ]
@@ -1441,12 +1368,7 @@ if $DIALOG --backtitle "$backtitle" \
 	   --yesno "Do you wish to save your new configuration?" 5 60
 then
 	save_configuration
-	echo
-	echo
-	echo "*** End of PicoGUI configuration. Now run 'make'"
-	echo
 else
-	echo
     	echo 
 	echo Your configuration changes were NOT saved.
 	echo

@@ -541,11 +541,13 @@ fi
 CONFIG_IN=./config.in
 if [ "$1" != "" ] ; then
 	CONFIG_IN=$1
+	shift
 fi
 
-DEFAULTS=config.defaults
-if [ -f .config ]; then
-  DEFAULTS=.config
+DEFAULTS=.config
+if [ "$1" != "" ] ; then
+	DEFAULTS=$1
+	shift
 fi
 
 if [ -f $DEFAULTS ]; then
@@ -564,14 +566,7 @@ fi
 
 . $CONFIG_IN
 
-rm -f .config.old
-if [ -f .config ]; then
-	mv .config .config.old
-fi
-mv .tmpconfig .config
-mv .tmpconfig.h include/pgserver/autoconf.h
-
-echo
-echo "*** End of PicoGUI configuration. Now run 'make'"
+mv -f .tmpconfig   .config
+mv -f .tmpconfig.h .config.h
 
 exit 0

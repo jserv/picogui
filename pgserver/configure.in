@@ -1,0 +1,249 @@
+dnl -*- m4 -*-
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(appmgr/global.c)
+AM_CONFIG_HEADER(config.h)
+AM_ACLOCAL_INCLUDE(macros)
+
+AM_INIT_AUTOMAKE(picogui, 0.0)
+
+AM_PGUI_CROSSCOMPILE
+
+dnl Get the configuration file for the system
+
+AC_ARG_WITH(config,
+[  --with-config=<config file>   Use given configuration file],,
+  with_config="${srcdir}/config.defaults")
+
+
+dnl normalize the path somehow
+CONFIG_FILE=$with_config
+CONFIG_FILE=`echo $CONFIG_FILE`
+
+case "$CONFIG_FILE" in
+  /*)	;;
+   *)	CONFIG_FILE="`pwd`/${CONFIG_FILE}"
+	;;
+esac
+
+AC_MSG_CHECKING([if the configuration file is readable])
+
+if test -r "$CONFIG_FILE" ; then
+  AC_MSG_RESULT($with_config)
+else
+  AC_MSG_RESULT($CONFIG_FILE not found)
+  AC_MSG_ERROR([cannot find configuration file])
+fi
+
+AC_SUBST(CONFIG_FILE)
+
+
+dnl Use the configuration file to determine the requested files
+eval `source $CONFIG_FILE && source ${srcdir}/select.in`
+
+if test $? != "0" ; then
+  AC_MSG_ERROR([problem while parsing configuration])
+fi
+
+AC_SUBST(WIDGET)
+AC_SUBST(DEBUGGING)
+AC_SUBST(VIDBASE)
+AC_SUBST(DRIVER)
+AC_SUBST(VIDWRAP)
+AC_SUBST(INPUT)
+AC_SUBST(FORMATS)
+
+dnl Check for perl
+
+AC_PATH_PROGS(PERL, perl5 perl,
+	AC_MSG_ERROR([you need perl]))
+
+AC_SUBST(PERL)
+
+
+dnl Check for ncurses _on the build system_
+if test "$cross_compiling" = "yes" ; then
+
+  old_CC="$CC"
+  old_CPP="$CPP"
+
+  CC="$CC_FOR_BUILD"
+  CPP="$CC -E"
+
+  AC_CHECK_LIB(ncurses, delscreen, [
+      LXDIALOG="lxdialog"
+      AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
+    ], [  
+      LXDIALOG="" 
+      AC_MSG_WARN([menuconfig won't be available])
+    ])
+
+  CC="$old_CC"
+  CPP="$old_CPP"
+  
+else
+
+  AC_CHECK_LIB(ncurses, delscreen, [
+      LXDIALOG="lxdialog"
+      AC_CHECK_HEADERS(ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h)
+    ], [  
+      LXDIALOG="" 
+      AC_MSG_WARN([menuconfig won't be available])
+    ])
+
+fi
+
+AC_SUBST(LXDIALOG)
+
+
+CFLAGS=""
+
+dnl ==================================================
+dnl Extra libraries depending on the selected profile
+dnl ==================================================
+
+dnl Eventually check for SDL
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SDLFB DRIVER_SDL, [ 
+
+  AM_PATH_SDL(1.0.0, , AC_MSG_ERROR(cannot find SDL))
+
+  DRIVER_CFLAGS="${SDL_CFLAGS}"
+  DRIVER_LIBS="${SDL_LIBS}" 
+])
+
+dnl Check for VGA & VGAGL
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAGL, [
+
+  AC_CHECK_LIB(vga, vga_init,, AC_MSG_ERROR([cannot find libvga]))
+  AC_CHECK_LIB(vgagl, gl_clearscreen,, AC_MSG_ERROR([can't find libvgagl]))
+
+  DRIVER_LIBS="-lvga -lvgagl"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_SVGAFB, [
+
+  AC_CHECK_LIB(vga, vga_init,, AC_MSG_ERROR(cannot find libvga))
+
+  DRIVER_LIBS="-lvga"
+])
+
+
+dnl check for ncurses & gpm
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
+
+  AC_CHECK_LIB(ncurses, delscreen,, AC_MSG_ERROR([can't find libncurses]))
+
+  DRIVER_LIBS="-lncurses"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, DRIVER_NCURSES, [
+
+  AC_CHECK_LIB(gpm, Gpm_Open,, AC_MSG_ERROR([can't find libgpm]))
+
+  DRIVER_LIBS="-lgpm"
+])
+
+# More compiler flags...
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_NO_OPTIMIZE,, [
+  CFLAGS="${CFLAGS} -O3"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_EFENCE, [
+   LDFLAGS="${LDFLAGS} -lefence"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_GCOV, [
+   CFLAGS="${CFLAGS} -fprofile-arcs -ftest-coverage"
+])
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_GPROF, [
+   CFLAGS="${CFLAGS} -pg"
+   LDFLAGS="${LDFLAGS} -pg"
+])
+
+
+AM_PGUI_CONFIG($CONFIG_FILE, CONFIG_NOSTRIP, [
+  CFLAGS="${CFLAGS} -g" 
+], [
+  CFLAGS="${CFLAGS} -fomit-frame-pointer" 
+])
+
+AC_SUBST(DRIVER_CFLAGS)
+AC_SUBST(DRIVER_LIBS)
+
+dnl Check target architecture
+
+LIB_OS=""
+
+case "$host" in
+  m68k-pic-*)
+	CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR"
+	PLATFORM="uclinux"
+	LIB_OS="os/${PLATFORM}/libos.a"
+	;;
+  mipsel-*)
+	CFLAGS="${CFLAGS} -msoft-float"
+	;;
+esac
+
+AC_SUBST(PLATFORM)
+AC_SUBST(LIB_OS)
+
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h malloc.h sys/ioctl.h sys/time.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MMAP
+AC_TYPE_SIGNAL
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(gettimeofday select socket strerror strspn strtol)
+
+AC_OUTPUT(
+	Makefile
+	widget/Makefile
+	appmgr/Makefile
+	debug/Makefile
+	gcore/Makefile
+	net/Makefile
+	vidbase/Makefile
+	theme/Makefile
+	video/Makefile
+	os/Makefile
+	os/uclinux/Makefile
+	vidwrap/Makefile
+	input/Makefile
+	font/Makefile
+	include/Makefile
+	include/pgserver/Makefile
+	include/picogui/Makefile
+	configscript/Makefile
+	configscript/lxdialog/Makefile
+	formats/Makefile
+)
+
+echo
+echo "$PACKAGE, version $VERSION"
+echo "--------------------------------------------------"
+echo
+echo "Profile read from: $with_config"
+echo
+echo "widgets:  $WIDGET"
+echo "debug:    $DEBUGGING"
+echo "vidbase:  $VIDBASE"
+echo "driver:   $DRIVER"
+echo "wrappers: $VIDWRAP"
+echo "input:    $INPUT"
+echo "formats:  $FORMATS"
+echo 

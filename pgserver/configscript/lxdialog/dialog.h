@@ -26,7 +26,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include CURSES_LOC
+#include "config.h"
+
+#ifdef HAVE_NCURSES_NCURSES_H
+#include <ncurses/ncurses.h>
+#elif HAVE_NCURSES_CURSES_H
+#include <ncurses/curses.h>
+#elif HAVE_NCURSES_H
+#include <ncurses.h>
+#elif HAVE_CURSES_H
+#include <curses.h>
+#endif
 
 /*
  * Colors in ncurses 1.9.9e do not work properly since foreground and

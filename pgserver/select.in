@@ -1,0 +1,89 @@
+# -*- sh -*-
+
+open_section () {
+  SRC=""
+  NAME="$1"
+}
+close_section () {
+  echo "$NAME=\"$SRC\""
+}
+add_if_true () {
+  if [ "$2" = "y" ] ; then
+    SRC="$SRC $1"
+  fi
+}
+add_if_false () {
+  if [ "$2" != "y" ] ; then
+    SRC="$SRC $1"
+  fi
+}
+
+# Optional widgets
+
+open_section WIDGET
+
+add_if_true  terminal.c    $CONFIG_WIDGET_TERMINAL
+add_if_true  canvas.c      $CONFIG_WIDGET_CANVAS
+add_if_true  panel_nobar.c $CONFIG_NOPANELBAR
+add_if_false panel.c       $CONFIG_NOPANELBAR
+
+close_section
+
+# Debugging
+open_section DEBUGGING
+
+add_if_true videotest.c $CONFIG_VIDEOTEST
+
+close_section
+
+# Video base libraries
+open_section VIDBASE
+
+add_if_true linear1.c  $CONFIG_VBL_LINEAR1
+add_if_true linear2.c  $CONFIG_VBL_LINEAR2
+add_if_true linear4.c  $CONFIG_VBL_LINEAR4
+add_if_true linear8.c  $CONFIG_VBL_LINEAR8
+add_if_true linear16.c $CONFIG_VBL_LINEAR16
+
+close_section
+
+# Drivers
+open_section DRIVER
+
+add_if_true svgagl.c  $DRIVER_SVGAGL
+add_if_true ez328.c   $DRIVER_EZ328
+add_if_true sdl.c     $DRIVER_SDL
+add_if_true sdlfb.c   $DRIVER_SDLFB
+add_if_true svgafb.c  $DRIVER_SVGAFB
+add_if_true ncurses.c $DRIVER_NCURSES
+add_if_true null.c    $DRIVER_NULL
+add_if_true fbdev.c   $DRIVER_FBDEV
+
+close_section
+
+# Video wrappers
+open_section VIDWRAP
+
+add_if_true rotate90.c $CONFIG_ROTATE
+
+close_section
+
+# Input Drivers
+
+open_section INPUT
+
+add_if_true sdlinput.c     $DRIVER_SDLINPUT
+add_if_true svgainput.c    $DRIVER_SVGAINPUT
+add_if_true ncursesinput.c $DRIVER_NCURSESINPUT
+add_if_true tsinput.c      $DRIVER_TSINPUT
+add_if_true r3912ts.c      $DRIVER_R3912TS
+
+close_section
+
+# Bitmap formats
+open_section FORMATS
+
+add_if_true pnm.c $CONFIG_FORMAT_PNM
+
+close_section
+

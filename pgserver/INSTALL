@@ -1,0 +1,98 @@
+-*- text -*-
+
+* Installation from CVS :
+  -----------------------
+
+ 1. - run ./autogen.sh *once*, tu setup your autoconf environment.
+ 2. - from there, proceed as for the tarball installation
+
+
+* Installation from a tarball archive :
+  -------------------------------------
+
+ 1. - run the ./configure script, eventually with some options :
+
+          --with-config=<config> to specify your pgui settings
+
+	  --help                 for a complete list of options
+
+
+ 2. - if you want to customize the configuration file defined at step
+      1, use :
+
+	 make config
+  or     make menuconfig
+
+      WARNING: there is no more .config file. This operation will edit
+      the configuration passed as option at step 1.
+
+ 3. - Compile the server :
+
+         make
+
+ 4. - That's it. You can also use the following make targets for
+      various tasks :
+
+	 make clean      to remove compilation objects
+
+	 make distclean  to remove generated files
+
+	 make dist       to create a tar.gz archive of the project
+
+	 make tags       to create a TAG file suitable for use with
+			 emacs
+
+
+* Crosscompilation
+  ----------------
+
+  Crosscompiling requires additional parameters for the ./configure
+  script. Let's say you want to compile for a host of type
+  m68k-pic-coff, from a linux box:
+
+	./configure --host=m68k-pic-coff --build=i686-pc-linux-gnu
+
+  To avoid typing the build platform, it is possible to use
+
+	./configure --host=m68k-pic-coff --build=`config.guess`
+
+  These operations assume that the gcc/ld/ar commands are actually
+  cross-compiling tools. If the cross-tools are called differently,
+  they have to be specified as environment variables :
+
+       CC=cross-gcc LD=cross-ld ./configure --host=m68k-pic-coff --build=`config.guess`
+
+  Usually, the tools are prefixed with the same name as the
+  compilation host (ie m68k-pic-coff-gcc). I've provided a shortcut in
+  that case :
+
+       ./configure --host=m68k-pic-coff --build=`config.guess` --with-prefix
+
+  This whole stuff is less a constraint as it appears at first, as the
+  configuration is usually done only once. In addition, there is a
+  nice counterpart, explained in the next section.
+
+
+* Multiple compilations
+  ---------------------
+
+  It is possible to compile the same source files with different
+  configuration options and different pgui settings :
+
+   1. - create a directory somewhere. let's call it uclinux/.
+
+   2. - go in the directory and run
+
+	   /path/to/configure --your-options
+
+   3. - type make there. The makefile will use the sources located
+        where the configure script is located.
+
+  You can create as many different directories like that with
+  different configuration parameters, which will all check the
+  dependencies from the same source files.
+
+  The only constraint is that you cannot compile with this model *and*
+  with your objects in the source tree in the same time.
+
+Enjoy !

@@ -1,0 +1,20 @@
+CC = @CC_FOR_BUILD@
+CFLAGS = -O2
+
+noinst_PROGRAMS  = lxdialog
+
+lxdialog_SOURCES = \
+	checklist.c \
+	colors.h \
+	dialog.h \
+	inputbox.c \
+	lxdialog.c \
+	menubox.c \
+	msgbox.c \
+	textbox.c \
+	util.c \
+	yesno.c
+
+lxdialog_LDADD = -lncurses
+
+EXTRA_DIST = BIG.FAT.WARNING

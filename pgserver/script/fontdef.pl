@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.10 2001/03/07 04:10:13 micahjd Exp $
+# $Id: fontdef.pl,v 1.11 2001/04/25 09:54:32 gobry Exp $
 #
 # This reads in .fi files, and creates the static linked list
 # of font styles.  It also uses cnvfont to load the .fdf files
@@ -34,17 +34,20 @@ print <<EOF;
 EOF
 
 # Find which fonts we need from .config
-open CONFFILE,".config" or die "Can't open .config: $!";
+$conffile = shift or die "gimme a config file !";
+$fontdir  = shift or ".";
+
+open CONFFILE, $conffile or die "Can't open $conffile: $!";
 while (<CONFFILE>) {
       next if (/#/);
       if (/FONT_([^\s=]+)/) {
-      	 push @fontfiles, "font/".lc($1).".fi";
+      	 push @fontfiles, lc($1).".fi";
       }
 }
 close CONFFILE;
 
 foreach $file (@fontfiles) {
-    open FIFILE,$file or die "Can't open the font '$file': $!";
+    open FIFILE, "$fontdir/$file" or die "Can't open the font '$file': $!";
     %fiparam = ();
     while (<FIFILE>) {
 	chomp;
@@ -84,8 +87,129 @@ foreach $file (@fontfiles) {
 
 # Build the font datas
 foreach (sort keys %fdfs) {
-    open FDATA,"script/cnvfont.1bpp.pl < font/$_.fdf |";
-    print <FDATA>;
+    open FDATA,"$fontdir/$_.fdf";
+
+    $hspace = 1;
+    $vspace = 1;
+    $fg = 15;
+    $bg = 0;
+    $num = $size = 0;
+
+    @trtab = ();
+    @vwtab = ();
+    @bitmaps = ();
+
+    for ($i=0;$i<256;$i++) {
+	push @trtab,-1;
+	push @vwtab,0;
+    }
+    
+    while (<FDATA>) {
+	chomp;
+	if (/^\s*\#/) {
+	    print "/* $_ */\n";
+	}
+	elsif (/\[([^\]]*)\](.*)/) {
+	    $fntname = $1;
+	    $param   = $2;
+	    if ($param =~ /\(\s*([\-0-9]+)\s*,\s*([\-0-9]+)\s*\)/) {
+		$hspace = $1;
+		$vspace = $2;
+	    }
+	    if ($param =~ /b([\-0-9]+)/) {
+		for ($i=0;$i<256;$i++) {
+		    $vwtab[$i] = $1;
+		}
+	    }
+	}
+	elsif (/:/) {
+	    if (/\'(.)\'/) {
+		$asc = ord($1);
+	    }
+	    elsif (/\#([0-9]+)/) {
+		$asc = $1;
+	    }
+	    $trtab[$asc] = $size;
+	    $dat = '';
+	    $h = 0;
+	    while (<FDATA>) {
+		last if (!/\S/);
+		s/\s//g;
+		$w = length $_;
+		s/\./0/g;
+		s/[^0]/1/g;
+		while ((length($_)%8)) {$_ .= '0'}
+		$dat .= $_;
+		$h++;
+	    }
+	    $_ = $dat;
+	    $dat = '';
+	    $bw = 0;
+	    while (s/^(.{8})//) {
+		$dat .= '0x'.unpack('H2',pack('B8',$1)).',';
+		$bw++;  # bytes
+	    }
+	    chop $dat;
+	    $vwtab[$asc] = $w;
+	    $size += $bw;
+	    push @bitmaps,$dat;
+	    $num++;
+	}
+    }
+    
+    # Character translation table
+    print "\nlong const ${fntname}_tr[256] = {\n";
+    $com = ',';
+    for ($i=0;$i<256;$i++) {
+	$com = ' ' if ($i==255);
+	if ($i>=ord(' ') and $i<=ord('z')) {
+	    $c = '\''.chr($i)."' ";
+	}
+	else {
+	    $c = '';
+	}
+	print "\t$trtab[$i]$com\t/* $i ${c}*/\n";
+    }
+    print "};\n";
+    
+    # Variable width table
+    if (!$fixed) {
+	print "\nunsigned char const ${fntname}_vw[256] = {\n";
+	$com = ',';
+	for ($i=0;$i<256;$i++) {
+	    $com = ' ' if ($i==255);
+	    if ($i>=ord(' ') and $i<=ord('z')) {
+		$c = '\''.chr($i)."' ";
+	    }
+	    else {
+		$c = '';
+	    }
+	    print "\t$vwtab[$i]$com\t/* $i $c*/\n";
+	}
+	print "};\n";
+    }
+    
+    # Bitmap data
+    print "\nunsigned char const ${fntname}_bits[$size] = {\n";
+    $com = ',';
+    for ($i=0;$i<$num;$i++) {
+	$com = ' ' if ($i==$num-1);
+	print "\t$bitmaps[$i]$com\t/* $i */\n";
+    }
+    print "};\n";
+    
+    print "\nstruct font const $fntname = {\n\t";
+    print "${fntname}_bits, $h, $hspace, $vspace, ${fntname}_vw, ${fntname}_tr";
+    $hdrs = 256*5;
+    print "\n};\n";
+    
+    $totalsize = $hdrs+$size;
+    print STDERR "Summary of font [$fntname] :\n";
+    print STDERR "\theaders = $hdrs\n";
+    print STDERR "\tchardata = $size\n";
+    print STDERR "\tnumchars = $num\n";
+    print STDERR "\ttotalsize = $totalsize\n";
+
     close FDATA;
 }
 
