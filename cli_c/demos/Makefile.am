@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2001/07/30 04:42:06 micahjd Exp $
+# $Id: Makefile.am,v 1.6 2001/08/10 19:40:14 micahjd Exp $
 
 noinst_PROGRAMS = \
 	abstest 		\
@@ -13,9 +13,10 @@ noinst_PROGRAMS = \
 	pgfx_canvas_persistent 	\
 	themedemo 		\
 	vidpopup                \
-	offscreen        \
-	scrsaver			  \
-	dialogdemo
+	offscreen               \
+	scrsaver	        \
+	dialogdemo              \
+	animbutton
 
 noinst_SCRIPTS = Demo.app
 
