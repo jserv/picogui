@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.7 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: video.h,v 1.8 2000/08/07 10:04:11 micahjd Exp $
  *
  * video.h - generic hardware defines (common to all drivers)
  *
@@ -105,6 +105,11 @@ g_error hwrbit_xbm(struct bitmap **bmp,
 		   devcolort fg, devcolort bg);
 g_error hwrbit_pnm(struct bitmap **bmp,
 		   unsigned char *data,unsigned long datalen);
+
+/* Create an empty bitmap of w,h pixels
+   (for use with hwr_blit- backing stores, screenshots, etc...)
+*/
+g_error hwrbit_new(struct bitmap **bmp,int w,int h);
 
 /* Free an allocated bitmap */
 void hwrbit_free(struct bitmap *b);

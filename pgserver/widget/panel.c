@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.15 2000/08/06 20:35:10 micahjd Exp $
+/* $Id: panel.c,v 1.16 2000/08/07 10:04:13 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -31,16 +31,26 @@
 #include <theme.h>
 #include <timer.h>
 
+#define PANELMARGIN (HWG_MARGIN<<1)
+
 #define PANELBAR_SIZE 15
 
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
+
+/* A shortcut... */
+#define PANELBAR_DIV self->in->next->div
 
 struct paneldata {
   int on,over;
   int grab_offset;  /* Difference between side of panel bar
 		       and the point it was clicked */
   unsigned long wait_tick;    /* To limit the frame rate */
+
+  struct bitmap *bar,*behindbar;
+
+  /* Location and previous location for the bar */
+  int x,y,ox,oy;
 };
 #define DATA ((struct paneldata *)(self->data))
 
@@ -72,21 +82,29 @@ g_error panel_install(struct widget *self) {
   if (e.type != ERRT_NONE) return e;
   memset(self->data,0,sizeof(struct paneldata));
 
+  /* This split determines the size of the main panel area */
   e = newdiv(&self->in,self);
   if (e.type != ERRT_NONE) return e;
   self->in->flags |= S_TOP;
 
+  /* This draws the panel background and provides a border */
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
+  self->in->div->flags |= DIVNODE_SPLIT_BORDER;
+  self->in->div->split = PANELMARGIN;
   self->in->div->on_recalc = &panel;
 
+  /* Split off another chunk of space for the bar */
   e = newdiv(&self->in->next,self);
   if (e.type != ERRT_NONE) return e;
-  self->in->next->on_recalc = &panelbar;
   self->in->next->flags |= S_TOP;
   self->in->next->split = PANELBAR_SIZE;
 
-  self->sub = &self->in->next->div;
+  /* And finally, the divnode that draws the panelbar */
+  e = newdiv(&self->in->next->div,self);
+  self->in->next->div->on_recalc = &panelbar;
+
+  self->sub = &self->in->div->div;
   self->out = &self->in->next->next;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
@@ -134,6 +152,7 @@ glob panel_get(struct widget *self,int property) {
 
 void panel_trigger(struct widget *self,long type,union trigparam *param) {
   unsigned long tick;
+  g_error e;
 
   switch (type) {
 
@@ -153,16 +172,16 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
        panel bar. */
     switch (self->in->flags & (~SIDEMASK)) {
     case S_TOP:
-      DATA->grab_offset = param->mouse.y - self->in->next->y;
+      DATA->grab_offset = param->mouse.y - PANELBAR_DIV->y;
       break;
     case S_BOTTOM:
-      DATA->grab_offset = self->in->next->y - param->mouse.y;
+      DATA->grab_offset = PANELBAR_DIV->y + PANELBAR_DIV->h - 1 - param->mouse.y;
       break;
     case S_LEFT:
-      DATA->grab_offset = param->mouse.x - self->in->next->x;
+      DATA->grab_offset = param->mouse.x - PANELBAR_DIV->x;
       break;
     case S_RIGHT:
-      DATA->grab_offset = self->in->next->x - param->mouse.x;
+      DATA->grab_offset = PANELBAR_DIV->x + PANELBAR_DIV->w - 1 - param->mouse.x;
       break;
     }
 
@@ -170,11 +189,60 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->grab_offset<0) return;
 
     DATA->on = 1;
+
+    /* Lock the screen */
+    dts_push();
+
+    /* Create a bitmap for the panelbar, and for
+       the stuff behind it */
+    DATA->bar = DATA->behindbar = NULL;
+    hwrbit_new(&DATA->bar,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    hwrbit_new(&DATA->behindbar,PANELBAR_DIV->w,PANELBAR_DIV->h);
+
+    /* Grab a bitmap of the panelbar */
+    hwr_blit(NULL,LGOP_NONE,NULL,PANELBAR_DIV->x,
+	     PANELBAR_DIV->y,DATA->bar,0,0,
+	     PANELBAR_DIV->w,PANELBAR_DIV->h);
+
+    /* Reset ox and oy */
+    DATA->ox = DATA->oy = -1;
+
     break;
 
   case TRIGGER_UP:
   case TRIGGER_RELEASE:
+    if (!DATA->on) return;
     if (param->mouse.chbtn != 1) return;
+
+    /* Now use grab_offset to calculate a new split value */
+    switch (self->in->flags & (~SIDEMASK)) {
+    case S_TOP:
+      self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
+      break;
+    case S_BOTTOM:
+      self->in->split = self->in->y + self->in->h - 1 -
+	param->mouse.y - DATA->grab_offset;
+      break;
+    case S_LEFT:
+      self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
+      break;
+    case S_RIGHT:
+      self->in->split = self->in->x + self->in->w - 1 -
+	param->mouse.x - DATA->grab_offset;
+      break;
+    }
+    if (self->in->split < 0) self->in->split = 0;
+    
+    /* Do a recalc, because we just changed everything's size */
+    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+    self->dt->flags |= DIVTREE_NEED_RECALC;
+
+    /* Unlock it */
+    dts_pop();
+
+    hwrbit_free(DATA->bar);
+    hwrbit_free(DATA->behindbar);
+
     DATA->on = 0;
     break;
 
@@ -188,27 +256,45 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     if (tick < DATA->wait_tick) break;
     DATA->wait_tick = tick + DRAG_DELAY;
 
-    /* Now use grab_offset to calculate a new split value */
+    /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {
     case S_TOP:
-      self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
+      DATA->x = PANELBAR_DIV->x;
+      DATA->y = param->mouse.y - DATA->grab_offset;
       break;
     case S_BOTTOM:
-      self->in->split = self->in->y + self->in->h - param->mouse.y - DATA->grab_offset;
+      DATA->x = PANELBAR_DIV->x;
+      DATA->y = param->mouse.y - DATA->grab_offset;
       break;
     case S_LEFT:
-      self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
+      DATA->y = PANELBAR_DIV->y;
+      DATA->x = param->mouse.x - DATA->grab_offset;
       break;
     case S_RIGHT:
-      self->in->split = self->in->x + self->in->w - param->mouse.x - DATA->grab_offset;
+      DATA->y = PANELBAR_DIV->y;
+      DATA->x = param->mouse.x - DATA->grab_offset;
       break;
     }
-    if (self->in->split < 0) self->in->split = 0;
 
-    /* Do a recalc, because we just changed everything's size */
-    self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
+    /* Put back the old image */
+    if (DATA->ox != -1)
+      hwr_blit(NULL,LGOP_NONE,DATA->behindbar,0,0,NULL,
+	       DATA->ox,DATA->oy,PANELBAR_DIV->w,PANELBAR_DIV->h);
+    
+    /* Grab a new one */
+    DATA->ox = DATA->x; DATA->oy = DATA->y;
+    hwr_blit(NULL,LGOP_NONE,NULL,DATA->ox,DATA->oy,DATA->behindbar,
+	     0,0,PANELBAR_DIV->w,PANELBAR_DIV->h);
+
+    /* Do a Bit Block Transfer (tm)   :-)  */
+    hwr_blit(NULL,LGOP_NONE,DATA->bar,0,0,NULL,
+	     DATA->x,DATA->y,PANELBAR_DIV->w,PANELBAR_DIV->h);
+
+    /* Because we have this divtree to ourselves, do
+     * the hwr_update() directly. */
+    hwr_update();
+
+    return;
 
   }
 

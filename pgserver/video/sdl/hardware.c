@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.16 2000/06/10 14:15:56 micahjd Exp $
+/* $Id: hardware.c,v 1.17 2000/08/07 10:04:13 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -538,7 +538,6 @@ void hwr_blit(struct cliprect *clip, int lgop,
   devbmpt s,d,sl,dl;
   int i,scrbuf=0;
   int s_of,d_of; /* Pixel offset between lines */
-  extendrect(clip);
 
   if (lgop==LGOP_NULL) return;
   if (w<=0) return;
@@ -555,15 +554,6 @@ void hwr_blit(struct cliprect *clip, int lgop,
     return;
   }
   
-  if (!src) {
-    src = &screenb;
-    scrbuf = 1;
-  }
-  if (!dest) {
-    dest = &screenb;
-    scrbuf = 1;
-  }
-
   if (clip) {
     if ((dest_x+w-1)>clip->x2) w = clip->x2-dest_x+1;
     if ((dest_y+h-1)>clip->y2) h = clip->y2-dest_y+1;
@@ -578,6 +568,24 @@ void hwr_blit(struct cliprect *clip, int lgop,
       dest_y = clip->y;
     }
     if (w<=0 || h<=0) return;
+  }
+  else {
+    struct cliprect cr;
+    cr.x = dest_x;
+    cr.y = dest_y;
+    cr.x2 = dest_x+w-1;
+    cr.y2 = dest_y+h-1;
+    clip = &cr;
+  }
+
+  if (!src) {
+    src = &screenb;
+    scrbuf = 1;
+  }
+  if (!dest) {
+    dest = &screenb;
+    scrbuf = 1;
+    extendrect(clip);
   }
 
   if (scrbuf) {
@@ -761,6 +769,26 @@ void hwr_chrblit(struct cliprect *clip, unsigned char *chardat,int dest_x,
   SDL_UnlockSurface(screen);
 }
 
+/* Make a new uninitialized bitmap */
+g_error hwrbit_new(struct bitmap **bmp,int w,int h) {
+  devbmpt b;
+  g_error e;
+
+  e = g_malloc((void **) &b,w*h*HWR_PIXELW);
+  if (e.type != ERRT_NONE) return e;
+
+  e = g_malloc((void **) bmp,sizeof(struct bitmap));
+  if (e.type != ERRT_NONE) return e;
+
+  (*bmp)->bits = b;
+  (*bmp)->freebits = 1;
+  (*bmp)->w = w;
+  (*bmp)->h = h;
+  
+  return sucess;
+}
+
+
 /* The following functions allocate a device-specific bitmap
  * and convert the supplied data. They are named based on the
  * format they accept.
@@ -805,6 +833,7 @@ g_error hwrbit_xbm(struct bitmap **bmp,
 }
 
 void hwrbit_free(struct bitmap *b) {
+  if (!b) return;
   if (b->freebits) g_free(b->bits);
   g_free(b);
 }
