@@ -205,12 +205,16 @@ class Interface(object):
         if listPath:
             self.list(listPath)
 
+    def exitWithError(self, message):
+        self.progress.error(message)
+        self.cleanup()
+        sys.exit(1)
+
     def exception(self, exc_info):
         """This is called when PGBuild.Main catches an exception. This default
            implementation gives subclasses a chance to clean up, then tries to convert
            the exception into an error for the Progress class if it's one of our types.
            """
-        self.cleanup()
         if isinstance(exc_info[1], PGBuild.Errors.ExternalError) and not \
                self.config.eval("invocation/option[@name='traceback']/text()"):
             # Pretty-print ExternalErrors a bit, hiding the details that might scare people
@@ -225,9 +229,9 @@ class Interface(object):
                 pass
             if not message:
                 message = str(exc_info[1])
-            self.progress.error(message)
-            sys.exit(1)
+            self.exitWithError(message)
         else:
+            self.cleanup()
             self._exception(exc_info)
 
     def _exception(self, exc_info):

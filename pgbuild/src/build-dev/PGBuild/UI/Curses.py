@@ -285,7 +285,7 @@ class CursesWrangler(object):
         except:
             self.cleanup()
             raise
-    
+
     def cleanup(self):
         try:
             self.clockUpdater.running = 0
@@ -397,6 +397,15 @@ class Interface(PGBuild.UI.None.Interface):
     def cleanup(self):
         self.progress.cleanup()
 
+    def exitWithError(self, message):
+        """Exit with an error, ending the Curses environment
+           and printing it using the Text UI
+           """
+        self.cleanup()
+        import PGBuild.UI.Text, sys
+        PGBuild.UI.Text.Progress().error(message)
+        sys.exit(1)
+    
 ### The End ###
         
     
