@@ -83,13 +83,29 @@ class AnnounceServer(LineReceiver):
         f.close()
 
 class BotConversation(basechat.Conversation):
-    pass
+    def show(self):
+        pass
+    
+    def hide(self):
+        pass
+    
+    def showMessage(self, text, metadata=None):
+        pass    
 
 class BotGroupConversation(basechat.GroupConversation):
     def show(self):
         global groups
         groups[self.group.name] = self
+
+    def hide(self):
+        pass
     
+    def showGroupMessage(self, sender, text, metadata=None):
+        pass
+    
+    def setTopic(self, topic, author):
+        pass
+                                                       
 class BotChat(basechat.ChatUI):
     def getGroupConversation(self, group, Class=BotGroupConversation, stayHidden=0):
         return basechat.ChatUI.getGroupConversation(self, group, Class, 
