@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.14 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: rotate270.c,v 1.15 2002/10/08 10:21:33 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -81,6 +81,12 @@ void rotate270_coord_physicalize(int *x,int *y) {
    int ty = *y;
    *y = *x;
    *x = vid->xres-1-ty;
+}
+g_error rotate270_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  g_error e;
+  e = vid->bitmap_getshm(bmp,uid,shm);
+  shm->format = htonl(ntohl(shm->format) | PG_BITFORMAT_ROTATE270);
+  return e;
 }
 
 /******* Special-case wrapper functions */
@@ -246,6 +252,7 @@ void vidwrap_rotate270(struct vidlib *vid) {
 #endif
    vid->bitmap_load = &rotate270_bitmap_load;
    vid->bitmap_new = &rotate270_bitmap_new;
+   vid->bitmap_getshm = &rotate270_bitmap_getshm;
    vid->bitmap_getsize = &rotate270_bitmap_getsize;
    vid->entermode = &rotate270_entermode;
    vid->exitmode = &rotate270_exitmode;

@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.13 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: rotate180.c,v 1.14 2002/10/08 10:21:32 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -76,6 +76,12 @@ void rotate180_fellipse(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
 void rotate180_coord_logicalize(int *x,int *y) {
    *x = vid->xres-1-*x;
    *y = vid->yres-1-*y;
+}
+g_error rotate180_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  g_error e;
+  e = vid->bitmap_getshm(bmp,uid,shm);
+  shm->format = htonl(ntohl(shm->format) | PG_BITFORMAT_ROTATE180);
+  return e;
 }
 
 /******* Special-case wrapper functions */
@@ -228,6 +234,7 @@ void vidwrap_rotate180(struct vidlib *vid) {
    vid->bitmap_loadxbm = &rotate180_bitmap_loadxbm;
 #endif
    vid->bitmap_load = &rotate180_bitmap_load;
+   vid->bitmap_getshm = &rotate180_bitmap_getshm;
    vid->entermode = &rotate180_entermode;
    vid->exitmode = &rotate180_entermode;   /* rotation is reversible */
    vid->coord_keyrotate = &rotate180_coord_keyrotate;

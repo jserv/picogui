@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.27 2002/10/07 10:21:58 micahjd Exp $
+/* $Id: rotate90.c,v 1.28 2002/10/08 10:21:33 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -81,6 +81,12 @@ void rotate90_coord_physicalize(int *x,int *y) {
    int tx = *x;
    *x = *y;
    *y = vid->yres-1-tx;
+}
+g_error rotate90_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  g_error e;
+  e = vid->bitmap_getshm(bmp,uid,shm);
+  shm->format = htonl(ntohl(shm->format) | PG_BITFORMAT_ROTATE90);
+  return e;
 }
 
 /******* Special-case wrapper functions */
@@ -296,6 +302,7 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->bitmap_load = &rotate90_bitmap_load;
    vid->bitmap_new = &rotate90_bitmap_new;
    vid->bitmap_getsize = &rotate90_bitmap_getsize;
+   vid->bitmap_getshm = &rotate90_bitmap_getshm;
    vid->entermode = &rotate90_entermode;
    vid->exitmode = &rotate90_exitmode;
    vid->coord_keyrotate = &rotate90_coord_keyrotate;
