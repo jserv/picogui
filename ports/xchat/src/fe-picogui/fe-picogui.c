@@ -142,7 +142,7 @@ fe_new_window (struct session *sess)
 	pgSetWidget(0, PG_WP_SIDE, PG_S_ALL, 0);
 	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, 0);
 	pgSetWidget(0, PG_WP_SIDE, PG_S_RIGHT, 0);
-	/* FIXME - preference? */
+	/* can be set from command line */
 	sess->gui->output_type = output_type;
 	sess->gui->output = pgNewWidget(output_type, 0, 0);
 	pgSetWidget(scroll, PG_WP_BIND, sess->gui->output, 0);
