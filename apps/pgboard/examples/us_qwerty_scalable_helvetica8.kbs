@@ -31,7 +31,7 @@ sub initpattern {
     setcolor(0xFFFFFF);
     rect(0,0,$width,4);
     setcolor(0);
-    font("Console", 8, PG_FSTYLE_FIXED);
+    font("Helvetica", 8, PG_FSTYLE_DEFAULT);
     frame(0,0,$width,4);
     
     $defaultpat = $defaultmods = 0;
@@ -121,57 +121,57 @@ sub drawkey {
 ####################################### Main pattern (1)
 
 initpattern;
-drawgrid("->|:\t:PGKEY_TAB",
-	 "q:q:PGKEY_q",
-	 "w:w:PGKEY_w",
-	 "e:e:PGKEY_e",
-	 "r:r:PGKEY_r",
-	 "t:t:PGKEY_t",
-	 "y:y:PGKEY_y",
-	 "u:u:PGKEY_u",
-	 "i:i:PGKEY_i",
-	 "o:o:PGKEY_o",
-	 "p:p:PGKEY_p",
-	 "-:-:PGKEY_MINUS",
+drawgrid(" ->|:\t:PGKEY_TAB",
+	 " q:q:PGKEY_q",
+	 " w:w:PGKEY_w",
+	 " e:e:PGKEY_e",
+	 " r:r:PGKEY_r",
+	 " t:t:PGKEY_t",
+	 " y:y:PGKEY_y",
+	 " u:u:PGKEY_u",
+	 " i:i:PGKEY_i",
+	 " o:o:PGKEY_o",
+	 " p:p:PGKEY_p",
+	 " -:-:PGKEY_MINUS",
 #	 "del:\b:PGKEY_BACKSPACE",
 
-	 "cap::::3",
-	 "a:a:PGKEY_a",
-	 "s:s:PGKEY_s",
-	 "d:d:PGKEY_d",
-	 "f:f:PGKEY_f",
-	 "g:g:PGKEY_g",
-	 "h:h:PGKEY_h",
-	 "j:j:PGKEY_j",
-	 "k:k:PGKEY_k",
-	 "l:l:PGKEY_l",
-	 ";:;:PGKEY_SEMICOLON",
-	 "':':PGKEY_QUOTE",
+	 " cap::::3",
+	 " a:a:PGKEY_a",
+	 " s:s:PGKEY_s",
+	 " d:d:PGKEY_d",
+	 " f:f:PGKEY_f",
+	 " g:g:PGKEY_g",
+	 " h:h:PGKEY_h",
+	 " j:j:PGKEY_j",
+	 " k:k:PGKEY_k",
+	 " l:l:PGKEY_l",
+	 " ;:;:PGKEY_SEMICOLON",
+	 " ':':PGKEY_QUOTE",
 #	 "ret:\r:PGKEY_RETURN",
 
-	 "shf::::2",
-	 "z:z:PGKEY_z",
-	 "x:x:PGKEY_x",
-	 "c:c:PGKEY_c",
-	 "v:v:PGKEY_v",
-	 "b:b:PGKEY_b",
-	 "n:n:PGKEY_n",
-	 "m:m:PGKEY_m",
+	 "  shf::::2",
+	 " z:z:PGKEY_z",
+	 " x:x:PGKEY_x",
+	 " c:c:PGKEY_c",
+	 " v:v:PGKEY_v",
+	 " b:b:PGKEY_b",
+	 " n:n:PGKEY_n",
+	 " m:m:PGKEY_m",
 	 " ,:,:PGKEY_COMMA",
 	 " .:.:PGKEY_PERIOD",
-	 "/:/:PGKEY_SLASH",
+	 "  /:/:PGKEY_SLASH",
 #	 "shf::::2",
 
-	 "ctl::::4",
-	 "#::::5",
+	 " ctl::::4",
+	 " #::::5",
 	 "\@::::6",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
-	 "<-::PGKEY_LEFT",
-	 "->::PGKEY_RIGHT",
+	 " <-::PGKEY_LEFT",
+	 " ->::PGKEY_RIGHT",
 	 "<x|:\b:PGKEY_BACKSPACE",
-	 "ret:\r:PGKEY_RETURN");
+	 "  ret:\r:PGKEY_RETURN");
 
 ####################################### Shift pattern (2)
 
