@@ -54,6 +54,7 @@ CONFIG_STDERR_GURU=y
 # FONT_CLEAN12 is not set
 # FONT_LUCIDA10 is not set
 # FONT_CLEAN6 is not set
+FONT_CLEAN8=y
 # FONT_CONSOLE8 is not set
 # FONT_COURIER12 is not set
 # FONT_HELVETICA8 is not set
