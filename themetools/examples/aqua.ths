@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.43 2002/11/15 21:45:29 micahjd Exp $
+/* $Id: aqua.ths,v 1.44 2002/11/21 11:49:47 thierrythevoz Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -314,7 +314,7 @@ object toolbar {
 }
 
 object popup {
-  /* Normal background, but with shading on the edge, and 
+  /* Normal background, but with shading on the edge, and
      a thin black border */
   bgfill = fillstyle {
     default::interlace(x,y,w,h);
@@ -353,14 +353,34 @@ object popup.menu {
     Frame(x,y,w,h);
   };
   margin = 1;
-  
+
 }
 object menuitem {
   align = PG_A_LEFT;
   spacing = 0;
   height = 20;
+
+  bitmap1 = Copy(default::bitmap1);
+  bgfill = fillstyle {
+    /* Standard background */
+    interlace(x,y,w,h);
+
+    /* Right arrow */
+    SetLgop(PG_LGOP_MULTIPLY);
+    Bitmap(x+w-9,5,6,9,bitmap2);
+
+    /* Cleanup */
+    SetLgop(PG_LGOP_NONE);
+    SetSrc(0,0,0,0);
+  };
 }
 object menuitem.hilight bitmap1 = LoadBitmap("data/aq_menuselect.pnm");
+object submenuitem {
+  bitmap2 = LoadBitmap("data/r_arrow.png");
+}
+object submenuitem.hilight {
+  bitmap2 = Copy(submenuitem::bitmap2);
+}
 
 /* Check boxes */
 object checkbox {
