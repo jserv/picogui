@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.4 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.5 2002/09/13 01:08:07 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -153,9 +153,11 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 	break;
 	
       case SDLGL_CAMERAMODE_ROTATE:
+	glTranslatef(vid->xres/2,vid->yres/2,0);
 	glRotatef(dy/10.0,1,0,0);
 	glRotatef(dx/10.0,0,1,0);
 	glRotatef(dz/10.0,0,0,1);
+	glTranslatef(-vid->xres/2,-vid->yres/2,0);
 	break;
       }
     }
@@ -194,6 +196,7 @@ void gl_process_camera_keys(void) {
     break;
 
   case SDLGL_CAMERAMODE_ROTATE:
+    glTranslatef(vid->xres/2,vid->yres/2,0);
     if (gl_global.pressed_keys[PGKEY_w])
       glRotatef(0.4*scale,0.0,0.0,1.0);
     if (gl_global.pressed_keys[PGKEY_s])
@@ -206,6 +209,7 @@ void gl_process_camera_keys(void) {
       glRotatef(0.4*scale,0.0,1.0,0.0);
     if (gl_global.pressed_keys[PGKEY_RIGHT])
       glRotatef(-0.4*scale,0.0,1.0,0.0);
+    glTranslatef(-vid->xres/2,-vid->yres/2,0);
     break;
     
   }

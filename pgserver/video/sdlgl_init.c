@@ -1,4 +1,4 @@
-/* $Id: sdlgl_init.c,v 1.16 2002/09/13 00:37:32 micahjd Exp $
+/* $Id: sdlgl_init.c,v 1.17 2002/09/13 01:08:07 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -127,13 +127,13 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glViewport(0,0,xres,yres);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
+  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH*2);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gl_matrix_pixelcoord();
 
   /* Set up fonts */
-  {
+  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
     struct gl_fontload *fl;
     
     /* Remove normal picogui fonts */
@@ -148,6 +148,8 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 
     gl_fontload_finish(fl);
   }
+  else
+    gl_global.old_fonts = NULL;
 
   e = findfont(&gl_global.osd_font,-1,NULL,get_param_int(GL_SECTION,"osd_fontsize",20),0);
   errorcheck;
@@ -237,9 +239,11 @@ g_error sdlgl_regfunc(struct vidlib *v) {
   v->grop_render_node_hook = &sdlgl_grop_render_node_hook;
   v->grop_render_postsetup_hook = &sdlgl_grop_render_postsetup_hook;
   v->grop_render_end_hook = &sdlgl_grop_render_end_hook;
-  v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
-  v->font_newdesc = &sdlgl_font_newdesc;
-  v->font_outtext_hook = &sdlgl_font_outtext_hook;
+  if (!get_param_int(GL_SECTION,"standard_fonts",0)) {
+    v->font_sizetext_hook = &sdlgl_font_sizetext_hook;
+    v->font_newdesc = &sdlgl_font_newdesc;
+    v->font_outtext_hook = &sdlgl_font_outtext_hook;
+  }
   v->bitmap_getshm = &sdlgl_bitmap_getshm;
 
   return success;
