@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.3 2001/02/02 07:44:03 micahjd Exp $
+/* $Id: blackout.c,v 1.4 2001/02/14 06:11:58 micahjd Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -42,10 +42,10 @@ int boardwidth, boardheight, boardsize;
 typedef unsigned char light;
 light *board;
 #define LIGHT(x,y)     board[(x)+(y)*boardwidth]
-#define LIGHTGROP(x,y) (1+(x)+(y)*boardwidth)  
+#define LIGHTGROP(x,y) (2+(x)+(y)*boardwidth)  
 
 /* Colors */
-#define ON_COLOR      0xFFFF80
+#define ON_COLOR      0xFFFF70
 #define OFF_COLOR     0x404040
 
 /* Scorekeeping */
@@ -147,12 +147,17 @@ int evtDrawBoard(struct pgEvent *evt) {
 	      evt->e.size.w,evt->e.size.h);
    pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x000000);
    pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+   
+   /* Game board frame */
+   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_FRAME,bx-1,by-1,bs+3,bs+3);
+   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x808080);
+   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
 
    /* Light gropnodes */
    for (j=boardheight,y=by;j;j--,y+=lighth)
      for (i=boardwidth,x=bx;i;i--,x+=lightw) {
 	pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,
-		   x+1,y+1,lightw-2,lighth-2);
+		   x+1,y+1,lightw-1,lighth-1);
 	pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,
 		   (*(p++)) ? ON_COLOR : OFF_COLOR);
 	pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
