@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.38 2001/01/13 07:11:47 micahjd Exp $
+/* $Id: picogui_client.c,v 1.39 2001/01/13 07:29:25 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -183,7 +183,8 @@ int _pg_recvtimeout(void *data,unsigned long datasize) {
      tv = _pgidle_period;
    
      /* don't care about writefds and exceptfds: */
-     (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,&tv);
+     (*_pgselect_handler)(_pgsockfd+1,&readfds,NULL,NULL,
+			  (tv.tv_sec + tv.tv_usec) ? &tv : NULL);
      
      if (FD_ISSET(_pgsockfd, &readfds)) {
 #ifdef DEBUG
@@ -516,7 +517,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.38 2001/01/13 07:11:47 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.39 2001/01/13 07:29:25 micahjd Exp $\n");
 	exit(1);
       }
       
