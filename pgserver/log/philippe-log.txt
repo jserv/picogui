@@ -1,3 +1,12 @@
+2001-10-22    Philippe Ney <philippe.ney@smartdata.ch>
+
+Added sound (beep...) support for ChipSlice through touchscreen input
+Updated config files (SMARTDATA-soft.config, SMARTDATA-vz.config).
+
+       * input/tsinput.c: added message support
+			  Currently just for sound support
+
+
 2001-07-12    Philippe Ney <philippe.ney@smartdata.ch>
 
 Fixing a bug that was breaking pgserver under XCopilot
