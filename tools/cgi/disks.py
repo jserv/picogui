@@ -30,7 +30,7 @@ def formatSize(size):
 
 def getMountPoints():
     """This makes a call to 'df' and converts the output to a list of MountPoints"""
-    f = os.popen('df')
+    f = os.popen('df -P')
     f.readline()
     mounts = []
     for line in f.readlines():
