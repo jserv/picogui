@@ -71,10 +71,15 @@ class Location:
             connectTime = time.time() - startTime
             startTime = time.time()
             url = urllib2.urlopen(self.absoluteURI)
-            bytes += len(url.read(64000))
+            bytes += len(url.read(32000))
             url.close()
             dlTime = time.time() - startTime
-            speed = bytes / (dlTime-connectTime)
+            if connectTime < dlTime:
+                speed = bytes / (dlTime-connectTime)
+            else:
+                # We took a long time to connect the first time,
+                # but this shouldn't give us a negative speed result.
+                speed = bytes / dlTime
         except IOError:
             speed = 0
         PGBuild.XMLUtil.setChildData(self.host, 'speed', speed)

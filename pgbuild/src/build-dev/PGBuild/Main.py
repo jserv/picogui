@@ -23,6 +23,15 @@ as soon as it creates a Bootstrap object with vital path and package names.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
+# Check for a suitable version of python- currently we require version 2.2 or
+# later, mostly for compatibility with the various modules we need.
+# This doesn't use anything fancy to report a version problem, to increase
+# the chance of this working correctly if we get a really old version of python.
+if sys.hexversion < 0x020200F0:
+    import sys
+    print "This version of Python is too old. At least verison 2.2 is required."
+    sys.exit(1)
+
 import PGBuild.Package
 import PGBuild.UI
 import PGBuild.CommandLine.Options
@@ -92,14 +101,6 @@ def main(bootstrap, argv):
          - Initializing the UI module
          - Exception catching
        """
-
-    # Check for a suitable version of python- currently we require version 2.2 or
-    # later, mostly for compatibility with the various modules we need.
-    # This doesn't use anything fancy to report a version problem, to increase
-    # the chance of this working correctly if we get a really old version of python.
-    if sys.hexversion < 0x020200F0:
-        print "This version of Python is too old. At least verison 2.2 is required."
-        return
 
     config = PGBuild.Config.Tree()
     try:
