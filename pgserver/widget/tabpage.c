@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.2 2002/11/19 13:16:12 micahjd Exp $
+/* $Id: tabpage.c,v 1.3 2002/11/26 23:58:21 micahjd Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -130,6 +130,19 @@ static int is_tab_property(int property) {
   return 0;
 }
 
+/* Return true if this property should be handled
+ * by the tab bar
+ */
+static int is_tab_bar_property(int property) {
+  switch (property) {
+  case PG_WP_SIDE:
+  case PG_WP_SIZE:
+  case PG_WP_SIZEMODE:
+    return 1;
+  }
+  return 0;
+}
+
 /* This is called whenever the widget is attached, after the attaching
  * process is complete. We use this as a hook for managing the tab and tab_bar.
  */
@@ -173,6 +186,7 @@ g_error tabpage_post_attach(struct widget *self, struct widget *parent, int rshi
       errorcheck;
       e = widget_set(tab_bar, PG_WP_THOBJ, PGTH_O_TAB_BAR);
       errorcheck;
+      tab_bar->auto_orientation = PG_AUTO_SIDE;
     }
 
     /* If we're attaching on an existing bar, attach the tab in the same
@@ -203,24 +217,34 @@ g_error tabpage_post_attach(struct widget *self, struct widget *parent, int rshi
 }
 
 g_error tabpage_set(struct widget *self,int property, glob data) {
-  struct widget *tab;
+  struct widget *w;
   g_error e;
 
   /* Redirect applicable properties to the tab */ 
   if (is_tab_property(property))
-    if (!iserror(rdhandle((void**)&tab, PG_TYPE_WIDGET, self->owner, DATA->htab)) && tab)
-      return widget_set(tab, property, data);
+    if (!iserror(rdhandle((void**)&w, PG_TYPE_WIDGET, self->owner, DATA->htab)) && w)
+      return widget_set(w, property, data);
+
+  /* Redirect applicable properties to the tab bar */ 
+  if (is_tab_bar_property(property))
+    if (!iserror(rdhandle((void**)&w, PG_TYPE_WIDGET, self->owner, DATA->htab_bar)) && w)
+      return widget_set(w, property, data);
 
   return WIDGET_PARENT->set(self,property,data);
 }
 
 glob tabpage_get(struct widget *self,int property) {
-  struct widget *tab;
+  struct widget *w;
 
   /* Redirect applicable properties to the tab */ 
   if (is_tab_property(property))
-    if (!iserror(rdhandle((void**)&tab, PG_TYPE_WIDGET, self->owner, DATA->htab)) && tab)
-      return widget_get(tab, property);
+    if (!iserror(rdhandle((void**)&w, PG_TYPE_WIDGET, self->owner, DATA->htab)) && w)
+      return widget_get(w, property);
+
+  /* Redirect applicable properties to the tab bar */ 
+  if (is_tab_bar_property(property))
+    if (!iserror(rdhandle((void**)&w, PG_TYPE_WIDGET, self->owner, DATA->htab_bar)) && w)
+      return widget_get(w, property);
 
   switch (property) {
 

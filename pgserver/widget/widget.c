@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.216 2002/11/26 22:03:25 micahjd Exp $
+/* $Id: widget.c,v 1.217 2002/11/26 23:58:21 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -356,37 +356,41 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	  case PG_S_LEFT:
 	  case PG_S_RIGHT:
 	   
-	    widget_set(p, PG_WP_DIRECTION, PG_DIR_VERTICAL);
+	    if (w->auto_orientation & PG_AUTO_DIRECTION)
+	      widget_set(p, PG_WP_DIRECTION, PG_DIR_VERTICAL);
 
-	    switch (widget_get(p, PG_WP_SIDE)) {
-	      
-	    case PG_S_LEFT:
-	      widget_set(p, PG_WP_SIDE, PG_S_TOP);
-	      break;
-
-	    case PG_S_RIGHT:
-	      widget_set(p, PG_WP_SIDE, PG_S_BOTTOM);
-	      break;
-
-	    }
+	    if (w->auto_orientation & PG_AUTO_SIDE)
+	      switch (widget_get(p, PG_WP_SIDE)) {
+		
+	      case PG_S_LEFT:
+		widget_set(p, PG_WP_SIDE, PG_S_TOP);
+		break;
+		
+	      case PG_S_RIGHT:
+		widget_set(p, PG_WP_SIDE, PG_S_BOTTOM);
+		break;
+		
+	      }
 	    break;
 
 	  case PG_S_TOP:
 	  case PG_S_BOTTOM:
 
-	    widget_set(p, PG_WP_DIRECTION, PG_DIR_HORIZONTAL);
+	    if (w->auto_orientation & PG_AUTO_DIRECTION)
+	      widget_set(p, PG_WP_DIRECTION, PG_DIR_HORIZONTAL);
 
-	    switch (widget_get(p, PG_WP_SIDE)) {
-	      
-	    case PG_S_TOP:
-	      widget_set(p, PG_WP_SIDE, PG_S_LEFT);
-	      break;
-
-	    case PG_S_BOTTOM:
-	      widget_set(p, PG_WP_SIDE, PG_S_RIGHT);
-	      break;
-
-	    }
+	    if (w->auto_orientation & PG_AUTO_SIDE)
+	      switch (widget_get(p, PG_WP_SIDE)) {
+		
+	      case PG_S_TOP:
+		widget_set(p, PG_WP_SIDE, PG_S_LEFT);
+		break;
+		
+	      case PG_S_BOTTOM:
+		widget_set(p, PG_WP_SIDE, PG_S_RIGHT);
+		break;
+		
+	      }
 	    break;
 
 	  }

@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.18 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: panelbar.c,v 1.19 2002/11/26 23:58:21 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -173,7 +173,7 @@ g_error panelbar_install(struct widget *self) {
     PG_TRIGGER_UP | PG_TRIGGER_RELEASE | PG_TRIGGER_DRAG | PG_TRIGGER_MOVE;
 
   /* Panelbars use auto-orientation by default */
-  self->auto_orientation = 1;
+  self->auto_orientation = PG_AUTO_SIDE | PG_AUTO_DIRECTION;
 
 #ifdef CONFIG_DRAGSOLID
   DATA->solid = get_param_int("pgserver","dragsolid",0);
