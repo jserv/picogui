@@ -75,14 +75,18 @@ f_key f_keymap[] = { // Keymap for function keys
 		   { "[B", PGKEY_DOWN },
 		   { "[C", PGKEY_RIGHT },
 		   { "[D", PGKEY_LEFT },
-		   { "OP", PGKEY_F1 },
-		   { "OQ", PGKEY_F2 },
-		   { "OR", PGKEY_F3 },
-		   { "OS", PGKEY_F4 },
-		   { "[15~", PGKEY_F5 },
+		   { "[[A", PGKEY_F1 },
+		   { "[[B", PGKEY_F2 },
+		   { "[[C", PGKEY_F3 },
+		   { "[[D", PGKEY_F4 },
+		   { "[[E", PGKEY_F5 },
 		   { "[17~", PGKEY_F6 },
 		   { "[18~", PGKEY_F7 },
 		   { "[19~", PGKEY_F8 },
+		   { "[20~", PGKEY_F9 },
+		   { "[21~", PGKEY_F10 },
+		   { "[23~", PGKEY_F11 },
+		   { "[24~", PGKEY_F12 },
 		   { NULL }
 };
 
@@ -149,11 +153,11 @@ int get_escaped_key(int fd) {
 
 	int len = 0, pos = 0;
 	unsigned char key, buf[5];
-	
+
 	while ( read(fd, &key, 1) && len < 5 )
 		buf[len++] = key;
 	buf[len] = '\0';
-	
+
 	while ( f_keymap[pos].string != NULL ) {
 		if ( !strcmp(f_keymap[pos].string, buf) )
 			return(f_keymap[pos].key);
