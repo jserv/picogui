@@ -79,7 +79,7 @@ void prandmove(struct board *it)
   fprintf(stderr,"prandmove called\n");
 #endif
 
-  while(++i < 5)
+  while(++i < 20)
     if(!(move(it,rand()%3 + it->aipref) < 0))
       return;
   
