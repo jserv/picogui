@@ -13,6 +13,9 @@ prefix = '/usr'
 depends = [ 'picoguiclient' ]
 
 runtime = [
+    Runtime ( 'pterm', 'Terminal',
+              content = [ 'bin/pterm' ],
+              help = "PicoGUI terminal" ),
     Runtime ( 'pgboard', 'Virtual Keyboard',
               content = [ 'bin/pgboard' ],
               help = "Virtual Keyboard for PicoGUI" ),

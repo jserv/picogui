@@ -1,4 +1,4 @@
-SUBDIRS = pgboard
+SUBDIRS = pgboard pterm
 
 if ENABLE_BEE
 
