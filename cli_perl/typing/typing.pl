@@ -22,10 +22,29 @@ use PicoGUI;
 $progname = "Typing Program";
 $version = "0.01";
 
+############################################################ Load resources
+
+# Directory for student data files
+$studentdir = '../students/';
+
 # Load all data files from this directory
 chdir('data');
 
-############################################################ Load resources
+# Load the lessons
+open LESSONF,"lessons.txt" or die "Can't open lesson file: $!\n";
+while (<LESSONF>) {
+    next if (!/\S/);
+    next if (/^\#/);
+    if (/^:\s*(.*)/) {
+	$name = $1;
+	chomp $name;
+	push @lesson_names,$name;
+    }
+    else {
+	$lesson{$name} .= $_;
+    }
+}
+close LESSONF;
 
 # Load resources into the server's memory, and save
 # the handles.
@@ -37,11 +56,18 @@ $ex = NewBitmap(-file => "x.pnm");
 $exmask = NewBitmap(-file => "x_mask.pnm");
 $circ = NewBitmap(-file => "circarrow.pnm");
 $circmask = NewBitmap(-file => "circarrow_mask.pnm");
+$redbox = NewBitmap(-file => "redbox.pnm");
+$greenbox = NewBitmap(-file => "greenbox.pnm");
+$boxmask = NewBitmap(-file => "boxmask.pnm");
 
 # Load the theme file
 RestoreTheme;
 ThemeSet(-file => "wavyinsomnia.theme");
 Update;
+
+# This is for the "Start Over" button
+ restartprog:
+    EnterContext;
 
 ############################################################ Welcome
 
@@ -75,8 +101,72 @@ NewWidget(-type => button,-inside => $tb,-bitmap=>$check,-hotkey => $PGKEY{RETUR
 	  -onclick => sub {
      # Get and validate the input before continuing
      $name = $field->GetWidget(-text)->GetString;
-     ExitEventLoop if ($name);
+
+     # No line-noise names
+     return if ($name !~ /[a-z]/); 
+
+     # The student name is munged into a file name
+     $fname = lc($name);
+     $fname =~ s/[^a-z]//g;
+
+     # Try to open the student file
+     if (open STUDENTF,$studentdir.$fname) {
+	 # Sucess, read in saved data
+	 while (<STUDENTF>) {
+	     next if (!/\S/);
+	     next if (/^\#/);
+	     chomp;
+	     ($key,$value) = split /:/,$_;
+	     $student{$key} = $value;
+	 }
+	 ExitEventLoop;
+     }
+     else {
+	 # Student not found dialog box
+	 
+	 EnterContext;
+	 NewPopup(200,150);
+
+	 $tb2 = NewWidget(-type => toolbar,-side => bottom);
+	 $tb1 = NewWidget(-type => toolbar,-side => bottom);
+	 
+	 NewWidget(-type=>bitmap,-side=>right,-lgop => 'or',-transparent=>1,
+		   -bitmap  => NewBitmap(-file => "question.pnm"),
+		   -bitmask => NewBitmap(-file => "question_mask.pnm"));
+	 
+	 NewWidget(-type=>label,-transparent=>1, -side=>all,
+		   -text=>NewString("Your saved data\nwas not found"));
+	 
+	 NewWidget(-type => button,-side => all,-inside => $tb2,
+		   -text=>NewString("I'm new here"),
+		   -onclick => sub {
+		       # We don't have to do anything special to make
+		       # a new user- the user data is saved on completion
+		       # of a lesson. But, this lets the user know that
+		       # they are starting fresh.
+
+		       LeaveContext;
+		       ExitEventLoop;
+		   });
+
+	 NewWidget(-type => button,-side => all, -inside => $tb1,
+		   -text=>NewString("That's odd, let me try again"),
+		   -hotkey => $PGKEY{RETURN},
+		   -onclick => sub {LeaveContext; Update;});
+	 
+	 Update;
+     }
 });
+
+NewWidget(-type => button,-side => left,
+	  -text=>NewString("Guest"),
+	  -onclick => sub {
+	      # Don't load any data, but also don't save any later...
+	      $name = 'Guest';
+	      $fname = '';
+
+	      ExitEventLoop;
+	  });
 
 NewWidget(-type => button,-bitmap=>$ex,-hotkey => $PGKEY{ESCAPE},
 	  -bitmask=>$exmask,-text=>NewString("Cancel"),-side=>right,
@@ -95,12 +185,16 @@ $lessonname = NewWidget(-type => label,-font => NewFont("Utopia",25,grayline,ita
 ############################################################ Lesson panel
 
 $lessonpanel = RegisterApp(-side => left,-width => 150);
-NewWidget(-type => label,-transparent => 1,-side => top,-text => 
+$p = NewWidget(-type => label,-transparent => 1,-side => top,-text => 
 	  NewString("Select a lesson:"),-font => $boldfont);
 
-for ($i=1;$i<=15;$i++) {
-    NewWidget(-type => button,-side => top, -bitmap => $circ,-bitmask=>$circmask,
-	      -text => $l = NewString("Lesson $i"),-onclick => \&setlesson);
+foreach (@lesson_names) {
+    $p = NewWidget(-type => box,-after => $p);
+    NewWidget(-type => bitmap,-inside => $p,-side => right,
+	      -transparent => 1,-lgop => 'or',
+	      -bitmap => $redbox,-bitmask => $boxmask);
+    NewWidget(-type => button,-side => all,
+	      -text => NewString($_),-onclick => \&setlesson);
 }			     
 
 ############################################################ Load info bar
@@ -130,6 +224,14 @@ NewWidget(-type => button, -side => left, -text => NewString("Exit"),
      NewWidget(-type => button,-bitmap=>$check,-hotkey => $PGKEY{'y'},
 	       -bitmask=>$checkmask,-text=>NewString("Yes"),-side=>left,
 	       -inside => $tb,-onclick => \&Finis);
+
+     NewWidget(-type => button,
+	       -text=>NewString("Start Over"),-side=>left,
+	       -onclick => sub {
+		   LeaveContext;  # This message box
+		   LeaveContext;  # Most of the program (except the pnm's, etc)
+		   goto restartprog;  # Eek!
+	       });
 
      NewWidget(-type => button,-bitmap=>$ex,-hotkey => $PGKEY{'n'},
 	       -bitmask=>$exmask,-text=>NewString("No"),-side=>right,
