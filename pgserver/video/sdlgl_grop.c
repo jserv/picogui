@@ -1,4 +1,4 @@
-/* $Id: sdlgl_grop.c,v 1.1 2002/03/05 11:26:30 micahjd Exp $
+/* $Id: sdlgl_grop.c,v 1.2 2002/03/05 18:37:05 micahjd Exp $
  *
  * sdlgl_grop.c - OpenGL driver for picogui, using SDL for portability.
  *                This handles all new gropnodes that export OpenGL interfaces to
@@ -42,7 +42,7 @@ void sdlgl_grop_handler(struct groprender *r, struct gropnode *n) {
   switch (n->type) {
 
   case PG_GROP_GL_BINDTEXTURE:
-    if (!iserror(rdhandle((void**)&glb,PG_TYPE_BITMAP,-1,n->param[0]))) {
+    if (!iserror(rdhandle((void**)&glb,PG_TYPE_BITMAP,-1,n->param[0])) && glb) {
       gl_make_texture(glb);
       glBindTexture(GL_TEXTURE_2D,glb->texture);
     }
