@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.16 2001/11/14 08:14:19 micahjd Exp $
+/* $Id: textbox_document.c,v 1.17 2001/11/17 09:21:17 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -209,6 +209,28 @@ g_error text_insert_linebreak(struct textbox_cursor *c) {
     c->c_gctx.current = NULL;
   }
   return sucess;
+}
+
+/* Insert the specified divnode as the only div within a line */
+g_error text_insert_line_div(struct textbox_cursor *c, struct divnode *div) {
+  g_error e;
+
+  /* Make the current line empty */
+  if (c->c_div) {
+    e = text_insert_linebreak(c);
+    errorcheck;
+  }
+
+  /* Stick the given divnode in the now-empty line */
+  c->c_line->div = div;
+  c->c_div = div;
+
+  /* Get a new line so that words can't be added to this one */
+  return text_insert_linebreak(c);
+}
+
+/* Insert a divnode to be wrapped along with the other words */
+g_error text_insert_word_div(struct textbox_cursor *c, struct divnode *div) {
 }
 
 /* Insert text with the current formatting at the cursor. This will not

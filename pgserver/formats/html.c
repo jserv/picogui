@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.10 2001/11/17 08:23:07 micahjd Exp $
+/* $Id: html.c,v 1.11 2001/11/17 09:21:17 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -19,6 +19,7 @@
  *   <address> *
  *   <h1> to <h6>
  *   <p>
+ *   <a>
  *   <ul> *
  *   <ol> *
  *   <dl> *
@@ -27,7 +28,7 @@
  *   <center> *
  *   <blockquote> *
  *   <form> *
- *   <hr> *
+ *   <hr>
  *   <table> *
  *   <TT>
  *   <I>
@@ -51,12 +52,12 @@
  *   <TEXTAREA> *
  *   <A> *
  *   <IMG> *
- *   <FONT> *
+ *   <FONT>
  *   <BASEFONT> *
  *   <BR>
  *   <MAP> *
  *   ISO Latin-1 character entities
- *   UTF-8 encoding *
+ *   UTF-8 encoding
  *
  * ----------
  *
@@ -85,14 +86,19 @@
 
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
-
 #include <ctype.h>
+
+/*************************************** Font/color options */
 
 /* Font constants. These should probably be incorporated into the theme
  * system at some point.
  */
 #define HTML_BIG_DELTA    5    /* Amount to change font for <big> */
 #define HTML_SMALL_DELTA  -5   /* Amount to change font for <small> */
+
+const int heading_fonts[] = { 10,5,0,0,0,0 };
+
+/*************************************** Definitions */
 
 /* Information on the parser state */
 struct html_parse {
@@ -324,10 +330,6 @@ g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
 /* New paragraph, big font */
 g_error html_tag_h(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
-  static const int heading_fonts[] = {
-    10,5,0,0,0,0
-  };
-
   e = html_tag_p(hp,tag);
   errorcheck;
   return text_format_modifyfont(hp->c,PG_FSTYLE_BOLD,0,heading_fonts[tag->tag[1]-'1']);
@@ -418,6 +420,8 @@ g_error html_tag_font(struct html_parse *hp, struct html_tag_params *tag) {
 	newcolor = strtoul(p.value+1,NULL,16);
       }
     }
+
+    /* FIXME: more <font> parameters */
   }
 
   /* Set the new font */
@@ -427,6 +431,34 @@ g_error html_tag_font(struct html_parse *hp, struct html_tag_params *tag) {
 
   return sucess;  
 }
+
+/* Construct a horizontal rule divnode, and insert it on a line by itself */
+g_error html_tag_hr(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+  struct divnode *div;
+  struct gropctxt gc;
+
+  /* Simple horizontal line divnode.
+   * FIXME: Make this more configurable via themes, process the
+   *        parameters to <hr>
+   *
+   * This creates a new divnode with a preferred height of 3 pixels,
+   * and draws a line through the middle pixel of that
+   */
+  e = newdiv(&div,hp->c->widget);
+  errorcheck;
+  div->ph = 3;
+  gropctxt_init(&gc,div);
+  addgropsz(&gc,PG_GROP_SLAB,0,1,0x7FFF,1);
+  
+  /* This resets our blankness counter, but
+   * text_insert_line_div() counts as a blank line 
+   */
+  hp->blank_lines = 1;
+
+  return text_insert_line_div(hp->c,div);
+}
+
 
 /*************************************** HTML tag table */
 
@@ -473,6 +505,7 @@ struct html_taghandler {
   { "/h5",     &html_tag_end_h },
   { "h6",      &html_tag_h },
   { "/h6",     &html_tag_end_h },
+  { "hr",      &html_tag_hr },
 
   { NULL, NULL }
 };

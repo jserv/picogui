@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.8 2001/11/05 04:06:38 micahjd Exp $
+/* $Id: textbox.h,v 1.9 2001/11/17 09:21:17 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -87,6 +87,10 @@ g_error text_insert_linebreak(struct textbox_cursor *c);
  */
 g_error text_insert_string(struct textbox_cursor *c, const char *str,
 			   u32 hflag);
+
+/* Inserts the specified divnode as a line or as a word */
+g_error text_insert_line_div(struct textbox_cursor *c, struct divnode *div);
+g_error text_insert_word_div(struct textbox_cursor *c, struct divnode *div);
 
 /************************* Editing */
 
