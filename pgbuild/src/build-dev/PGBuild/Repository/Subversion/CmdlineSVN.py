@@ -103,7 +103,11 @@ def collectProgress(file, progress, destination):
         allOutput += line
         status = expandStatus(line)
         if status:
-            progress.report(status, line[2:].strip()[len(destination)+1:])
+            path = line[2:].strip()
+            # Try to strip off the destination path
+            if path.startswith(destination):
+                path = path[len(destination)+1:]
+            progress.report(status, path)
             updatedFiles += 1
     if file.close():
         raise PGBuild.Errors.EnvironmentError("The Subversion command returned an error:\n\n%s" % allOutput)
