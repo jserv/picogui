@@ -1,4 +1,4 @@
-/* $Id: vncinput.c,v 1.3 2003/01/19 12:05:06 micahjd Exp $
+/* $Id: vncinput.c,v 1.4 2003/01/19 12:34:27 micahjd Exp $
  *
  * vncinput.h - input driver for VNC events
  *
@@ -48,6 +48,8 @@ struct vncinput_packet {
   u32 trigger;
   union trigparam param;
 };
+
+int vncinput_scroll_distance;
 
 void vncinput_ptrAddEvent(int buttonMask, int x, int y, struct _rfbClientRec* cl);
 void vncinput_kbdAddEvent(Bool down, KeySym keySym, struct _rfbClientRec* cl);
@@ -356,10 +358,21 @@ void vncinput_ptrAddEvent(int buttonMask, int x, int y, struct _rfbClientRec* cl
   pkt.pcursor = (struct cursor**) &cl->clientData;
   pkt.cursor = (struct cursor*) cl->clientData;
 
-  pkt.trigger = PG_TRIGGER_PNTR_STATUS;
-  pkt.param.mouse.x = x;
-  pkt.param.mouse.y = y;
-  pkt.param.mouse.btn = buttonMask;
+
+  /* Map scroll wheel events */
+  if (buttonMask & 0x18) {
+    pkt.trigger = PG_TRIGGER_SCROLLWHEEL;
+    if (buttonMask & 0x08)
+      pkt.param.mouse.y = -vncinput_scroll_distance;
+    else
+      pkt.param.mouse.y = vncinput_scroll_distance;
+  }
+  else {
+    pkt.trigger = PG_TRIGGER_PNTR_STATUS;
+    pkt.param.mouse.x = x;
+    pkt.param.mouse.y = y;
+    pkt.param.mouse.btn = buttonMask;
+  }
 
   write(vncinput_pipe[1], &pkt, sizeof(pkt));
 }
@@ -369,6 +382,7 @@ void vncinput_ptrAddEvent(int buttonMask, int x, int y, struct _rfbClientRec* cl
 
 g_error vncinput_init(void) {
   vncinput_init_keymap();
+  vncinput_scroll_distance = get_param_int("input-vnc","scroll_distance",20);
 
   /* Create a pipe for sending events from the VNC server thread to the input driver */
   pipe(vncinput_pipe);
