@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.1 2000/06/03 00:06:34 micahjd Exp $
+/* $Id: popup.c,v 1.2 2000/06/03 16:57:59 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -96,6 +96,11 @@ void popup_remove(struct widget *self) {
   r_divnode_free(self->in);
   dts_pop();
   self->dt = NULL;
+
+  /* With the popup and the top layer gone, 
+     force a redraw of the layer(s) below
+  */
+  update();
 }
 
 g_error popup_set(struct widget *self,int property, glob data) {
@@ -110,4 +115,5 @@ glob popup_get(struct widget *self,int property) {
 }
 
 /* The End */
+
 

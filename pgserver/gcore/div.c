@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.10 2000/06/02 07:41:32 micahjd Exp $
+/* $Id: div.c,v 1.11 2000/06/03 16:57:59 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -289,9 +289,6 @@ void update(void) {
 /* Update the divtree's calculations and render (both only if necessary) */
 void r_dtupdate(struct divtree *dt) {
   if (!dt) return;
-
-  /* Draw the nodes as we pop back up, so the top is drawn last */
-  r_dtupdate(dt->next);
 
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG

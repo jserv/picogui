@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.7 2000/04/29 17:52:43 micahjd Exp $
+/* $Id: bitmap.c,v 1.8 2000/06/03 16:57:59 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -110,7 +110,9 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
   case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
 		     "WP_ALIGN param is not a valid align value (bitmap)");
-    if (data==A_ALL || self->in->div->param.bitmap.align==A_ALL) {
+    if (data==A_ALL || data==A_CENTER || 
+	self->in->div->param.bitmap.align==A_ALL ||
+	self->in->div->param.bitmap.align==A_CENTER) {
       self->in->div->param.bitmap.align = (alignt) data;
       resizebitmap(self);
     }
@@ -185,7 +187,8 @@ void resizebitmap(struct widget *self) {
     return;
   if (!bit) return;
 
-  if (self->in->div->param.bitmap.align == A_ALL)
+  if (self->in->div->param.bitmap.align == A_ALL ||
+      self->in->div->param.bitmap.align == A_CENTER)
     /* Expand to all free space (div will clip this) */
     self->in->split = (HWR_WIDTH>HWR_HEIGHT) ? HWR_WIDTH : HWR_HEIGHT;
   else if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
