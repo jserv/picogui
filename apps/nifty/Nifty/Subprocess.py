@@ -53,6 +53,10 @@ class Subprocess(Buffer):
     def save(self):
         print 'cannot save a Subprocess'
 
+    def add_observer(self, o):
+        Buffer.add_observer(self, o)
+        o.frame.poll(self.do_update, self._ptyfd)
+
     def handle_resize(self, ev):
         if ev.x > 0 and ev.y > 0:
 	    fcntl.ioctl(self._ptyfd, termios.TIOCSWINSZ, struct.pack('4H', ev.y, ev.x, 0, 0))
