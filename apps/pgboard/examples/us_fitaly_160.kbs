@@ -1,0 +1,344 @@
+#
+# This keyboard uses the FITALY layout, optimized for the small displays of
+# handheld computers. The keyboard is bitmapped, designed for 160x240 or
+# 160x160 displays.
+#
+# The bitmaps here were drawn using the 10-pixel high Lucida font, using
+# The GIMP.
+#
+# This code is released into the public domain. Feel free to use it in whole
+# or in part for your own keyboard layouts.
+#
+# -- Micah Dowty <micahjd@users.sourceforge.net>
+#
+
+$option{'side'} = PG_S_BOTTOM;
+$option{'size'} = 60;
+$option{'sizemode'} = PG_SZMODE_NORMAL;
+$option{'path'} = 'examples/img/';
+
+####################################### Subroutines
+
+# Table with the position of all buttons
+@btn_positions = ("1,1,25,11",
+		  "1,13,25,11",
+		  "1,25,25,11",
+		  "1,37,25,11",
+		  "1,49,25,10",
+		  "29,1,12,11",
+		  "42,1,12,11",
+		  "55,1,11,11",
+		  "67,1,11,11",
+		  "79,1,13,11",
+		  "93,1,11,11",
+		  "29,13,12,11",
+		  "42,13,12,11",
+		  "55,13,11,11",
+		  "67,13,11,11",
+		  "79,13,13,11",
+		  "93,13,11,11",
+		  "29,25,25,11",
+		  "55,25,11,11",
+		  "67,25,11,11",
+		  "79,25,25,11",
+		  "29,37,12,11",
+		  "42,37,12,11",
+		  "55,37,11,11",
+		  "67,37,11,11",
+		  "79,37,13,11",
+		  "93,37,11,11",
+		  "29,49,12,10",
+		  "42,49,12,10",
+		  "55,49,11,10",
+		  "67,49,11,10",
+		  "79,49,13,10",
+		  "93,49,11,10",
+		  "107,1,13,11",
+		  "107,13,13,11",
+		  "107,25,13,11",
+		  "107,37,13,11",
+		  "107,49,13,10",
+		  "121,1,10,11",
+		  "121,13,10,11",
+		  "121,25,10,11",
+		  "121,37,10,11",
+		  "121,49,10,10",
+		  "134,1,25,11",
+		  "134,13,25,11",
+		  "134,25,25,11",
+		  "134,37,12,11",
+		  "147,37,12,11",
+		  "134,49,12,10",
+		  "147,49,12,10");
+
+sub pattern_bitmap {
+    # init pattern
+    newpattern;
+    clear;
+
+    # Draw the bitmap
+    bitmap(0,0,160,60,loadfile(@_));
+
+    # Checkerboard pattern in the unused space, if any
+    setcolor(0);
+    rect(160,0,0x7FFF,60);    # 0x7FFF is infinity as far as we're concerned
+    setcolor(0xFFFFFF);
+    setlgop(PG_LGOP_STIPPLE);
+    rect(160,1,0x7FFF,58);
+
+    $defaultmods = $defaultpat = 0;
+}
+
+sub pattern_keys {
+    $j = 0;
+    
+    foreach (@btn_positions) {
+	($key,$pgkey,$mods,$pat) = split /:/, $_[$j++];
+	
+	$key =~ s/colon/:/;
+	$key = chr(substr($key,1)) if (length($key) > 1 && $key=~/^#/);
+
+	$mods = $defaultmods if (!defined $mods);
+	$pat = $defaultpat if (!defined $pat);
+
+	hotspot( split(/,/,$_), 0, ord($key), $pgkey, $mods, $pat);
+    }
+}
+
+####################################### Main pattern (1)
+
+pattern_bitmap("fitaly_default.pbm");
+pattern_keys(":::6",
+	     ":::3",
+	     ":::2",
+	     ":::4",
+	     ":::5",
+	     "z:PGKEY_z",
+	     "v:PGKEY_v",
+	     "c:PGKEY_c",
+	     "h:PGKEY_h",
+	     "w:PGKEY_w",
+	     "k:PGKEY_k",
+	     "f:PGKEY_f",
+	     "i:PGKEY_i",
+	     "t:PGKEY_t",
+	     "a:PGKEY_a",
+	     "l:PGKEY_l",
+	     "y:PGKEY_y",
+	     " :PGKEY_SPACE",
+	     "n:PGKEY_n",
+	     "e:PGKEY_e",
+	     " :PGKEY_SPACE",
+	     "g:PGKEY_g",
+	     "d:PGKEY_d",
+	     "o:PGKEY_o",
+	     "r:PGKEY_r",
+	     "s:PGKEY_s",
+	     "b:PGKEY_b",
+	     "q:PGKEY_q",
+	     "j:PGKEY_j",
+	     "u:PGKEY_u",
+	     "m:PGKEY_m",
+	     "p:PGKEY_p",
+	     "x:PGKEY_x",
+	     "-:PGKEY_MINUS",
+	     ",:PGKEY_COMMA",
+	     ".:PGKEY_PERIOD",
+	     "':PGKEY_QUOTE",
+	     "/:PGKEY_SLASH",
+	     "!:PGKEY_EXCLAIM",
+	     "?:PGKEY_QUESTION",
+	     "colon:PGKEY_COLON",
+	     "(:PGKEY_9:PGMOD_SHIFT",
+	     "):PGKEY_0:PGMOD_SHIFT",
+	     "\b:PGKEY_BACKSPACE",
+	     "\r:PGKEY_RETURN",
+	     ":::2",
+	     ";:PGKEY_SEMICOLON",
+	     "*:PGKEY_ASTERISK",
+	     "\":PGKEY_QUOTEDBL",
+	     "|:124");
+
+####################################### Shift pattern (2)
+
+pattern_bitmap("fitaly_shift.pbm");
+$defaultpat = 1;
+$defaultmods = PGMOD_SHIFT;
+pattern_keys(":::6",
+	     ":::3",
+	     "",
+	     ":::4",
+	     ":::5",
+	     "Z:PGKEY_z",
+	     "V:PGKEY_v",
+	     "C:PGKEY_c",
+	     "H:PGKEY_h",
+	     "W:PGKEY_w",
+	     "K:PGKEY_k",
+	     "F:PGKEY_f",
+	     "I:PGKEY_i",
+	     "T:PGKEY_t",
+	     "A:PGKEY_a",
+	     "L:PGKEY_l",
+	     "Y:PGKEY_y",
+	     " :PGKEY_SPACE",
+	     "N:PGKEY_n",
+	     "E:PGKEY_e",
+	     " :PGKEY_SPACE",
+	     "G:PGKEY_g",
+	     "D:PGKEY_d",
+	     "O:PGKEY_o",
+	     "R:PGKEY_r",
+	     "S:PGKEY_s",
+	     "B:PGKEY_b",
+	     "Q:PGKEY_q",
+	     "J:PGKEY_j",
+	     "U:PGKEY_u",
+	     "M:PGKEY_m",
+	     "P:PGKEY_p",
+	     "X:PGKEY_x",
+	     "\@:PGKEY_AT",
+	     "#:PGKEY_HASH",
+	     "$:PGKEY_DOLLAR",
+	     "%:PGKEY_PERCENT",
+	     "^:PGKEY_CARET",
+	     "&:PGKEY_AMPERSAND",
+	     "[:PGKEY_LEFTBRACKET",
+	     "]:PGKEY_RIGHTBRACKET",
+	     "{:PGKEY_9:123",
+	     "}:PGKEY_0:125",
+	     "\b:PGKEY_BACKSPACE",
+	     "\r:PGKEY_RETURN",
+	     "",
+	     "<:PGKEY_LESS",
+	     "\\:PGKEY_BACKSLASH",
+	     ">:PGKEY_GREATER",
+	     "~:126");
+
+####################################### Caps lock pattern (3)
+
+pattern_bitmap("fitaly_caps.pbm");
+$defaultmods = PGMOD_SHIFT;
+pattern_keys(":::6",
+	     ":::1",
+	     ":::1",
+	     ":::4",
+	     ":::5",
+	     "Z:PGKEY_z",
+	     "V:PGKEY_v",
+	     "C:PGKEY_c",
+	     "H:PGKEY_h",
+	     "W:PGKEY_w",
+	     "K:PGKEY_k",
+	     "F:PGKEY_f",
+	     "I:PGKEY_i",
+	     "T:PGKEY_t",
+	     "A:PGKEY_a",
+	     "L:PGKEY_l",
+	     "Y:PGKEY_y",
+	     " :PGKEY_SPACE",
+	     "N:PGKEY_n",
+	     "E:PGKEY_e",
+	     " :PGKEY_SPACE",
+	     "G:PGKEY_g",
+	     "D:PGKEY_d",
+	     "O:PGKEY_o",
+	     "R:PGKEY_r",
+	     "S:PGKEY_s",
+	     "B:PGKEY_b",
+	     "Q:PGKEY_q",
+	     "J:PGKEY_j",
+	     "U:PGKEY_u",
+	     "M:PGKEY_m",
+	     "P:PGKEY_p",
+	     "X:PGKEY_x",
+	     "-:PGKEY_MINUS",
+	     ",:PGKEY_COMMA",
+	     ".:PGKEY_PERIOD",
+	     "':PGKEY_QUOTE",
+	     "/:PGKEY_SLASH",
+	     "!:PGKEY_EXCLAIM",
+	     "?:PGKEY_QUESTION",
+	     "colon:PGKEY_COLON",
+	     "(:PGKEY_9:PGMOD_SHIFT",
+	     "):PGKEY_0:PGMOD_SHIFT",
+	     "\b:PGKEY_BACKSPACE",
+	     "\r:PGKEY_RETURN",
+	     ":::1",
+	     ";:PGKEY_SEMICOLON",
+	     "*:PGKEY_ASTERISK",
+	     "\":PGKEY_QUOTEDBL",
+	     "|:124");
+    
+####################################### Control pattern (4)
+
+pattern_bitmap("fitaly_control.pbm");
+$defaultmods = PGMOD_CTRL;
+$defaultpat = 1;
+pattern_keys(":::6",
+	     ":::3",
+	     ":::2",
+	     "",
+	     ":::5",
+	     "#26:PGKEY_z",
+	     "#22:PGKEY_v",
+	     "#3:PGKEY_c",
+	     "#8:PGKEY_h",
+	     "#23:PGKEY_w",
+	     "#11:PGKEY_k",
+	     "#6:PGKEY_f",
+	     "#9:PGKEY_i",
+	     "#20:PGKEY_t",
+	     "#1:PGKEY_a",
+	     "#12:PGKEY_l",
+	     "#25:PGKEY_y",
+	     " :PGKEY_SPACE",
+	     "#14:PGKEY_n",
+	     "#5:PGKEY_e",
+	     " :PGKEY_SPACE",
+	     "#7:PGKEY_g",
+	     "#4:PGKEY_d",
+	     "#15:PGKEY_o",
+	     "#18:PGKEY_r",
+	     "#19:PGKEY_s",
+	     "#2:PGKEY_b",
+	     "#17:PGKEY_q",
+	     "#10:PGKEY_j",
+	     "#21:PGKEY_u",
+	     "#13:PGKEY_m",
+	     "#16:PGKEY_p",
+	     "#24:PGKEY_x",
+	     "-:PGKEY_MINUS",
+	     ",:PGKEY_COMMA",
+	     ".:PGKEY_PERIOD",
+	     "':PGKEY_QUOTE",
+	     "/:PGKEY_SLASH",
+	     "!:PGKEY_EXCLAIM",
+	     "?:PGKEY_QUESTION",
+	     "colon:PGKEY_COLON",
+	     "(:PGKEY_9:PGMOD_SHIFT",
+	     "):PGKEY_0:PGMOD_SHIFT",
+	     "\b:PGKEY_BACKSPACE",
+	     "\r:PGKEY_RETURN",
+	     ":::1",
+	     ";:PGKEY_SEMICOLON",
+	     "*:PGKEY_ASTERISK",
+	     "\":PGKEY_QUOTEDBL",
+	     "|:124");
+
+####################################### Numbers pattern (5)
+
+pattern_bitmap("fitaly_numbers.pbm");
+patlink(1,1,158,158,1);
+
+####################################### Symbols pattern (6)
+    
+pattern_bitmap("fitaly_symbols.pbm");
+patlink(1,1,158,158,1);
+
+### The End ###
+
+
+
+
+
