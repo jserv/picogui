@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.147 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: constants.h,v 1.148 2002/07/26 11:11:37 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -767,6 +767,25 @@ typedef unsigned long pghandle;
 #define PG_FM_ON              1      //!< Turns on specified flags
 #define PG_FM_OFF             2      //!< Turns off specified flags
 #define PG_FM_TOGGLE          3      //!< Toggles specified flags
+
+//! \}
+
+/*!
+ * \defgroup bitformat Bitmap format flags
+ *
+ * Used to describe the hardware bitmap format in a pgshmbitmap structure
+ * \{
+ */
+
+#define PG_BITFORMAT_ROTATE90    (1<<0)   //!< Indicates that the bitmap is stored pre-rotated
+#define PG_BITFORMAT_ROTATE180   (1<<1)
+#define PG_BITFORMAT_ROTATE270   (1<<2)
+
+#define PG_BITFORMAT_GRAYSCALE   (1<<3)   //!< Each pixel only represents intensity
+#define PG_BITFORMAT_INDEXED     (1<<4)   //!< Each pixel represents a palette index
+#define PG_BITFORMAT_SYMBOLIC    (1<<5)   //!< Each pixel represents a character or symbol
+#define PG_BITFORMAT_TRUECOLOR   (1<<6)   //!< Each pixel has red, green, and blue components
+#define PG_BITFORMAT_ALPHA       (1<<7)   //!< Each pixel also has an alpha channel
 
 //! \}
 

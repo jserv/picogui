@@ -57,6 +57,7 @@ RQH(mktemplate)
 RQH(setcontext)
 RQH(getcontext)
 RQH(infiltersend)
+RQH(mkshmbitmap)
 RQH(undef)        /* undef must be last */
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.3 2002/05/22 09:26:33 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.4 2002/07/26 11:11:37 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -37,6 +37,11 @@
 #include <pgserver/font.h>
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>   /* for res[PGRES_DEFAULT_FONT] */
+
+#include <sys/types.h>         /* Includes for managing shared memory bitmaps */
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
 
 /******* Table of available bitmap formats */
 
@@ -203,10 +208,9 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h,u16 bpp) {
   int lw;
   u32 size;
    
-  /* The bitmap and the header can be allocated seperately,
-     but usually it is sufficient to make them one big
-     chunk of memory.  It's 1 alloc vs 2.
-  */
+  /* We could allocate the bitmap and header in one chunk, but this
+   * causes hairy problems with word alignment, shared memory, reallocating...
+   */
   
   /* Pad the line width up to the nearest byte */
   lw = (u32) w * bpp;
@@ -216,27 +220,39 @@ g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h,u16 bpp) {
 
   /* The +1 is to make blits for < 8bpp simpler. Shouldn't really
    * be necessary, though. FIXME */
-  size = sizeof(struct stdbitmap) + (lw * h) + 1;
+  size = (lw * h) + 1;
 
-  e = g_malloc((void **) bmp,size);
+  e = g_malloc((void **) bmp,sizeof(struct stdbitmap));
   errorcheck;
-  memset(*bmp,0,size);
+  memset(*bmp,0,sizeof(struct stdbitmap));
+
   (*bmp)->pitch = lw;
-  (*bmp)->bits = ((unsigned char *)(*bmp)) + 
-    sizeof(struct stdbitmap);
   (*bmp)->w = w;
   (*bmp)->h = h;
   (*bmp)->bpp = bpp;
+  (*bmp)->freebits = 1;
   
+  e = g_malloc((void **) &(*bmp)->bits, size);
+  errorcheck;
+
   return success;
 }
 
 void def_bitmap_free(struct stdbitmap *bmp) {
   if (!bmp) return;
+
   if (bmp->rend)
     g_free(bmp->rend);
+
   if (bmp->freebits)
     g_free(bmp->bits);
+
+  if (bmp->shm_id) {
+    /* Unmap this segment and remove the key itself */
+    shmdt(bmp->bits);
+    shmctl(bmp->shm_id, IPC_RMID, NULL);
+  }
+
   g_free(bmp);
 }
 
@@ -503,6 +519,69 @@ void def_scrollblit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   
   /* Well... no reason we can't do a normal blit */
   (*vid->blit) (dest,x,y,w,h,src,src_x,src_y,lgop);
+}
+
+/* Move the bitmap's contents to a shared memory segment,
+ * and fill out a pgshmbitmap structure
+ */
+g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  struct stdbitmap *b = (struct stdbitmap *) bmp;
+  key_t key;
+  int id;
+  int size = b->pitch * b->h + 1;  /* +1 for bpp<8 padding, as described in def_bitmap_new() */
+  void *shmaddr;
+  struct shmid_ds ds;
+
+  /* Make sure we can free the existing bitmap data to move it to a shared
+   * memory segment, if not assume it's already mapped to SHM or some device.
+   */
+  if (!b->freebits)
+    return mkerror(PG_ERRT_BUSY,4);     /* Bitmap is already mapped */
+
+  /* Find an unused SHM key, starting with a magic number.
+   * (Anybody nerdy enough to know where it comes from should be punished ;)
+   */
+  key = 3263827;
+  while ((id = shmget(key,size,IPC_CREAT | IPC_EXCL | 0600)) < 0) {
+    if (errno != EEXIST)
+      return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
+    key++;
+  }
+
+  /* Attach it to our address space */
+  shmaddr = shmat(id,NULL,0);
+  if (!shmaddr) {
+    shmctl(key, IPC_RMID, NULL);
+    return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
+  }
+
+  /* Copy over the bitmap data and delete the original */
+  memcpy(shmaddr, b->bits, size);
+  g_free(b->bits);
+  b->freebits = 0;
+
+  /* Now assign this SHM section to the bitmap */
+  b->bits = (u8 *) shmaddr;
+  b->shm_id = id;
+
+  /* Assign ownership of this SHM section to the client now */
+  shmctl(id,IPC_STAT,&ds);
+  ds.shm_perm.uid = uid;
+  shmctl(id,IPC_SET,&ds);
+
+  /* Fill in the easy information in the shmbitmap structure 
+   */
+  shm->shm_key     = htonl(key);
+  shm->shm_length  = htonl(size);
+  shm->width       = htons(b->w);
+  shm->height      = htons(b->h);
+  shm->bpp         = htons(b->bpp);
+  shm->pitch       = htons(b->pitch);
+  shm->width       = htons(b->w);
+
+  /* It's the other VBLs' and drivers' responsibility to fill in the rest */
+
+  return success;
 }
    
 /* The End */

@@ -8,9 +8,9 @@
  
 /* 1  */  "Ok",
 /* 2  */  "Unknown side parameter for PG_WP_SIDE",
-/* 3  */  NULL,
-/* 4  */  NULL,
-/* 5  */  NULL,
+/* 3  */  "Null bitmap in mkshmbitmap",
+/* 4  */  "Bitmap is already mapped",
+/* 5  */  "Error creating shared memory segment",
 /* 6  */  "Invalid widget property",
 /* 7  */  "Cancel",
 /* 8  */  "Bitmap format not recognized by any active loaders",

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.62 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: network.h,v 1.63 2002/07/26 11:11:37 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -184,10 +184,11 @@ union pg_client_trigger {
 #define PGREQ_SETCONTEXT   51  /* Set the app's current context  | struct */
 #define PGREQ_GETCONTEXT   52  /* Return the current context     |   none */
 #define PGREQ_INFILTERSEND 53  /* Send a trigger to an infilter  | struct */
+#define PGREQ_MKSHMBITMAP  54  /* Return struct pgshmbitmap      | struct */
 
 /* NOTE: Before adding new entries to the end, replace any deprecated entries above */
 
-#define PGREQ_UNDEF        54  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        55  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -372,6 +373,10 @@ struct pgreqd_mkinfilter {
 struct pgreqd_infiltersend {
   union pg_client_trigger trig;
 };
+struct pgreqd_mkshmbitmap {
+  u32 bitmap;    /* Bitmap handle to memory map */
+  u32 uid;       /* UID of the client process   */
+};
 
 
 struct pgdata_getfstyle {
@@ -401,6 +406,42 @@ struct pgmodeinfo {
    u16 lyres;
    u16 bpp;  
    u16 dummy;
+};
+
+/* Returned by rqh_mkshmbitmap, represents a picogui bitmap
+ * that has been exported as shared memory. The returned SHM key
+ * will be valid as long as the bitmap it was created from exists.
+ * This structure supplies as much information about the bitmap's
+ * internal representation as possible, as the client must manipulate
+ * the bitmap in our video driver's native format, whatever that
+ *  might be. All values here are in network byte order.
+ */
+struct pgshmbitmap {
+  u32 shm_key;             /* System V shared memory key          */
+  u32 shm_length;          /* Length in bytes of shared segment   */
+
+  u32 format;              /* PG_BITFORMAT_* flags                */
+  u32 palette;             /* A handle to the associated palette  */
+
+  u16 width;               /* Physical resolution of bitmap       */
+  u16 height;              /*   (doesn't account for rotation)    */
+  u16 bpp;
+  u16 pitch;
+
+  u32 red_mask;            /* For true color modes, masks of bits */
+  u32 green_mask;          /*   occupied by all the color fields  */
+  u32 blue_mask;
+  u32 alpha_mask;
+
+  u16 red_shift;           /* For true color modes, number of     */
+  u16 green_shift;         /*   bits each color field is shifted  */
+  u16 blue_shift;          /*   left.                             */
+  u16 alpha_shift;
+
+  u16 red_length;          /* For true color modes, length        */
+  u16 green_length;        /*   in bits of each color field       */
+  u16 blue_length;
+  u16 alpha_length;
 };
    
 #endif /* __H_PG_NETWORK */

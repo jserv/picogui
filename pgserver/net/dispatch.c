@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.100 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: dispatch.c,v 1.101 2002/07/26 11:11:37 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1304,6 +1304,36 @@ g_error rqh_infiltersend(int owner, struct pgrequest *req,
 #else
   return infilter_client_send(&arg->trig);
 #endif
+}
+
+g_error rqh_mkshmbitmap(int owner, struct pgrequest *req,
+		      void *data, u32 *ret, int *fatal) {
+  struct pgresponse_data rsp;
+  hwrbitmap bmp;
+  struct pgshmbitmap shm;
+  g_error e;
+  reqarg(mkshmbitmap);
+
+  e = rdhandle((void**) &bmp,PG_TYPE_BITMAP,owner,ntohl(arg->bitmap));
+  errorcheck;
+  if (!bmp)
+    return mkerror(PG_ERRT_HANDLE,93);   /* Null bitmap in mkshmbitmap */
+
+  /* This is implemented as a vidlib function since it depends 
+   * on the bitmap format 
+   */
+  memset(&shm,0,sizeof(shm));
+  e = VID(bitmap_getshm)(bmp, ntohl(arg->uid), &shm);
+  errorcheck;
+
+  /* Send a PG_RESPONSE_DATA back */
+  rsp.type = htons(PG_RESPONSE_DATA);
+  rsp.id = htonl(req->id);
+  rsp.size = htonl(sizeof(shm));
+  
+  *fatal |= send_response(owner,&rsp,sizeof(rsp));  
+  *fatal |= send_response(owner,&shm,sizeof(shm));  
+  return ERRT_NOREPLY;
 }
 
 /* The End */
