@@ -1,0 +1,26 @@
+This is a Pure Python client library for writing PicoGUI client
+apps. It doesn't wrap the C client library; it's an independent
+reimplementation of the same protocol.
+
+Dependencies
+
+  You need Python 2.2 in a socket-enabled OS. Yes, that's all. You
+  don't even need PicoGUI (but you need to have a pgserver that you
+  can connect to, not necessarily on the same machine).
+
+Installation
+
+  Somewhere in your python path (see sys.path inside the interactive
+  interpreter) there must be a directory named site-packages. Copy or
+  symlink the PicoGUI directory there. If you find more than one,
+  choose the one that suits you best. For example, in a
+  Debian GNU/Linux system you could put it in
+  /usr/lib/python2.2/site-packages or
+  /usr/local/lib/python2.2/site-packages - then I'd recommend local.
+
+Usage
+
+  There will be a copy of the documentation inside the package, in the
+  near future. In the meanwhile, it's a moving target, so this would
+  be a waste of efforts. So, read the work-in-progress documentation
+  at http://PyPicoGUI.laranja.org:8080/ and the sample scripts.
