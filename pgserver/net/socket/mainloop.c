@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.15 2000/08/09 06:57:49 micahjd Exp $
+/* $Id: mainloop.c,v 1.16 2000/08/09 20:49:06 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -75,11 +75,12 @@ int main(int argc, char **argv) {
 	/* No actual command line options yet... */
 	
       case '-':  /* --, forces end of switches */
-	goto switches_done;
+	if (!arg[1])  /* Falls through to default if it's a long arg */
+	  goto switches_done;
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: mainloop.c,v 1.15 2000/08/09 06:57:49 micahjd Exp $\n\n"
+	     "$Id: mainloop.c,v 1.16 2000/08/09 20:49:06 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
