@@ -8,7 +8,11 @@ Configuration settings are loaded and processed in this order:
  - /etc/pgserver.conf
  - ~/.pgserverrc
  - Command line options
- 
+
+In the etc/ directory, a base script called configurator.mk.in
+contains code that can generate a pgserver.conf file with sensible
+values.
+
 The settings are key-value pairs organized into sections. In the
 configuration files, this is represented by the following format
  - Blank lines are ignored
