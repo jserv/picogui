@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.5 2000/10/13 20:20:26 micahjd Exp $
+/* $Id: constants.h,v 1.6 2000/10/15 01:46:50 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -262,6 +262,11 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
 #define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
 #define PGTH_OPCMD_COLOR         0x2E  /* Convert pgcolor to hwrcolor */
+#define PGTH_OPCMD_COLORADD      0x2F  /* Convert pgcolor to hwrcolor */
+#define PGTH_OPCMD_COLORSUB      0x30  
+#define PGTH_OPCMD_COLORMULT     0x31
+#define PGTH_OPCMD_COLORDIV      0x32
+
 
 /******************** Video */
 
