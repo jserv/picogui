@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: input.c,v 1.3 2000/09/04 00:33:33 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -57,7 +57,8 @@ g_error load_inlib(g_error (*regfunc)(struct inlib *i),
   inlib_list = newnode->next;
 
   /* Init */
-  e = (*newnode->init)();
+  if (newnode->init)
+    e = (*newnode->init)();
   if (iserror(e)) {
     g_free(newnode);
     return e;
@@ -84,7 +85,8 @@ void unload_inlib(struct inlib *inl) {
 	n = n->next;
   }
 
-  (*inl->close)();
+  if (inl->close)
+    (*inl->close)();
   g_free(inl);
 }
 
@@ -96,7 +98,8 @@ void cleanup_inlib(void) {
   while (n) {
     condemn = n;
     n = n->next;
-    (*condemn->close)();
+    if (condemn->close)
+      (*condemn->close)();
     g_free(condemn);
   }
 }

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.2 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: input.h,v 1.3 2000/09/04 00:33:33 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -56,7 +56,7 @@ struct inlib {
      necessary bits. After the select loop, if the 
      network code doesn't need the fd it is sent to
      fd_activate(). If the fd is owned by the driver,
-     process it and return a 0. Else, return a 1 and
+     process it and return a 1. Else, return a 0 and
      the fd will go to the next driver. (More efficient
      on average, considering that normally only 1 input
      driver will be loaded)
@@ -65,8 +65,7 @@ struct inlib {
      initialized, but the input driver gets a chance
      to modify them.
   */
-  void (*fd_init)(int *n,fd_set *readfds,fd_set *writefds,
-	       fd_set *exceptfds,struct timeval *timeout);
+  void (*fd_init)(int *n,fd_set *readfds,struct timeval *timeout);
   int (*fd_activate)(int fd);
 
   /* This is called after every iteration through the select

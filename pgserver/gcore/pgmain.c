@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.3 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: pgmain.c,v 1.4 2000/09/04 00:33:33 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: pgmain.c,v 1.3 2000/09/03 21:44:02 micahjd Exp $\n\n"
+	     "$Id: pgmain.c,v 1.4 2000/09/04 00:33:33 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 
   /* HACK ALERT */
   if (iserror(prerror(load_vidlib(
-				  svga_regfunc,0,0,0,0 	
+				  sdl_regfunc,640,480,0,0 	
 		      )))) exit(1);  
 
   /* Subsystem initialization and error check */

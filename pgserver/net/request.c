@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: request.c,v 1.3 2000/09/04 00:33:33 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -29,6 +29,7 @@
  */
 
 #include <pgserver/pgnet.h>
+#include <pgserver/input.h>
 
 /* Socket */
 int s = 0;
@@ -335,6 +336,7 @@ void net_iteration(void) {
   int argh=1;
   fd_set rfds;
   struct timeval tv;
+  struct inlib *n;   /* For iterating input drivers */
 
   /* Get ready to select() the socket itself and all open connections */
   FD_ZERO(&rfds);
@@ -342,22 +344,13 @@ void net_iteration(void) {
   for (i=0;i<con_n;i++)     /* con stores all the active connections */
     if (FD_ISSET(i,&con)) FD_SET(i,&rfds);
 
-  /* In linux the timeout is a just-in-case for errors.  In windows we
-     have to wake from our little select() coma often to pump the message
-     loop or windows will get unresponsive.  That's what MS gets for
-     not putting the GUI in a seperate task.
-     Instead of putting the input in a seperate thread, we have to poll
-     both the input and the network, sucking up CPU.
-
-     C? Portable?  Hah!
-  */
-#ifdef WINDOWS
-  tv.tv_sec = 0;
-  tv.tv_usec = 0;
-#else
-  tv.tv_sec = 5;
-  tv.tv_usec = 0;
-#endif
+  /* Give the input driver(s) a chance to modify things */
+  n = inlib_list;
+  while (n) {
+    if (n->fd_init)
+      (*n->fd_init)(&con_n,&rfds,&tv);
+    n = n->next;
+  }
 
   i = select(con_n,&rfds,NULL,NULL,&tv);
 
@@ -375,7 +368,7 @@ void net_iteration(void) {
 	printf("WSAGetLastError() = %d\n",WSAGetLastError());
 #endif
 #endif
-	return;
+	goto requestloop_finish;
       }
 
       /* Make it non-blocking */
@@ -391,26 +384,49 @@ void net_iteration(void) {
       
       newfd(fd);
 
-      return;
+      goto requestloop_finish;
     }
     else {
       /* An existing connection needs attention */
-      for (fd=0;fd<con_n;fd++) {
-	if (FD_ISSET(fd,&rfds) && FD_ISSET(fd,&con)) {
-	  
-	  /* Well, we're not waiting now! */
-	  FD_CLR(fd,&evtwait);
-	  
+      for (fd=0;fd<con_n;fd++)
+	if (FD_ISSET(fd,&rfds)) {
+	  if (FD_ISSET(fd,&con)) {
+	    
+	    /* Well, we're not waiting now! */
+	    FD_CLR(fd,&evtwait);
+	    
 #ifdef DEBUG
-	  printf("Incoming. fd = %d\n",fd);
+	    printf("Incoming. fd = %d\n",fd);
 #endif
-	  
-	  readfd(fd);
-	  return;
+	    
+	    readfd(fd);
+	    goto requestloop_finish;
+	  }
+	  else {
+	    /* This was not from a connection, but
+	       from an input driver */
+	    
+	    n = inlib_list;
+	    while (n) {
+	      if (n->fd_activate && (*n->fd_activate)(fd))
+		break;
+	      n = n->next;
+	    }
+	  }
 	}
-      }
     }
   }
+  
+ requestloop_finish:
+  
+  /* Poll the input drivers */
+  n = inlib_list;
+  while (n) {
+    if (n->poll)
+      (*n->poll)();
+    n = n->next;
+  }
+
   return;
 }
 
