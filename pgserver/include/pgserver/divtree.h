@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.19 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: divtree.h,v 1.20 2001/07/24 12:43:09 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -167,11 +167,17 @@ struct divnode {
 					  * cleared. Should usually be combined
 					  * with DIVNODE_SPLIT_IGNORE */
 #define DIVNODE_HOTSPOT         (1<<20)  /* This divnode is a hotspot that can be
-					    selected with the arrow keys. All
-					    divnodes with this flag get sorted,
-					    then the owner widget's flags are set
-					    correctly to allow movement
-					    between them */
+					  * selected with the arrow keys. All
+					  * divnodes with this flag get sorted,
+					  * then the owner widget's flags are set
+					  * correctly to allow movement
+					  * between them */
+#define DIVNODE_POPUP_NONTOOLBAR (1<<21) /* For popups, clip to the nontoolbar
+					  * area and allow events and drawing from
+					  * toolbars while the popup is onscreen.
+					  * This flag is given to the actual popup
+					  * widget, the 'div' child of the widget
+					  * given DIVNODE_SPLIT_POPUP */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;

@@ -1,3 +1,39 @@
+2001-07-24    Micah Dowty <micahjd@users.sourceforge.net>
+
+One last thing that needs to be done to the keyboard now... Making it usable
+when popup boxes are on the screen. I think the best solution to this is to
+make toolbars usable when popups are on the screen.
+To determine the non-toolbar area that popups can occupy, the htbboundary
+handle is dereferenced to find the toolbar on the edge of the boundary between
+toolbars and application panels. The area is defined by the divnode
+wtbboundary->next.
+-
+I implemented this clipping within the nontoolbar area, and it seems just
+great for most dialogs but menus are a bit messed up by it. Looks like we
+need a flag to disable this new code for some popups, like menus. I will add
+code to disable the extra clipping when the popup is created at the cursor
+position. (which is the easiest way to check if it is a menu)
+
+      * appmgr/global.c: Added the appmgr_nontoolbar_area() function
+		  to return a divnode describing the size of the nontoolbar area
+		
+		* widget/popup.c: Mangled up clip_popup() a bit to clip popups within
+		  the nontoolbar area instead of the screen.
+
+		* include/pgserver/divtree.h: Added the DIVNODE_POPUP_NONTOOLBAR
+		  flag that will trigger the extra clipping and other modifications
+		  for non-menu popups.
+
+2001-07-23    Micah Dowty <micahjd@users.sourceforge.net>
+
+To make this keyboard usable on the Helio and VR3, and to give the Chipslice
+an alternate layout, I finished the 160x60 FITALY layout. Well, except for the
+number and symbol patterns...
+But it's usable.
+
+      * apps/pgboard/examples/us_fitaly_160.kbs: Wrote the FITALY keyboard
+		  source and added bitmaps
+		
 2001-07-22    Micah Dowty <micahjd@users.sourceforge.net>
 
 I think I now have the keyboard interpreter, keyboard compiler, and one

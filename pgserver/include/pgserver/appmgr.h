@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.15 2001/07/10 09:21:13 micahjd Exp $
+/* $Id: appmgr.h,v 1.16 2001/07/24 12:43:09 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -95,6 +95,10 @@ void appmgr_unregowner(int owner);
 
 /* Load the mouse cursor specified by the given theme object */
 void appmgr_loadcursor(int thobj);
+
+/* Return a pointer to a divnode specifying the non-toolbar area that
+ * applications and popup boxes may normally inhabit. */
+struct divnode *appmgr_nontoolbar_area(void);
 
 #endif /* __H_APPMGR */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.42 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: div.c,v 1.43 2001/07/24 12:43:08 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -53,6 +53,9 @@ void divnode_recalc(struct divnode *n) {
 
        n->flags &= ~DIVNODE_SPLIT_POPUP;   /* Clear flag */
 
+       /* By default turn on the DIVNODE_POPUP_NONTOOLBAR flag */
+       n->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
+
        /* Get size */
        x = n->div->x;
        y = n->div->y;
@@ -76,6 +79,9 @@ void divnode_recalc(struct divnode *n) {
 	 y=(vid->lyres>>1)-(h>>1);
        }
        else if (x == PG_POPUP_ATCURSOR) {
+	 /* This is a menu, allow it to overlap toolbars */
+	 n->div->flags &= ~DIVNODE_POPUP_NONTOOLBAR;
+
 	 if (under && under->type == PG_WIDGET_BUTTON) {
 	   /* snap to a button edge */
 	   x = under->in->div->x;

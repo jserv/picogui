@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.33 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: popup.c,v 1.34 2001/07/24 12:43:09 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -35,16 +35,26 @@
 /* Clipping for popup boxes. Mainly used in create_popup, but it is
  * also called when switching video modes */
 void clip_popup(struct divnode *div) {
-  if (div->x+div->w >= vid->lxres)
-    div->x = vid->lxres - div->w - div->split;
-  if (div->y+div->h >= vid->lyres)
-    div->y = vid->lyres - div->h - div->split;
-  if (div->x <0) div->x = 0;
-  if (div->y <0) div->y = 0;
-  if (div->x+div->w >= vid->lxres)
-    div->w = vid->lxres-div->x;
-  if (div->y+div->h >= vid->lyres)
-    div->h = vid->lyres-div->y;
+  struct divnode *ntb;
+
+  /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
+   * area. Otherwise, just clip to the root divnode to make sure we stay on
+   * the display. */
+  if (div->flags & DIVNODE_POPUP_NONTOOLBAR)
+    ntb = appmgr_nontoolbar_area();
+  else
+    ntb = dts->root->head;
+
+  if (div->x+div->w >= ntb->x+ntb->w)
+    div->x = ntb->x+ntb->w - div->w;
+  if (div->y+div->h >= ntb->y+ntb->h)
+    div->y = ntb->y+ntb->h - div->h;
+  if (div->x < ntb->x) div->x = ntb->x;
+  if (div->y < ntb->y) div->y = ntb->y;
+  if (div->x+div->w >= ntb->x+ntb->w)
+    div->w = ntb->x+ntb->w - div->x;
+  if (div->y+div->h >= ntb->y+ntb->h)
+    div->h = ntb->y+ntb->h - div->y;
 }
 
 /* We have a /special/ function to create a popup widget from scratch. */
@@ -157,6 +167,7 @@ void popup_trigger(struct widget *self,long type,union trigparam *param) {
 }
 
 void popup_resize(struct widget *self) {
+  /* This space intentionally left blank... */
 }
 
 /* The End */

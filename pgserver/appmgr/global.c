@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.43 2001/06/30 08:54:05 micahjd Exp $
+/* $Id: global.c,v 1.44 2001/07/24 12:43:08 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -343,6 +343,24 @@ void appmgr_loadcursor(int thobj) {
      VID(sprite_show)(cursor);
 }
 	
+/* Return a pointer to a divnode specifying the non-toolbar area that
+ * applications and popup boxes may normally inhabit. */
+struct divnode *appmgr_nontoolbar_area(void) {
+
+  /* Recalculate the root divtree, necessary if we just changed video modes,
+   * or if the toolbars have moved since the last update and a popup is being
+   * created */
+  divnode_recalc(dts->root->head);
+
+  /* Dereference the toolbar boundary */
+  if (iserror(rdhandle((void**) &wtbboundary,PG_TYPE_WIDGET,-1,htbboundary)))
+    wtbboundary = NULL;  
+
+  if (!wtbboundary)
+    return dts->root->head;
+
+  return wtbboundary->in->next;
+}
 
 /* The End */
 
