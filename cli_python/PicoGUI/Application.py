@@ -1,6 +1,10 @@
 # Application class
 
-import Widget, Server, events, time, infilter, template, struct
+import Widget, Server, events, time, infilter, template, struct, sys
+try:
+    import thread
+except:
+    thread = None
 
 class EventHandled(Exception):
     """raise this from an event handler when you don't want other
@@ -49,7 +53,12 @@ class EventRegistry(object):
                 try:
                     handler(ev)
                 except TypeError:
-                    handler(ev, wo or widget)
+                    e = sys.exc_info()
+                    try:
+                        handler(ev, wo or widget)
+                    except TypeError:
+                        # raise the original exception, not the new one
+                        raise e[0], e[1], e[2]
                     import warnings
                     warnings.warn('handler %r expects 2 arguments' % handler,
                                   DeprecationWarning,
@@ -77,6 +86,9 @@ class Application(Widget.Widget):
         self._event_registry = EventRegistry()
         self._event_stack = []
         self._infilter_registry = {}
+        if thread is not None:
+            self._run_lock = thread.allocate_lock()
+            self._dispatch_lock = thread.allocate_lock()
 
     def panelbar(self):
         handle = self.__getattr__('panelbar')
@@ -142,6 +154,8 @@ class Application(Widget.Widget):
         self._event_stack.append(ev)
 
     def run(self):
+        if thread is not None:
+            self._run_lock.acquire()
         while 1:
             # Update the UI before waiting on the user
             self.server.update()
@@ -168,17 +182,23 @@ class Application(Widget.Widget):
             try:
                 self.dispatch_events()
             except StopApplication, ret:
+                if thread is not None:
+                    self._run_lock.release()
                 if ret.args:
                     return ret.args[0]
                 return
+            except:
+                if thread is not None:
+                    self._run_lock.release()
+                raise
 
     def dispatch_events(self):
-        # XXX DANGER for thread-safety
-        # (could lose events - when we decide to go thread-safe this operation
-        # needs to be wrapped in a semaphore)
+        if thread is not None:
+            self._dispatch_lock.acquire()
         events = self._event_stack
         self._event_stack = []
-        # XXX /DANGER
+        if thread is not None:
+            self._dispatch_lock.release()
         for ev in events:
             try:
                 self._event_registry.dispatch(ev)

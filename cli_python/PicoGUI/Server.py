@@ -1,6 +1,10 @@
 # Server class
 
 import network, requests, responses, constants
+try:
+    import thread
+except:
+    thread = None
 
 class Request(object):
     def __init__(self, server, name):
@@ -45,6 +49,8 @@ class Server(object):
         self._poll_handlers = {}
         self.lost_and_found = []
         self.event_queue = []
+        if thread is not None:
+            self._write_lock = thread.allocate_lock()
 
     def _mkrequest(self, handler, args, id=None):
         return handler(*args, **{'id': id})
@@ -78,41 +84,54 @@ class Server(object):
             self._poll_handlers[fd] = handler
 
     def _do_send_and_wait(self, req, req_id, timeout, is_interruptable=False):
-        self._write(req)
-        if not self._wait:
-            # our "connection" doesn't answer - wtfile, for example
-            return
-        resp = None
-
-        # Convert the connection to a file descriptor if it supports that
         try:
-            connection_fd = self._connection.fileno()
-        except:
-            connection_fd = self._connection
-            
-        while resp == None:
-            if self._poll:
-                pollResults = self._poll.poll(timeout)
-                if pollResults:
-                    for (fd, event) in pollResults:
-                        if fd == connection_fd:
-                            resp = self.get_response(req_id)
-    
-                        elif is_interruptable:
-                            # The C client library goes through a lot of trouble
-                            # to avoid a race condition in which an event arrives
-                            # before a request response, but since cli_python's
-                            # get_response is a lot smarter, this shouldn't be
-                            # necessary here.
-                            self._poll_handlers[fd](fd, event)
-                            self.update()
-                            self._write(req)
+            if thread is not None:
+                # XXX sub-optimal!
+                self._write_lock.acquire()
+            self._write(req)
+            if not self._wait:
+                # our "connection" doesn't answer - wtfile, for example
+                if thread is not None:
+                    self._write_lock.release()
+                return
+            resp = None
+
+            # Convert the connection to a file descriptor if it supports that
+            try:
+                connection_fd = self._connection.fileno()
+            except:
+                connection_fd = self._connection
+
+            while resp == None:
+                if self._poll:
+                    pollResults = self._poll.poll(timeout)
+                    if pollResults:
+                        for (fd, event) in pollResults:
+                            if fd == connection_fd:
+                                resp = self.get_response(req_id)
+
+                            elif is_interruptable:
+                                # The C client library goes through a lot of trouble
+                                # to avoid a race condition in which an event arrives
+                                # before a request response, but since cli_python's
+                                # get_response is a lot smarter, this shouldn't be
+                                # necessary here.
+                                self._poll_handlers[fd](fd, event)
+                                self.update()
+                                self._write(req)
+                    else:
+                        if thread is not None:
+                            self._write_lock.release()
+                        return None  # Timeout
                 else:
-                    return None  # Timeout
-            else:
-                # No poll function, we have to block
-                return self.get_response(req_id)
-        return resp
+                    # No poll function, we have to block
+                    resp = self.get_response(req_id)
+            if thread is not None:
+                self._write_lock.release()
+            return resp
+        finally:
+            if thread is not None and self._write_lock.locked():
+                self._write_lock.release()
 
     def send_and_wait(self, handler, args=(), timeout=None):
         req_id = self._counter
