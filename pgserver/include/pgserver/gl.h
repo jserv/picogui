@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.1 2002/11/25 06:30:49 micahjd Exp $
+/* $Id: gl.h,v 1.2 2002/11/25 06:43:00 micahjd Exp $
  *
  * gl.h - Components defined and used by the OpenGL VBL for PicoGUI
  *
@@ -78,7 +78,7 @@ struct glbitmap {
   
   struct stdbitmap *sb;
   int volatilesb;           /* Indicates that the stdbitmap's contents may be changed without notice */
-  u32 last_update_time;     /* Timer for the hack used in gl_make_texture */
+  u32 last_update_time;     /* Timer for the hack used in gl_bind_texture */
 
   /* OpenGL texture, valid if texture is nonzero */
   GLuint texture;
@@ -161,6 +161,9 @@ struct gl_data {
 
   /* For the camera movement, keep track of which keys are pressed */
   u8 pressed_keys[PGKEY_MAX];
+
+  /* ID of the currently bound 2D texture */
+  GLuint current_texture;
   
   /* Font for onscreen display */
   struct font_descriptor *osd_font;
@@ -184,6 +187,7 @@ extern struct gl_data gl_global;
 
 /* This is the input filter gl uses to handle camera control events */
 extern struct infilter infilter_gl;
+
 
 /************************************************** Functions */
 
@@ -223,7 +227,6 @@ void gl_render_grid(void);
 void gl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		s16 src_x, s16 src_y, s16 lgop);
 float gl_get_key_scale(void);
-void gl_showtexture(GLuint tex, int w, int h);
 int gl_invalidate_texture(hwrbitmap bit);
 int gl_update_hook(void);
 void gl_sprite_show(struct sprite *spr);
@@ -236,7 +239,7 @@ int gl_grop_render_presetup_hook(struct divnode **div, struct gropnode ***listp,
 hwrcolor gl_color_pgtohwr(pgcolor c);
 pgcolor gl_color_hwrtopg(pgcolor c);
 void gl_grop_handler(struct groprender *r, struct gropnode *n);
-void gl_make_texture(struct glbitmap *glb);
+void gl_bind_texture(struct glbitmap *glb);
 void gl_set_wireframe(int on);
 int gl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
 				struct groprender *rend, struct gropnode *node);

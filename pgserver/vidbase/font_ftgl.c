@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.3 2002/11/21 15:43:39 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.4 2002/11/25 06:43:00 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -29,7 +29,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/font.h>
-#include <pgserver/sdlgl.h>
+#include <pgserver/gl.h>
 #include <stdlib.h>
 
 #include <ft2build.h>
@@ -146,8 +146,11 @@ void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *p
   glScalef(DATA->scale,DATA->scale,DATA->scale);
   glRotatef(angle,0,0,-1);
   glTranslatef(g->x,g->y,0);
-
-  glBindTexture(GL_TEXTURE_2D, g->texture);
+  
+  if (g->texture != gl_global.current_texture) {
+    glBindTexture(GL_TEXTURE_2D, g->texture);
+    gl_global.current_texture = g->texture;
+  }
   glBegin(GL_QUADS);
   glTexCoord2f(g->tx1,g->ty1);
   glVertex2f(0,0);
@@ -260,7 +263,7 @@ void ftgl_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
 g_error ftgl_load_font(struct ftgl_fontload *fl,const char *file,int size) {
   FT_Face face;
   g_error e;
-  Uint16 ch;
+  u16 ch;
   struct ftgl_font *f;
   int load_flags;
 
@@ -312,8 +315,6 @@ g_error ftgl_load_font(struct ftgl_fontload *fl,const char *file,int size) {
 
   for (ch=0;ch<NUM_GLYPHS;ch++) {
     struct ftgl_glyph *g = &f->glyphs[ch];
-    static SDL_Color white = {0xFF,0xFF,0xFF,0};
-    static SDL_Color black = {0x00,0x00,0x00,0};
     int i;
     u8 *src,*dest;
 

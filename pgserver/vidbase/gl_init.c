@@ -1,4 +1,4 @@
-/* $Id: gl_init.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: gl_init.c,v 1.2 2002/11/25 06:43:00 micahjd Exp $
  *
  * sdlgl_init.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has initialization, shutdown, and registration.
@@ -28,6 +28,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/gl.h>
+
 
 g_error gl_init(void) {
   const char *s;

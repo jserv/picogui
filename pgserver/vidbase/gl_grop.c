@@ -1,4 +1,4 @@
-/* $Id: gl_grop.c,v 1.1 2002/11/25 05:48:52 micahjd Exp $
+/* $Id: gl_grop.c,v 1.2 2002/11/25 06:43:00 micahjd Exp $
  *
  * gl_grop.c - OpenGL driver for picogui
  *             This handles all new gropnodes that export OpenGL interfaces to
@@ -42,10 +42,8 @@ void gl_grop_handler(struct groprender *r, struct gropnode *n) {
   switch (n->type) {
 
   case PG_GROP_GL_BINDTEXTURE:
-    if (!iserror(rdhandle((void**)&glb,PG_TYPE_BITMAP,-1,n->param[0])) && glb) {
-      gl_make_texture(glb);
-      glBindTexture(GL_TEXTURE_2D,glb->texture);
-    }
+    if (!iserror(rdhandle((void**)&glb,PG_TYPE_BITMAP,-1,n->param[0])) && glb)
+      gl_bind_texture(glb);
     break;
 
   case PG_GROP_GL_ENABLE:
