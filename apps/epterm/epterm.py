@@ -31,6 +31,7 @@ class TerminalPage:
 	    self._termProcess = True
 	    self._app.link(self.terminalHandler, self._terminal, 'data')
 	    self._app.link(self.terminalResizeHandler, self._terminal, 'resize')
+	    self._app.link(self.terminalTitleHandler, self._terminal, 'titlechange')
 	    self._app.link(self.tabClicked, self.tabpage, 'activate')
 	except:
 	    self._terminal.write("The terminal isn't supported on this operating system.\n\r")
@@ -41,6 +42,9 @@ class TerminalPage:
     def terminalResizeHandler(self, ev):
         if ev.x > 0 and ev.y > 0:
 	    self._fcntl.ioctl(self._ptyfd, self._termios.TIOCSWINSZ, struct.pack('4H', ev.y, ev.x, 0, 0))
+
+    def terminalTitleHandler(self, ev):
+        print "title changed: ",ev.data
 
     def update(self):
         self.terminalRead()
@@ -76,12 +80,11 @@ class App(PicoGUI.Application):
     def __init__(self):
         self._pages = []
 	PicoGUI.Application.__init__(self, 'epterm')
-	self._toolbar = self.addWidget('toolbar')
 
 	self._newtabhotkey = self.createWidget('button')
 	self._newtabhotkey.hotkey = 'f12'
 	self.link(self.addtab, self._newtabhotkey, 'activate')
-	self._pages.append(TerminalPage(self._toolbar, 'after', self, 0))
+	self._pages.append(TerminalPage(self, 'inside', self, 0))
 	self._pages[-1].tabpage.text = 'tab!'
 
 	self._config = self._pages[-1].tabpage.addWidget('tabpage', 'after')
@@ -116,4 +119,5 @@ class App(PicoGUI.Application):
 	    i = i + 1
 
 f = App()
+f.idle_delay = 10
 f.run()
