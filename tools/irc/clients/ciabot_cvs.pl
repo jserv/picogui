@@ -16,7 +16,7 @@
 #
 # Its record in the loginfo file should look like:
 #
-#       ALL        $CVSROOT/CVSROOT/ciabot.pl %s $USER
+#       ALL /usr/bin/perl $CVSROOT/CVSROOT/ciabot.pl %s $USER
 #
 
 use strict;
