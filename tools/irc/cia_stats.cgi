@@ -38,20 +38,27 @@ print """Content-type: text/html
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <title>CIA bot statistics</title>
+  <style type="text/css" media="all"> @import url(http://navi.picogui.org/svn/picogui/trunk/tools/css/cia_stats.css);
+  </style>
 </head>
 <body>
-<h1>CIA bot statistics</h1>
-"Because SF stats weren't pointless enough"
 
-<p>Number of messages posted per project:</p>
+<div class="heading">
+   <div class="title">CIA bot statistics</div>
+   <div class="subtitle">Because SF stats weren't pointless enough</div>
+</div>
 
-<table border="1" cellspacing="0" cellpadding="5">
+<div><span class="section">Number of messages posted per project</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+    <table>
 """
 
 # Project table heading
 print "<tr>",
 for heading in ('Project',) + statSubdirs:
-    print "<td><b>%s</b></td>" % heading,
+    print '<th>%s</th>' % heading,
 print "</tr>"
 
 # Project table contents
@@ -63,16 +70,22 @@ for project in projects:
     
 print """
 
-</table>
+    </table>
+  </div>
+</div>
 
-<p>Channels the bot is currently in:</p>
-
-<ul>
+<div><span class="section">Channels the bot is currently in</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+    <ul>
 """
 for channel in channels:
     print "<li>%s</li>" % channel
 print """
-</ul>
+    </ul>
+  </div>
+</div>
 
 </body>
 </html>
