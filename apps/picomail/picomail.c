@@ -28,7 +28,7 @@ int tryMe(struct pgEvent *evt) {
                         row ? PGDEFAULT : PG_DERIVE_INSIDE,
                         row ? PGDEFAULT : wBox);
         
-    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",row, "Title", "Sender");
+    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",row, "Title", "Sender", wItem);
     row++;
    return 0;
 }
@@ -36,17 +36,18 @@ int tryMe(struct pgEvent *evt) {
 void
 addheader( char * sender, char * title, int msg )
 {
-//    pghandle wItem;
+    pghandle wItem;
     
-  	   pgMessageDialog (
-	       "PicoMail", 
-	       "Loading a message header...",
-	       PG_MSGBTN_OK );
-//    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
-//                        row ? PGDEFAULT : PG_DERIVE_INSIDE,
-//                        row ? PGDEFAULT : wBox);
+//  	   pgMessageDialog (
+//	       "PicoMail", 
+//	       "Loading a message header...",
+//	       PG_MSGBTN_OK );
+//	       
+    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
+                        row ? PGDEFAULT : PG_DERIVE_INSIDE,
+                        row ? PGDEFAULT : wBox);
         
-//    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",1, "Title", "Sender");
+    pgReplaceTextFmt(PGDEFAULT,"Blaa!", wItem);
 
     row++;
 }
