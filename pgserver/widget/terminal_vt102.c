@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.27 2003/03/26 09:11:37 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.28 2003/03/26 09:47:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -96,6 +96,12 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
 				      the queue it might be a while before this
 				      is used. */
 
+  /* Transmogrify backspace into delete:
+   * This is a hack to keep emacs from confusing it with ctrl-H
+   */
+  if (pgkey == PGKEY_BACKSPACE)
+    pgkey = PGKEY_DELETE;
+
   /****** Modified key translations */
 
   if ((mods & PGMOD_CTRL) && pgkey >= PGKEY_a && pgkey <= PGKEY_z)
@@ -143,6 +149,14 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
     /**** Send an untranslated key */
     *chrstr = pgkey;
     rtn = chrstr;
+  }
+
+  /* Implement key prefix switch (converts ESC [ to ESC O) */
+  if (DATA->current.key_prefix_switch && rtn[0]=='\033' && rtn[1]=='[') {
+    static char switchedrtn[10];
+    strncpy(switchedrtn, rtn, sizeof(switchedrtn));
+    rtn = switchedrtn;
+    rtn[1] = 'O';
   }
 
   /* After translating a key, send back the string. */
@@ -231,6 +245,8 @@ void term_char(struct widget *self,u8 c) {
 	}
       }
       DBG("character '%c' (%d)\n", c, c);
+      if (DATA->current.insert_mode)
+	term_insert(self, 1);
       term_plot(self,DATA->current.crsrx++,DATA->current.crsry,c);
     }
 
@@ -585,6 +601,11 @@ void term_ecma48sgr(struct widget *self) {
   int *arg = DATA->csiargs;
   if(!DATA->num_csiargs)	/* no arg = reset */
     DATA->current.attr = DATA->attr_default;
+
+  /* If this is an empty CSI m escape, treat it like a reset */
+  if (DATA->num_csiargs == 0)
+    DATA->num_csiargs = 1;
+
   for (;DATA->num_csiargs;DATA->num_csiargs--,arg++) {
     switch (*arg) {
 
@@ -866,12 +887,13 @@ void term_ecmaset(struct widget *self,int n,int enable) {
 
     /* ESC [ 3 h - Display control characters */
   case 3:
-    DBG("-UNIMPLEMENTED- set display of control characters to %d\n", enable);
+    DBG("ignoring request to set display of control characters to %d\n", enable);
     break;
 
     /* ESC [ 4 h - Display control characters */
   case 4:
-    DBG("-UNIMPLEMENTED- set insert mode to %d\n", enable);
+    DBG("setting insert mode to %d\n", enable);
+    DATA->current.insert_mode = enable;
     break;
     
     /* ESC [ 20 h - Automatically follow echo of LF, VT, or FF with CR */
@@ -913,7 +935,8 @@ void term_decset(struct widget *self,int n,int enable) {
 
     /* ESC [ ? 1 h - Cursor keys send ESC O rather than ESC [ when set */
   case 1:
-    DBG("-UNIMPLEMENTED- cursor key prefix switch\n");
+    DBG("set cursor key prefix switch to %d\n", DATA->csiargs[0]);
+    DATA->current.key_prefix_switch = DATA->csiargs[0];
     break;
     
     /* ESC [ ? 3 h - 80/132 column mode */

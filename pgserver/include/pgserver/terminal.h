@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.10 2003/03/26 06:33:57 micahjd Exp $
+/* $Id: terminal.h,v 1.11 2003/03/26 09:47:07 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -55,6 +55,8 @@ struct terminal_state {
   unsigned int reverse_video:1;
   unsigned int cursor_hidden:1;
   unsigned int no_autowrap:1;
+  unsigned int key_prefix_switch:1;
+  unsigned int insert_mode:1;
 };
 
 /* All internal data for the terminal widget, accessed with the DATA macro 
