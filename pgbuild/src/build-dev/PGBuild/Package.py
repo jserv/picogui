@@ -92,7 +92,11 @@ class PackageVersion(object):
                if isUpdated:
                    os.rename(localPath, tempPathOld)
                    os.rename(tempPathNew, localPath)
-                   shutil.rmtree(tempPathOld)
+                   try:
+                       shutil.rmtree(tempPathOld)
+                   except:
+                       progress.warning(("There was a problem removing the old version of %s after " +
+                                         "upgrading.\nPlease try to remove the directory %s") % (self, tempPathOld))
            else:
                isUpdated = False
        else:

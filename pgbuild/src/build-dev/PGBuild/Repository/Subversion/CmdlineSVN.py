@@ -133,7 +133,11 @@ class Repository(PGBuild.Repository.RepositoryBase):
                 # changes that this will nuke. If we don't do this, another attempt to
                 # download() will fail, because svn can't currently resume checkouts.
                 progress.warning("Removing partial Subversion checkout")
-                shutil.rmtree(destination, 1)
+                try:
+                    shutil.rmtree(destination)
+                except:
+                    progress.warning(("Couldn't remove the partial Subversion checkout!\n" +
+                                      "Please try removing the directory %s") % destination)
 
     def isWorkingCopyPresent(self, destination):
         try:
