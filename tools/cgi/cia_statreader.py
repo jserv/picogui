@@ -131,8 +131,29 @@ def htmlifyColorTags(message):
 
     insideTags = []
     outputMessage = ""
-    import irc_colors, re, copy
+    import re, copy
     message = re.sub("<", "&lt;", message)
+
+    allowedColors = ("black",
+                     "dark blue",
+                     "dark green",
+                     "green",
+                     "red",
+                     "brown",
+                     "purple",
+                     "orange",
+                     "yellow",
+                     "light green",
+                     "aqua",
+                     "light blue",
+                     "blue",
+                     "violet",
+                     "grey",
+                     "gray",
+                     "light grey",
+                     "light gray",
+                     "white",
+                     )
 
     class ColorState:
         fgColor = None
@@ -193,7 +214,7 @@ def htmlifyColorTags(message):
                 (parsedState.fgColor, parsedState.bgColor) = (parsedState.bgColor, parsedState.fgColor)
             elif tag == "normal":
                 parsedState = ColorState()
-            elif tag in irc_colors.COLORS.keys():
+            elif tag in allowedColors:
                 parsedState.fgColor = tag
             else:
                 # Unrecognized tag- output it unmodified

@@ -1,3 +1,3 @@
 #!/bin/sh
-/home/commits/tools/irc/cia_stats.py
+/home/commits/tools/cgi/cia_stats.py
 

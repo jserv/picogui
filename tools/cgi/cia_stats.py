@@ -5,11 +5,8 @@
 # -- Micah Dowty <micah@picogui.org>
 #
 
-import cgitb
-cgitb.enable()
+import navi_cgi, cia_statreader
 import os, math, re, time, cgi
-import cia_statreader
-from StringIO import StringIO
 
 def convertDuration(t):
     """Convert a duration in seconds to other units depending on its magnitude"""
@@ -25,172 +22,32 @@ def convertDuration(t):
         t = "%.1fs" % t
     return t
 
-def collapseWhitespace(text):
-    return re.sub("\s+", " ", text)
-        
-def foldText(text, lineLength=120):
-    # This code collapses multiple whitespaces, then packs the
-    # resulting tokens into reasonably long lines.
-    line = ''
-    maxLineWidth = 120
-    output = ''
-    for token in text.split(" "):
-        if len(line) + len(token) > maxLineWidth:
-            output += line + '\n'
-            line = ''
-        if line:
-            line = line + ' ' + token
-        else:
-            line = token
-    output += line + '\n'
-    return output
 
-
-class statPage:
+class StatPage(navi_cgi.NaviPage):
+    plainTitle = "CIA bot statistics"
+    htmlTitle = '<a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html">CIA bot</a> statistics'
     allSections = ['table', 'totals', 'channels', 'recent']
-    defaultSections = allSections
+    footer = navi_cgi.NaviPage.footer + '<a href="http://freenode.org"><img src="/images/web/freenode.png" width="137" height="39" alt="freenode"/></a>'
+    sort = 'forever_D'
+    recentLines = 20
+    parameters = navi_cgi.NaviPage.parameters + [
+        'sort',
+        ('recentLines', int),
+        ]
     
-    def __init__(self, form=None):
-        # Defaults
-        self.sections = self.defaultSections
-        self.sortKey = 'forever'
-        self.sortDirection = 'D'
-        self.recentLines = 20
-        self.refresh = None
-        self.css = "http://navi.picogui.org/svn/picogui/trunk/tools/css/cia_stats.css"
-        
-        # Allow them to be overridden by CGI parameters
-        self.form = form
-        if form is not None:
-            self.cgiInit()
-
-    def cgiInit(self):
-        """Set the output content-type, and parse form arguments"""
-        print "Content-type: text/html\n"        
-        try:
-            (self.sortKey, self.sortDirection) = self.form['sort'].value.split("_")
-        except KeyError:
-            pass
-        try:
-            self.sections = self.form['sections'].value.split(" ")
-        except KeyError:
-            pass
-        try:
-            self.css = self.form['css'].value
-        except KeyError:
-            pass
-        try:
-            self.recentLines = int(self.form['recentLines'].value)
-        except KeyError:
-            pass
-        try:
-            self.refresh = int(self.form['refresh'].value)
-        except KeyError:
-            pass
-
-    def linkURL(self, formKeys={}, useExistingForm=True):
-        """Create a link to ourselves, including possibly-modified form values"""
-        # Copy form attributes to a dictionary we can modify
-        mutableForm = {}
-        if useExistingForm:
-            for key in self.form.keys():
-                mutableForm[key] = self.form[key].value
-        mutableForm.update(formKeys)
-
-        # Figure out the name of this script so we can link to ourselves
-        scriptName = os.getenv("REQUEST_URI").split("?")[0].split("/")[-1]
-
-        # Stick together a new URL
-        attributes = []
-        for key in mutableForm:
-            value = mutableForm[key]
-            if value is not None:
-                attributes.append("%s=%s" % (key, mutableForm[key]))
-        if attributes:
-            return scriptName + "?" + "&".join(attributes)
-        else:
-            return scriptName
-
-    def run(self):
-        doc = StringIO()
-        for section in ['header'] + self.sections + ['footer']:
-            getattr(self, 'section_%s' % section)(doc.write)
-
-        # It's hard to properly pretty-print HTML like this generates,
-        # so for now we'll just strip out all extra whitespace. If the
-        # source is going to look bad either way, it might as well save
-        # a little bandwidth.
-        print foldText(collapseWhitespace(doc.getvalue()))
-
-    def begin_section(self, write, section, title, contentClass="row"):
-        write('<div><span class="section">%s</span>' % title)
-
-        # If this isn't already the only section, give some links to hide
-        # this section and to view only this section
-        if len(self.sections) > 1:
-            sectionHideList = []
-            for listedSection in self.sections:
-                if listedSection != section:
-                    sectionHideList.append(listedSection)
-            sectionHideLink = self.linkURL({'sections': "+".join(sectionHideList)})
-            sectionOnlyLink = self.linkURL({'sections': section})
-            write('<a class="section" href="%s">hide section</a>' % sectionHideLink)
-            write('<a class="section" href="%s">this section only</a>' % sectionOnlyLink)
-
-        write('</div><div class="section"><div class="sectionTop"></div>')
-        write('<div class="%s">' % contentClass)
-
-    def end_section(self, write):
-        write("</div></div>")
-
-    def section_header(self, write):
-        write("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-                                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-           <html>
-           <head>
-              <title>CIA bot statistics</title>
-              <style type="text/css" media="all">
-                 @import url(%s);
-              </style>
-           """ % self.css)
-        if self.refresh is not None:
-            write('<meta http-equiv="refresh" content="%d">' % self.refresh)
-        write("""
-           </head>
-           <body>
-           <div class="heading">
-              <div class="dateBox">
-                 %s
-              </div>
-              <div class="title">
-                 <a href="http://navi.picogui.org/svn/picogui/trunk/tools/irc/cia.html">CIA bot</a> statistics
-              </div>
-              <div class="subtitle">Because SF stats weren't pointless enough</div>
-              <div class="headingTabs">
-              """ % time.strftime("%c"))
-
-        if self.sections != self.allSections: 
-            write('<a class="headingTab" href="%s">all sections</a>' % self.linkURL({'sections': None}))
-        if self.form.keys():
-            write('<a class="headingTab" href="%s">defaults</a>' % self.linkURL({}, False))
-        if self.refresh:
-            write('<a class="headingTab" href="%s">refresh off</a>' % self.linkURL({'refresh': None}))
-        else:
-            write('<a class="headingTab" href="%s">refresh on</a>' % self.linkURL({'refresh': 30}))
-
-        write("</div></div>")
-
     def section_table(self, write):
         self.begin_section(write, "table", "Number of commits posted per project")
+
+        (sortKey, sortDirection) = self.sort.split("_")
         
         # Project table heading
         write("<table><tr>")
         for heading in ('project','mtbc') + cia_statreader.statSubdirs:
-            if heading == self.sortKey:
+            if heading == sortKey:
                 # This is the current sort key. Embolden the title and link to the opposite sort direction.
                 boldOpen = "<b>"
                 boldClose = "</b>"
-                if self.sortDirection == "A":
+                if sortDirection == "A":
                     url = self.linkURL({'sort': "%s_D" % heading})
                 else:
                     url = self.linkURL({'sort': "%s_A" % heading})
@@ -212,17 +69,17 @@ class statPage:
 
         # Resort the project list according to the current key and direction
         def getKey(project):
-            if self.sortKey == "project":
+            if sortKey == "project":
                 return project
-            if self.sortKey == "mtbc":
+            if sortKey == "mtbc":
                 mtbc = cia_statreader.projectMTBC[project]
                 if not mtbc:
                     # For sorting purposes, an MTBC of None should appear larger than all others
                     mtbc = 1e+1000   # Infinity, or so...
                 return mtbc
-            return cia_statreader.projectCounts[project][self.sortKey]
+            return cia_statreader.projectCounts[project][sortKey]
         def projectSort(a,b):
-            if self.sortDirection == "A":
+            if sortDirection == "A":
                 return cmp(getKey(a),getKey(b))
             else:
                 return cmp(getKey(b),getKey(a))
@@ -280,7 +137,7 @@ class statPage:
         self.end_section(write)
         
     def section_recent(self, write):
-        self.begin_section(write, "recent", "Most recent commits", "commitBox")
+        self.begin_section(write, "recent", "Most recent commits", "terminalBox")
         write("<ul>")
         for command in cia_statreader.readLatestCommands(self.recentLines):
             if command[0] == "Announce":
@@ -290,17 +147,6 @@ class statPage:
         write("</ul>")
         self.end_section(write)
 
-    def section_footer(self, write):
-        write("""
-           <div class="footer">
-              <a href="http://freenode.org"><img src="/images/web/freenode.png" width="137" height="39" alt="freenode"/></a>
-              <a href="/"><img src="/images/web/navi64.png" width="64" height="39" alt="Navi"/></a>
-           </div>
-           </body>
-           </html>
-           """)
-
 if __name__ == '__main__':
-    form = cgi.FieldStorage()
-    statPage(form).run()
+    StatPage().run()
 
