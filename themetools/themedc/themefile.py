@@ -90,9 +90,9 @@ def lookup_objname(value):
     return str(value)
 
 def quote_string(string):
-  replace(string, '\\', '\\\\')
-  replace(string, '\n', '\\n')
-  replace(string, '"', '\\"')
+  string=replace(string, '\\', '\\\\')
+  string=replace(string, '\n', '\\n')
+  string=replace(string, '"', '\\"')
   return string
 
 PGTH_FORMATVERSION=2
