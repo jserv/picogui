@@ -11,6 +11,20 @@ class PM:
     self.prefix=prefix
     self.format=printfformat
 
+fsoperators={constants['PGTH_OPCMD_PLUS']: '+',
+    constants['PGTH_OPCMD_MINUS']: '-', constants['PGTH_OPCMD_MULTIPLY']: '*',
+    constants['PGTH_OPCMD_SHIFTL']: '<<', constants['PGTH_OPCMD_SHIFTR']: '>>',
+    constants['PGTH_OPCMD_OR']: '|', constants['PGTH_OPCMD_AND']: '&',
+    constants['PGTH_OPCMD_EQ']: '==', constants['PGTH_OPCMD_LOGICAL_NOT']: '!',
+    constants['PGTH_OPCMD_GT']: '>', constants['PGTH_OPCMD_LOGICAL_OR']: '||',
+    constants['PGTH_OPCMD_LOGICAL_AND']: '&&', constants['PGTH_OPCMD_LT']: '<',
+    constants['PGTH_OPCMD_DIVIDE']: '/'}
+# Note: argument type list is in reverse.
+fsfunctions={constants['PGTH_OPCMD_COLORADD']: ('ColorAdd', 'color', 'color'),
+    constants['PGTH_OPCMD_COLORSUB']: ('ColorSub', 'color', 'color'),
+    constants['PGTH_OPCMD_COLORDIV']: ('ColorDiv', 'color', 'color'),
+    constants['PGTH_OPCMD_COLORMULT']: ('ColorMult', 'color', 'color')}
+
 propertymatch=[
 	PM('^textcolors$', 'terminalpalette', None, 'Array(0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x,\n\t0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x,\n\t0x%06x, 0x%06x, 0x%06x, 0x%06x, 0x%06x)'),
 	PM('color$', 'color', None, '0x%06x'),
@@ -29,6 +43,8 @@ propertymatch=[
 	PM('^icon\.', 'bitmap', None, None),
 	PM('bitma(p|sk)[0-9]?$', 'bitmap', None, None),
 	PM('^(bgfill|overlay|backdrop)$', 'fillstyle', None, None)]
+
+filenumber=0
 
 def lookup_proptype(name):
   for pm in propertymatch:
@@ -121,7 +137,10 @@ class PgFillstyle:
       res=value[0]+'('
       for arg in value[2:]:
 	res=res+self.formula(arg)+', '
-      return res[:-2]+')'
+      if len(value)==2:
+        return res+')'
+      else:
+	return res[:-2]+')'
     elif value[1]=='operator':
       return self.formula(value[2])+value[0]+self.formula(value[3])
     elif value[1]=='questioncolon':
@@ -147,7 +166,7 @@ class PgFillstyle:
       return where[1]
   def grop(self,gropcode):
     params=PG_GROPPARAMS(gropcode)
-    self.source=self.source+"\t"+fillstylefuncs[gropcode]+"("
+    self.source=self.source+"\t"+gropname[gropcode]+"("
     if not PG_GROP_IS_UNPOSITIONED(gropcode):
       self.assigntype(self.stack[-4-params], 'int')
       self.assigntype(self.stack[-3-params], 'int')
@@ -253,47 +272,21 @@ class PgFillstyle:
 	  prop=lookup_propname(prop)
 	  p=p+2
 	  self.stack.append([prop,lookup_proptype(prop)])
-	elif opcode == constants['PGTH_OPCMD_SHIFTR']:
+	elif opcode in fsoperators.keys():
 	  fsb=self.stack.pop()
 	  fsa=self.stack.pop()
-	  self.stack.append(['>>', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_AND']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['&', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_OR']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['|', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_PLUS']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['+', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_MINUS']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['-', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_GT']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['>', 'operator', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_DIVIDE']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['/', 'operator', fsa, fsb])
+	  self.stack.append([fsoperators[opcode], 'operator', fsa, fsb])
 	elif opcode == constants['PGTH_OPCMD_QUESTIONCOLON']:
 	  fsa=self.stack.pop()
 	  fsb=self.stack.pop()
 	  fsc=self.stack.pop()
 	  self.stack.append([fsa, 'questioncolon', fsb, fsc])
-	elif opcode == constants['PGTH_OPCMD_COLORDIV']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['ColorDiv', 'function', fsa, fsb])
-	elif opcode == constants['PGTH_OPCMD_COLORSUB']:
-	  fsb=self.stack.pop()
-	  fsa=self.stack.pop()
-	  self.stack.append(['ColorSub', 'function', fsa, fsb])
+	elif opcode in fsfunctions.keys():
+	  arg=[]
+	  for type in fsfunctions[opcode][1:]:
+	    arg.insert(0, self.stack.pop())
+	    self.assigntype(arg[0], type)
+	  self.stack.append([fsfunctions[opcode][0], 'function']+arg)
 	else:
 	  raise "Unimplemented fillstyle opcmd %s"% \
 	  	lookup_constname("PGTH_OPCMD_", opcode)
@@ -307,7 +300,11 @@ class PgFillstyle:
 class PgRequest:
   def __str__(self):
     if self.type == constants['PGREQ_MKBITMAP']:
-      return 'LoadBitmap("FIXME-UNSAVED")'
+      global filenumber
+      filename='themedc-bitmap%02d'%filenumber
+      filenumber=filenumber+1
+      open(filename,'wb').write(self.data)
+      return 'LoadBitmap("%s")'%filename
     elif self.type == constants['PGREQ_MKFONT']:
       return 'Font("%s",%d,%s)'%(self.name, self.size,
 	  lookup_bitmask("PG_FSTYLE_", self.style))
@@ -331,7 +328,6 @@ class PgRequest:
     elif self.type == constants['PGREQ_MKFILLSTYLE']:
       return PgFillstyle(themestr[p+PgReqLen:p+PgReqLen+size])
     elif self.type == constants['PGREQ_MKBITMAP']:
-      # FIXME this is not a string... needs a file name 
       self.data = themestr[p+PgReqLen:p+PgReqLen+size]
     else:
       raise "Unimplemented request %s"%lookup_constname("PGREQ_", self.type)

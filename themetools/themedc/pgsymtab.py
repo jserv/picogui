@@ -11,7 +11,7 @@ globals={}
 constants={}
 properties={}
 themeobjects={}
-fillstylefuncs={}
+gropname={}
 
 fullline=''
 for line in input():
@@ -35,9 +35,9 @@ for line in input():
 	  properties[value]=name[7:]
 	if(name[:8]=='pg.grop.'):
 	  if(name[8:11]=='set'):
-	    fillstylefuncs[value]=capitalize(name[8:11])+capitalize(name[11:])
+	    gropname[value]=capitalize(name[8:11])+capitalize(name[11:])
 	  else:
-	    fillstylefuncs[value]=capitalize(name[8:])
+	    gropname[value]=capitalize(name[8:])
       else:
 	print "# Couldn't eval", m.group(2), "result", repr(value), "in", fullline
     fullline=''
@@ -45,4 +45,4 @@ for line in input():
 print "constants =", repr(constants)
 print "properties =", repr(properties)
 print "themeobjects =", repr(themeobjects)
-print "fillstylefuncs =", repr(fillstylefuncs)
+print "gropname =", repr(gropname)
