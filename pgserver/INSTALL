@@ -54,19 +54,19 @@
 
   To avoid typing the build platform, it is possible to use
 
-	./configure --host=m68k-pic-coff --build=`config.guess`
+	./configure --host=m68k-pic-coff --build=`./config.guess`
 
   These operations assume that the gcc/ld/ar commands are actually
   cross-compiling tools. If the cross-tools are called differently,
   they have to be specified as environment variables :
 
-       CC=cross-gcc LD=cross-ld ./configure --host=m68k-pic-coff --build=`config.guess`
+       CC=cross-gcc LD=cross-ld ./configure --host=m68k-pic-coff --build=`./config.guess`
 
   Usually, the tools are prefixed with the same name as the
   compilation host (ie m68k-pic-coff-gcc). I've provided a shortcut in
   that case :
 
-       ./configure --host=m68k-pic-coff --build=`config.guess` --with-prefix
+       ./configure --host=m68k-pic-coff --build=`./config.guess` --with-prefix
 
   This whole stuff is less a constraint as it appears at first, as the
   configuration is usually done only once. In addition, there is a
