@@ -97,13 +97,14 @@ object base.panelbtn {
 
 object button {
   fgcolor = 0x336699;
+  frameColor = button::fgcolor;
   font = Font(NULL,0,PG_FSTYLE_BOLD);
   margin = 2;
 }
 
 object button.hilight bgfill = fillstyle {
   button::bgfill(x,y,w,h);
-  SetColor(fgcolor);
+  SetColor(frameColor);
   SetLgop(PG_LGOP_STIPPLE);
   Frame(x,y,w,h);
   SetLgop(PG_LGOP_NONE);
@@ -111,7 +112,7 @@ object button.hilight bgfill = fillstyle {
 
 object button.on bgfill = fillstyle {
   button::bgfill(x,y,w,h);
-  SetColor(fgcolor);
+  SetColor(frameColor);
   Frame(x,y,w,h);
 };
 
@@ -204,11 +205,36 @@ object panel {
   };
 }
 
+/* Editables */
+
 object field {
-  bgfill = Copy(default::fFramedTranslucent);
-  frameColor = Copy(button::fgcolor);
-  margin = 3;
+  bgfill = fillstyle {
+    SetColor(frameColor);
+    Line(x,y+h-1,w,0);
+    fTranslucent(x,y,w,h-1);
+  };
+
+  frameColor = button::fgcolor;
+  margin  = 2;
+  alpha   = 0x75000000;
 }
+
+object textbox {
+  bgfill = fillstyle {
+    fTranslucent(x,y,w,h);
+
+    SetColor(frameColor);
+    SetLgop(PG_LGOP_STIPPLE);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+  };
+
+  frameColor = button::fgcolor;
+  margin  = 3;
+  alpha   = 0x75000000;
+}
+
+/* The scrollbar - only thing that's not translucent, for niftier effect */
 
 object scroll {
   width = 12;
