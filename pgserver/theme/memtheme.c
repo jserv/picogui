@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.36 2001/08/30 21:06:56 micahjd Exp $
+/* $Id: memtheme.c,v 1.37 2001/08/31 18:05:47 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -208,6 +208,12 @@ unsigned long theme_lookup(unsigned short object,
   case PGTH_P_HOTKEY_CANCEL:    return PGKEY_ESCAPE;
   case PGTH_P_HOTKEY_YES:       return PGKEY_y;
   case PGTH_P_HOTKEY_NO:        return PGKEY_n;
+  case PGTH_P_HOTKEY_UP:        return PGKEY_UP;
+  case PGTH_P_HOTKEY_DOWN:      return PGKEY_DOWN;
+  case PGTH_P_HOTKEY_LEFT:      return PGKEY_LEFT;
+  case PGTH_P_HOTKEY_RIGHT:     return PGKEY_RIGHT;
+  case PGTH_P_HOTKEY_ACTIVATE:  return PGKEY_SPACE;
+  case PGTH_P_HOTKEY_NEXT:      return PGKEY_TAB;
 
   default:
     return 0;       /* Couldn't hurt? */

@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.1 2001/08/31 13:50:51 micahjd Exp $
+/* $Id: mobile.ths,v 1.2 2001/08/31 18:05:47 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -18,7 +18,7 @@
  * a couple kilobytes on a pG logo, you can just comment out the whole
  * 'background' object and the background will be blank.
  *
- * Version 0.50
+ * Version 1.00
  *
  * -- Micah Dowty <micahjd@users.sourceforge.net>
  */
@@ -36,7 +36,7 @@ object background {
     SetFont(font);
     Text(5,5,1,1,default::name);
   };
-  font = Font("Clean",6,PG_FSTYLE_FIXED);
+  font = Font("Helvetica",8,PG_FSTYLE_FLUSH);
 }
 
 object default {
