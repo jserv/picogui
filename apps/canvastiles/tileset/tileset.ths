@@ -1,0 +1,15 @@
+object "canvastiles/tileset" {
+  PGTH_P_USER + 0  = LoadBitmap("grass.png");
+  PGTH_P_USER + 1  = LoadBitmap("water.png");
+  PGTH_P_USER + 2  = LoadBitmap("grass_water_t.png");
+  PGTH_P_USER + 3  = LoadBitmap("grass_water_r.png");
+  PGTH_P_USER + 4  = LoadBitmap("grass_water_b.png");
+  PGTH_P_USER + 5  = LoadBitmap("grass_water_l.png");
+  PGTH_P_USER + 6  = LoadBitmap("grass_water_tl.png");
+  PGTH_P_USER + 7  = LoadBitmap("grass_water_tr.png");
+  PGTH_P_USER + 8  = LoadBitmap("grass_water_br.png");
+  PGTH_P_USER + 9  = LoadBitmap("grass_water_bl.png");
+}
+
+obj "canvastiles/sprites/ship" bitmap1 = LoadBitmap("ship.png");
+obj "canvastiles/sprites/logo" bitmap1 = LoadBitmap("pglogo3.png");
