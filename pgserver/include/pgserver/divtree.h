@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.24 2001/08/04 11:56:19 micahjd Exp $
+/* $Id: divtree.h,v 1.25 2001/08/04 16:20:16 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -78,6 +78,9 @@ struct divnode {
    * first. */
   struct divnode *next;
   
+  /* This is used by the DIVNODE_DIVSCROLL flag */
+  struct divnode *divscroll;
+
   /* When the widget is resized or changes state, this is used to rebuild the
      groplist. It defines the appearance of the widget. */
   void (*build)(struct gropctxt *c,unsigned short state,struct widget *self);
@@ -101,6 +104,13 @@ struct divnode {
   
   /* Width and height, of course */
   s16 w,h;
+
+  /* Calculated size. Normally the same as the size above, but:
+   *  - The position will be different if DIVNODE_DIVSCROLL is on
+   *  - The size will be different if one of the DIVNODE_EXTEND_* flags
+   *    are turned on.
+   */
+  s16 calcx,calcy,calcw,calch;
 
   /* The preferred width and height as calculated by the widget itself.
    * This is taken as a minimum size when the divnode contains other divnodes,
@@ -180,8 +190,26 @@ struct divnode {
 					  * widget, the 'div' child of the widget
 					  * given DIVNODE_SPLIT_POPUP */
 #define DIVNODE_NOSQUISH         (1<<22) /* Instead of shrinking the widget
-					  * when the available space isn't
+					  * when the requested space isn't
 					  * available, make it disappear
+					  */
+#define DIVNODE_EXTEND_WIDTH     (1<<23) /* Use the calculated width or
+					  * the preferred width, whichever's
+					  * larger.
+					  */
+#define DIVNODE_EXTEND_HEIGHT    (1<<24) /* Use the calculated height or
+					  * the preferred height, whichever's
+					  * larger.
+					  */
+#define DIVNODE_DIVSCROLL        (1<<25) /* If 'divscroll' is NULL, set it to ourselves.
+					  * Give a copy of our 'divscroll' pointer to our
+					  * children, and set DIVNODE_DIVSCROLL_CHILD
+					  * flags for children. Translate by divscroll->tx,
+					  * divscroll->ty and clip with divscroll->calcw
+					  * and divscroll->calch.
+					  *
+					  * Along with DIVNODE_EXTEND_HEIGHT or _WIDTH this
+					  * implements divnode-level scrollin
 					  */
 
 /* Side value macros and stuff */

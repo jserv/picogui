@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.3 2001/06/26 11:31:27 micahjd Exp $
+/* $Id: render.h,v 1.4 2001/08/04 16:20:16 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -74,7 +74,7 @@ struct gropnode {
 struct groprender {
    struct pair output_rect; /* Size of output device (divnode, etc) */
    struct rect orig;        /* Original rect of current gropnode */
-   struct pair translation; /* From the divnode's tx and ty */
+   struct pair translation; /* Applied only to grops with PG_GROPF_TRANSLATE */
    struct pair scroll;      /* Delta translation from last redraw */
    struct pair csrc;        /* Additional src_x,src_y offsets from clipping */
    hwrbitmap output;        /* Bitmap to render to */

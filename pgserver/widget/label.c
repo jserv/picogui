@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.35 2001/06/25 00:48:50 micahjd Exp $
+/* $Id: label.c,v 1.36 2001/08/04 16:20:16 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -158,12 +158,6 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
-  case PG_WP_SCROLL:
-    self->in->div->ty = -data;
-    self->in->div->flags |= DIVNODE_SCROLL_ONLY;
-    self->dt->flags |= DIVTREE_NEED_REDRAW;
-    break;
-
   case PG_WP_STATE:
     self->in->div->state = data;
     break;
@@ -176,15 +170,8 @@ g_error label_set(struct widget *self,int property, glob data) {
 
 glob label_get(struct widget *self,int property) {
   g_error e;
-  handle h;
-  s16 tw,th;
-  char *str;
-  struct fontdesc *fd;
 
   switch (property) {
-
-  case PG_WP_SIDE:
-    return self->in->flags & (~SIDEMASK);
 
   case PG_WP_TRANSPARENT:
     return DATA->transparent;
@@ -200,21 +187,6 @@ glob label_get(struct widget *self,int property) {
 
   case PG_WP_TEXT:
     return (glob) DATA->text;
-
-  case PG_WP_SCROLL:
-    return -self->in->div->ty;
-
-  case PG_WP_VIRTUALH:
-    if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,DATA->text)) 
-        || !str) break;
-    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,DATA->font ? 
-			 DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT))) 
-        || !fd) break;
-    sizetext(fd,&tw,&th,str);
-    if (DATA->direction == PG_DIR_VERTICAL)
-      return tw;
-    else
-      return th;
 
   default:
     return 0;

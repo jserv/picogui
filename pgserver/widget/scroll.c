@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.38 2001/07/10 21:05:31 micahjd Exp $
+/* $Id: scroll.c,v 1.39 2001/08/04 16:20:16 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -70,7 +70,7 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* Size ourselves to fit the widget we are bound to */
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			DATA->binding)) && wgt) 
-    DATA->res = widget_get(wgt,PG_WP_VIRTUALH) - wgt->in->h;
+    DATA->res = wgt->in->ch - wgt->in->h;
 
   /* Background for the bar */
   exec_fillstyle(c,state,PGTH_P_BGFILL);

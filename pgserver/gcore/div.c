@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.49 2001/08/04 07:46:54 micahjd Exp $
+/* $Id: div.c,v 1.50 2001/08/04 16:20:16 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -46,6 +46,30 @@ void divnode_recalc(struct divnode *n) {
 
    if (n->flags & DIVNODE_NEED_RECALC) {
      split = n->split;
+
+     /* Implement DIVNODE_EXTEND_* flags, used for scrolling */
+     n->calcx = n->x;
+     n->calcy = n->y;
+     n->calcw = n->w;
+     n->calch = n->h;
+     if (n->flags & DIVNODE_EXTEND_WIDTH)
+       n->w  = max(n->w,max(n->pw,n->cw));
+     if (n->flags & DIVNODE_EXTEND_HEIGHT)
+       n->h  = max(n->h,max(n->ph,n->ch));
+
+     /* Implement the calculation-time part of DIVNODE_DIVSCROLL */
+     if (n->flags & DIVNODE_DIVSCROLL) {
+       if (!n->divscroll)
+	 n->divscroll = n;
+       if (n->next) {
+	 n->next->flags |= DIVNODE_DIVSCROLL;
+	 n->next->divscroll = n->divscroll;
+       }
+       if (n->div) {
+	 n->div->flags |= DIVNODE_DIVSCROLL;
+	 n->div->divscroll = n->divscroll;
+       }
+     }
 
      /* Process as a popup box size */
      if (n->flags & DIVNODE_SPLIT_POPUP) {

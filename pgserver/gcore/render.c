@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.8 2001/07/11 00:59:41 micahjd Exp $
+/* $Id: render.c,v 1.9 2001/08/04 16:20:16 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -50,6 +50,7 @@ void grop_render(struct divnode *div) {
    struct quad cr;
    u8 incflag;
    struct groprender rend;
+   s16 dtx,dty;
 
    /* Don't render if an app has exclusive display access */
    if (display_owner)
@@ -60,7 +61,19 @@ void grop_render(struct divnode *div) {
    rend.lgop = PG_LGOP_NONE;
    rend.output = vid->display;
    rend.hfont = defaultfont;
-   
+
+   /* Add in the divnode-level scrolling if necessary */
+   if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+     dtx = div->divscroll->tx;
+     dty = div->divscroll->ty;
+     div->x = div->calcx + dtx;
+     div->y = div->calcy + dty;
+   }
+   else {
+     dtx = 0;
+     dty = 0;
+   } 
+      
    /* Transfer over some numbers from the divnode */   
    rend.clip.x1 = div->x;
    rend.clip.x2 = div->x+div->w-1;
@@ -68,13 +81,25 @@ void grop_render(struct divnode *div) {
    rend.clip.y2 = div->y+div->h-1;
    rend.translation.x = div->tx;
    rend.translation.y = div->ty;
-   rend.scroll.x = div->tx - div->otx;
-   rend.scroll.y = div->ty - div->oty;
-   div->otx = div->tx;
-   div->oty = div->ty;
+   rend.scroll.x = div->tx+dtx - div->otx;
+   rend.scroll.y = div->ty+dty - div->oty;
+   div->otx = div->tx+dtx;
+   div->oty = div->ty+dty;
    rend.output_rect.x = div->w;
    rend.output_rect.y = div->h;
-   
+
+   /* Clip the clipping rectangle to the scrolling container */
+   if ((div->flags & DIVNODE_DIVSCROLL) && div->divscroll) {
+     if (rend.clip.x1 < div->divscroll->calcx)
+       rend.clip.x1 = div->divscroll->calcx;
+     if (rend.clip.x2 > (div->divscroll->calcx + div->divscroll->calcw - 1))
+       rend.clip.x2 = div->divscroll->calcx + div->divscroll->calcw - 1;
+     if (rend.clip.y1 < div->divscroll->calcy)
+       rend.clip.y1 = div->divscroll->calcy;
+     if (rend.clip.y2 > (div->divscroll->calcy + div->divscroll->calch - 1))
+       rend.clip.y2 = div->divscroll->calcy + div->divscroll->calch - 1;
+   }
+
    /* Munge our flags a bit. If this is incremental, and we didn't need
     * a full redraw anyway, look for the incremental divnode flag */
    if ((div->flags & DIVNODE_INCREMENTAL) && 
@@ -131,8 +156,8 @@ void grop_render(struct divnode *div) {
       node.r.x += div->x;
       node.r.y += div->y;
       if (node.flags & PG_GROPF_TRANSLATE) {
-	 node.r.x += rend.translation.x;
-	 node.r.y += rend.translation.y;
+	node.r.x += rend.translation.x;
+	node.r.y += rend.translation.y;
       }
       
       /* Clip clip! */

@@ -6,6 +6,20 @@ I also use columns in the browser to display the name and size of each file.
 All that's left in standard dialog support (I think) is the color picker,
 standard icons, and good scrolling. Since the scrolling is by far the most
 difficult of these three, of course I decided to do it first :)
+-
+Requirements for scrolling:
+ - Divnodes and hotspots translated by tx,ty at redraw time
+ - Divnode size set equal to the preferred size in the dimensions
+   that can scroll, during recalc
+ - Scrolled node and all children are also clipped to the scrolled
+   node's original size. The nodes' clip rectangles are set at
+	calc time, and this rect is combined with each node's translated
+	clipping rectangle at redraw
+						      
+      * widget/widget.c: PG_WP_SCROLL is now implemented for all widgets
+		
+		* widget/label.c: Removing PG_WP_VIRTUALH, now we can just use the
+		  preferred size
 
 
 2001-08-03    Micah Dowty <micahjd@users.sourceforge.net>
