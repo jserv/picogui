@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_ALL,
 	      PG_WP_TEXT,pgNewString("今日は世界"),
-	      PG_WP_FONT,pgNewFont(NULL,24,PG_FSTYLE_ENCODING_UNICODE),
+	      PG_WP_FONT,pgNewFont(NULL,24,PG_FSTYLE_ENCODING_UNICODE | PG_FSTYLE_FIXED),
 	      0);
   
   /* Process events
