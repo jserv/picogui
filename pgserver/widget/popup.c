@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.15 2000/11/05 01:09:46 micahjd Exp $
+/* $Id: popup.c,v 1.16 2000/11/05 02:19:54 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -34,7 +34,7 @@
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   g_error e;
-  int margin = theme_lookup(PGTH_O_POPUP,PGTH_P_MARGIN);
+  int margin;
 
   /* Freeze the existing layer and make a new one */
   e = dts_push();
@@ -61,6 +61,8 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   }
 
   /* Clipping and things */
+  (*wgt)->in->div->split = margin =
+    theme_lookup((*wgt)->in->div->state,PGTH_P_MARGIN);
   (*wgt)->in->div->x = x-margin;
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);
@@ -91,7 +93,6 @@ g_error popup_install(struct widget *self) {
   self->in->div->build = &build_bgfill_only;
   self->in->div->state = PGTH_O_POPUP;
   self->in->div->flags = DIVNODE_SPLIT_BORDER;
-  self->in->div->split = theme_lookup(PGTH_O_POPUP,PGTH_P_MARGIN);
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;
