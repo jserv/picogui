@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.17 2002/09/19 20:44:30 micahjd Exp $
+/* $Id: sdlgl.h,v 1.18 2002/09/19 21:50:07 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -253,6 +253,7 @@ void gl_continuous_init(int *n,fd_set *readfds,struct timeval *timeout);
 g_error gl_continuous_regfunc(struct inlib *i);
 void gl_osd_printf(int *y, const char *fmt, ...);
 void gl_matrix_pixelcoord(void);
+void gl_matrix_camera(void);
 void gl_process_camera_keys(void);
 void gl_render_grid(void);
 g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **ppf, int style);

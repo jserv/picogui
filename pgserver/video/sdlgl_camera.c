@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.6 2002/09/19 20:44:30 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.7 2002/09/19 21:50:07 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -159,9 +159,9 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 	break;
 	
       case SDLGL_CAMERAMODE_ROTATE:
-	gl_global.camera.rx += dx;
-	gl_global.camera.ry += dy;
-	gl_global.camera.rz += dz;
+	gl_global.camera.ry += dx * 0.1;
+	gl_global.camera.rx -= dy * 0.1;
+	gl_global.camera.rz += dz * 0.1;
 	break;
       }
     }
@@ -185,12 +185,12 @@ void gl_process_camera_keys(void) {
   switch (gl_global.camera_mode) {
     
   case SDLGL_CAMERAMODE_TRANSLATE:
-    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.dz += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.dz -= 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.dy += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.dy -= 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.dx += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.dx -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.tz += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.tz -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.ty += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.ty -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.tx += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.tx -= 5.0 * scale;
     break;
 
   case SDLGL_CAMERAMODE_ROTATE:
