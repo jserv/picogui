@@ -1,4 +1,4 @@
-/* $Id: wt.c,v 1.2 2002/06/14 02:42:34 micahjd Exp $
+/* $Id: wt.c,v 1.3 2002/11/11 03:08:21 micahjd Exp $
  * 
  * wt.c - Loading and instantiation of PicoGUI's Widget Templates
  *
@@ -52,7 +52,7 @@ g_error wt_load(handle *wt, int owner, u8 *template, u32 template_len) {
   if (hdr->file_len) {
     /* Zero out the checksum field, and validate the file */
     file_crc32 = ntohl(hdr->file_crc32);
-    file_crc32 = 0;
+    hdr->file_crc32 = 0;
     valid_crc32 = crc32(crc32(0,NULL,0),template,template_len);
     if (file_crc32 != valid_crc32)
       return mkerror(PG_ERRT_FILEFMT,113);    /* Bad checksum */
