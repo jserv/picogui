@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.7 2001/07/05 06:33:05 micahjd Exp $
+/* $Id: pgmain.c,v 1.8 2001/07/05 07:09:46 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -130,11 +130,15 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"hlv:m:i:t:c:-:");
+      c = getopt(argc,argv,"hlnv:m:i:t:c:-:");
       if (c==-1)
 	break;
       
       switch (c) {
+
+      case 'n':        /* Ignore config data */
+	configfile_free();
+	break;
 
       case '-':        /* config option */
 	{
@@ -279,11 +283,12 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_ANY
 	     "DEBUG MODE ON\n\n"
 #endif
-	     "usage: pgserver [-hl] [-c configfile] [-v driver] [-m WxHxD]\n"
+	     "usage: pgserver [-hln] [-c configfile] [-v driver] [-m WxHxD]\n"
 	     "                [--section.key=value] [--key=value] [--key]\n"
 	     "                [-i driver] [-t theme] [session manager...]\n\n"
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n"
+	     "  n : Ignore existing configuration data\n"
 	     "\n"
 	     "  c conf    : Load a configuration file\n"
 	     "  v driver  : Set the video driver (see -l)\n"
