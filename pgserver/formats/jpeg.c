@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.11 2002/03/26 04:20:59 instinc Exp $
+/* $Id: jpeg.c,v 1.12 2002/03/26 17:44:59 instinc Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -116,7 +116,7 @@ boolean pgui_jpeg_fill_input_buffer (j_decompress_ptr cinfo)
 }
 
 
-void pgui_jpeg_skip_input_data (j_decompress_ptr cinfo, s32 num_bytes)
+void pgui_jpeg_skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 {
   pgui_jpeg_src_ptr src = (pgui_jpeg_src_ptr) cinfo->src;
 
@@ -170,7 +170,7 @@ void jpeg_mem_src (j_decompress_ptr cinfo, unsigned char  *inbuf, int size)
   g_jpeg_data.size = size;
   src->pub.init_source = pgui_jpeg_init_source;
   src->pub.fill_input_buffer = pgui_jpeg_fill_input_buffer;
-  src->pub.skip_input_data = pgui_jpeg_skip_input_data;  src->pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
+  src->pub.skip_input_data = pgui_jpeg_skip_input_data; src->pub.resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->pub.term_source = pgui_jpeg_term_source;
   src->pub.bytes_in_buffer = 0; /* forces fill_input_buffer on first read */
   src->pub.next_input_byte = NULL; /* until buffer loaded */
