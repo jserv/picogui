@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.40 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: video.c,v 1.41 2001/08/18 06:04:35 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -294,6 +294,10 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v) {
 }
 
 void add_updarea(s16 x,s16 y,s16 w,s16 h) {
+  /* Is this a bogus update rectangle? */
+  if (w<=0 || h<=0)
+    return;
+
   if (upd_w) {
     if (x < upd_x) {
       upd_w += upd_x - x;
