@@ -1,4 +1,4 @@
-/* $Id: gremlin.c,v 1.4 2001/08/11 23:16:35 micahjd Exp $
+/* $Id: gremlin.c,v 1.5 2002/10/07 07:23:10 micahjd Exp $
  * 
  * gremlin.c - This is similar to the PalmOS app with the similar name. It
  *             sends random (but repeatable) input events to the server in an
@@ -32,6 +32,10 @@
 #include <stdlib.h>   /* random numbers */
 #include <time.h>     /* For time() to seed RNG and report running time */
 #include <unistd.h>   /* getopt */
+
+/* Wrappers used to convert this to input filters */
+void sendPointerInput(int trigger,int x,int y,int btn);
+void sendKeyInput(int trigger,int key,int mods);
 
 int main(int argc, char **argv) {
    int c;
@@ -102,51 +106,51 @@ int main(int argc, char **argv) {
       /* Move the mouse */
       cx = rand() % mi.xres;
       cy = rand() % mi.yres;
-      pgSendPointerInput(PG_TRIGGER_MOVE,cx,cy,0);
+      sendPointerInput(PG_TRIGGER_MOVE,cx,cy,0);
       pgUpdate();
       
       /* Clickski! */
       if ((rand()%100) < 80) {
-	 pgSendPointerInput(PG_TRIGGER_DOWN,cx,cy,1);
+	 sendPointerInput(PG_TRIGGER_DOWN,cx,cy,1);
 	 pgUpdate();
 
 	 /* Drag */
 	 if ((rand()%100) < 5) {
 	    cx = rand() % mi.xres;
 	    cy = rand() % mi.yres;
-	    pgSendPointerInput(PG_TRIGGER_MOVE,cx,cy,1);
+	    sendPointerInput(PG_TRIGGER_MOVE,cx,cy,1);
 	    pgUpdate();
 	 }
 	 
-	 pgSendPointerInput(PG_TRIGGER_UP,cx,cy,0);
+	 sendPointerInput(PG_TRIGGER_UP,cx,cy,0);
 	 pgUpdate();
       }
       
       /* Some common keys */
       if ((rand()%100) < 5) {
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_y,0);
+	 sendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_y,0);
 	 pgUpdate();
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_y,0);
-	 pgSendKeyInput(PG_TRIGGER_CHAR,'y',0);
+	 sendKeyInput(PG_TRIGGER_KEYUP,PGKEY_y,0);
+	 sendKeyInput(PG_TRIGGER_CHAR,'y',0);
 	 pgUpdate();
       }
       if ((rand()%100) < 2) {
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_n,0);
+	 sendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_n,0);
 	 pgUpdate();
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_n,0);
-	 pgSendKeyInput(PG_TRIGGER_CHAR,'n',0);
+	 sendKeyInput(PG_TRIGGER_KEYUP,PGKEY_n,0);
+	 sendKeyInput(PG_TRIGGER_CHAR,'n',0);
 	 pgUpdate();
       }
       if ((rand()%100) < 30) {
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_TAB,0);
+	 sendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_TAB,0);
 	 pgUpdate();
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_TAB,0);
+	 sendKeyInput(PG_TRIGGER_KEYUP,PGKEY_TAB,0);
 	 pgUpdate();
       }
       if ((rand()%100) < 5) {
-	 pgSendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_SPACE,0);
+	 sendKeyInput(PG_TRIGGER_KEYDOWN,PGKEY_SPACE,0);
 	 pgUpdate();
-	 pgSendKeyInput(PG_TRIGGER_KEYUP,PGKEY_SPACE,0);
+	 sendKeyInput(PG_TRIGGER_KEYUP,PGKEY_SPACE,0);
 	 pgUpdate();
       }
 
@@ -160,6 +164,29 @@ int main(int argc, char **argv) {
    printf("\nDone. Remember to check for memory leaks with CTRL-ALT-M!\n");
    
    return 0;
+}
+
+void sendPointerInput(int trigger,int x,int y,int btn) {
+  union pg_client_trigger trig;
+  memset(&trig,0,sizeof(trig));
+
+  trig.content.type        = trigger;
+  trig.content.u.mouse.x   = x;
+  trig.content.u.mouse.y   = y;
+  trig.content.u.mouse.btn = btn;
+
+  pgInFilterSend(&trig);
+}
+
+void sendKeyInput(int trigger,int key,int mods) {
+  union pg_client_trigger trig;
+  memset(&trig,0,sizeof(trig));
+
+  trig.content.type        = trigger;
+  trig.content.u.kbd.key   = key;
+  trig.content.u.kbd.mods  = mods;
+
+  pgInFilterSend(&trig);
 }
    
 /* The End */
