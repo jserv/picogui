@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.17 2000/06/08 06:55:57 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.18 2000/06/10 06:09:53 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -105,7 +105,9 @@ use Carp;
 	  '-bitmap' => 12,
 	  '-lgop' => 13,
 	  '-value' => 14,
-	  '-bitmask' => 15
+	  '-bitmask' => 15,
+	  '-bind' => 16,
+	  '-scroll' => 17
 	  );
 
 %ELEMENT = (
@@ -457,7 +459,7 @@ sub SetWidget {
 	    $arg = $ALIGN{$arg} if (/align/);
 	    $arg = $SIDE{$arg} if (/side/);
 	    $arg = $arg->GetHandle() if (/text/ or /bitmap/ or
-					 /font/ or /bitmask/);
+					 /font/ or /bitmask/ or /bind/);
 	    croak "Undefined property" if (!defined $prop);
 	    _set($self->GetHandle(),$arg,$prop);
 	}
