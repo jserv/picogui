@@ -209,7 +209,11 @@ def resolve_constant(name, namespace=constants):
         return name, namespace
     r = namespace.get(name, (name, namespace))
     if len(r) == 2:
-        return r
+        if r[1]:
+            return r
+        else:
+            # stay in the same namespace if we hit a "leaf"
+            return r[0], namespace
     try:
         r.lower()
         isstr = 1
