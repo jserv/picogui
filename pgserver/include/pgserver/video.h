@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.32 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: video.h,v 1.33 2001/03/26 00:27:12 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -351,6 +351,7 @@ struct vidlib {
 		     int dest_y,int w,int h,int lines,
 		     hwrcolor c,struct cliprect *clip);
 
+#ifdef CONFIG_ROTATE
   /* Optional
    *   Like charblit, but rotates the character 180 degrees anticlockwise
    *   for upside-down text. Only used when rotating vertical text so far.
@@ -360,7 +361,8 @@ struct vidlib {
   void (*charblit_u)(unsigned char *chardat,int dest_x,
 		     int dest_y,int w,int h,int lines,
 		     hwrcolor c,struct cliprect *clip);
-
+#endif
+   
   /***************** Bitmaps */
 
   /* These functions all use the stdbitmap structure.

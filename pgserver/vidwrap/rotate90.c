@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.9 2001/03/24 01:02:08 micahjd Exp $
+/* $Id: rotate90.c,v 1.10 2001/03/26 00:27:14 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -140,7 +140,7 @@ void rotate90_charblit_v(unsigned char *chardat,int dest_x,int dest_y,
    }
    else
      crp = NULL;
-   (*vid->charblit)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
+   (*vid->charblit_u)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
 }
 
 /******* Bitmap rotation */

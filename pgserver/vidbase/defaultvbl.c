@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.31 2001/03/22 01:44:07 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.32 2001/03/26 00:27:14 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -402,7 +402,7 @@ void def_charblit(unsigned char *chardat,int dest_x,
   int olines = lines;
   int bit;
   int flag=0;
-  int xpix,xmin,xmax,clipping;
+  int xpix,xmin,xmax;
   unsigned char ch;
 
   /* Is it at all in the clipping rect? */
@@ -414,9 +414,6 @@ void def_charblit(unsigned char *chardat,int dest_x,
   bw = bw >> 3;
   xmin = 0;
   xmax = w;
-  clipping = 0;      /* This is set if we are being clipped,
-			otherwise we can use a tight, fast loop */
-
   hc = 0;
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
@@ -430,14 +427,10 @@ void def_charblit(unsigned char *chardat,int dest_x,
       h = clip->y2-dest_y+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
-    if (clip->x1>dest_x) {
+    if (clip->x1>dest_x)
       xmin = clip->x1-dest_x;
-      clipping = 1;
-    }
-    if (clip->x2<(dest_x+w)) {
+    if (clip->x2<(dest_x+w))
       xmax = clip->x2-dest_x+1;
-      clipping = 1;
-    }
   }
 
   for (;hc<h;hc++,dest_y++) {
@@ -470,7 +463,7 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
   int olines = lines;
   int bit;
   int flag=0;
-  int xpix,xmin,xmax,clipping;
+  int xpix,xmin,xmax;
   unsigned char ch;
 
   /* Is it at all in the clipping rect? */
@@ -482,9 +475,6 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
   bw = bw >> 3;
   xmin = 0;
   xmax = w;
-  clipping = 0;      /* This is set if we are being clipped,
-			otherwise we can use a tight, fast loop */
-
   hc = 0;
 
   /* Do vertical clipping ahead of time (it does not require a special case) */
@@ -495,17 +485,13 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
       chardat += hc*bw;
     }
     if (clip->x2<(dest_x+h-1))
-      h = clip->x2-dest_x+2;
+      h = clip->x2-dest_x+1;
     
     /* Setup for horizontal clipping (if so, set a special case) */
-    if (clip->y1>dest_y-w+1) {
+    if (clip->y1>dest_y-w+1)
       xmax = 1+dest_y-clip->y1;
-      clipping = 1;
-    }
-    if (clip->y2<(dest_y)) {
+    if (clip->y2<(dest_y))
       xmin = dest_y-clip->y2;
-      clipping = 1;
-    }
   }
 
   for (;hc<h;hc++,dest_x++) {
@@ -524,6 +510,65 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
     }
   }
 }
+
+/* Upside-down version of character blit (only needed for rotation) */
+#ifdef CONFIG_ROTATE
+void def_charblit_u(unsigned char *chardat,int dest_x,
+		      int dest_y,int w,int h,int lines,
+		      hwrcolor c,struct cliprect *clip) {
+  int bw = w;
+  int iw,hc,x;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x<clip->x1 || dest_y<clip->y1 || (dest_x-w)>clip->x2 || 
+      (dest_y-h)>clip->y2)) return;
+
+  /* Find the width of the source data in bytes */
+  if (bw & 7) bw += 8;
+  bw = bw >> 3;
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->y1>(dest_y-h)) {
+      hc = clip->y1-dest_y+h; /* Do it this way so skewing doesn't mess up when clipping */
+      dest_y -= hc;
+      chardat += hc*bw;
+    }
+    if (clip->y1>(dest_y-h))
+      h = dest_y-clip->y1-1;
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x1>dest_x)
+      xmin = clip->x1-dest_x;
+    if (clip->x2<(dest_x+w))
+      xmax = clip->x2-dest_x+1;
+  }
+
+  for (;hc<h;hc++,dest_y--) {
+    if (olines && lines==hc) {
+      lines += olines;
+      dest_x--;
+      flag=1;
+    }
+    for (x=dest_x,iw=bw,xpix=0;iw;iw--)
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x--,xpix++)
+	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	  (*vid->pixel) (x,dest_y,c); 
+    if (flag) {
+      xmax++;
+      flag=0;
+    }
+  }
+}
+#endif /* CONFIG_ROTATE */
 
 #ifdef CONFIG_FORMAT_XBM
 g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
@@ -1018,7 +1063,7 @@ void def_sprite_show(struct sprite *spr) {
 */
 
    /**** A very similar debuggative cruft to test text clipping ****/
-/*
+
     {
       struct cliprect cr;
       struct fontdesc fd;
@@ -1034,11 +1079,11 @@ void def_sprite_show(struct sprite *spr) {
       cr.y2 = 150;
       VID(rect) (cr.x1,cr.y1,cr.x2-cr.x1+1,cr.y2-cr.y1+1,(*vid->color_pgtohwr)(0x004000));
 //      outtext(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
-//      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
-        outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
-      VID(update) (0,0,vid->xres,vid->yres);
+      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"Hello,\nWorld!",&cr);
+//      outtext_v(&fd,spr->x,spr->y,(*vid->color_pgtohwr) (0xFFFF80),"E",&cr);
+      VID(update) (0,0,vid->lxres,vid->lyres);
     }
-*/
+
    
 }
 
@@ -1143,6 +1188,9 @@ void setvbl_default(struct vidlib *vid) {
   vid->scrollblit = &def_scrollblit;
   vid->charblit = &def_charblit;
   vid->charblit_v = &def_charblit_v;
+#ifdef CONFIG_ROTATE
+  vid->charblit_u = &def_charblit_u;
+#endif
   vid->tileblit = &def_tileblit;
 #ifdef CONFIG_FORMAT_XBM
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;

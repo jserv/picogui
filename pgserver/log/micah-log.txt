@@ -21,6 +21,13 @@ to be for :)
 
       * vidwrap_rotate90.c: Added error checking to rotate90_entermode
 
+      * include/pgserver/video.h: Made charblit_u conditionally compile;
+        only needed when CONFIG_ROTATE is on
+	
+      * vidwrap/rotate90.c: Rotated charblit_v now uses charblit_u
+	
+      * vidbase/defaultvbl.c: Adding a reference implementation of charblit_u
+
 2001-03-22    Micah Dowty <micahjd@users.sourceforge.net>
 
 Happy Friday! (my last day of school before spring break)
