@@ -93,7 +93,7 @@ def expandStatus(line):
     except KeyError:
         return None
 
-def collectProgress(file, progress):
+def collectProgress(file, progress, destination):
     updatedFiles = 0
     while 1:
         line = file.readline()
@@ -101,7 +101,7 @@ def collectProgress(file, progress):
             break
         status = expandStatus(line)
         if status:
-            progress.report(status, line[2:].strip())
+            progress.report(status, line[2:].strip()[len(destination)+1:])
             updatedFiles += 1
     if file.close():
         raise PGBuild.Errors.InternalError("The Subversion command returned an error code")
@@ -120,7 +120,8 @@ class Repository(PGBuild.Repository.RepositoryBase):
     def download(self, destination, progress):
         finished = 0
         try:
-            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination)),progress)
+            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination)),
+                            progress, destination)
             finished = 1
         finally:
             if not finished:
