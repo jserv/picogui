@@ -1,3 +1,49 @@
+---- Tuesday, February 6
+
+Added support for font descriptors in the theme compiler. Now a line of the
+form:
+font = Font("name",15,PG_FSTYLE_BOLD);
+can be used just like pgNewFont to create font handles for themes.
+
+Hmm... still something odd about the font stuff in themec. Sometimes it
+corrupts other data. Need fix it...
+
+---- Monday, February 5
+
+Added client-side code for registering and unregistering as the owner of
+shared resources. So far this encompasses exclusive keyboard/mouse control
+and 'system events'
+
+The system events are what I'm interested in, as that (for now) means the
+background click event. This is crucial for setting up a launcher based on
+a "root menu" with optional toolbar and launching panel. (get the best of
+all three worlds :)
+
+Starting a real launcher app, pgl
++ apps/pgl
++ apps/pgl/main.c
++ apps/pgl/Makefile
+
+Nifty! background click menu works nicely!
+
+In order to do custom menus correctly, added pgSizeText to client library
+
+Adding a simple theme for monochrome LCDs
++ themetools/examples/lcdmono.ths
+
+Got my 320x200 LCD and ucsimm working together! Just need to fix a bug in
+the LCD power supply and figure out why so much percussive maintenance is
+necessary :)
+
+---- Friday and weekend, February 2 - 4
+
+Almost finished building a second development machine using the ucSimm and
+320x200 LCD. It works, but needs better mounting and I need to make a kernel
+image for it.
+The -25V power supply made with a MAX717 isn't the most efficient (because I
+didn't have good inductors handy) but it works.
+
+
 ---- Thursday, February 1
 
 Finished updating the client code for pgEvent.

@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.3 2000/12/31 23:18:18 micahjd Exp $
+/* $Id: background.c,v 1.4 2001/02/07 08:45:07 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -47,6 +47,9 @@ g_error background_install(struct widget *self) {
   self->in->build = &build_background;
   self->in->state = PGTH_O_BACKGROUND;
   self->out = &self->in->next;
+
+  self->trigger_mask = TRIGGER_DOWN;
+   
   return sucess;
 }
 
@@ -62,6 +65,12 @@ g_error background_set(struct widget *self,int property, glob data) {
 glob background_get(struct widget *self,int property) {
   return 0;
 }
+
+void background_trigger(struct widget *self,long type,union trigparam *param) {
+  if (sysevent_owner)
+     post_event(PG_NWE_BGCLICK,NULL,param->mouse.chbtn,sysevent_owner,NULL);
+}
+
  
 /* The End */
 

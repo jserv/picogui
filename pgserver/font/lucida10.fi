@@ -1,5 +1,5 @@
 NAME = Lucida
 SIZE = 10
-STYLE = extended
+STYLE = extended default
 NORMAL = lucida10
 GEO = 9 4 1

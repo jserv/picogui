@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.14 2001/01/20 06:59:09 micahjd Exp $
+/* $Id: errortext.c,v 1.15 2001/02/07 08:45:07 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -160,6 +160,8 @@ static const char *errors[] = {
      /* 95 */  "Error opening framebuffer device",
      /* 96 */  "Error mapping framebuffer device",
      /* 97 */  "Framebuffer ioctl error",
+     /* 98 */  "Another application is already registered for system events",
+     /* 99 */  "Application attempting to own unknown system resource",     
 };
 
 #else 
@@ -233,8 +235,8 @@ static const char *errors[] = {
   /* 64 */  "Incomplete request data in batch",
   /* 65 */  "Can't get exclusive keyboard access. Another app is already being selfish",
   /* 66 */  "Can't get exclusive pointing device access, another app is using it",
-  /* 67 */  "How can you expect to give up the keyboard when you are not the owner?",
-  /* 68 */  "You don't own that pointing device!",
+  /* 67 */  NULL,
+  /* 68 */  NULL,
   /* 69 */  "Can't find a connection buffer for the client! Network code must be haunted",
   /* 70 */  "Context underflow",
   /* 71 */  "Can't create the input thread!",
@@ -264,6 +266,8 @@ static const char *errors[] = {
   /* 95 */  "Error opening framebuffer device",
   /* 96 */  "Error mapping framebuffer device",
   /* 97 */  "Framebuffer ioctl error",
+  /* 98 */  "Another application is already registered for system events",
+  /* 99 */  "Application attempting to own unknown system resource",
 };
 
 #endif /* HAIKU_MESSAGES */

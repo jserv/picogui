@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.35 2001/02/02 07:11:57 micahjd Exp $
+/* $Id: constants.h,v 1.36 2001/02/07 08:45:07 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -63,6 +63,13 @@
 #define PG_APPSPEC_MAXWIDTH  6
 #define PG_APPSPEC_MINHEIGHT 7
 #define PG_APPSPEC_MAXHEIGHT 8
+
+/* Constants to use with PGREQ_REGOWNER to unregister and register
+ * exclusive access to resources */
+#define PG_OWN_KEYBOARD      1      /* _exclusive_ access to the keyboard! */
+#define PG_OWN_POINTER       2      /* _exclusive_ access to the pointer */
+#define PG_OWN_SYSEVENTS     3      /* Recieve system events- app open/close,
+				     * click on background, etc. */
 
 /******************** Layout */
 
@@ -512,6 +519,7 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_UP     0x1205
 #define PG_NWE_PNTR_DOWN   0x1204
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
+
 
 #endif /* __H_PG_CONSTANTS */
 /* The End */

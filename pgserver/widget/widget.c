@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.57 2001/01/26 11:18:16 micahjd Exp $
+/* $Id: widget.c,v 1.58 2001/02/07 08:45:07 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -48,7 +48,7 @@ DEF_WIDGET_TABLE(panel)
 DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
-DEF_STATICWIDGET_TABLE(background)
+DEF_WIDGET_TABLE(background)
 /* menuitem is a hybrid :) */
 menuitem_install,button_remove,button_trigger,button_set,button_get,
 DEF_WIDGET_TABLE(terminal)
@@ -70,10 +70,11 @@ int capturebtn;           /* Button that is holding the capture */
 */
 struct widget *timerwidgets;
 
-/* Set to the client # if a client has taken over the input device */
+/* Set to the client # if a client has taken over the resource */
 int keyboard_owner;
 int pointer_owner;
-
+int sysevent_owner;
+   
 int timerlock = 0;
 /******** Widget interface functions */
 

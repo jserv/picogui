@@ -1,18 +1,19 @@
 PicoGUI Todo List
 -------------------------------
 
+-- Applications
+
+pgswak (SWiss Army Knife)
+
+pgl (PicoGui Launcher)
+
 -- ucLinux
 
 ucLinux/m68k port
 
-Get WabaVM code, (http://www.wabasoft.com/download4.html) figure out how to
-write a PicoGUI client library
-Start with porting client library into the Waba VM, write class libraries to
-emulate waba.fx and waba.ui using PicoGUI.
-This gives a developer three choices:
- - C and native PicoGUI API
- - Java and native PicoGUI API
- - Java and Waba compatibility API
+Portable development hardware
+
+Port WabaVM and to PicoGUI, write wrapper classes
 
 speedup options: pointers vs handles. etc
 
@@ -59,8 +60,6 @@ PicoGUI Bugs
 -------------------------------
 
 ucLinux memory bugs (possible same root cause as htree problems?)
-
-Terminal disappears on launch most of the time
 
 panel bar dragging leaves extra sprites behind sometimes
 

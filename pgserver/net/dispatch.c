@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.25 2001/01/26 11:18:16 micahjd Exp $
+/* $Id: dispatch.c,v 1.26 2001/02/07 08:45:07 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -487,38 +487,61 @@ g_error rqh_batch(int owner, struct pgrequest *req,
   return e;
 }
 
-g_error rqh_grabkbd(int owner, struct pgrequest *req,
+g_error rqh_regowner(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
-  if (keyboard_owner)
-    return mkerror(PG_ERRT_BUSY,65);
-  keyboard_owner = owner;
-  return sucess;
-}
+   reqarg(regowner);
+   
+   switch (ntohs(arg->res)) {
+      
+    case PG_OWN_KEYBOARD:
+      if (keyboard_owner)
+	return mkerror(PG_ERRT_BUSY,65);
+      keyboard_owner = owner;
+      break;
 
-g_error rqh_grabpntr(int owner, struct pgrequest *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  if (pointer_owner)
-    return mkerror(PG_ERRT_BUSY,65);
-  pointer_owner = owner;
-  return sucess;
+    case PG_OWN_POINTER:
+      if (pointer_owner)
+	return mkerror(PG_ERRT_BUSY,65);
+      pointer_owner = owner;
+      break;
+      
+    case PG_OWN_SYSEVENTS:
+      if (sysevent_owner)
+	return mkerror(PG_ERRT_BUSY,98);
+      sysevent_owner = owner;
+      break;
+      
+    default:
+      return mkerror(PG_ERRT_BADPARAM,99);
+      break;
+   }
+   return sucess;
 }
-
-g_error rqh_givekbd(int owner, struct pgrequest *req,
+      
+g_error rqh_unregowner(int owner, struct pgrequest *req,
 		    void *data, unsigned long *ret, int *fatal) {
-  if (keyboard_owner!=owner)
-    return mkerror(PG_ERRT_BADPARAM,67);
-  keyboard_owner = 0;
-  return sucess;
-}
+   reqarg(regowner);
+   
+   switch (ntohs(arg->res)) {
+      
+    case PG_OWN_KEYBOARD:
+      if (keyboard_owner==owner)
+	keyboard_owner = 0;
+      break;
 
-g_error rqh_givepntr(int owner, struct pgrequest *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  if (pointer_owner!=owner)
-    return mkerror(PG_ERRT_BADPARAM,68);
-  pointer_owner = 0;
-  return sucess;
+    case PG_OWN_POINTER:
+      if (pointer_owner==owner)
+	pointer_owner = 0;
+      break;
+      
+    case PG_OWN_SYSEVENTS:
+      if (sysevent_owner==owner)
+	sysevent_owner = 0;
+      break;
+   }
+   return sucess;
 }
-
+      
 g_error rqh_mkcontext(int owner, struct pgrequest *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);

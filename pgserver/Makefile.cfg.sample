@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg.sample,v 1.17 2001/01/30 03:13:37 micahjd Exp $
+# $Id: Makefile.cfg.sample,v 1.18 2001/02/07 08:45:07 micahjd Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -60,15 +60,17 @@ CFLAGS := $(CFLAGS) -DASM_INTEL
 ######################################## Fonts
 
 #### Uncomment any number of the following
+
 FONTS := $(FONTS) font/helvetica10.fi       # Default variable font
 FONTS := $(FONTS) font/clean12.fi           # Default fixed font
-#FONTS := $(FONTS) font/clean6.fi
-#FONTS := $(FONTS) font/console8.fi
-#FONTS := $(FONTS) font/courier12.fi
-#FONTS := $(FONTS) font/lucida10.fi
-#FONTS := $(FONTS) font/helvetica8.fi
-#FONTS := $(FONTS) font/times10.fi
-#FONTS := $(FONTS) font/utopia25.fi
+#FONTS := $(FONTS) font/lucida10.fi         # Alternate default variable font
+
+#FONTS := $(FONTS) font/clean6.fi           # Tiny! Good for terminals
+#FONTS := $(FONTS) font/console8.fi         # thick 8x8 terminal font
+#FONTS := $(FONTS) font/courier12.fi        # Fixed width with bold
+#FONTS := $(FONTS) font/helvetica8.fi       # Smaller version of helvetica
+#FONTS := $(FONTS) font/times10.fi          # Variable width with bold
+#FONTS := $(FONTS) font/utopia25.fi         # Big!
 
 ######################################## Drivers
 

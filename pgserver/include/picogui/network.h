@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.17 2001/02/02 07:11:57 micahjd Exp $
+/* $Id: network.h,v 1.18 2001/02/07 08:45:07 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -108,10 +108,10 @@ struct pghello {
 #define PGREQ_MKPOPUP      16  /* Create a popup root widget     |  struct */
 #define PGREQ_SIZETEXT     17  /* Find the size of text          |  struct */
 #define PGREQ_BATCH        18  /* Executes many requests         |  requests */
-#define PGREQ_GRABKBD      19  /* Become the keyboard owner      |  none */
-#define PGREQ_GRABPNTR     20  /* Own the pointing device        |  none */
-#define PGREQ_GIVEKBD      21  /* Give the keyboard back         |  none */
-#define PGREQ_GIVEPNTR     22  /* Give the pointing device back  |  none */
+#define PGREQ_REGOWNER     19  /* Get exclusive privileges       |  struct */
+#define PGREQ_UNREGOWNER   20  /* Give up exclusive privileges   |  struct */
+#define PGREQ__OLD__1      21  /* Will be replaced */
+#define PGREQ__OLD__2      22  /* Will be replaced */
 #define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
 #define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
@@ -224,7 +224,9 @@ struct pgreqd_mkmsgdlg {
   unsigned long text;
   unsigned long flags;
 };
-
+struct pgreqd_regowner {
+  unsigned short res;     /* A resource to own: PG_OWN_* */
+};
 
 /* A structure for encapsulating commands, for example in canvas, within
  * a RQH_WRITETO */

@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.14 2001/01/14 23:13:05 micahjd Exp $
+/* $Id: font.c,v 1.15 2001/02/07 08:45:07 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -39,13 +39,13 @@
  * of these bits defines the priority of the various
  * attributes
  */
-#define FCMP_FIXEDVAR (1<<14)
-#define FCMP_STYLE    (1<<13)
-#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<4)   /* This macro is passed the
+#define FCMP_TYPE     (1<<14)
+#define FCMP_FIXEDVAR (1<<13)
+#define FCMP_CHARSET  (1<<12)
+#define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
 						difference in size between the
 						request and the actual font */
-#define FCMP_CHARSET  (1<<3)
-#define FCMP_TYPE     (1<<2)
+#define FCMP_STYLE    (1<<2)
 #define FCMP_DEFAULT  (1<<1)
 #define FCMP_NAME     (1<<0)
 

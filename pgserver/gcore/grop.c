@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.35 2001/01/20 22:00:30 micahjd Exp $
+/* $Id: grop.c,v 1.36 2001/02/07 08:45:07 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -30,6 +30,7 @@
 #include <pgserver/g_malloc.h>
 #include <pgserver/font.h>
 #include <pgserver/handle.h>
+#include <pgserver/appmgr.h>
 
 short int defaultgropflags;
 
@@ -408,7 +409,8 @@ void grop_render(struct divnode *div) {
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
 			   list->param[0])) || !str) break;
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   list->param[1])) || !fd) break;	
+			   list->param[1])) || !fd)
+	 rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
       if (type == PG_GROP_TEXT)
 	 outtext(fd,x,y,list->param[2],str,&cr);
        else
