@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.19 2003/03/25 20:13:54 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.20 2003/03/26 00:29:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -260,9 +260,11 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 	DATA->current.crsry = 0;
       }
  
-      /* Blit! */
-      textblit(DATA->buffer,newbuffer,0,src_y,
-	       DATA->bufferw,0,dest_y,neww,w,h);
+      /* Move the bottom of the old buffer to the bottom of the new buffer */
+      textblit(DATA->buffer,newbuffer,
+	       0, src_y, DATA->bufferw,
+	       0, dest_y, neww,
+	       w,h);
       
       /* Free the old buffer and update the handle */
       pgstring_delete(DATA->buffer);

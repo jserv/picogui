@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.7 2003/03/24 01:11:51 micahjd Exp $
+/* $Id: terminal.h,v 1.8 2003/03/26 00:29:07 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -80,6 +80,7 @@ struct terminaldata {
   int updx,updy,updw,updh;             /* Update rectangle (in characters) */
   int pref_lines;                      /* Preferred height in lines */
   unsigned int on : 1;                 /* Mouse button down? */
+  unsigned int clamp_flag : 1;         /* Nonzero to clamp at screen edges, zero to wrap/scroll */
   
   unsigned int cursor_on : 1;          /* Cursor visible? */
   unsigned int focus : 1;              /* Do we have keyboard focus? */
@@ -141,6 +142,7 @@ void term_delete(struct widget *self, int n);
 
 /* Set a palette entry, making a mutable copy of the palette if necessary */
 void term_setpalette(struct widget *self, int n, pgcolor color);
+
 
 /******************************************************** VT102 emulation **/
 

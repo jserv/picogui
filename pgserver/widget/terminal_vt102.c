@@ -1,11 +1,20 @@
-/* $Id: terminal_vt102.c,v 1.19 2003/03/24 05:14:07 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.20 2003/03/26 00:29:08 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
  *
  *     References:
  *         - linux console_codes manpage
+ *         - http://vt100.net/docs/vt102-ug/contents.html
  *         - http://www.ibiblio.org/pub/historic-linux/ftp-archives/tsx-11.mit.edu/Oct-07-1996/info/xterm-seqs2.txt
+ *         - The (messy) source to several other terminal emulators
+ *
+ *     FIXME: Writing a terminal emulator is a pain... every terminal
+ *            emulator I've seen is so messy and convoluted that its
+ *            code can't be reused. This file should eventually be
+ *            turned into a library so that everybody who wants to
+ *            write a terminal doesn't have to do their own emulation
+ *            code.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2003 Micah Dowty <micahjd@users.sourceforge.net>
@@ -122,6 +131,9 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
 void term_char(struct widget *self,u8 c) {
   term_setcursor(self,0);  /* Hide */
   
+  /* Clamp by default rather than wrapping/scrolling */
+  DATA->clamp_flag = 1;
+
   /* Handling an escape code? */
   if (DATA->escapemode)
     term_char_escapemode(self,c);
@@ -143,6 +155,7 @@ void term_char(struct widget *self,u8 c) {
     case '\n':
       DBG("newline\n");
       DATA->current.crsry++;
+      DATA->clamp_flag = 0;
       break;
 
     case '\r':
@@ -155,6 +168,7 @@ void term_char(struct widget *self,u8 c) {
       if (DATA->current.crsrx >= DATA->bufferw) {
         DATA->current.crsrx = 8;	/* "magic" wrapping */
         DATA->current.crsry++;
+	DATA->clamp_flag = 0;
       }
       else
       /* Not sure this is right, but it's consistant with observed behavior */
@@ -175,6 +189,7 @@ void term_char(struct widget *self,u8 c) {
       if (DATA->current.crsrx >= DATA->bufferw && !DATA->current.no_autowrap) {
         DATA->current.crsrx = 0;	/* "magic" wrapping */
         DATA->current.crsry++;
+	DATA->clamp_flag = 0;
 	if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
 	  DATA->current.crsry = DATA->bufferh-1;
 	  term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
@@ -183,21 +198,36 @@ void term_char(struct widget *self,u8 c) {
       DBG("character '%c' (%d)\n", c, c);
       term_plot(self,DATA->current.crsrx++,DATA->current.crsry,c);
     }
-  
-  /* Handle screen edges */
-  if (DATA->current.crsrx < 0)
-    DATA->current.crsrx = 0;
-  else if (DATA->current.crsrx > DATA->bufferw) {  /* Wrap around the side */
-    DATA->current.crsrx = 0;
-    DATA->current.crsry++;
+
+  if (DATA->clamp_flag) {
+    /* Clamp the cursor to the screen edges */
+    if (DATA->current.crsrx < 0)
+      DATA->current.crsrx = 0;
+    if (DATA->current.crsry < 0)
+      DATA->current.crsry = 0;
+    if (DATA->current.crsrx >= DATA->bufferw)
+      DATA->current.crsrx = DATA->bufferw - 1;
+    if (DATA->current.crsry >= DATA->bufferh)
+      DATA->current.crsry = DATA->bufferh - 1;
   }
-  if (DATA->current.crsry < DATA->current.scroll_top) {
-    DATA->current.crsry = DATA->current.scroll_top;
-    term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,1);
-  }
-  else if (DATA->current.crsry > DATA->current.scroll_bottom) {  /* Scroll vertically */
-    DATA->current.crsry = DATA->current.scroll_bottom;
-    term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
+  else {
+    /* Wrap around the right edge, and scroll at the top and bottom edges
+     * of the scrolling region.
+     */
+    if (DATA->current.crsrx < 0)
+      DATA->current.crsrx = 0;
+    else if (DATA->current.crsrx > DATA->bufferw) {  /* Wrap around the side */
+      DATA->current.crsrx = 0;
+      DATA->current.crsry++;
+    }
+    if (DATA->current.crsry < DATA->current.scroll_top) {
+      DATA->current.crsry = DATA->current.scroll_top;
+      term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,1);
+    }
+    else if (DATA->current.crsry > DATA->current.scroll_bottom) {  /* Scroll vertically */
+      DATA->current.crsry = DATA->current.scroll_bottom;
+      term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
+    }
   }
   
   term_setcursor(self,1);  /* Show cursor */
@@ -354,7 +384,7 @@ void term_csi(struct widget *self, u8 c) {
     switch (DATA->csiargs[0]) {
     case 1:
       DBG("erase from start to cursor\n");
-      term_clearbuf(self,0,0,DATA->current.crsry * DATA->bufferw + DATA->current.crsrx);
+      term_clearbuf(self,0,0,DATA->current.crsry * DATA->bufferw + DATA->current.crsrx + 1);
       break;
     case 2:
       DBG("erase whole display\n");
@@ -373,7 +403,7 @@ void term_csi(struct widget *self, u8 c) {
     switch (DATA->csiargs[0]) {
     case 1:
       DBG("erase from start of line to cursor\n");
-      term_clearbuf(self,0,DATA->current.crsry,DATA->current.crsrx);
+      term_clearbuf(self,0,DATA->current.crsry,DATA->current.crsrx + 1);
       break;
     case 2:
       DBG("erase whole line\n");
@@ -394,7 +424,7 @@ void term_csi(struct widget *self, u8 c) {
     /* M - Delete lines */
   case 'M':
     DBG("delete %d lines\n", DATA->csiargs[0]);
-    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-DATA->csiargs[0] ? DATA->csiargs[0] : 1);
+    term_scroll(self,DATA->current.crsry,DATA->current.scroll_bottom,-(DATA->csiargs[0] ? DATA->csiargs[0] : 1));
     break;
 
     /* P - Delete characters */
@@ -412,7 +442,8 @@ void term_csi(struct widget *self, u8 c) {
 
     /* a - Move cursor right */
   case 'a':
-    DBG("-UNIMPLEMENTED- move right %d columns\n", DATA->csiargs[0] ? DATA->csiargs[0] : 1);
+    DBG("move right %d columns\n", DATA->csiargs[0]);
+    DATA->current.crsrx += DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
     
     /* c - Identify as a VT102 terminal */
@@ -432,7 +463,8 @@ void term_csi(struct widget *self, u8 c) {
 
     /* e - Move cursor down */
   case 'e':
-    DBG("-UNIMPLEMENTED- move down %d rows\n", DATA->csiargs[0]);
+    DBG("move down %d rows\n", DATA->csiargs[0]);
+    DATA->current.crsry += DATA->csiargs[0] ? DATA->csiargs[0] : 1;
     break;
 
     /* f - Set row,column */
@@ -458,10 +490,12 @@ void term_csi(struct widget *self, u8 c) {
     /* l and h - DECSET/DECRST sequence */
   case 'h':  /* SET */
   case 'l':  /* RST */
-    if (DATA->escapebuf[1]=='?')
-      term_decset(self,DATA->csiargs[0],c=='h');
-    else
-      term_ecmaset(self,DATA->csiargs[0],c=='h');
+    for (i=0; i<DATA->num_csiargs; i++) {
+      if (DATA->escapebuf[1]=='?')
+	term_decset(self,DATA->csiargs[i],c=='h');
+      else
+	term_ecmaset(self,DATA->csiargs[i],c=='h');
+    }
     break;
 
     /* m - ECMA48 SGR sequence */
@@ -635,12 +669,14 @@ int term_misc_code(struct widget *self,u8 c) {
     case 'D':
       DBG("linefeed\n");
       DATA->current.crsry++;
+      DATA->clamp_flag = 0;
       return 1;
 
       /* ESC E - newline */
     case 'E':
       DBG("newline\n");
       DATA->current.crsrx = 0;
+      DATA->clamp_flag = 0;
       return 1;
 
       /* ESC H - set tabstop */
@@ -652,6 +688,7 @@ int term_misc_code(struct widget *self,u8 c) {
     case 'M':
       DBG("reverse linefeed\n");
       DATA->current.crsry--;
+      DATA->clamp_flag = 0;
       return 1;
 
       /* ESC Z - DEC private information, return ESC [ ? 6 c */
