@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.15 2001/01/10 12:46:44 micahjd Exp $
+/* $Id: request.c,v 1.16 2001/01/28 02:55:56 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -30,6 +30,7 @@
 
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
+#include <netinet/tcp.h>
 
 /* Socket */
 int s = 0;
@@ -264,7 +265,7 @@ int send_response(int to,const void *data,size_t len) {
 /* Bind the socket and start listening */
 g_error net_init(void) {
   struct sockaddr_in server_sockaddr;
-  volatile int true = 1;
+  volatile int tmp;
 #ifdef WINDOWS
   WSADATA wsad;
 #endif
@@ -285,11 +286,15 @@ g_error net_init(void) {
 
   if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
     return mkerror(PG_ERRT_NETWORK,50);
-  
-  if((setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (void *)&true, 
-     sizeof(true))) == -1)
-    return mkerror(PG_ERRT_NETWORK,51);
 
+  /* Try to avoid blocking the port up... */
+  tmp = 1;
+  setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (void *)&tmp,sizeof(tmp));
+
+  /* Try disabling the "Nagle algorithm" or "tinygram prevention" */
+  tmp = 1;
+  setsockopt(s,6 /*PROTO_TCP*/,TCP_NODELAY,(void *)&tmp,sizeof(tmp));
+   
   server_sockaddr.sin_family = AF_INET;
   server_sockaddr.sin_port = htons(PG_REQUEST_PORT);
   server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
