@@ -107,7 +107,7 @@ int touchscreen_filter(int *x, int *y, int pendown) {
   const int iir_shift_bits = 2;
   const int iir_sample_depth = (1 << iir_shift_bits);
   const int iir_output_threshold = 1;
-  const int iir_gain = 1;
+  const int iir_gain = 8;
   static int iir_accum_x = 0;
   static int iir_accum_y = 0;
   static int iir_count = 0;
