@@ -169,10 +169,10 @@ pgllApp *parseApp(char *appConfPath, int *appCount){
       while(variantCount >= 0){
 	currentApp = &newApp[variantCount];
 	currentApp->basePath = strdup(basePath);
-	currentApp->appName = strdup(get_param_str(variantListing[variantCount], "name", NULL));
-	currentApp->exeName = strdup(get_param_str(variantListing[variantCount], "binary", NULL));
+	currentApp->appName = strdup(get_param_str(variantListing[variantCount], "name", "Unnamed App"));
+	currentApp->exeName = strdup(get_param_str(variantListing[variantCount], "binary", ""));
 	currentApp->variantName = strdup(variantListing[variantCount]);
-	currentApp->optionCount = parse_line(get_param_str(variantListing[variantCount], "options", NULL),
+	currentApp->optionCount = parse_line(get_param_str(variantListing[variantCount], "options", ""),
 					     " ",
 					     &currentApp->appOptions,
 					     1);
