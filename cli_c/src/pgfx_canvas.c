@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.9 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.10 2001/07/29 21:22:59 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -126,6 +126,7 @@ pgprim _pgfxcanvas_setsrc(pgcontext c, pgu x,pgu y,pgu w,pgu h) {
 pgprim _pgfxcanvas_setmapping(pgcontext c, 
 			      pgu x,pgu y,pgu w,pgu h,short type) {
    pgWriteCmd(c->device,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,x,y,w,h,type);
+   pgWriteCmd(c->device,PGCANVAS_INPUTMAPPING,5,x,y,w,h,type);
    return 0;
 }
 
