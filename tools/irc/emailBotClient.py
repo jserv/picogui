@@ -10,7 +10,10 @@ import sys, email
 
 logFile = "/home/commits/mail.log"
 socketName = "/tmp/announceBot.socket"
-allowedCommands = ("Announce", "JoinChannel", "PartChannel")
+
+# Allowed commands, split up into those with content and those without
+allowedTextCommands = ("Announce",)
+allowedControlCommands = ("JoinChannel", "PartChannel")
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
@@ -21,15 +24,14 @@ class AnnounceClient(protocol.Protocol):
 	f.close()
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
-        if subjectFields[0] in allowedCommands:
-	    # We want to send at least one command, even if the body is empty.
-	    if not messages:
-	        messages = [" "]
+        if subjectFields[0] in allowedTextCommands:
             for line in messages:
 	    	line = line.strip()
 		if len(line) > 0:
-	            self.transport.write("%s %s %s\r\n" %
+                    self.transport.write("%s %s %s\r\n" %
                                          (subjectFields[0], subjectFields[1], line))
+        if subjectFields[0] in allowedControlCommands:
+            self.transport.write("%s %s\r\n" % (subjectFields[0], subjectFields[1]))
         self.transport.loseConnection()
     
     def connectionLost(self, reason):
