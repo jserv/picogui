@@ -1,0 +1,13 @@
+A quick port of the Agenda QuickWriting app to PicoGUI. See the Agenda
+QuickWriting app home page (http://agtoys.sourceforge.net/aqw/aqw.html)
+for documentation. The original README file for that program has been
+renamed README.orig
+
+Apart from replacing the GUI code I changed a couple of things. The
+code has moved from C++ to C (fairly trivially). The cursor buttons to
+the left are also new, as is the method of calculating which zone the
+cursor is in. The orriginal calculated a distance from the centre and
+angle using sqrt(), and atan2(). This seemed a bit slow on the agenda
+so I replaced it with some slightly faster logic plus a lookup table. I
+actually think the bottleneck is pgserver passing the mouse movement
+through to the client, so this is probably completely unnecessary.

@@ -1,0 +1,21 @@
+aqw - Agenda Quikwriting
+
+Based on Quikwrite (http://mrl.nyu.edu/projects/quikwriting/) it's
+another way to input text to the Agenda.  The main entry method 
+more or less follows Quikwriting, with enhancements for easier
+Return, Tab, and Backspace key handling.  Each of the 8 zones used
+by Quickwriting also accept single-tap input, allowing use of Ctrl
+and Alt keys combinations as well.
+
+Right now it doesn't have proper function key (F1 - F12) handling, 
+as I can't concoct an elegant way to work it in.  If necessary, we
+could always hack in a droplist that lets you select a key.
+
+As usual, if you use this it's at your own risk.  If you try aqw
+and your cat bursts into flames lemme know (I have a neighbor with
+an unruly animal...) ;-)
+
+Feedback and ideas welcome - aqw@sponheim.org.
+
+  -D & P
+
