@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.14 2002/11/07 11:45:37 micahjd Exp $
+/* $Id: managedwindow.c,v 1.15 2002/11/07 20:36:47 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -70,7 +70,8 @@ g_error managedwindow_install(struct widget *self) {
   errorcheck;
   self->isroot = 1;
 
-  self->trigger_mask = PG_TRIGGER_CLOSE;
+  self->trigger_mask = PG_TRIGGER_CLOSE | PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN |
+    PG_TRIGGER_CHAR | PG_TRIGGER_DOWN;
 
   return success;
 }
@@ -104,9 +105,59 @@ g_error managedwindow_set(struct widget *self,int property, glob data) {
      * window manager to leave it alone.
      */
     if (data==PG_POPUP_ATCURSOR || data==PG_POPUP_ATEVENT) {
+      struct widget *snap;
+      struct conbuf *cb;
+      s16 winx, winy;
+
       self->in->state = PGTH_O_POPUP_MENU;
       self->in->split = theme_lookup(self->in->state,PGTH_P_MARGIN);
       VID(window_set_flags)(self->dt->display, PG_WINDOW_UNMANAGED | PG_WINDOW_GRAB);
+
+      /* Pop it up at the cursor? */
+      if (data==PG_POPUP_ATCURSOR) {
+	struct cursor *c;
+	c = cursor_get_default();
+	if ((!c) || iserror(rdhandle((void**)&snap,
+				     PG_TYPE_WIDGET, -1, c->ctx.widget_last_clicked)))
+	  snap = NULL;
+      }
+      /* Or at the last event? */
+      else if (data==PG_POPUP_ATEVENT) {
+	cb = find_conbuf(self->owner);
+	if ((!cb) || iserror(rdhandle((void**)&snap, 
+				      PG_TYPE_WIDGET, -1, cb->lastevent_from)))
+	  snap = NULL;
+      }
+
+      if (snap && snap->type == PG_WIDGET_BUTTON) {
+	/* snap to a button edge */
+	VID(window_get_position)(snap->dt->display,&winx,&winy);
+
+	x = snap->in->div->r.x + winx;
+	y = snap->in->div->r.y + snap->in->div->r.h + self->in->split + winy;
+
+	/* Flip over if near the bottom */
+	if ((y+self->in->child.h)>=vid->yres)
+	  y = snap->in->div->r.y - self->in->child.h - self->in->split + winy;
+      }
+      else if (snap && snap->type == PG_WIDGET_MENUITEM) {
+	/* snap to a menuitem edge */
+	x = snap->in->div->r.x + snap->in->div->r.w;
+	y = snap->in->div->r.y;
+      }
+      else {
+	/* exactly at the cursor */
+	int ix,iy;
+	cursor_getposition(NULL,&ix,&iy,NULL);
+	x = ix;
+	y + iy;
+      }       
+
+      /* Account for the margin */
+      x -= self->in->split;
+      y -= self->in->split;
+
+      VID(window_set_position)(self->dt->display, x, y);
     }
     else {
       VID(window_get_position)(self->dt->display, &x, &y);
@@ -211,8 +262,32 @@ void managedwindow_resize(struct widget *self) {
 }
 
 void managedwindow_trigger(struct widget *self,s32 type,union trigparam *param) {
-  /* The only event we accept is PG_TRIGGER_CLOSE */
-  post_event(PG_WE_CLOSE, self, 0,0,NULL);
+  /* Escape or clicking outside the window sends PG_WE_DEACTIVATE,
+   * an explicit close message from the window manager sends PG_WE_CLOSE.
+   */
+  switch (type) {
+
+  case PG_TRIGGER_KEYUP:
+  case PG_TRIGGER_KEYDOWN:
+  case PG_TRIGGER_CHAR:
+    if (param->kbd.key == PGKEY_ESCAPE) {
+      param->kbd.consume++;
+      if (type == PG_TRIGGER_KEYUP)
+	post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
+    }
+    break;
+
+  case PG_TRIGGER_DOWN:
+    if (param->mouse.x < 0 || param->mouse.y < 0 ||
+	param->mouse.x > self->in->calc.w || param->mouse.y > self->in->calc.h)
+	post_event(PG_WE_DEACTIVATE,self,0,0,NULL);
+    break;
+
+  case PG_TRIGGER_CLOSE:
+    post_event(PG_WE_CLOSE, self, 0,0,NULL);
+    break;
+
+  }
 }
 
 /* The End */

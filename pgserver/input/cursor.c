@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.9 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: cursor.c,v 1.10 2002/11/07 20:36:45 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -197,8 +197,8 @@ void cursor_move(struct cursor *crsr, int x, int y, struct divtree *dt) {
   /* clip to the screen edge */
   if (x<0)           x = 0;
   if (y<0)           y = 0;
-  if (x>=vid->lxres) x = vid->lxres-1;
-  if (y>=vid->lyres) y = vid->lyres-1;
+  if (x>=dt->head->calc.w) x = dt->head->calc.w-1;
+  if (y>=dt->head->calc.h) y = dt->head->calc.h-1;
 
   crsr->x = x;
   crsr->y = y;

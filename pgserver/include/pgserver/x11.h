@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.12 2002/11/07 11:43:58 micahjd Exp $
+/* $Id: x11.h,v 1.13 2002/11/07 20:36:45 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -81,6 +81,7 @@ struct x11bitmap {
   struct divtree *dt;            /* The corresponding divtree if this is a window */
   struct x11bitmap *next_window; /* Linked list of windows */
   struct x11bitmap *frontbuffer; /* If this is a backbuffer, this is the associated front buffer */
+  int window_flags;
 };
 
 /* Convenience macro to cast a hwrbitmap to x11bitmap */

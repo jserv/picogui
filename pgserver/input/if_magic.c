@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.11 2002/11/07 07:59:55 micahjd Exp $
+/* $Id: if_magic.c,v 1.12 2002/11/07 20:36:46 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -317,9 +317,6 @@ void hotspot_draw(struct hotspot *spot) {
 /********************************************** Debug/non-debug code ****/
    
 void magic_button(s16 key) {
-  s16 lxres,lyres;
-  VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
-
   switch (key) {
     
   case PGKEY_SLASH:       /* CTRL-ALT-SLASH exits */
@@ -388,9 +385,14 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-    VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
-		 VID(color_pgtohwr) (0),PG_LGOP_NONE);
-    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    {
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+
+      VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
+		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    }
     return;
     
   case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -410,6 +412,9 @@ void magic_button(s16 key) {
        */
       
       struct divtree *p;
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+
       /* Push through the black screen */
       VID(rect)   (VID(window_debug)(), 0,0,lxres,lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
@@ -429,14 +434,21 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-    VID(rect) (VID(window_debug)(),0,0,lxres,lyres,
-	       VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
-    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    {
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      
+      VID(rect) (VID(window_debug)(),0,0,lxres,lyres,
+		 VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    }
     return;
     
   case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
     {
       struct debug_bitmaps_data data;
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
       memset(&data,0,sizeof(data));
 
       guru("Table of loaded bitmaps:");
@@ -446,8 +458,12 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
-    r_divnode_trace(dts->top->head);
-    VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    {
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+      r_divnode_trace(dts->top->head);
+      VID(update) (VID(window_debug)(),0,0,lxres,lyres);
+    }
     return;
 
   case PGKEY_a:           /* CTRL-ALT-a shows application info */
@@ -468,6 +484,9 @@ void magic_button(s16 key) {
   case PGKEY_r:           /* CTRL-ALT-r draws the hotspot graph */
     {
       struct hotspot *p;
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
+
       for (p=hotspotlist;p;p=p->next)
 	hotspot_draw(p);
       VID(update) (VID(window_debug)(),0,0,lxres,lyres);
@@ -478,6 +497,8 @@ void magic_button(s16 key) {
     {
       int x,y,celw,celh, pixelx,pixely;
       hwrcolor i, white, black, numcolors;
+      s16 lxres,lyres;
+      VID(bitmap_getsize)(VID(window_debug)(), &lxres, &lyres);
 
       guru("Video mode:\n"
 	   "Logical %dx%d, physical %dx%d, %d-bit color\n"

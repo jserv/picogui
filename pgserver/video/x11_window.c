@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.6 2002/11/07 11:43:58 micahjd Exp $
+/* $Id: x11_window.c,v 1.7 2002/11/07 20:36:47 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -192,14 +192,28 @@ void x11_internal_window_resize(hwrbitmap window, int w, int h) {
   a = XInternAtom(x11_display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(x11_display, xb->d, &a, 1);
 
+  /* Do we need to grab the pointer? */
+  if (xb->window_flags & PG_WINDOW_GRAB)
+    XGrabPointer(x11_display, xb->d, False, EnterWindowMask | LeaveWindowMask |
+		 PointerMotionMask | ButtonMotionMask | ButtonPressMask |
+		 ButtonReleaseMask | Button1MotionMask | Button2MotionMask |
+		 Button3MotionMask, GrabModeAsync, GrabModeAsync, None,
+		 None, CurrentTime);
+
   x11_acknowledge_resize(window,w,h);
 }
 
 void x11_window_get_position(hwrbitmap window, s16 *x, s16 *y) {
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
-  int ix,iy,iw,ih,border,depth;
-  Window root;
-  XGetGeometry(x11_display, xb->d, &root, &ix, &iy, &iw, &ih, &border, &depth);
+  int ix,iy;
+  Window child;
+  
+  /* We want the position relative to the root, even if this is not
+   * a child of the root. (It probably won't be, due to the window manager)
+   */
+  XTranslateCoordinates(x11_display, xb->d,
+			RootWindow(x11_display,x11_screen),
+			0,0,&ix,&iy,&child);
   *x = ix;
   *y = iy;
 }
@@ -324,9 +338,14 @@ void x11_window_set_flags(hwrbitmap window, int flags) {
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
   XSetWindowAttributes attr;
 
-  attr.override_redirect = (flags & PG_WINDOW_UNMANAGED) != 0;
-
+  /* If this is an unmanaged window or the background,
+   * use OverrideRedirect to keep the window manager from messing with it.
+   */
+  attr.override_redirect = (flags & (PG_WINDOW_UNMANAGED | PG_WINDOW_BACKGROUND)) != 0;
   XChangeWindowAttributes(x11_display, xb->d, CWOverrideRedirect, &attr);
+
+  /* The rest of the flags don't apply until later, save them */
+  xb->window_flags = flags;
 }
 
 /* The End */
