@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.30 2003/03/26 13:49:21 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.31 2003/03/27 10:23:00 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -44,7 +44,7 @@
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(terminaldata)
 
-#ifdef DEBUG_TERMINAL
+#ifdef DEBUG_TERMINAL_VT102
 #define DEBUG_FILE
 #endif
 #include <pgserver/debug.h>
@@ -96,71 +96,61 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
 				      the queue it might be a while before this
 				      is used. */
 
-  /* Transmogrify backspace into delete:
-   * This is a hack to keep emacs from confusing it with ctrl-H
-   */
-  if (pgkey == PGKEY_BACKSPACE)
-    pgkey = PGKEY_DELETE;
-
-  /****** Modified key translations */
-
+  /* Control keys */
   if ((mods & PGMOD_CTRL) && pgkey >= PGKEY_a && pgkey <= PGKEY_z)
     pgkey -= PGKEY_a - 1;
 
-  /****** Unmodified Key translation */
-
-  /* Not sure that this is 100% correct, and I know it's not complete... */
-
-  if (pgkey > 255)
-    switch (pgkey) {
-      
-    case PGKEY_RETURN:        rtn = "\n";       break;
-      
-    case PGKEY_UP:            rtn = "\033[A";   break;
-    case PGKEY_DOWN:          rtn = "\033[B";   break;
-    case PGKEY_RIGHT:         rtn = "\033[C";   break;
-    case PGKEY_LEFT:          rtn = "\033[D";   break;
-    case PGKEY_HOME:          rtn = "\033[1~";  break;
-    case PGKEY_INSERT:        rtn = "\033[2~";  break;
-    case PGKEY_DELETE:        rtn = "\033[3~";  break;
-    case PGKEY_END:           rtn = "\033[4~";  break;
-    case PGKEY_PAGEUP:        rtn = "\033[5~";  break;
-    case PGKEY_PAGEDOWN:      rtn = "\033[6~";  break;
-      
-    case PGKEY_F1:            rtn = "\033OP";  break;
-    case PGKEY_F2:            rtn = "\033OQ";  break;
-    case PGKEY_F3:            rtn = "\033OR";  break;
-    case PGKEY_F4:            rtn = "\033OS";  break;
-      
-    case PGKEY_F5:            rtn = "\033[15~";break;
-    case PGKEY_F6:            rtn = "\033[17~";break;
-    case PGKEY_F7:            rtn = "\033[18~";break;
-    case PGKEY_F8:            rtn = "\033[19~";break;
-    case PGKEY_F9:            rtn = "\033[20~";break;
-    case PGKEY_F10:           rtn = "\033[21~";break;
-    case PGKEY_F11:           rtn = "\033[23~";break;
-    case PGKEY_F12:           rtn = "\033[24~";break;
-      
-    default:
-      return;
-    }
-    
-  else {
-    /**** Send an untranslated key */
+  /* ASCII keys */
+  if (pgkey < 127)
     *chrstr = pgkey;
-    rtn = chrstr;
+  else
+    *chrstr = 0;
+  rtn = chrstr;
+
+  /* Special keys */
+  switch (pgkey) {
+    
+  case PGKEY_RETURN:        rtn = "\n";       break;
+    
+  case PGKEY_UP:            rtn = "\033[A";   break;
+  case PGKEY_DOWN:          rtn = "\033[B";   break;
+  case PGKEY_RIGHT:         rtn = "\033[C";   break;
+  case PGKEY_LEFT:          rtn = "\033[D";   break;
+  case PGKEY_HOME:          rtn = "\033[H";  break;
+  case PGKEY_INSERT:        rtn = "\033[2~";  break;
+  case PGKEY_DELETE:        rtn = "\033[3~";  break;
+  case PGKEY_END:           rtn = "\033[F";  break;
+  case PGKEY_PAGEUP:        rtn = "\033[5~";  break;
+  case PGKEY_PAGEDOWN:      rtn = "\033[6~";  break;
+      
+  case PGKEY_F1:            rtn = "\033[11~";break;
+  case PGKEY_F2:            rtn = "\033[12~";break;
+  case PGKEY_F3:            rtn = "\033[13~";break;
+  case PGKEY_F4:            rtn = "\033[14~";break;
+  case PGKEY_F5:            rtn = "\033[15~";break;
+  case PGKEY_F6:            rtn = "\033[17~";break;   /* Yes, this isn't supposed to be 16 */
+  case PGKEY_F7:            rtn = "\033[18~";break;
+  case PGKEY_F8:            rtn = "\033[19~";break;
+  case PGKEY_F9:            rtn = "\033[20~";break;
+  case PGKEY_F10:           rtn = "\033[21~";break;
+  case PGKEY_F11:           rtn = "\033[23~";break;
+  case PGKEY_F12:           rtn = "\033[24~";break;
   }
 
-  /* Implement key prefix switch (converts ESC [ to ESC O) */
-  if (DATA->current.key_prefix_switch && rtn[0]=='\033' && rtn[1]=='[') {
-    static char switchedrtn[10];
-    strncpy(switchedrtn, rtn, sizeof(switchedrtn));
-    rtn = switchedrtn;
-    rtn[1] = 'O';
-  }
+  /* Implement key prefix switch
+   *
+   *  Note: This is supposed to replace ESC [ with ESC O in the above
+   *        sequences, but that doesn't seem to please emacs or vim.
+   *        It seems to work correctly if instead this replaces backspace
+   *        with '\177'.
+   */
+  if (DATA->current.key_prefix_switch && pgkey == PGKEY_BACKSPACE)
+    rtn[0] = '\177';
 
-  /* After translating a key, send back the string. */
-  post_event(PG_WE_DATA,self,strlen(rtn),0,rtn); 
+  if (*rtn) {
+    /* After translating a key, send back the string. */
+    post_event(PG_WE_DATA,self,strlen(rtn),0,rtn); 
+  }
 }
 
 

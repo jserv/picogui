@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.23 2003/03/26 10:36:00 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.24 2003/03/27 10:23:00 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -31,6 +31,11 @@
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(terminaldata)
 
+#ifdef DEBUG_TERMINAL_TEXTGRID
+#define DEBUG_FILE
+#endif
+#include <pgserver/debug.h>
+
 
 /********************************************** Textgrid implementation */
 
@@ -53,6 +58,9 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
   struct font_descriptor *fd;
   struct font_metrics m;
 
+  DBG("rendering buffer 0x%08X with width %d, offset %d, and palette 0x%08X\n",
+      n->param[0], n->param[1]>>16, n->param[1]&0xFFFF, n->param[2]);
+
   if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
 		       n->param[0])) || !str)
     return;
@@ -73,8 +81,6 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
     return;
   textcolors++;              /* Skip length entry */
   
-  /* Should be fine for fixed width fonts
-   * and pseudo-acceptable for others? */
   fd->lib->getmetrics(fd,&m);
   celw      = m.charcell.w;
   celh      = m.charcell.h;
@@ -237,47 +243,42 @@ int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
 
 /* Build an incremental gropnode from the update rectangle */
 void term_realize(struct widget *self) {
-    /* Is an update unnecessary? */
-    if (!DATA->updw)
-      return;
-   
-   /* Go ahead and set the master redraw flag */
-   self->dt->flags |= DIVTREE_NEED_REDRAW;
-   
-   /* Are we forced to use a full update? (first time) */
-   if (!DATA->inc) {
-      self->in->div->flags |= DIVNODE_NEED_REDRAW;
-      return;
-   }
-   
-   /**** Set up an incremental update for the update rectangle */
-   
-   /* If this is more than one line, load the buffer width */
-   if (DATA->updh > 1)
-     DATA->inc->param[1] = DATA->bufferw << 16;
-   else
-     DATA->inc->param[1] = DATA->updw << 16;
+  /* Is an update unnecessary? */
+  if (!DATA->updw)
+    return;
+  
+  DBG("updating %d,%d,%d,%d\n", DATA->updx, DATA->updy, DATA->updw, DATA->updh);
+  
+  /* Go ahead and set the master redraw flag */
+  self->dt->flags |= DIVTREE_NEED_REDRAW;
+  
+  /* Are we forced to use a full update? (first time) */
+  if (!DATA->inc) {
+    self->in->div->flags |= DIVNODE_NEED_REDRAW;
+    return;
+  }
+  
+  /**** Set up an incremental update for the update rectangle */
+  
+  /* If this is more than one line, load the buffer width */
+  if (DATA->updh > 1)
+    DATA->inc->param[1] = DATA->bufferw << 16;
+  else
+    DATA->inc->param[1] = DATA->updw << 16;
       
-   /* Set the buffer offset */
-   DATA->inc->param[1] |= DATA->updx + DATA->updy * DATA->bufferw;
+  /* Set the buffer offset */
+  DATA->inc->param[1] |= DATA->updx + DATA->updy * DATA->bufferw;
    
-/*
-   guru("Incremental terminal update:\nx = %d\ny = %d\nw = %d\nh = %d"
-	"\nbufferw = %d\nbufferh = %d",
-	DATA->updx,DATA->updy,DATA->updw,DATA->updh,
-	DATA->bufferw,DATA->bufferh);
-*/
- 
-   /* Gropnode position (background and text) */
-   DATA->bginc->r.x = DATA->inc->r.x = DATA->x + DATA->updx * DATA->celw;
-   DATA->bginc->r.y = DATA->inc->r.y = DATA->y + DATA->updy * DATA->celh;
-   DATA->bginc->r.w = DATA->inc->r.w = DATA->updw * DATA->celw;
-   DATA->bginc->r.h = DATA->inc->r.h = DATA->updh * DATA->celh;
-   DATA->bgsrc->r.x = DATA->bginc->r.x;
-   DATA->bgsrc->r.y = DATA->bginc->r.y;
+  /* Gropnode position (background and text) */
+  DATA->bginc->r.x = DATA->inc->r.x = DATA->x + DATA->updx * DATA->celw;
+  DATA->bginc->r.y = DATA->inc->r.y = DATA->y + DATA->updy * DATA->celh;
+  DATA->bginc->r.w = DATA->inc->r.w = DATA->updw * DATA->celw;
+  DATA->bginc->r.h = DATA->inc->r.h = DATA->updh * DATA->celh;
+  DATA->bgsrc->r.x = DATA->bginc->r.x;
+  DATA->bgsrc->r.y = DATA->bginc->r.y;
 
-   /* Set the incremental update flag */
-   self->in->div->flags |= DIVNODE_INCREMENTAL;
+  /* Set the incremental update flag */
+  self->in->div->flags |= DIVNODE_INCREMENTAL;
 }
 
 /* Add an update rectangle in */
@@ -353,7 +354,7 @@ void term_setcursor(struct widget *self,int flag) {
   else
     /* Hide cursor */
     term_chattr(self,DATA->current.crsrx==DATA->bufferw?DATA->current.crsrx-1:DATA->current.crsrx,
-		    DATA->current.crsry,DATA->attr_under_crsr);
+		DATA->current.crsry,DATA->attr_under_crsr);
   
   DATA->cursor_on = flag;
 }
@@ -362,8 +363,8 @@ void term_setcursor(struct widget *self,int flag) {
  * This prevents losing updates- if the divnode still has its
  * incremental flag, don't clear the update rectangle */
 void term_rectprepare(struct widget *self) {
-   if (!(self->in->div->flags & DIVNODE_INCREMENTAL))
-     DATA->updw = 0;
+  if (!(self->in->div->flags & DIVNODE_INCREMENTAL))
+    DATA->updw = 0;
 }
 
 /* Clear a chunk of buffer */

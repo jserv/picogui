@@ -31,7 +31,8 @@ if [ "$UCLINUX" != "y" ]; then
 fi
 
 comment 'Debuggative spew'
-bool 'Terminal widget debugging'        DEBUG_TERMINAL
+bool 'Terminal widget VT102 debugging'    DEBUG_TERMINAL_VT102
+bool 'Terminal widget textgrid debugging' DEBUG_TERMINAL_TEXTGRID
 bool 'Widget debugging'                 DEBUG_WIDGET
 bool 'Event debugging'                  DEBUG_EVENT
 if [ "$DEBUG_EVENT" = "y" ]; then
