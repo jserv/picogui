@@ -3,6 +3,7 @@
 <book id="PicoGUI.Protocol">
  <bookinfo>
   <title>PicoGUI Protocol</title>
+  <subtitle>version 0x000C</>
 
   <authorgroup>
    <author>
@@ -44,26 +45,6 @@
      MA 02111-1307 USA
    </para>
   </legalnotice>
-  <revhistory>
-   <revision>
-    <revnumber>0.3</revnumber>
-    <date>9 Feb 2002</date>
-    <authorinitials>eks</authorinitials>
-    <revremark>Added signed data types and PGREQ_[REGOWNER|UNREGOWNER|SETMODE|GETMODE|MKCONTEXT|RMCONTEXT|FOCUS]</revremark>
-   </revision>
-   <revision>
-    <revnumber>0.2</revnumber>
-    <date>9 Feb 2002</date>
-    <authorinitials>eks</authorinitials>
-    <revremark>Added PGREQ_[BATCH|MKFILLSTYLE|MKWAIT|MKPOPUP|REGISTER|SIZETEXT]</revremark>
-   </revision>
-   <revision>
-    <revnumber>0.1</revnumber>
-    <date>8 Feb 2002</date>
-    <authorinitials>eks</authorinitials>
-    <revremark>re-ordered the sections and linked the struct as figures</revremark>
-   </revision>
-  </revhistory>
  </bookinfo>
 
  
@@ -1493,8 +1474,22 @@ additional data      : pgreqd_handlestruct
 	After each request, or once after a requests batch, the PicoGUI server
 	sends a response. All responses are at least 32bits long from which
 	the first 16bits can be used to identify the type of response
-	received.
+	received.  The following table list the various types:
   </para>
+  <table frame=none pgwide=1 id="pgresponsetypes">
+  <title>PG_RESPONSE values</title>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PG_RESPONSE_ERR</><entry>1</><entry>response is a pgresponse_err struct</></>
+  <row><entry>PG_RESPONSE_RET</><entry>2</><entry>response is a pgresponse_ret struct</></>
+  <row><entry>PG_RESPONSE_EVENT</><entry>3</><entry>response is a pgresponse_event struct</></>
+  <row><entry>PG_RESPONSE_DATA</><entry>4</><entry>response is a pgresponse_data struct</></>
+  </tbody>
+  </tgroup>
+  </table>
 
   <sect2 id="pgresponseerr"><title>PG_RESPONSE_ERR - Error Code</>
    <para>
@@ -1610,13 +1605,14 @@ struct pgresponse_event {
 	which varies with the event type.  It is explained in more detail
 	in <xref linkend="eventparam">
    </para>
-   <sect3 id="eventparam"><title>pgresponse_event.param</title>
-    <para>
-    </para>
-   </sect3>
   </sect2>
 
   <sect2 id="pgresponsedata"><title>PG_RESPONSE_DATA - Variable Length Data</>
+   <para>
+	Sent by the server whenever more than 32bit of data needs to be
+	returned, such as after a <constant>PGREQ_GETSTRING</> (see
+	<xref linkend="pgreq-getstring">).
+   </para>
    <figure><title>struct pgresponse_data</><programlisting>
 struct pgresponse_data {
   u16 type;
@@ -1625,8 +1621,136 @@ struct pgresponse_data {
   u32 size;
 };
    </programlisting></figure>
+   <para>
+	The <structfield>type</> is the 
+	<constant>PG_RESPONSE_DATA</>(4) constant identifying the
+	response as a <structname>pgresponse_data</>.
+   </para>
+   <para>
+	The <structfield>id</> is the client provided id that was located
+	in the <structname>pgrequest</> for which the data is returned.
+   </para>
+   <para>
+	The <structfield>size</> is the number of bytes of data following
+	the <structname>pgresponse_data</> structure.
+   </para>
   </sect2>
  </sect1>
+ </chapter>
+
+ <chapter id="eventparam">
+  <title>Event Parameters</title>
+  <para>
+	Events can return various types of data that the client library
+	will separate out for the app. To indicate a type of encoding, the
+	<constant>PG_WE_</> constant is logically or'ed with one of these:
+  </para>
+  <table frame=none pgwide=1 id="pgeventcodingtypes">
+  <title>PG_EVENTCODING values</>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PG_EVENTCODING_PARAM</><entry>0x000</><entry>Just a 32-bit parameter</></>
+  <row><entry>PG_EVENTCODING_XY</><entry>0x100</><entry>X,Y coordinates packed into param</></>
+  <row><entry>PG_EVENTCODING_PNTR</><entry>0x200</><entry>Mouse parameters (x,y,btn,chbtn)</></>
+  <row><entry>PG_EVENTCODING_DATA</><entry>0x300</><entry>Arbitrary data block</></>
+  <row><entry>PG_EVENTCODING_KBD</><entry>0x400</><entry>Keyboard params</></>
+  <row><entry>PG_EVENTCODING_MASK</><entry>0xF00</><entry></></>
+  </tbody>
+  </tgroup>
+  </table>
+  <para>
+	Determining the parameter encoding can thus be resumed in the following operations:
+  </para>
+  <programlisting>
+  1.) Do a bitwise AND between <structfield>pgresponse_event.event</> and <constant>PG_EVENTCODING_MASK</>
+  2.) Compare the result with the <constant>PG_EVENTCODING_*</> values
+  </programlisting>
+  <sect1 id="pgeventcodingparam">
+   <title>PG_EVENTCODING_PARAM - 32bit Parameter</>
+   <para>
+	The <structfield>pgresponse_event.param</> is a 32bit value,
+	no special decoding required.
+   </para>
+  </sect1>
+
+  <sect1 id="pgeventcodingxy">
+   <title>PG_EVENTCODING_XY - X,Y Coordinates</>
+   <para>
+	Mostly returned with width/size of bitmaps and/or string size.  The
+	X coordinate (or width) is located in the highest 16bits while the
+	Y coordinate (or height) is located in the lowest 16bits.
+   </para>
+   <programlisting>
+x = <structfield>pgresponse_event.param</> &gt;&gt; 16;
+y = <structfield>pgresponse_event.param</> &amp; 0xFFFF;
+   </programlisting>
+  </sect1>
+
+  <sect1 id="pgeventcodingpntr">
+   <title>PG_EVENTCODING_PNTR - Pointer Parameters (x,y,btn,chbtn)</>
+   <para>
+	Used to return the x,y absolute coordinates as well as the
+	pressed buttons bitmask (btn) and changed buttons bitmask
+	since last event (chbtn).  This will be generated whenever
+	the pointing device is moved or one of its button is pressed
+	or released.
+   </para>
+   <para>
+	The <structfield>x</> is located in bits 11-0 of
+	<structfield>pgresponse_event.param</> and represents the
+	absolute x coordinate of the new pointer location.
+   </para>
+   <para>
+	The <structfield>y</> is located in bits 23-12 of
+	<structfield>pgresponse_event.param</> and represents the
+	absolute y coordinate of the new pointer location.
+   </para>
+   <para>
+	The <structfield>btn</> is the bitmask of the currently
+	pressed buttons and is located in bits 27-24 of
+	<structfield>pgresponse_event.param</>.
+   </para>
+   <para>
+	The <structfield>chbtn</> is the bitmaks of the buttons
+	which changed status since the last event and is located
+	in bits 31-28 of <structfield>pgresponse_event.param</>.
+   </para>
+   <programlisting>
+x = <structfield>pgresponse_event.param</> &amp; 0xFFF;
+y = (<structfield>pgresponse_event.param</> &gt;&gt; 12) &amp; 0xFFF;
+btn = (<structfield>pgresponse_event.param</> &gt;&gt; 24) &amp; 0xF;
+chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
+   </programlisting>
+  </sect1>
+
+  <sect1 id="pgeventcodingdata">
+   <title>PG_EVENTCODING_DATA - Arbitrary data block</>
+   <para>
+	Used to return data of variable length.  The
+	<structfield>pgresponse_event.param</> represents the
+	number of bytes of data located after the
+	<structname>pgresponse_event</> structure.
+   </para>
+  </sect1>
+
+  <sect1 id="pgeventcodingkbd">
+   <title>PG_EVENTCODING_KBD - Keyboard Parameters</>
+   <para>
+	Used to return pressed/released keys and the current status
+	of the keyboard modifiers.
+   </para>
+   <para>
+	The <structfield>keys</> is located in the lowest 16bits of
+	<structfield>pgresponse_event.param</>.  For
+	<constant>PG_WE_KBD_CHAR</>, the value is an ASCII/Unicode
+	character. For <constant>PG_WE_KBD_KEYUP</>
+	and <constant>PG_WE_KBD_KEYDOWN</>, it is a
+	<constant>PGKEY_*</> constant
+   </para>
+  </sect1>
  </chapter>
 
  <appendix id="gropnodetypes">
@@ -2331,12 +2455,50 @@ struct pgresponse_data {
  <appendix>
   <title>Event Constants</>
   <sect1 id="pgwetypes"><title>Widget Events</>
-   <para>
-   </para>
+   <table pgwide=1 frame=none><title>PGDM values</>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_WE_ACTIVATE</><entry>0x001</><entry>Button has been clicked/selected</></>
+   <row><entry>PG_WE_DEACTIVATE</><entry>0x002</><entry>Sent when the user clicks outside the active popup</></>
+   <row><entry>PG_WE_CLOSE</><entry>0x003</><entry>A top-level widget has closed</></>
+   <row><entry>PG_WE_FOCUS</><entry>0x004</><entry>Sent when a button is focused, only if it has PG_EXEV_FOCUS. The field widget always sends this.</></>
+   <row><entry>PG_WE_PNTR_DOWN</><entry>0x204</><entry>The "mouse" button is now down</></>
+   <row><entry>PG_WE_PNTR_UP</><entry>0x205</><entry>The "mouse" button is now up</></>
+   <row><entry>PG_WE_PNTR_RELEASE</><entry>0x206</><entry>The "mouse" button was released outside the widget</></>
+   <row><entry>PG_WE_DATA</><entry>0x306</><entry>Widget is streaming data to the app</></>
+   <row><entry>PG_WE_RESIZE</><entry>0x107</><entry>For terminal widgets</></>
+   <row><entry>PG_WE_BUILD</><entry>0x108</><entry>Sent from a canvas, clients can rebuild groplist</></>
+   <row><entry>PG_WE_PNTR_MOVE</><entry>0x209</><entry>The "mouse" moved</></>
+   <row><entry>PG_WE_KBD_CHAR</><entry>0x40A</><entry>A focused keyboard character recieved</></>
+   <row><entry>PG_WE_KBD_KEYUP</><entry>0x40B</><entry>A focused raw keyup event</></>
+   <row><entry>PG_WE_KBD_KEYDOWN</><entry>0x40C</><entry>A focused raw keydown event</></>
+   <row><entry>PG_WE_APPMSG</><entry>0x301</><entry>Messages from another application</></>
+   </tbody>
+   </tgroup>
+   </table>
   </sect1>
   <sect1 id="pgnwetypes"><title>Non-Widget Events</>
-   <para>
-   </para>
+   <table pgwide=1 frame=none><title>PGDM values</>
+   <tgroup cols=3 align=left>
+   <colspec colwidth="45*">
+   <colspec colwidth="10*">
+   <colspec colwidth="45*">
+   <tbody>
+   <row><entry>PG_NWE_KBD_CHAR</><entry>0x140A</><entry>sent if the client has captured the keyboard</></>
+   <row><entry>PG_NWE_KBD_KEYUP</><entry>0x140B</><entry>sent if the client has captured the keyboard</></>
+   <row><entry>PG_NWE_KBD_KEYDOWN</><entry>0x140C</><entry>sent if the client has captured the keyboard</></>
+   <row><entry>PG_NWE_PNTR_MOVE</><entry>0x1209</><entry>sent if the client has captured the pointing device</></>
+   <row><entry>PG_NWE_PNTR_UP</><entry>0x1205</><entry>sent if the client has captured the pointing device</></>
+   <row><entry>PG_NWE_PNTR_DOWN</><entry>0x1204</><entry>sent if the client has captured the pointing device</></>
+   <row><entry>PG_NWE_BGCLICK</><entry>0x120D</><entry>The user clicked the background widget</></>
+   <row><entry>PG_NWE_PNTR_RAW</><entry>0x1101</><entry>Raw coordinates, for tpcal or games</></>
+   <row><entry>PG_NWE_CALIB_PENPOS</><entry>0x1301</><entry>Raw 32-bit coordinates, for tpcal</></>
+   </tbody>
+   </tgroup>
+   </table>
   </sect1>
  </appendix>
 </book>
