@@ -3,4 +3,3 @@ SIZE = 12
 STYLE = fixed extended
 NORMAL = courier12
 BOLD = courier12b
-GEO = 10 4 1

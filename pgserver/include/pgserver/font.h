@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.11 2001/10/09 05:15:26 micahjd Exp $
+/* $Id: font.h,v 1.12 2001/10/17 22:48:58 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -81,8 +81,6 @@ struct fontstyle_node {
   struct font *italic;
   struct font *bolditalic;
 
-  int ulineh;   /* Height at which to place the underline */
-  int slineh;   /* Height at which to place a strikeout line */
   int boldw;    /* Width of a bold if a bold version is not available */
 };
 

@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.31 2001/10/09 22:32:10 micahjd Exp $
+/* $Id: font.c,v 1.32 2001/10/17 22:48:58 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -288,7 +288,7 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt) {
   }
 
   *w = fd->margin << 1;
-  *h = (*w) + fd->fs->ulineh;
+  *h = (*w) + fd->font->h + fd->interline_space;
 
   while (*txt) {
     if ((*txt)=='\n') {
@@ -377,16 +377,17 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
       if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
 					 font_getglyph(fd,-1)->dwidth+
 					 fd->boldw;
-      if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->ulineh;
-      if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->slineh;
+      if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->normal->ascent +
+				       (closest->normal->descent >> 1);
+      if (flags&PG_FSTYLE_STRIKEOUT) fd->hline = closest->normal->ascent >> 1;
       
       if (flags&PG_FSTYLE_ITALIC2) {
 	 fd->skew = DEFAULT_SKEW / 2;
-	 fd->italicw = closest->ulineh / fd->skew; 
+	 fd->italicw = closest->normal->ascent / fd->skew; 
       }
       else if (flags&PG_FSTYLE_ITALIC) {
 	 fd->skew = DEFAULT_SKEW;
-	 fd->italicw = closest->ulineh / fd->skew; 
+	 fd->italicw = closest->normal->ascent / fd->skew; 
       }
       
    }

@@ -2,4 +2,5 @@ NAME = Utopia
 SIZE = 25
 STYLE = extended
 NORMAL = utopia25
-GEO = 21 11 2
+BOLDW = 2
+
