@@ -175,7 +175,8 @@ class Interface:
            the exception into an error for the Progress class if it's one of our types.
            """
         self.cleanup()
-        if isinstance(exc_info[1], PGBuild.Errors.ExternalError):
+        if isinstance(exc_info[1], PGBuild.Errors.ExternalError) and not \
+               self.config.eval("invocation/option[@name='traceback']/text()"):
             # Pretty-print ExternalErrors a bit, hiding the details that might scare people
             message = ""
             try:

@@ -59,7 +59,9 @@ def parseCommandLine(config, argv):
     parser.add_option("-q", "--quiet", action="uncount", dest="verbosity", default=1,
                       help="report progress in less detail")    
     parser.add_option("-u", "--ui", action="store", dest="ui", metavar="MODULE", default="Text",
-                      help="Select a front-end module. Try --ui=help to list the available modules")
+                      help="select a front-end module. Try --ui=help to list the available modules")
+    parser.add_option("--traceback", action="store_true", dest="traceback",
+                      help="disable the user-friendly exception handler and give a traceback when an error occurs")
 
     ############# Configuration management
 
