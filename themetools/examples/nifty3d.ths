@@ -1,4 +1,4 @@
-/* $Id: nifty3d.ths,v 1.1 2000/11/11 22:34:10 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.2 2000/11/12 03:56:10 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
  * demonstrates the neat things that can be done width
@@ -106,6 +106,12 @@ object zoombtn {
 object closebtn.on offset = 1;
 object rotatebtn.on offset = 1;
 object zoombtn.on offset = 1;
+
+/* Make dialog box titles look like panelbars */
+object label.dlgtitle {
+  bgfill = Copy(panelbar::bgfill);
+  bgcolor = Copy(panelbar::bgcolor);
+}
 
 /* Menus */
 object menuitem {
