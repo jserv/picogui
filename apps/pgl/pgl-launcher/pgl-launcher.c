@@ -26,6 +26,7 @@
 
 #include <picogui.h>
 #include <dirent.h>
+#include <stdlib.h>
 
 #include "pgl-launcher.h"
 #include "configfile.h"
@@ -63,19 +64,19 @@ int directoryScan(char *path){
 	configfile_free();
       }
     }
-    gAppCount = appCount;
+    return gAppCount = appCount;
   }else{
     return 0;
   }
 }
 
-int addItem(struct pgEvent *evt){}
+int addItem(struct pgEvent *evt){return 0;}
 
-int removeItem(struct pgEvent *evt){}
+int removeItem(struct pgEvent *evt){return 0;}
 
 int launchMenu(struct pgEvent *evt){
   pghandle *items;
-  int itemCount=2, item;
+  int item;
 
   printf("Generating menu\n");
 
@@ -96,11 +97,10 @@ int launchMenu(struct pgEvent *evt){
 
 int main(int argc, char **argv){
   pghandle pglBar;
-  pghandle launchButton;
 
   pgInit(argc, argv);
 
-  directoryScan("/usr/local/apps");
+  directoryScan("apps");
 
   pglBar = pgFindWidget("PGL-AppletBar");
   if(!pglBar){
