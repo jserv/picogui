@@ -73,7 +73,7 @@ class StdProgress:
         self.taskStack = []
     
     def report(self, verb, noun):
-        self.color.write("%15s " % verb)
+        self.color.write("%10s " % verb)
         self.color.write(":", ('bold',))
         self.color.write(" %s\n" % noun)
 

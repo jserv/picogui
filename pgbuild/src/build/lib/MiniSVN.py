@@ -93,7 +93,6 @@ class SVNRepository:
                     except OSError:
                         # We don't care if it already exists
                         pass
-                    progress.report('created', objDest)
 
                 elif object.getType() == 'file':
                     # This object is a file- download it, creating the directory if necessary
@@ -104,7 +103,8 @@ class SVNRepository:
                         f = open(objDest, "wb")                
                     f.write(object.read())
                     f.close()
-                    progress.report('downloaded', objDest)
+
+                progress.report('added', objDest)
         
                 for child in object.getChildren():
                     # Find the part of the child's URL that was (presumably)
