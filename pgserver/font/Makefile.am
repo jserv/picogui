@@ -53,13 +53,6 @@ FI_FILES = \
 EXTRA_DIST = $(FDF_FILES) $(FI_FILES)
 
 
-libfont_a_DEPENDENCIES = \
-	$(srcdir)/*.bdf \
-	$(srcdir)/*.fi  \
-	$(top_srcdir)/script/fontdef.pl \
-	@CONFIG_FILE@
-
-
-fonts.c: $(CONFIG_FILE)
+fonts.c: $(CONFIG_FILE) $(top_srcdir)/script/fontdef.pl $(srcdir)/*.bdf $(srcdir)/*.fi
 	$(PERL) $(top_srcdir)/script/fontdef.pl \
 		$(CONFIG_FILE) $(srcdir) > fonts.c
