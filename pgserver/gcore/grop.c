@@ -1,6 +1,6 @@
 /*
  * grop.c - rendering and creating grop-lists
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -250,6 +250,16 @@ g_error grop_bitmap(struct gropnode **headpp,
   n->h = h;
   n->param.bitmap.bitmap = b;
   n->param.bitmap.lgop = lgop;
+  grop_addnode(headpp,n);
+  return sucess;
+}
+
+g_error grop_null(struct gropnode **headpp) {
+  struct gropnode *n;
+  g_error e;
+  e = g_malloc((void **) &n,sizeof(struct gropnode));
+  if (e.type != ERRT_NONE) return e;
+  n->type = GROP_NULL;
   grop_addnode(headpp,n);
   return sucess;
 }

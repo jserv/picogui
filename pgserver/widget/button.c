@@ -26,6 +26,15 @@ struct btndata {
 };
 #define DATA ((struct btndata *)(self->data))
 
+/* Grop structure:
+   Node#  Type  Purpose
+   --------------------
+   0    rect    Background
+   1    bit/txt Mask
+   2    bit/txt Item
+   3    frame   Border
+   4    frame   Inner border
+*/
 void bitbutton(struct divnode *d) {
   int x,y,w,h;
   struct bitmap *bit;
@@ -52,6 +61,10 @@ void bitbutton(struct divnode *d) {
     }
     grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.mask,LGOP_AND);
     grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.bitmap,LGOP_OR);
+  }
+  else {
+    grop_null(&d->grop);
+    grop_null(&d->grop);
   }
 
   /* The frame */

@@ -1,7 +1,7 @@
 
 /*
  * divtree.h - define data structures related to divtree management
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * This file contains structures defining and surrounding the divtree, 
  * PicoGUI's method of organizing screen space.
@@ -191,7 +191,9 @@ struct gropnode {
  
 /* Possible gropnode types */
 #define GROP_NULL	0	/* Doesn't do anything - for temporarily
-				 * turning something off */
+				 * turning something off, or for disabling
+				 * unused features while keeping the grop
+				 * node order constant */
 #define GROP_PIXEL	1	
 #define GROP_LINE	2
 #define GROP_RECT	3
@@ -224,6 +226,7 @@ g_error grop_text(struct gropnode **headpp,
 		  int x, int y, handle fd, devcolort col, handle str);
 g_error grop_bitmap(struct gropnode **headpp,
 		    int x, int y, int w, int h, handle b, int lgop);
+g_error grop_null(struct gropnode **headpp);
 
 void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y);
 
