@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.13 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: box.c,v 1.14 2001/04/07 22:41:45 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -29,8 +29,6 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define MANUALSIZE  ((int)self->data)   /* nonzero to disregard theme sizing */
-
 void resize_box(struct widget *self) {
    int m;
    
@@ -41,7 +39,7 @@ void resize_box(struct widget *self) {
    else
      m = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING) >> 1;
    
-   if (!MANUALSIZE) {
+   if (!self->sizelock) {
       if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
 	self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
       else
@@ -82,9 +80,6 @@ g_error box_set(struct widget *self,int property, glob data) {
       self->in->div->build = data ? NULL : (&build_bgfill_only);
       break;	
       
-    case PG_WP_SIZE:
-      MANUALSIZE = 1;
-      /* Fall through to default */
     default:
       return mkerror(ERRT_PASS,0);
    }

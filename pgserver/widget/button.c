@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.56 2001/03/30 08:04:36 micahjd Exp $
+/* $Id: button.c,v 1.57 2001/04/07 22:41:45 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -356,6 +356,9 @@ void resize_button(struct widget *self) {
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
 
+  /* Leave it alone if size is locked */
+  if (self->sizelock) return;
+   
   /* Minimum size and margin */
   w = theme_lookup(DATA->state,PGTH_P_WIDTH);
   h = theme_lookup(DATA->state,PGTH_P_HEIGHT);

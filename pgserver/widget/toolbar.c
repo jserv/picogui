@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.13 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: toolbar.c,v 1.14 2001/04/07 22:41:45 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -32,6 +32,8 @@
 void resize_toolbar(struct widget *self) {
   int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 
+  /* Just reloading theme params, don't need sizelock */
+   
   if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
     self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
   else

@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.18 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: indicator.c,v 1.19 2001/04/07 22:41:45 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -48,6 +48,7 @@ void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self
 }
 
 void resize_indicator(struct widget *self) {
+  if (self->sizelock) return;
   self->in->split = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
   self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   self->dt->flags |= DIVTREE_NEED_RECALC;

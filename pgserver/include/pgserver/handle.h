@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.12 2001/03/24 01:02:08 micahjd Exp $
+/* $Id: handle.h,v 1.13 2001/04/07 22:41:45 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -115,9 +115,6 @@ g_error rehandle(handle h, void *obj);
 
 /* Add handle to another handle's group so they are freed at the same time */
 g_error handle_group(int owner,handle from, handle to);
-
-/* Call the resize() function on all widgets with handles */
-void resizeall(void);
 
 /* Call the specified function on all handles of the specified type,
  * with a pointer to the handle's object pointer.

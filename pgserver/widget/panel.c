@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.56 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: panel.c,v 1.57 2001/04/07 22:41:45 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -120,6 +120,8 @@ void panel_calcsplit(struct widget *self,int x,int y) {
 void resize_panel(struct widget *self) {
   int s;
 
+  /* This function only reloads params, so go ahead even with sizelock on */
+   
   /* Spacings */
   self->in->div->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
   BARWIDTH = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);

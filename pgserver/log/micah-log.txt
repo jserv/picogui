@@ -1,3 +1,23 @@
+2001-04-07    Micah Dowty <micahjd@users.sourceforge.net>
+
+Fixing some bugs. The fraction sizing + themes bug reported by philippe is
+caused by the widgets' resize functions assuming the 'split' value is in
+pixels. What this actually boils down to is, when the size or sizemode values
+are set, the widget needs to leave the widget's sizing alone.
+
+      * include/pgserver/widget.h: Added the 'sizelock' variable to
+        the widget structure, to prevent automatic resizing when the
+	app sizes manually.
+	
+      * widget/widget.c,gcore/handle.c: Moved resizeall() to widget.c since
+        it no longer depends on direct handle tree access
+
+      * widget/widget.c: Turns sizelock on when size or sizemode are changed
+      
+      * Added support for sizelock to all resize functions where applicable
+      
+      
+      
 2001-04-05    Micah Dowty <micahjd@users.sourceforge.net>
 
 Adding the support necessary for the server to remember loaded themes so it

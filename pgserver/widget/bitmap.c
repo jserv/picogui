@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.28 2001/03/17 04:16:36 micahjd Exp $
+/* $Id: bitmap.c,v 1.29 2001/04/07 22:41:45 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -186,6 +186,8 @@ void resizebitmap(struct widget *self) {
   hwrbitmap bit;
   int w,h;
  
+  if (self->sizelock) return;
+   
   if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
     return;
   if (!bit) return;

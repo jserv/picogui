@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.73 2001/04/05 05:23:16 micahjd Exp $
+/* $Id: widget.c,v 1.74 2001/04/07 22:41:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -312,12 +312,14 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
     case PG_WP_SIZE:
       if (data<0) data = 0;
       w->in->split = data;
+      w->sizelock = 1;     /* No auto resizing */
       w->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
       w->dt->flags |= DIVTREE_NEED_RECALC;
       redraw_bg(w);
       break;
 
     case PG_WP_SIZEMODE:
+      w->sizelock = 1;     /* No auto resizing */
       w->in->flags &= ~PG_SZMODEMASK;
       w->in->flags |= data & PG_SZMODEMASK;
       redraw_bg(w);
@@ -819,6 +821,19 @@ void dispatch_direct(char *name,long param) {
 #ifdef DEBUG_EVENT
   printf("Direct event: %s(0x%08X)\n",name,param);
 #endif
+}
+   
+/* Iterator function used by resizeall() */
+g_error resizeall_iterate(void **p) {
+   struct widget *w = (struct widget *) *p;
+   if (w && w->resize)
+     (*w->resize)(w);
+   return sucess;
+}
+   
+/* Call the resize() function on all widgets with handles */
+void resizeall(void) {
+   handle_iterate(PG_TYPE_WIDGET,&resizeall_iterate);
 }
 
 /* The End */

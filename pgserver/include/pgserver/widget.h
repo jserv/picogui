@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.24 2001/04/05 05:23:16 micahjd Exp $
+/* $Id: widget.h,v 1.25 2001/04/07 22:41:45 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -123,6 +123,9 @@ struct widget {
      widgets inside it, not before or after it */
   unsigned int isroot : 1;
 
+  /* If the size has been set manually, prevent automatic resizing */
+  unsigned int sizelock : 1;
+   
   /***** 16/8-bit packed values */
    
   /* Defines the type of widget */
@@ -343,6 +346,9 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
 /* Clips a popup's main divnode to fit on the screen,
  * used when changing video modes */
 void clip_popup(struct divnode *div);
+
+/* Call the resize() function on all widgets with handles */
+void resizeall(void);
 
 #endif /* __WIDGET_H */
 

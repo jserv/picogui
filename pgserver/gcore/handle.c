@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.32 2001/03/24 01:02:08 micahjd Exp $
+/* $Id: handle.c,v 1.33 2001/04/07 22:41:44 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -550,14 +550,6 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
   return sucess;
 }
 
-/* Iterator function used by resizeall() */
-g_error resizeall_iterate(void **p) {
-   struct widget *w = (struct widget *) *p;
-   if (w && w->resize)
-     (*w->resize)(w);
-   return sucess;
-}
-   
 /* Recursive part of handle_iterate() */
 g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj)) {
    g_error e;
@@ -573,11 +565,6 @@ g_error r_iterate(struct handlenode *n,u8 type,g_error (*iterator)(void **pobj))
 }
 g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj)) {
    return r_iterate(htree,type,iterator);
-}
-
-/* Call the resize() function on all widgets with handles */
-void resizeall(void) {
-   r_iterate(htree,PG_TYPE_WIDGET,&resizeall_iterate);
 }
 
 /* The End */
