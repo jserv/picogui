@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.11 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: linear8.c,v 1.12 2001/02/15 03:29:07 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -554,12 +554,14 @@ void linear8_blit(struct stdbitmap *srcbit,int src_x,int src_y,
     switch (lgop) {
     case PG_LGOP_NONE:  
        while (h) {
-	  for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=vid->fb_bpl) {
+	  for (;sh && h;sh--,h--,src_line+=srcbit->w,dest+=offset_dest) {
 	     src = src_line + src_x;
 	     swm = (swp < w) ? swp : w;
 	     for (dw=w;dw;) {
 		__memcpy(dest,src,swm);
+		dest += swm;
 		src = src_line;
+		dw -= swm;
 		swm = (srcbit->w < dw) ? srcbit->w : dw;
 	     }
 	  }
