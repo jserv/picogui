@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.19 2001/03/30 04:39:06 micahjd Exp $
+/* $Id: demo.c,v 1.20 2001/04/05 05:26:28 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -133,6 +133,11 @@ int main(int argc, char *argv[])
   pgSetWidget(0,
 	      PG_WP_TEXT,pgNewString("Checkski!"),
 	      PG_WP_SIDE,PG_S_LEFT, /* checkboxes default to vertical stacking */
+	      0);
+   
+  pgNewWidget(PG_WIDGET_FLATBUTTON,0,0);
+  pgSetWidget(0,
+	      PG_WP_TEXT,pgNewString("Flatbutton"),
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
