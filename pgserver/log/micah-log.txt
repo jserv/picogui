@@ -1,3 +1,14 @@
+2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
+
+It's taken a while longer than I expected, but I wrote a fast blitter for
+linear1! I think I'll get some sleep now...
+
+      * vidbase/linear1.c: Fast blitter full of bit-banging fun!
+      
+      * video/sdlfb.c: Because the blitter can read (but not modify) one byte
+        past the end of the bitmap, fudged the malloc a bit to keep
+	electric fence from complaining :)
+
 2001-05-29    Micah Dowty <micahjd@users.sourceforge.net>
 
 I'm starting the extreme video driver fixink today. Basically this means

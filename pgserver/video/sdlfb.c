@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.14 2001/04/29 18:17:20 micahjd Exp $
+/* $Id: sdlfb.c,v 1.15 2001/05/31 11:57:44 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -208,7 +208,11 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
      
      vid->bpp = bpp;
      FB_BPL = (vid->xres * bpp) >> 3;
-     e = g_malloc((void**)&FB_MEM,FB_BPL * vid->yres);
+     /* The +1 allows blits some margin to read unnecessary bytes.
+      * Keeps linear1's blit from triggering electric fence when the
+      * cursor is put in the bottom-right corner ;-)
+      */
+     e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres) + 1);
      errorcheck;
   }
   else

@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.13 2001/05/31 11:32:29 micahjd Exp $
+/* $Id: linear1.c,v 1.14 2001/05/31 11:57:44 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -267,6 +267,13 @@ void linear1_line(hwrbitmap dest, s16 x1,s16 yy1,s16 x2,s16 yy2,hwrcolor c,
   }
 }
 
+
+/*
+ * This is a relatively complicated 1bpp packed-pixel blit that does
+ * handle LGOPs but currently doesn't handle tiling by itself.
+ * Note that it can read (but not modify) one byte past the boundary of the
+ * bitmap, but this is alright.
+ */
 void linear1_blit(hwrbitmap dest,
 		  s16 dst_x, s16 dst_y,s16 w, s16 h,
 		  hwrbitmap sbit,s16 src_x,s16 src_y,
@@ -276,17 +283,23 @@ void linear1_blit(hwrbitmap dest,
    int bw,xb,s,rs,tp,lp,rlp;
    int i;
 
-   /* Pass on the blit if it is unsupported */
+   /* Pass on the blit if it is an unsupported LGOP */
    switch (lgop) {
     case PG_LGOP_NONE:
     case PG_LGOP_OR:
     case PG_LGOP_AND:
+    case PG_LGOP_XOR:
       break;
     default:
+      default_blitter:
       def_blit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
       return;
    }
-   
+
+   /* Currently there is no tile blitter, so let defaultvbl handle it */
+   if (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))
+     goto default_blitter;   
+      
    /* Initializations */ 
    src = srcline = srcbit->bits + (src_x>>3) + src_y*srcbit->pitch;
    dst = dstline = PIXELBYTE(dst_x,dst_y);
@@ -352,6 +365,14 @@ void linear1_blit(hwrbitmap dest,
 #undef BLITMAINCOPY
 #undef BLITCOPY
 	return;
+      
+    case PG_LGOP_XOR:
+#define BLITCOPY(d,m)   *dst ^= d & m
+#define BLITMAINCOPY(d) *dst ^= d
+   BLITCORE
+#undef BLITMAINCOPY
+#undef BLITCOPY
+	return;  
       
    }
 }
