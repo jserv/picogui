@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.13 2001/10/03 19:53:53 micahjd Exp $
+/* $Id: eventq.c,v 1.14 2001/11/23 04:24:09 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -71,10 +71,24 @@ void post_event(int event,struct widget *from,long param,int owner,char *data) {
     cb = find_conbuf(owner);
     if (!cb) return;   /* Sanity check */
     
+    /* Free any data that might be left in this node
+     * (in case we had an overflow)
+     */
+    if (cb->in->data)
+      g_free(cb->in->data);
+
+    /* If this is a data event, duplicate the data for queueing */
+    if ((event & PG_EVENTCODINGMASK) == PG_EVENTCODING_DATA) {
+      if (iserror(g_malloc( (void**)&cb->in->data, param )))
+	return;
+      memcpy(cb->in->data,data,param);
+    }
+    else
+      cb->in->data = NULL;
+
     cb->in->event = event;
     cb->in->from = hfrom;
     cb->in->param = param;
-    cb->in->data = data;
     
     if ((++cb->in) >= (cb->q+EVENTQ_LEN))   /* Wrap around */
       cb->in = cb->q;

@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.15 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: pgnet.h,v 1.16 2001/11/23 04:24:09 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -97,7 +97,7 @@ int send_response(int to,const void *data,size_t len);
 
 /********* Buffers needed by each connection (packet and event) */
 
-#define EVENTQ_LEN 16   /* Number of events that can be backlogged */
+#define EVENTQ_LEN 32   /* Number of events that can be backlogged */
 #define PKTBUF_LEN 513  /* Matches the size of the client's buffer */
 
 /* One event */

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.26 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: request.c,v 1.27 2001/11/23 04:24:09 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -128,8 +128,18 @@ void closefd(int fd) {
     }
   }
   if (condemn) {
+    int i;
+
+    /* Delete data associated with ring buffer nodes */
+    for (i=0;i<EVENTQ_LEN;i++)
+      if (condemn->q[i].data)
+	g_free(condemn->q[i].data);
+
+    /* Delete dynamic packet buffer */
     if (condemn->data_dyn)
       g_free(condemn->data_dyn);
+
+    /* Delete connection buffer */
     g_free(condemn);
   }
 

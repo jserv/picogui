@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.65 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: dispatch.c,v 1.66 2001/11/23 04:24:09 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -322,8 +322,16 @@ g_error rqh_wait(int owner, struct pgrequest *req,
     rsp.from = htonl(q->from);
     rsp.param = htonl(q->param);
     send(owner,&rsp,sizeof(rsp),0);
-    if ((q->event & PG_EVENTCODINGMASK) == PG_EVENTCODING_DATA)
+    if ((q->event & PG_EVENTCODINGMASK) == PG_EVENTCODING_DATA) {
       send(owner,q->data,q->param,0);
+      /* The data would be freed automatically when the 
+       * queue slot is reused, but we might as well free it
+       * here. We still need the free in eventq.c in case the
+       * queue overflows.
+       */
+      g_free(q->data);
+      q->data = NULL;
+    }
   }
   else {
     /* Nop. Off to the waiting list... */
