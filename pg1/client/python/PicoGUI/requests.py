@@ -195,4 +195,4 @@ def writedata(widget_id, data, id=None):
 def writecmd(widget_id, command, *parameters, **kwargs):
 	id = kwargs.get('id', None)
 	num = len(parameters)
-	return request(31, pack('L' * (num + 2), widget_id, command, *parameters), id=id)
+	return request(31, pack('LL' + ('l' * (num)), widget_id, command, *parameters), id=id)
