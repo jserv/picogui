@@ -1,28 +1,80 @@
-/* $Id: photonic.ths,v 1.2 2002/11/18 03:01:45 micahjd Exp $
+/* $Id: photonic.ths,v 1.3 2002/11/18 10:22:16 micahjd Exp $
  *
- * Inspired by QNX- It's a lot like pseudo3d, but with
- * subtle gradients, hilighting, and rounded edges
- *
- * Version 1.0
+ * Photonic theme - Inspired by QNX's Photon microGUI
  *
  * Micah Dowty
  */
 
-prop topleft_outer_color, bottomright_outer_color;
-prop topleft_inner_color, bottomright_inner_color;
-prop gradient_top_color, gradient_bottom_color, gradient_angle;
+property topleft_outer_color, bottomright_outer_color;
+property topleft_inner_color, bottomright_inner_color;
+property gradient_top_color, gradient_bottom_color, gradient_angle;
+property border_color, selection_color, fInnerBeveledFlat;
+property fFlat, fBeveledFlat, fBeveledGradient, fGradient;
 
 object default {
   name = "Photonic";
 
-  /* Default fill is flat gray */
-  bgfill = fillstyle {
+  fFlat = fillstyle {
     SetColor(bgcolor);
     Rect(x,y,w,h);
   };
+
+  fBeveledFlat = fillstyle {
+    SetColor(border_color);
+    Frame(x+1,y+1,w-2,h-2);
+
+    SetColor(topleft_outer_color);
+    Slab(x,y,w-1,1);
+    Bar(x,y+1,1,h-2);
+    SetColor(bottomright_outer_color);
+    Slab(x+1,y+h-1,w-1,1);
+    Bar(x+w-1,y,1,h);
+
+    fInnerBeveledFlat(x+2,y+2,w-4,h-4);
+  };
+
+  fInnerBeveledFlat = fillstyle {
+    SetColor(topleft_inner_color);
+    Slab(x,y,w,1);
+    Bar(x,y,1,h);
+    SetColor(bottomright_inner_color);
+    Slab(x+1,y+h-1,w-2,1);
+    Bar(x+w-1,y+1,1,h-1);
+
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+  };
+
+  fBeveledGradient = fillstyle {
+    SetColor(topleft_outer_color);
+    Slab(x,y,w-1,1);
+    Bar(x,y+1,1,h-2);
+    SetColor(bottomright_outer_color);
+    Slab(x,y+h-1,w,1);
+    Bar(x+w-1,y,1,h);
+
+    fGradient(x+1,y+1,w-2,h-2);
+  };
+
+  fGradient = fillstyle {
+    SetColor(border_color);
+    Frame(x,y,w,h);
+
+    SetColor(topleft_inner_color);
+    Slab(x+1,y+1,w-3,1);
+    Bar(x+1,y+1,1,h-3);
+    SetColor(bottomright_inner_color);
+    Slab(x+1,y+h-2,w-3,1);
+    Bar(x+w-2,y+1,1,h-2);
+
+    Gradient(x+2,y+2,w-4,h-4,gradient_angle,gradient_top_color,gradient_bottom_color);
+  };
+
+  /* Default is flat gray */
+  bgfill = Copy(default::fFlat);
   bgcolor = 0xd8d8d8;
 
-  /* Default colors for the fillstyles */
+  /* Default beveling */
   topleft_outer_color = 0xC0C0C0;
   bottomright_outer_color = 0xE0E0E0;
   topleft_inner_color = 0xFFFFFF;
@@ -30,86 +82,121 @@ object default {
   gradient_top_color = 0xEEEEEE;
   gradient_bottom_color = 0xC0C0C0;
   gradient_angle = 90;
+  border_color = 0x454545;
+  selection_color = 0x95bdf0;
+
+  /* Default sizing */
+  margin = 0;
+  height = 22;
+  width = 22;
 }
+
+object base.container margin = 2;
 
 object background bgcolor = 0xA8AA95;
 
-/* Beveled gradient fill */
-object base.interactive {
-  bgfill = fillstyle {
-    SetColor(0x000000);
-    Frame(x+1,y+1,w-2,h-2);
-    SetColor(topleft_outer_color);
-    Slab(x,y,w-1,1);
-    Bar(x,y+1,1,h-2);
-    SetColor(bottomright_outer_color);
-    Slab(x,y+h-1,w,1);
-    Bar(x+w-1,y,1,h);
-    SetColor(topleft_inner_color);
-    Slab(x+2,y+2,w-5,1);
-    Bar(x+2,y+2,1,h-5);
-    SetColor(bottomright_inner_color);
-    Slab(x+2,y+h-3,w-4,1);
-    Bar(x+w-3,y+2,1,h-5);
-    Gradient(x+3,y+3,w-6,h-6,90,gradient_top_color,gradient_bottom_color);
-    x = x+offset;
-    y = y+offset;
-  };
-}
-
-/* Beveled flat fill */
-object base.tlcontainer {
-  bgfill = fillstyle {
-    SetColor(0x454545);
-    Frame(x+1,y+1,w-2,h-2);
-    SetColor(topleft_outer_color);
-    Slab(x,y,w-1,1);
-    Bar(x,y+1,1,h-2);
-    SetColor(bottomright_outer_color);
-    Slab(x,y+h-1,w,1);
-    Bar(x+w-1,y,1,h);
-    SetColor(topleft_inner_color);
-    Slab(x+2,y+2,w-5,1);
-    Bar(x+2,y+2,1,h-5);
-    SetColor(bottomright_inner_color);
-    Slab(x+2,y+h-3,w-4,1);
-    Bar(x+w-3,y+2,1,h-5);
-    SetColor(bgcolor);
-    Rect(x+3,y+3,w-6,h-6);
-  };
-  margin = 4;
-}
-
 object button {
-  height = 22;
-  spacing = 4;
-  margin = 4;
+  bgfill = Copy(default::fBeveledGradient);
+  margin = 3;
+  spacing = 3;
 }
+
 object button.on {
+  bgfill = fillstyle {
+    fBeveledGradient(x,y,w,h);
+    y = y+1;
+  };
   topleft_inner_color = 0xA49F99;
   bottomright_inner_color = 0xF6F2E9;
   gradient_top_color = 0xDBD7CE;
   gradient_bottom_color = 0xE2DBD5;
-  offset = 1;
 }  
 
-object scroll {
-  /* Gradient fill without outer border */
-  overlay = fillstyle {
-    SetColor(0x000000);
-    Frame(x,y,w,h);
-    SetColor(topleft_inner_color);
-    Slab(x+1,y+1,w-3,1);
-    Bar(x+1,y+1,1,h-3);
-    SetColor(bottomright_inner_color);
-    Slab(x+1,y+h-2,w-3,1);
-    Bar(x+w-2,y+1,1,h-3);
-    Gradient(x+2,y+2,w-4,h-4,gradient_angle,gradient_top_color,gradient_bottom_color);
+object base.display {
+  bgfill = Copy(default::fBeveledFlat);
+  bgcolor = 0xFFFFFF;
+  topleft_inner_color = 0xC0C0C0;
+  bottomright_inner_color = 0xFFFFFF;
+  border_color = 0x4B4B4B;
+  margin = 5;
+}
+
+/* Split the top 2 pixels from the tab page border into the tab bar */
+object tab.page {
+  offset = 4;
+  margin = 4;
+  bgfill = fillstyle {
+    fBeveledFlat(x,y-offset,w,h+offset);
   };
+}
+object tab.bar {
+  parent = PGTH_O_TAB_PAGE;
+  margin = 0;
+  bgfill = fillstyle {
+    fBeveledFlat(x,y+h-offset,w,h);
+    fFlat(x,y,w,h-offset);
+  };
+}
+
+object tab.hilight parent = PGTH_O_TAB;
+
+object tab.on {
+  parent = PGTH_O_BUTTON;
+  gradient_top_color = 0xffffff;
+  gradient_bottom_color = 0xd8d8d8;
+  bottomright_inner_color = 0xd8d8d8;
+  spacing = 0;
+  margin = 5;
+  height = 24;
+
+  bgfill = fillstyle {
+    x = x+1;
+    w = w-2;
+    SetColor(bgcolor);
+    Rect(x+2,y+h-2,w-4,4);
+    SetClip(x+1,y+1,w-2,h-3);
+    fBeveledGradient(x,y,w,h);
+    SetClip(x+2,y+2,w-4,h-4);
+    h = h-2;
+  };
+}
+
+object tab {
+  parent = PGTH_O_TAB_ON;
+
+  bgfill = fillstyle {
+    x = x+1;
+    w = w-2;
+    SetClip(x,y,w,h-3);
+    fBeveledGradient(x,y,w,h);
+    SetClip(x+2,y+2,w-4,h-4);
+    h = h-2;
+  };
+
+  topleft_outer_color = 0xC0C0C0;
+  bottomright_outer_color = 0xE0E0E0;
+  topleft_inner_color = 0xFFFFFF;
+  bottomright_inner_color = 0xB0B0B0;
+  gradient_top_color = 0xd8d8d8;
+  gradient_bottom_color = 0xA0A0A0;
+}
+
+object toolbar {
+  bgfill = Copy(default::fGradient);
+  gradient_top_color = 0xcccccc;
+  gradient_bottom_color = 0xe4e4e4;
+  border_color = 0xe0e0e0;
+  topleft_inner_color = 0xffffff;
+  bottomright_inner_color = 0xa1a1a1;
+}
+
+object scroll {
+  overlay = Copy(default::fGradient);
+
   gradient_angle = 180;
   width = 12;
 
-  /* Basic fill with a shadow on the edge */
+  /* Simple shadowed fill */
   bgfill = fillstyle {
     SetColor(0x606060);
     Frame(x,y,w,h);
@@ -121,20 +208,17 @@ object scroll {
   };
 }
 
-object base.display {
+object label {
+  parent = PGTH_O_TOOLBAR;
   bgfill = fillstyle {
-    SetColor(0x000000);
-    Frame(x,y,w,h);
-    SetColor(bgcolor);
-    Rect(x+2,y+2,w-3,h-3);
-    SetColor(topleft_inner_color);
-    Slab(x+1,y+1,w-2,1);
-    Bar(x+1,y+1,1,h-2);
+    fGradient(x-1,y-1,w+2,h+2);
   };
-  topleft_inner_color = 0xC0C0C0;
-  bgcolor = 0xFFFFFF;
-  margin = 4;
-  spacing = Copy(button::spacing);
+  spacing = 1;
+}
+
+object base.tlcontainer {
+  margin = 3;
+  bgfill = Copy(default::fBeveledFlat);
 }
 
 object managedwindow {
@@ -147,9 +231,88 @@ object menuitem {
 }  
 
 object menuitem.hilight {
-  bgcolor = 0xB0B0FF;
+  bgcolor = Copy(default::selection_color);
 }
 
 object listitem.on parent = PGTH_O_MENUITEM_HILIGHT;
+
+object panel {
+  border.size = 3;
+  bottomright_inner_color = 0x999999;
+
+  border.fill = fillstyle {
+    SetColor(background::bgcolor);
+    Frame(x,y,w,h);
+
+    SetColor(border_color);
+    Frame(x+1,y+1,w-2,h-2);
+
+    SetColor(topleft_inner_color);
+    Slab(x+2,y+2,w-4,1);
+    Bar(x+2,y+2,1,h-4);
+    SetColor(bottomright_inner_color);
+    Slab(x+3,y+h-3,w-5,1);
+    Bar(x+w-3,y+3,1,h-5);
+  };
+
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Frame(x,y,w,h);
+
+    SetColor(bottomright_inner_color);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(topleft_inner_color);
+    Slab(x+2,y+h-2,w-3,1);
+    Bar(x+w-2,y+2,1,h-3);
+
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+  };
+}
+
+object popup {
+  bgfill = fillstyle {
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    fInnerBeveledFlat(x+1,y+1,w-2,h-2);
+  };
+}
+
+object popup.menu {
+  bgfill = Copy(default::fInnerBeveledFlat);
+}
+
+object label.dlgtitle {
+  gradient_bottom_color = 0xEEEEFF;
+}
+
+object panelbar {
+  parent = PGTH_O_LABEL_DLGTITLE;
+
+  bgfill = fillstyle {
+    Gradient(x,y,w,h,90,gradient_top_color,gradient_bottom_color);
+  };
+
+  width = 21;
+  margin = 1;
+  font = Font(NULL,12,0);
+}
+
+object base.panelbtn {
+  width = 16;
+  height = 16;
+  spacing = 1;
+  side = PG_S_RIGHT;
+  font = Font(NULL,10,PG_FSTYLE_BOLD);
+}
+
+object closebtn.on parent = PGTH_O_BUTTON_ON;
+object zoombtn.on parent = PGTH_O_BUTTON_ON;
+object rotatebtn.on parent = PGTH_O_BUTTON_ON;
+
+object closebtn text = "X";
+object rotatebtn text = "/";
+object zoombtn text = "-";
 
 /* The End */
