@@ -8,7 +8,7 @@
 
 import cgitb
 cgitb.enable()
-import cgi, time, os, re
+import cgi, time, os, re, sys
 from StringIO import StringIO
 
 def collapseWhitespace(text):
@@ -39,12 +39,18 @@ class NaviPage:
     defaultSections = None
     parameters = [
         ('sections', lambda x: x.split(" ")),
-        'css',
         ('refresh', int),
+        ('width', int),
+        ('height', int),
+        'css',
+        'image',
         ]
     css = "http://navi.picogui.org/svn/picogui/trunk/tools/css/navi_cgi.css"
     refresh = None
     footer = '<a href="/"><img src="/images/web/navi64.png" width="64" height="39" alt="Navi"/></a>'
+    image = None
+    width = 200
+    height = 200
             
     def __init__(self, form=None):
         # Defaults
@@ -58,11 +64,6 @@ class NaviPage:
         if form is None:
             form = cgi.FieldStorage()
         self.form = form
-        self.cgiInit()
-
-    def cgiInit(self):
-        """Set the output content-type, and parse form arguments"""
-        print "Content-type: text/html\n"        
         for parameter in self.parameters:
             try:
                 if type(parameter) == str:
@@ -105,7 +106,31 @@ class NaviPage:
         else:
             return scriptName
 
+    def outputContentType(self, type):
+        print "Content-type: %s\n" % type                
+
     def run(self):
+        if self.image:
+            self.outputImage()
+        else:
+            self.outputHTML()
+
+    def outputImage(self):
+        """Output a dynamically created image. This is invoked when the
+           script is called with an 'image' parameter. There should be
+           an image_<imagename>() function to draw each image. It should
+           return an Image object created with PIL.
+           """
+        img = getattr(self, 'image_%s' % self.image)()        
+        # For now, always use PNG
+        self.outputContentType("image/png")
+        img.save(sys.stdout, "PNG")
+        
+    def outputHTML(self):
+        """Output an HTML document composed of several collapsible sections.
+           This is the default.
+           """
+        self.outputContentType("text/html")
         doc = StringIO()
         for section in ['header'] + self.sections + ['footer']:
             getattr(self, 'section_%s' % section)(doc.write)
@@ -172,3 +197,60 @@ class NaviPage:
 
     def section_footer(self, write):
         write('<div class="footer">%s</div></body></html>' % self.footer)
+
+def pieChart(width, height, slices):
+    """Generates a pie chart image using PIL. Each slice should be a
+       tuple of (fraction, color). The fraction from the last slice is ignored.
+       """
+    import math, Image, ImageDraw
+
+    relativeShadow = 0.02
+    relativeOffset = 0.05
+    relativeMargin = 0.10
+    bgColor = 0xFFFFFF
+    outlineColor = 0x000000
+    shadowColor = 0xD0D0D0
+
+    # PIL doesn't seem to support antialiasing on all primitives, so we'll fake it with oversampling.
+    oversample = 2
+    img = Image.new("RGB", (width * oversample, height * oversample), bgColor)
+    draw = ImageDraw.Draw(img)
+
+    shadowAmount = relativeShadow * img.size[0]
+    margin = (img.size[0] * relativeMargin, img.size[1] * relativeMargin)
+
+    def drawSlice(start, end, color, shadow):
+        centerAngle = (start + end) / 2
+        offset =(img.size[0] * relativeOffset * math.cos(centerAngle * math.pi / 180),
+                 img.size[1] * relativeOffset * math.sin(centerAngle * math.pi / 180))
+        if shadow:
+            draw.pieslice((margin[0] + shadowAmount + offset[0],
+                           margin[1] + shadowAmount + offset[1],
+                           img.size[0] - margin[0] + offset[0] + shadowAmount,
+                           img.size[1] - margin[1] + offset[1] + shadowAmount),
+                          start, end, fill=shadowColor)
+        else:
+            draw.pieslice((margin[0] + offset[0],
+                           margin[1] + offset[1],
+                           img.size[0] - margin[0] + offset[0],
+                           img.size[1] - margin[1] + offset[1]),
+                          start, end, outline=outlineColor, fill=color)
+
+    def drawSlices(slices, shadow):
+        totalAngle = 0
+        for i in xrange(len(slices)):
+            (fraction, color) = slices[i]
+            if i == len(slices)-1:
+                # Last slice
+                sliceAngle = 360 - totalAngle
+            else:
+                sliceAngle = fraction * 360
+            drawSlice(totalAngle, totalAngle + sliceAngle, color, shadow)
+            totalAngle += sliceAngle
+
+    # Draw in two steps- all shadows, then all pie slices
+    drawSlices(slices, True)
+    drawSlices(slices, False)
+    
+    return img.resize((width, height), Image.ANTIALIAS)
+    
