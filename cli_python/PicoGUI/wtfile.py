@@ -3,6 +3,12 @@
 # on these fake "servers"
 
 import struct
+# zlib is not present in some installations, specially embedded
+try:
+  import zlib
+except:
+  zlib = None
+
 idsize = struct.calcsize('!L')
 # 2 below is for PG_RESPONSE_RET
 null_response = struct.pack('!HxxLL', 2, 0, 0)
@@ -48,11 +54,16 @@ class stream(object):
   def dump(self):
     # dump to a string in PGwt format
     s = 'PGwt'
-    # FIXME: len and checksum are for the whole file?
-    flen = 0
-    checksum = 0
+    s1 = s
     version = 1
-    s += struct.pack('!LLHHHH', 0, 0, 1,
+    s1 += struct.pack('!LLHHHH', 0, 0, 1,
+                     self.num_global, self.num_instance, self.next_handle)
+    s1 += self.s
+    if zlib is None:
+      return s1
+    flen = len(s1)
+    checksum = zlib.crc32(s1)
+    s += struct.pack('!LLHHHH', flen, checksum, 1,
                      self.num_global, self.num_instance, self.next_handle)
     s += self.s
     return s
