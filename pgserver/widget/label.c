@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.41 2001/08/30 03:56:50 micahjd Exp $
+/* $Id: label.c,v 1.42 2001/11/15 13:25:40 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -33,7 +33,10 @@
 struct labeldata {
   handle text,font;
   short int align,direction;
-  u8 transparent, alignset;
+  pgcolor color;
+  unsigned int transparent : 1;
+  unsigned int alignset : 1;
+  unsigned int colorset : 1;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -69,7 +72,7 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   }
   addgrop(c,PG_GROP_SETCOLOR);
   c->current->param[0] = VID(color_pgtohwr) 
-     (theme_lookup(state,PGTH_P_FGCOLOR));
+    (DATA->colorset ? DATA->color : theme_lookup(state,PGTH_P_FGCOLOR));
    
   if (DATA->direction) {
      addgrop(c,PG_GROP_SETANGLE);
@@ -158,6 +161,11 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
+  case PG_WP_COLOR:
+    DATA->colorset = 1;
+    DATA->color = (pgcolor) data;
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -183,6 +191,9 @@ glob label_get(struct widget *self,int property) {
 
   case PG_WP_TEXT:
     return (glob) DATA->text;
+
+  case PG_WP_COLOR:
+    return (glob) DATA->color;
 
   default:
     return 0;
