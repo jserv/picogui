@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.30 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: handle.c,v 1.31 2001/03/22 00:20:38 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -400,11 +400,21 @@ g_error handle_group(int owner,handle from, handle to) {
   return sucess;
 }
 
+g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
+  void **x;
+  g_error e;
+  e = rdhandlep(&x,reqtype,owner,h);
+  if (x)
+     *p = *x;
+   else
+     *p = NULL;
+   return e;
+}
+   
 /* Reads the handle, returns NULL if handle is invalid or if it
    doesn't match the required type */
-g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
+g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h) {
   struct handlenode *n;
-  if (!p) return mkerror(PG_ERRT_INTERNAL,24);
   if (!h) {
     *p = NULL;
     return sucess;
@@ -415,7 +425,7 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
     return mkerror(PG_ERRT_HANDLE,28);
   if (owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
-  *p = n->obj;
+  *p = &n->obj;
   return sucess;
 }
 
@@ -540,21 +550,28 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
   return sucess;
 }
 
-/* Recursive part of resizeall() */
-void r_resizeall(struct handlenode *n) {
-  if ((!n) || (n==NIL)) return;
-  
-  if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==PG_TYPE_WIDGET && 
-      n->obj && ((struct widget *)n->obj)->resize)
-    ((struct widget *)n->obj)->resize((struct widget*)n->obj);
-
-  r_resizeall(n->left);
-  r_resizeall(n->right);
+/* Iterator function used by resizeall() */
+void resizeall_iterate(void **p) {
+   struct widget *w = (struct widget *) *p;
+   if (w && w->resize)
+     (*w->resize)(w);
+}
+   
+/* Recursive part of handle_iterate() */
+void r_iterate(struct handlenode *n,u8 type,void (*iterator)(void **pobj)) {
+   if ((!n) || (n==NIL)) return;
+   if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==type)
+     (*iterator)(&n->obj);
+   r_iterate(n->left,type,iterator);
+   r_iterate(n->right,type,iterator);
+}
+void handle_iterate(u8 type,void (*iterator)(void **pobj)) {
+   r_iterate(htree,type,iterator);
 }
 
 /* Call the resize() function on all widgets with handles */
 void resizeall(void) {
-  r_resizeall(htree);
+   r_iterate(htree,PG_TYPE_WIDGET,&resizeall_iterate);
 }
 
 /* The End */

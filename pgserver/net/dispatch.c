@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.32 2001/03/17 04:16:35 micahjd Exp $
+/* $Id: dispatch.c,v 1.33 2001/03/22 00:20:38 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -557,6 +557,16 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
 #endif
 }
       
+g_error rqh_setmode(int owner, struct pgrequest *req,
+		    void *data, unsigned long *ret, int *fatal) {
+   reqarg(setmode);
+   
+   /* Pass this on to the video subsystem */
+   return video_setmode(ntohs(arg->xres),ntohs(arg->yres),
+			ntohs(arg->bpp),ntohs(arg->flagmode),
+			ntohl(arg->flags));
+}
+
 g_error rqh_mkcontext(int owner, struct pgrequest *req,
 		      void *data, unsigned long *ret, int *fatal) {
   struct conbuf *cb = find_conbuf(owner);

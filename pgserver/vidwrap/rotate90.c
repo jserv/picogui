@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.6 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: rotate90.c,v 1.7 2001/03/22 00:20:38 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -30,6 +30,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/video.h>
+#include <pgserver/appmgr.h>
 
 /******* Simple wrapper functions */
 
@@ -173,6 +174,31 @@ g_error rotate90_bitmap_getsize(hwrbitmap *bmp,int *w,int *h) {
    return (*vid->bitmap_getsize)(bmp,h,w);
 }
 
+/* Rotate all loaded bitmaps when this mode is entered/exited */
+
+g_error rotate90_entermode(void) {
+   /* Rotate all bitmaps with handles, the default cursor,
+    * and al sprite backbuffers */
+   struct sprite *spr;
+   /* FIXME: this actually could return an error... */
+   handle_iterate(PG_TYPE_BITMAP,vid->bitmap_rotate90);
+   (*vid->bitmap_rotate90)(&defaultcursor_bitmap);
+   (*vid->bitmap_rotate90)(&defaultcursor_bitmask);
+   for (spr=spritelist;spr;spr=spr->next)
+     (*vid->bitmap_rotate90)(&spr->backbuffer);
+
+   return sucess;
+}
+
+g_error rotate90_exitmode(void) {
+   /* FIXME: need a real 90-degree clockwise rotation? */
+   
+   rotate90_entermode();
+   rotate90_entermode();
+   rotate90_entermode();
+   return sucess;
+}
+
 /******* Registration */
 
 void vidwrap_rotate90(struct vidlib *vid) {
@@ -198,6 +224,8 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->bitmap_load = &rotate90_bitmap_load;
    vid->bitmap_new = &rotate90_bitmap_new;
    vid->bitmap_getsize = &rotate90_bitmap_getsize;
+   vid->entermode = &rotate90_entermode;
+   vid->exitmode = &rotate90_exitmode;
 }
 
 /* The End */

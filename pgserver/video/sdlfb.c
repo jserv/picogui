@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.10 2001/03/16 04:06:25 micahjd Exp $
+/* $Id: sdlfb.c,v 1.11 2001/03/22 00:20:38 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -48,21 +48,26 @@ void sdlfb_update(int x,int y,int w,int h);
 g_error sdlfb_regfunc(struct vidlib *v);
 
 g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
-  unsigned long sdlflags = 0;
-  char str[80];
-  SDL_Color palette[256];
-  int i;
-
   /* Avoid freeing a nonexistant backbuffer in close() */
   vid->fb_mem = NULL;
    
   /* Default mode: 640x480 */
-  if (!xres) xres = 640;
-  if (!yres) yres = 480;
+  if (!vid->xres) vid->xres = 640;
+  if (!vid->yres) vid->yres = 480;
 
   /* Start up the SDL video subsystem thingy */
   if (SDL_Init(SDL_INIT_VIDEO))
     return mkerror(PG_ERRT_IO,46);
+
+  /* Load a main input driver */
+  return load_inlib(&sdlinput_regfunc,&inlib_main);
+}
+
+g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
+  unsigned long sdlflags = 0;
+  char str[80];
+  SDL_Color palette[256];
+  int i;
 
   /* Interpret flags */
   if (flags & PG_VID_FULLSCREEN)
@@ -72,13 +77,22 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
    /* Make screen divisible by a byte */
   if (bpp && bpp<8)
      xres &= ~((8/bpp)-1);
+
+  /* Free the backbuffer */
+  if (vid->bpp && (vid->bpp<8) && vid->fb_mem) {
+     g_free(vid->fb_mem);
+     vid->fb_mem = NULL;
+  }
 #endif CONFIG_SDLEMU_BLIT
    
   /* Set the video mode */
-  sdl_vidsurf = SDL_SetVideoMode(xres,yres,(bpp && bpp<8) ? 8 : bpp,sdlflags);
-  if (!sdl_vidsurf)
-    return mkerror(PG_ERRT_IO,47);
-
+  if ((!sdl_vidsurf) || xres != vid->xres || 
+      yres !=vid->yres || bpp != vid->bpp) {
+     sdl_vidsurf = SDL_SetVideoMode(xres,yres,(bpp && bpp<8) ? 8 : bpp,sdlflags);
+     if (!sdl_vidsurf)
+       return mkerror(PG_ERRT_IO,47);
+  }
+     
   /* Use the default depth? */
   if (!bpp)
      bpp  = sdl_vidsurf->format->BitsPerPixel;
@@ -191,11 +205,10 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   sprintf(str,"PicoGUI (sdl@%dx%dx%d)",
 	  vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
-
-  /* Load a main input driver */
-  return load_inlib(&sdlinput_regfunc,&inlib_main);
+   
+  return sucess; 
 }
-
+   
 void sdlfb_close(void) {
 #ifdef CONFIG_SDLEMU_BLIT
   /* Free backbuffer */
@@ -262,6 +275,7 @@ pgcolor sdlfbemu_color_hwrtopg(hwrcolor c) {
 
 g_error sdlfb_regfunc(struct vidlib *v) {
   v->init = &sdlfb_init;
+  v->setmode = &sdlfb_setmode; 
   v->close = &sdlfb_close;
   v->update = &sdlfb_update;    
   return sucess;

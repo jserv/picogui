@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.31 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: video.c,v 1.32 2001/03/22 00:20:38 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -73,10 +73,7 @@ g_error new_sprite(struct sprite **ps,int w,int h) {
   VID(bitmap_new) (&(*ps)->backbuffer,w,h);
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
-   
   spritelist = *ps;
-   
-  VID(sprite_show) (*ps);
 
   return sucess;
 }
@@ -100,8 +97,6 @@ void free_sprite(struct sprite *s) {
     }
   }
 
-  VID(bitmap_free) (s->bitmap);
-  VID(bitmap_free) (s->mask);
   VID(bitmap_free) (s->backbuffer);
   g_free(s);
 }
@@ -112,7 +107,6 @@ void free_sprite(struct sprite *s) {
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 		  int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
-  unsigned char i;
 
   /* Unload */
   if (vid) 
@@ -124,8 +118,9 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   memset(vid,0,sizeof(struct vidlib));
   vid->close = &emulate_dos;
   vid->update = &def_update;
-  
-  /* Device specifics */
+  vid->setmode = &def_setmode;
+   
+  /* Device registration */
   e = (*regfunc)(vid);
   if (iserror(e)) {
     vid = NULL;
@@ -135,16 +130,62 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   inlib_main = NULL;
 
   /* Load new driver */
-  e = VID(init) (xres,yres,bpp,flags);
+  e = VID(init)();
   if (iserror(e)) {
     vid = NULL;
     return e;
   }
 
-  /* Generate text colors table */
-  for (i=0;i<16;i++)
-    textcolors[i] = VID(color_pgtohwr) 
-      ( (i & 0x08) ?
+  /* Set the initial mode */
+  return video_setmode(xres,yres,bpp,PG_FM_SET,flags);
+}
+
+/* Set the video mode using the current driver. This is the implementation
+ * of the setmode client request */
+g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
+   g_error e;
+   struct divtree *tree;
+   struct sprite *spr;
+   u8 i;
+
+   if (vidwrap->exitmode) {
+      e = VID(exitmode)();
+      errorcheck;
+   }
+      
+   /* Default values, combine flags */
+   if (!xres) xres = vid->xres;
+   if (!yres) yres = vid->yres;
+   if (!bpp)  bpp  = vid->bpp;
+   switch (flagmode) {
+    case PG_FM_ON:
+      flags |= vid->flags;
+      break;      
+    case PG_FM_OFF:
+      flags = vid->flags & (~flags);
+      break;
+    case PG_FM_TOGGLE:
+      flags ^= vid->flags;
+      break;
+   }
+   vid->flags = flags;
+   
+   /* Might want to tell the driver! */
+   e = (*vid->setmode) (xres,yres,bpp,flags);
+   errorcheck;
+
+   /* By default logical coordinates are also physical */
+   vid->lxres = vid->xres;
+   vid->lyres = vid->yres;
+   
+   /* Reset wrapper library (before using VID macro) */
+   vidwrap_static = vidlib_static;
+   vidwrap = &vidwrap_static;
+   
+   /* Generate text colors table */
+   for (i=0;i<16;i++)
+     textcolors[i] = VID(color_pgtohwr) 
+        ( (i & 0x08) ?
 	(((i & 0x04) ? 0xFF0000 : 0) |
 	 ((i & 0x02) ? 0x00FF00 : 0) |
 	 ((i & 0x01) ? 0x0000FF : 0)) :
@@ -152,19 +193,32 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 	 ((i & 0x02) ? 0x008000 : 0) |
 	 ((i & 0x01) ? 0x000080 : 0)) );
 
-  /* Add wrapper library */
+   /* Add wrapper libraries if necessary */
+   
 #ifdef CONFIG_ROTATE
-  vidwrap_static = vidlib_static;
-  vidwrap = &vidwrap_static;
-  vidwrap_rotate90(vidwrap);
-  vid->lxres = vid->yres;
-  vid->lyres = vid->xres;
-#else
-  vid->lxres = vid->xres;
-  vid->lyres = vid->yres;
+   if (vid->flags & PG_VID_ROTATE90) {
+      vidwrap_rotate90(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
 #endif   
    
-  return sucess;
+   /* Since changing video modes pretty much obliterates all onscreen
+    * sprites, and the previous location might be offscreen now,
+    * reset the backbuffer on all sprites */
+   for (spr=spritelist;spr;spr=spr->next)
+     spr->onscreen = 0;
+   
+   /* Resize the root divnodes of all divtrees in the dtstack */
+   if (dts)   /* (if this is in early init, dtstack isn't here yet) */
+     for (tree=dts->root;tree;tree=tree->next) {
+	tree->head->w = vid->lxres;
+	tree->head->h = vid->lyres;
+	tree->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+	tree->flags |= DIVTREE_NEED_RECALC;
+     }
+
+   return VID(entermode)();
 }
 
 g_error (*find_videodriver(const char *name))(struct vidlib *v) {

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.35 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: global.c,v 1.36 2001/03/22 00:20:37 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -263,23 +263,23 @@ g_error appmgr_register(struct app_info *i) {
 
 /* Load the mouse cursor specified by the given theme object */
 void appmgr_loadcursor(int thobj) {
-   hwrbitmap bitmap,mask;
+   hwrbitmap *bitmap,*mask;
    int w,h;
    
    /* Load the cursor bitmaps, using the default if there is a problem */
    
-   if (iserror(rdhandle((void**)&bitmap,PG_TYPE_BITMAP,-1,
+   if (iserror(rdhandlep((void***)&bitmap,PG_TYPE_BITMAP,-1,
 			theme_lookup(thobj,PGTH_P_CURSORBITMAP))) || !bitmap)
-     bitmap = defaultcursor_bitmap;
-   if (iserror(rdhandle((void**)&mask,PG_TYPE_BITMAP,-1,
+     bitmap = &defaultcursor_bitmap;
+   if (iserror(rdhandlep((void***)&mask,PG_TYPE_BITMAP,-1,
 			theme_lookup(thobj,PGTH_P_CURSORBITMASK))) || !mask)
-     mask = defaultcursor_bitmask;
-   VID(bitmap_getsize) (bitmap,&w,&h);
+     mask = &defaultcursor_bitmask;
+
+   VID(bitmap_getsize) (*bitmap,&w,&h);
   
    /* Insert the new bitmaps, resize the sprite if necessary */
 
    VID(sprite_hide) (cursor);
-
    if ( (w!=cursor->w) || (h!=cursor->h) ) {
       cursor->w = w;
       cursor->h = h;

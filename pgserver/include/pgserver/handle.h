@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.10 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: handle.h,v 1.11 2001/03/22 00:20:38 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -81,6 +81,9 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj);
    doesn't match the required type and user. If owner is -1, we don't care */
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h);
 
+/* Like rdhandle, but returns a pointer to the handlenode's pointer */
+g_error rdhandlep(void ***p,unsigned char reqtype,int owner,handle h);
+
 /* Gets a pointer to the handle's payload, stores it in the variable
  * pointed to by pppayload
  */
@@ -115,6 +118,13 @@ g_error handle_group(int owner,handle from, handle to);
 
 /* Call the resize() function on all widgets with handles */
 void resizeall(void);
+
+/* Call the specified function on all handles of the specified type,
+ * with a pointer to the handle's object pointer.
+ * This allows a particular transformation to be applied to objects
+ * in bulk.
+ */
+void handle_iterate(u8 type,void (*iterator)(void **pobj));
 
 #endif /* __HANDLE_H */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.21 2001/03/08 01:22:22 micahjd Exp $
+/* $Id: errortext.c,v 1.22 2001/03/22 00:20:37 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -198,7 +198,7 @@ static const char *errors[] = {
   /* 21 */  "A mess of pointers; something must go wrong. widget has no in and out pointers",
   /* 22 */  "Derive constant not understood. Do not drink and derive.",
   /* 23 */  "Invalid widget in widget_set",
-  /* 24 */  "The pointer to memory has nowhere to point",
+  /* 24 */  NULL,
   /* 25 */  "Insufficient... um... what's that word?",
   /* 26 */  "You step in the stream, but the water has moved on; This handle is not here",
   /* 27 */  "Access Denied! No handle for you!",
@@ -246,7 +246,7 @@ static const char *errors[] = {
   /* 69 */  "Can't find a connection buffer for the client! Network code must be haunted",
   /* 70 */  "Context underflow",
   /* 71 */  "Can't create the input thread!",
-  /* 72 */  "This driver doesn't support changing video modes",
+  /* 72 */  NULL,
   /* 73 */  "Error initializing keyboard",
   /* 74 */  "Error initializing mouse",
   /* 75 */  "Nonexistant input driver",

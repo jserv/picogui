@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.29 2001/03/20 00:46:43 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.30 2001/03/22 00:20:38 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -52,13 +52,17 @@ struct bitformat bitmap_formats[] = {
 /******* no-op functions */
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
-  return mkerror(PG_ERRT_BADPARAM,72);
+  return sucess;
 }
 
 void def_font_newdesc(struct fontdesc *fd) {
 }
 
 void emulate_dos(void) {
+}
+
+g_error def_enterexitmode(void) {
+   return sucess;
 }
 
 void def_update(int x,int y,int w,int h) {
@@ -964,14 +968,14 @@ void def_sprite_show(struct sprite *spr) {
   	       0,0,spr->ow,spr->oh);
 
   /* Display the sprite */
-  if (spr->mask) {
-     VID(blit) (spr->mask,0,0,
+  if (spr->mask && *spr->mask) {
+     VID(blit) (*spr->mask,0,0,
 		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
-     VID(blit) (spr->bitmap,0,0,
+     VID(blit) (*spr->bitmap,0,0,
 		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
   }
    else
-     VID(blit) (spr->bitmap,0,0,
+     VID(blit) (*spr->bitmap,0,0,
 		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
    
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
@@ -1124,7 +1128,6 @@ void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
 /* Load our driver functions into a vidlib */
 void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
-  vid->setmode = &def_setmode;
   vid->color_pgtohwr = &def_color_pgtohwr;
   vid->color_hwrtopg = &def_color_hwrtopg;
   vid->font_newdesc = &def_font_newdesc;
@@ -1158,6 +1161,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->unblit = &def_unblit;
   vid->coord_logicalize = &def_coord_logicalize;
   vid->bitmap_rotate90 = &def_bitmap_rotate90;
+  vid->entermode = &def_enterexitmode;
+  vid->exitmode = &def_enterexitmode;
 }
 
 /* The End */

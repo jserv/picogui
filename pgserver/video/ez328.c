@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.10 2001/03/19 23:00:32 bauermeister Exp $
+/* $Id: ez328.c,v 1.11 2001/03/22 00:20:38 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -39,13 +39,12 @@
 #define REGS_START   ((void*)LSSA_ADDR)
 unsigned char *ez328_saveregs[REGS_LEN];
 
-g_error ez328_init(int xres,int yres,int bpp,unsigned long flags);
+g_error ez328_init(void);
+g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags);
 void ez328_close(void);
 g_error ez328_regfunc(struct vidlib *v);
 
-g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
-   g_error e;
-
+g_error ez328_init(void) {
 #ifdef CONFIG_CHIPSLICE
    LCKCON = 0;     /* LCKCON - LCD is off */
    LVPW   = 0x50;
@@ -67,10 +66,20 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    LYMAX  = 160-1;
    bpp = 1;
 #endif
-
-
-   if (!bpp) bpp = 1;        /* Default to black and white */
-
+   
+   if (!vid->bpp) vid->bpp = 1;        /* Default to black and white */
+   
+#if defined(CONFIG_CHIPSLICE) || defined(CONFIG_XCOPILOT)
+   /* Load the ts driver as the main input driver */
+   return load_inlib(&tsinput_regfunc,&inlib_main);
+#else
+   return sucess;
+#endif
+}
+   
+g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags) {
+   g_error e;
+   
    /* bpp-specific setup. Load the appropriate VBL and set the controller's
     * LVPW and LPICF registers to reflect the bpp */
    switch (bpp) {
@@ -113,16 +122,13 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->fb_bpl = LVPW << 1;
    
    /* Allocate video memory */
+   if (vid->fb_mem)
+     g_free(vid->fb_mem);
    e = g_malloc((void **) &vid->fb_mem, vid->yres * vid->fb_bpl);
    errorcheck;
    LSSA = (unsigned long) vid->fb_mem;
 
-#if defined(CONFIG_CHIPSLICE) || defined(CONFIG_XCOPILOT)
-   /* Load the ts driver as the main input driver */
-   return load_inlib(&tsinput_regfunc,&inlib_main);
-#else
    return sucess;
-#endif
 }
 
 void ez328_close(void) {
@@ -141,6 +147,7 @@ void ez328_close(void) {
 g_error ez328_regfunc(struct vidlib *v) {
    v->init = &ez328_init;
    v->close = &ez328_close;
+   v->setmode = &ez328_setmode;
    return sucess;
 }
 

@@ -1,5 +1,5 @@
 
-/* $Id: panel.c,v 1.54 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: panel.c,v 1.55 2001/03/22 00:20:38 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -69,6 +69,7 @@ struct paneldata {
 #ifndef CONFIG_DRAGSOLID
   /* Sprite for dragging the panelbar */
   struct sprite *s;
+  hwrbitmap sbit;
 #endif
 
   /* Text on the panelbar */
@@ -436,14 +437,15 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Allocate the new sprite */
     if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))
       return;
-    if (iserror(VID(bitmap_new) (&DATA->s->bitmap,BARDIV->w,BARDIV->h))) {
+    if (iserror(VID(bitmap_new) (&DATA->sbit,BARDIV->w,BARDIV->h))) {
       free_sprite(DATA->s);
       return;
     }
+    DATA->s->bitmap = &DATA->sbit;
     
     /* Grab a bitmap of the panelbar to use as the sprite */
     VID(unblit) (DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
-		   DATA->s->bitmap,0,0,
+		   DATA->sbit,0,0,
 		   BARDIV->w,BARDIV->h);
     DATA->s->clip_to = self->in;
 
@@ -485,6 +487,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     self->dt->flags |= DIVTREE_NEED_RECALC;
 
 #ifndef CONFIG_DRAGSOLID
+    VID(bitmap_free) (DATA->sbit);
     free_sprite(DATA->s);
 #endif
      

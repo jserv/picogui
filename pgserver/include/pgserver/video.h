@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.30 2001/03/20 00:46:43 micahjd Exp $
+/* $Id: video.h,v 1.31 2001/03/22 00:20:38 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -75,7 +75,7 @@ struct bitformat {
    
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
-  hwrbitmap bitmap,mask,backbuffer;
+  hwrbitmap *bitmap,*mask,backbuffer;
   int x,y;   /* Current coordinates */
   int ox,oy; /* Coordinates last time it was drawn */
   int w,h;   /* Dimensions of all buffers */
@@ -114,20 +114,38 @@ struct vidlib {
   /***************** Initializing and video modes */
 
   /* Required
-   *   initializes graphics device, given a default mode.
-   *   If the driver doesn't support that mode it can choose something
-   *   else, or even ignore it all together. 
+   *   initializes graphics device. Setmode will be called immediately
+   *   after this to initialize the default mode.
    */
-  g_error (*init)(int xres,int yres,int bpp,unsigned long flags);
+  g_error (*init)(void);
 
-  /* Reccomended if the device supports mode switching
-   *   Changes the video mode after initialization
+  /* Recommended
+   *   Changes the video mode immediately after initialization or at the
+   *   client's request. The driver should pick the closest mode, and
+   *   if it doesn't support mode switching simply ignore this. The client
+   *   needs to check the video mode afterwards, as this is only a _request_
+   *   for a particular mode.
    *
-   * Default implementation: returns error
+   * Default implementation: does nothing 
    */
   g_error (*setmode)(int xres,int yres,int bpp,unsigned long flags);
 
-  /* Reccomended
+  /* Optional
+   *   This is called after mode setting is complete, including all wrappers
+   *   loaded. Here the driver can do any special munging that this mode
+   *   needs.
+   */
+  g_error (*entermode)(void);
+   
+  /* Optional
+   *   This is called any time the current mode is exited, whether by
+   *   changing modes or changing drivers, but before the mode is actually
+   *   switched. If the driver rearranged bitmap data in setmode, put it
+   *   back to normal here.
+   */
+  g_error (*exitmode)(void);
+   
+  /* Recommended
    *   free memory, close device, etc. 
    * 
    * Default implementation: does nothing
@@ -137,6 +155,8 @@ struct vidlib {
   /* Optional
    *   Converts physical coordinates (from an input device)
    *   into logical coordinates
+   * 
+   * Default implementation: does nothing
    */
   void (*coord_logicalize)(int *x,int *y);
    
@@ -153,7 +173,7 @@ struct vidlib {
   /* Framebuffer information (for framebuffer Video Base Libraries) */
   unsigned char *fb_mem;
   unsigned int fb_bpl;   /* Bytes Per Line */
-
+   
   /***************** Fonts */
    
   /* Optional
@@ -461,6 +481,10 @@ struct vidinfo {
 extern struct vidinfo videodrivers[];
 
 g_error (*find_videodriver(const char *name))(struct vidlib *v);
+
+/* Set the video mode using the current driver. This is the implementation
+ * of the setmode client request */
+g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags);
 
 /* Sprite helper functions */
 g_error new_sprite(struct sprite **ps,int w,int h);

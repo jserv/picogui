@@ -1,4 +1,4 @@
-/* $Id: svgagl.c,v 1.6 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: svgagl.c,v 1.7 2001/03/22 00:20:38 micahjd Exp $
  *
  * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -84,10 +84,7 @@ int svgagl_closest_mode(int xres,int yres,int bpp) {
    return best;
 }
 
-g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
-  g_error e;
-  int mode;
-
+g_error svgagl_init(void) {
   /* Must be root for this */
   if (geteuid())
      return mkerror(PG_ERRT_IO,46);
@@ -99,6 +96,13 @@ g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
   vga_lockvc();
 
   vga_init();
+   
+  return sucess;
+}
+   
+g_error svgagl_setmode(int xres,int yres,int bpp,unsigned long flags) {
+  g_error e;
+  int mode;
 
   /* Find a good mode */
   mode = svgagl_closest_mode(xres,yres,bpp);
@@ -112,11 +116,15 @@ g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
 
   vga_setmode(mode);
   gl_setcontextvga(mode);
+  if (svgagl_physical)
+     gl_freecontext(svgagl_physical);
   svgagl_physical = gl_allocatecontext();
   gl_getcontext(svgagl_physical);
    
   if (flags & PG_VID_DOUBLEBUFFER) {
      gl_setcontextvgavirtual(mode);
+     if (svgagl_virtual)
+       gl_freecontext(svgagl_physical);
      svgagl_virtual = gl_allocatecontext();
      gl_getcontext(svgagl_virtual);
      vid->update = &svgagl_update;
@@ -134,7 +142,9 @@ g_error svgagl_init(int xres,int yres,int bpp,unsigned long flags) {
   vid->bpp  = BITSPERPIXEL;
   
   /* Allocate scanline buffer */
-   e = g_malloc((void**)&svgagl_buf,WIDTH*BYTESPERPIXEL);
+  if (svgagl_buf)
+     g_free(svgagl_buf);
+  e = g_malloc((void**)&svgagl_buf,WIDTH*BYTESPERPIXEL);
   errorcheck;
 
   return sucess;

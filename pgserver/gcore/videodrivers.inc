@@ -14,10 +14,6 @@
   DRV("sdlfb",&sdlfb_regfunc)
 #endif
    
-#ifdef DRIVER_SDL
-  DRV("sdl",&sdl_regfunc)
-#endif
-   
 #ifdef DRIVER_SVGAFB      
   DRV("svgafb",&svgafb_regfunc)
 #endif
@@ -25,12 +21,6 @@
 #ifdef DRIVER_SVGAGL
   DRV("svgagl",&svgagl_regfunc)
 #endif   
-
-#ifdef DRIVER_EZ328_CHIPSLICE
-#  ifdef DRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H
-     DRV("ez328_chipslice_vd2_citizen_G3243H",&chipslice_video_regfunc)
-#  endif
-#endif
 
 #ifdef DRIVER_EZ328
   DRV("ez328",&ez328_regfunc)

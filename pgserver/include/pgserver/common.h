@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.3 2001/03/03 01:44:26 micahjd Exp $
+/* $Id: common.h,v 1.4 2001/03/22 00:20:38 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -26,6 +26,8 @@
  * 
  * 
  */
+
+#define PGSERVER
 
 /* Define some good data types */
 typedef unsigned char    u8;

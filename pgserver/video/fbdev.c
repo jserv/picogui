@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.4 2001/03/08 01:20:14 micahjd Exp $
+/* $Id: fbdev.c,v 1.5 2001/03/22 00:20:38 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -41,7 +41,7 @@
 int fbdev_fd;
 unsigned long fbdev_mapsize;
 
-g_error fbdev_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error fbdev_init(void) {
    g_error e;
    int fbdev_fd;
    struct fb_fix_screeninfo fixinfo;

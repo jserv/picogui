@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.12 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: appmgr.h,v 1.13 2001/03/22 00:20:38 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -31,6 +31,7 @@
 
 #include <picogui/constants.h>
 #include <pgserver/handle.h>
+#include <pgserver/video.h>
 
 /* Parameters defining an application */
 struct app_info {
@@ -60,6 +61,7 @@ struct app_info {
 extern handle defaultfont;
 extern struct app_info *applist;
 struct sprite *cursor;
+extern hwrbitmap defaultcursor_bitmap,defaultcursor_bitmask;
 extern handle string_ok,string_cancel,string_yes,string_no;
 extern handle htbboundary;       /* The last toolbar, represents the boundary between
 				    toolbars and application panels */
