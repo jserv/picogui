@@ -125,7 +125,7 @@ class Repository:
                 # changes that this will nuke. If we don't do this, another attempt to
                 # download() will fail, because svn can't currently resume checkouts.
                 progress.warning("Removing partial Subversion checkout")
-                shutils.rmtree(destination, 1)
+                shutil.rmtree(destination, 1)
 
     def isWorkingCopyPresent(self, destination):
         try:

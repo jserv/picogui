@@ -24,9 +24,7 @@ there will be a new version.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import os
-from tarfile import TarFile
-import urllib2, shutil
+import os, tarfile, urllib2, shutil
 
 class Repository:
     def __init__(self, url):
@@ -54,44 +52,43 @@ class Repository:
                 pass
 
     def getCompleteness(self, destination):
-        return os.isfile(self.getCompletenessFile(destination))
+        return os.path.isfile(self.getCompletenessFile(destination))
 
     def download(self, destination, progress):
         downloadComplete = 0
         try:
             # Extract the file as we download it
             urlFile = urllib2.urlopen(self.url)
-            tar = TarFile.open(None, "r|%s" % self.compression, urlFile)
+            tar = tarfile.TarFile.open(None, "r|%s" % self.compression, urlFile)
             for file in tar:
-                tar.extract(file, destination)
-                progress.report("added", file.name)
+                # Normally we'd just fall tar.extract(file, destination) here,
+                # but we want to strip off the topmost directory from the tar file
+                # path, since it's customary for everything in a tar file to be
+                # inside a directory named similarly to the tar file itself.
+                # This seems to be the easiest, though not cleanest, way to
+                # extract a file to an arbitrary destination path.
+                relativeName = os.sep.join(file.name.split(os.sep)[1:])
+                try:
+                    tar._extract_member(file, os.path.join(destination, relativeName))
+                    progress.report("added", relativeName)
+                except EnvironmentError:
+                    progress.warning("EnvironmentError while extracting:\n%s" % relativeName, 2)
+                except tarfile.ExtractError:
+                    progress.warning("ExtractError while extracting:\n%s" % relativeName, 2)
             tar.close()
             urlFile.close()
             downloadComplete = 1
         finally:
+            # If our download was terminated, make sure we don't incorrectly leave a completion flag
             self.setCompleteness(destination, downloadComplete)
 
     def isUpdateAvailable(self, destination):
-        self.connect()
-        try:
-            # DAV::version-name should have the latest revision that this subdirectory
-            # or any of its children were modified in. This means that if we only have a
-            # subdirectory of the repository checked out, we won't have to do an update
-            # if some other part of it changes
-            downloadedVersion = self.getSavedProperties(destination)['DAV::version-name']
-            latestVersion = self.root.getProperties()['DAV::version-name']
-            if downloadedVersion == latestVersion:
-                return 0
-        except IOError:
-            # If the repository hasn't been downloaded at all yet, or our properties file
-            # can't be read, force an update.
-            pass
-        return 1
+        # Since it's assumed Tar reporitories are for finalized releases, the only time we would
+        # need an update is if we don't yet have a complete download of the archive.
+        return not self.getCompleteness(destination)
             
     def update(self, destination, progress):
-        self.connect()
         if self.isUpdateAvailable(destination):
-            # We can't update, just redownload the sources.
             self.download(destination, progress)
 
 ### The End ###

@@ -23,16 +23,21 @@ Automatically chooses a Subversion implementation
 
 import PGBuild.Errors
 
-try:
-    import CmdlineSVN
-    implementation = CmdlineSVN
-except:
-    try:
-        import MiniSVN
-        implementation = MiniSVN
-    except:
-        raise PGBuild.Errors.EnvironmentError("No working Subversion implementation found")
+implementation = None
 
-Repository = implementation.Repository
+def Repository(url):
+    """Repository factory function that automatically chooses an implementation module"""
+    global implementation
+    if not implementation:
+        try:
+            import CmdlineSVN
+            implementation = CmdlineSVN
+        except:
+            try:
+                import MiniSVN
+                implementation = MiniSVN
+            except:
+                raise PGBuild.Errors.EnvironmentError("No working Subversion implementation found")
+    return implementation.Repository(url)
 
 ### The End ###
