@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.17 2000/11/05 18:18:24 micahjd Exp $
+/* $Id: dispatch.c,v 1.18 2000/11/19 04:48:20 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -63,6 +63,7 @@ DEF_REQHANDLER(mkmsgdlg)
 DEF_REQHANDLER(setpayload)
 DEF_REQHANDLER(getpayload)
 DEF_REQHANDLER(mkmenu)
+DEF_REQHANDLER(writeto)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -96,6 +97,7 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(setpayload)
   TAB_REQHANDLER(getpayload)
   TAB_REQHANDLER(mkmenu)
+  TAB_REQHANDLER(writeto)
   TAB_REQHANDLER(undef)
 };
 
@@ -844,6 +846,21 @@ g_error rqh_mkmenu(int owner, struct pgrequest *req,
   }
 
   return sucess;
+}
+
+g_error rqh_writeto(int owner, struct pgrequest *req,
+		    void *data, unsigned long *ret, int *fatal) {
+  union trigparam tp;
+  struct widget *w;
+  g_error e;
+  reqarg(handlestruct);
+  
+  tp.stream.size = req->size - 4;
+  tp.stream.data = ((unsigned char *)data) + 4;
+
+  e = rdhandle((void**) &w,PG_TYPE_WIDGET,owner,ntohl(arg->h));
+  errorcheck;
+  send_trigger(w,TRIGGER_STREAM,&tp);
 }
 
 /* The End */

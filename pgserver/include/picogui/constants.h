@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.26 2000/11/11 16:53:57 micahjd Exp $
+/* $Id: constants.h,v 1.27 2000/11/19 04:48:20 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -365,6 +365,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_GRADIENT   0x0041
 #define PG_GROP_TILEBITMAP 0x0050
 #define PG_GROP_TEXTV      0x0031
+#define PG_GROP_TEXTGRID   0x0042
 
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
@@ -409,7 +410,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_FIELD      9
 #define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
 #define PG_WIDGET_MENUITEM   11    /* A variation on button */
-#define PG_WIDGETMAX         11    /* For error checking */
+#define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
+#define PG_WIDGETMAX         12    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1

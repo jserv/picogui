@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.16 2000/11/03 23:38:32 micahjd Exp $
+/* $Id: video.c,v 1.17 2000/11/19 04:48:20 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -42,6 +42,8 @@ int upd_x;
 int upd_y;
 int upd_w;
 int upd_h;
+hwrcolor textcolors[16];   /* Table for converting 16 text colors
+			      to hardware colors */
 
 /* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
 unsigned char trigtab[] = {
@@ -949,6 +951,7 @@ void def_sprite_hideall(void) {
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 		  int xres,int yres,int bpp,unsigned long flags) {
   g_error e;
+  unsigned char i;
 
   /* Unload */
   if (vid) 
@@ -1007,6 +1010,17 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
     return e;
   }
 
+  /* Generate text colors table */
+  for (i=0;i<16;i++)
+    textcolors[i] = (*vid->color_pgtohwr)
+      ( (i & 0x08) ?
+	(((i & 0x04) ? 0xFF0000 : 0) |
+	 ((i & 0x02) ? 0x00FF00 : 0) |
+	 ((i & 0x01) ? 0x0000FF : 0)) :
+	(((i & 0x04) ? 0x800000 : 0) |
+	 ((i & 0x02) ? 0x008000 : 0) |
+	 ((i & 0x01) ? 0x000080 : 0)) );
+	
   return sucess;
 }
 

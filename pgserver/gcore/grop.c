@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.25 2000/11/12 20:06:53 micahjd Exp $
+/* $Id: grop.c,v 1.26 2000/11/19 04:48:20 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -41,8 +41,9 @@ void grop_render(struct divnode *div) {
   struct gropnode *list;
   struct fontdesc *fd;
   struct bitmap *bit;
-  int x,y,w,h,ydif;
-  char *str;
+  int x,y,w,h,ydif,i,xo;
+  unsigned char attr;
+  unsigned char *str;
 
   list = div->grop;
 
@@ -148,6 +149,33 @@ void grop_render(struct divnode *div) {
       else
 	outtext_v(fd,x,y,list->param[2],str);
       break;
+
+      /* The workhorse of the terminal widget. 4 params: buffer handle, font handle,
+	 buffer width, and buffer offset */
+    case PG_GROP_TEXTGRID:
+      if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
+			   list->param[0])) || !str) break;
+      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+			   list->param[1])) || !fd) break;
+      for (;list->param[3] && *str;list->param[3]--) str++;
+      i = 0;
+      xo = x;
+      while ((*str) && (*(str+1))) {
+	if (i==list->param[2]) {
+	  y += fd->font->h;
+	  i = 0;
+	  x = xo;
+	}
+
+	attr = *(str++);
+	(*vid->rect)(x,y,fd->font->vwtab['W'],fd->font->h,textcolors[attr>>4]);
+	if (fd->font->trtab[*str] >= 0)
+	  (*vid->charblit)((((unsigned char *)fd->font->bitmaps)+fd->font->trtab[*str]),
+			   x,y,fd->font->vwtab[*str],fd->font->h,0,textcolors[attr & 0x0F]);
+	x += fd->font->vwtab['W'];
+	str++; i++;
+      }	
+      break;      
 
     case PG_GROP_BITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,

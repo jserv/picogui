@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.9 2000/11/12 09:00:39 micahjd Exp $
+/* $Id: widget.h,v 1.10 2000/11/19 04:48:20 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -66,6 +66,7 @@ typedef long glob;
 #define TRIGGER_LEAVE      (1<<12) /* Mouse moves outside widget */
 #define TRIGGER_DRAG       (1<<13) /* Mouse move when captured */
 #define TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
+#define TRIGGER_STREAM     (1<<15) /* Incoming packet (from WRITETO) */
 
 /* Note on TRIGGER_RELEASE:  This is when the mouse was pressed inside
    the widget, then released elsewhere.  */
@@ -84,6 +85,10 @@ union trigparam {
     int key;
     int mods;
   } kbd;
+  struct {
+    unsigned long size;
+    unsigned char *data;
+  } stream;
 };
 
 /* This contains function pointers for the widget methods that define
@@ -182,25 +187,21 @@ struct widget {
   void n##_trigger(struct widget *self,long type,union trigparam *param); \
   g_error n##_set(struct widget *self, int property, glob data); \
   glob n##_get(struct widget *self, int property);
-#define DEF_STATICWIDGET_PROTO(n) \
-  g_error n##_install(struct widget *self); \
-  void n##_remove(struct widget *self); \
-  g_error n##_set(struct widget *self, int property, glob data); \
-  glob n##_get(struct widget *self, int property);
 
 /* Widget prototypes */
-DEF_STATICWIDGET_PROTO(toolbar)      /* A container for buttons */
+DEF_WIDGET_PROTO(toolbar)      /* A container for buttons */
 DEF_WIDGET_PROTO(scroll)
-DEF_STATICWIDGET_PROTO(label)      /* Text, resizes to fit */
-DEF_STATICWIDGET_PROTO(indicator)
-DEF_STATICWIDGET_PROTO(bitmap)
+DEF_WIDGET_PROTO(label)        /* Text, resizes to fit */
+DEF_WIDGET_PROTO(indicator)
+DEF_WIDGET_PROTO(bitmap)
 DEF_WIDGET_PROTO(button)
 DEF_WIDGET_PROTO(panel)
 DEF_WIDGET_PROTO(popup)
-DEF_STATICWIDGET_PROTO(box)
+DEF_WIDGET_PROTO(box)
 DEF_WIDGET_PROTO(field)
-DEF_STATICWIDGET_PROTO(background)
+DEF_WIDGET_PROTO(background)
 DEF_WIDGET_PROTO(menuitem)
+DEF_WIDGET_PROTO(terminal)
 
 /* Set to the client # if a client has taken over the input device */
 extern int keyboard_owner;

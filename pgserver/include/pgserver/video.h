@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.9 2000/11/03 23:38:32 micahjd Exp $
+/* $Id: video.h,v 1.10 2000/11/19 04:48:20 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -425,6 +425,9 @@ extern int upd_y;
 extern int upd_w;
 extern int upd_h;
 void add_updarea(int x,int y,int w,int h);
+
+hwrcolor textcolors[16];   /* Table for converting 16 text colors
+			      to hardware colors */
 
 #endif /* __H_VIDEO */
 
