@@ -211,7 +211,17 @@ DRIVER_SVGAINPUT
       
 DRIVER_NCURSESINPUT
       Uses ncurses for keyboard input and gpm for mouse
-      
+
+
+DRIVER_EZ328VGA
+      Strange driver to generate a VGA signal directly from the
+      68EZ328. The schematic for this is rendered in beautiful
+      ASCII art within ez328vga.c
+
+
+DRIVER_SCRSHOT
+      Writes the virtual framebuffer to a file on update.
+      See README.configfile for the options.
       
 CONFIG_VIDEOTEST
       This adds command line options to invoke a video driver test

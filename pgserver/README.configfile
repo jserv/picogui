@@ -83,3 +83,25 @@ quoted appropriately. For example:
   
 - fullscreen
   Set to 1 to enable fullscreen mode
+
+[video-scrshot]
+
+- file
+  A printf format string for generating the screenshot file name.
+  Defaults to "pgshot%04d.ppm"
+
+- skip
+  The number of frames to skip before recording the first screenshot
+
+- total
+  The total number of screenshots to take
+
+--- The End ---
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-/* $Id: nullfb.c,v 1.1 2001/06/06 06:06:01 uid25538 Exp $
+/* $Id: nullfb.c,v 1.2 2001/07/05 06:17:57 micahjd Exp $
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware
@@ -29,9 +29,6 @@
 #include <pgserver/common.h>
 
 #include <pgserver/video.h>
-#include <pgserver/input.h>
-
-#include <SDL.h>
 
 /* Macros to easily access the members of vid->display */
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
@@ -44,6 +41,7 @@ g_error nullfb_init(void) {
    /* Default mode: 640x480 */
    if (!vid->xres) vid->xres = 640;
    if (!vid->yres) vid->yres = 480;
+   if (!vid->bpp)  vid->bpp  = 32;
    
    return sucess;
 }

@@ -38,6 +38,10 @@
   DRV("serial40x4",&serial40x4_regfunc)
 #endif   
 
+#ifdef DRIVER_SCRSHOT
+  DRV("scrshot",&scrshot_regfunc)
+#endif
+
 #ifdef DRIVER_NULLFB
   DRV("nullfb",&nullfb_regfunc)
 #endif DRIVER_NULLFB
