@@ -170,9 +170,11 @@ void showTransformations(void)
   trig.content.u.mouse.ts_calibration = pgNewString(str);
   pgInFilterSend(&trig);
 
+#if 0
   pgMessageDialogFmt("Done!",0,
 		     "You completed calibration!\n\n" 
 		     "%s",str);
+#endif
   exit(0);
 }
 
