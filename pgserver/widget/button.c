@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.11 2000/04/29 17:51:59 micahjd Exp $
+/* $Id: button.c,v 1.12 2000/04/29 21:57:45 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -62,7 +62,7 @@ void bitbutton(struct divnode *d) {
   ex=ey=0; ew=d->w; eh=d->h;
 
   addelement(&d->grop,&current_theme[E_BUTTON_BORDER],&ex,&ey,&ew,&eh,1);
-  addelement(&d->grop,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh,0);
+  addelement(&d->grop,&current_theme[E_BUTTON_FILL],&ex,&ey,&ew,&eh,1);
 
   /* We need at least the main bitmap for alignment.  The mask
      bitmap is optional, but without it what's the point... */

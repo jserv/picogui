@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.3 2000/04/29 19:21:26 micahjd Exp $
+/* $Id: theme.c,v 1.4 2000/04/29 21:57:45 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -30,36 +30,35 @@
 #include <theme.h>
 
 /* This is initialized to the default theme */
-
 struct element current_theme[E_NUM] = {
 
   /* button.border */ {
-    2,2,-4,-4,
-    ELEM_GRADIENT,
+    1,1,-2,-2,
+    ELEM_FLAT,
     {
-      {0x7080A0,black,45,0},
-      {0x7080A0,black,45,0},
-      {0x7080A0,black,225,0}
+      {black,black,0,0},
+      {black,black,0,0},
+      {black,black,0,0}
     }
   },
 
   /* button.fill */ {
     0,0,0,0,
-    ELEM_GRADIENT,
+    ELEM_FLAT,
     {
-      {0x8090B0,black,240,0},
-      {0x8090B0,black,240,0},
-      {0x8090B0,black,240,0}
+      {white,black,0,0},
+      {white,black,0,0},
+      {dtc_btn,black,0,0}
     }
   },
   
   /* button.overlay */ {
     0,0,0,0,
-    ELEM_GRADIENT,
+    ELEM_NULL,
     {
-      {black,black,270,1},
-      {0x505000,black,270,1},
-      {0x505000,black,270,1}
+      {black,black,0,0},
+      {black,black,0,0},
+      {black,black,0,0}
     }
   },
 
@@ -67,17 +66,15 @@ struct element current_theme[E_NUM] = {
     1,1,-2,-2,
     ELEM_FLAT,
     {
-      {black,black,270,0},
+      {black,black,0,0}
     }
   },
 
   /* toolbar.fill */ {
     0,0,0,0,
-    ELEM_GRADIENT,
+    ELEM_FLAT,
     {
-      {0x7080A0,0x102030,85,0},
-      {0,0,0,0},
-      {0,0,0,0}
+      {dtc_toolbar,black,0,0}
     }
   }
   

@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.6 2000/04/29 07:29:02 micahjd Exp $
+/* $Id: mode.h,v 1.7 2000/04/29 21:57:45 micahjd Exp $
  *
  * Definitions for 320x240x32 mode. Not very practical for real applications,
  * but it's handy to use a less-than-full-screen mode for testing.
@@ -64,17 +64,9 @@ typedef Uint32 * devbmpt;
 #define dkgray  0x00404040
 #define ltgray  0x00B0B0B0
 
-/* Bevel colors */
-#define bevmid  0x007080A0
-#define bevnw   0x008090A0
-#define bevse   0x006070A0
-
-/* panel */
-#define panelmid  0x00C0D8E8
-#define paneledge 0x00000000
-
-/* title bar */
-#define titlebg   0x00003000
+/* default theme colors */
+#define dtc_toolbar 0x00C0D8E8
+#define dtc_btn     0x008080FF
 
 /* indicator */
 #define ind_b1     0x00B0B0B0

@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.8 2000/04/29 19:21:26 micahjd Exp $
+/* $Id: panel.c,v 1.9 2000/04/29 21:57:45 micahjd Exp $
  *
  * panel.c - simple container widget
  *
@@ -53,7 +53,6 @@ g_error panel_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   if (e.type != ERRT_NONE) return e;
   self->in->div->on_recalc = &toolbar;
-  self->in->div->param.c = panelmid;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
   self->in->div->split = HWG_MARGIN;
   self->sub = &self->in->div->div;

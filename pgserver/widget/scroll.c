@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.3 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: scroll.c,v 1.4 2000/04/29 21:57:45 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -30,13 +30,15 @@
 void scrollbar(struct divnode *d) {
   int ind_h = d->param.i * (d->h-5) / 100;
 
-  grop_rect(&d->grop,1,0,d->w-1,d->h,panelmid); 
+  /*
+  grop_rect(&d->grop,1,0,d->w-1,d->h,0); 
   grop_bar(&d->grop,0,0,d->h,paneledge);
-  grop_slab(&d->grop,1,ind_h++,d->w-1,black);
+  grop_slab(&d->grop,1,ind_h++,d->w-1,);
   grop_slab(&d->grop,1,ind_h++,d->w-1,gray);
   grop_slab(&d->grop,1,ind_h++,d->w-1,ltgray);
   grop_slab(&d->grop,1,ind_h++,d->w-1,gray);
   grop_slab(&d->grop,1,ind_h,d->w-1,black);
+  */
 }
 
 /* Nice and simple, the oncalc does most of the work */

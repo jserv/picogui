@@ -1,4 +1,4 @@
-/* $Id: hardware.c,v 1.11 2000/04/29 17:51:59 micahjd Exp $
+/* $Id: hardware.c,v 1.12 2000/04/29 21:57:45 micahjd Exp $
  *
  * hardware.c - SDL "hardware" layer
  * Anything that makes any kind of assumptions about the display hardware
@@ -305,6 +305,12 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
   int r,g,b,i,s,c;
   int line_offset;
 
+  if ((c1==0) && (c2==0) && (translucent!=0)) return; 
+  if ((translucent==0) && (c1==c2)) {
+    hwr_rect(clip,x,y,w,h,c1);
+    return;
+  }
+
   /* Clipping */
   if (w<=0) return;
   if (h<=0) return;
@@ -360,7 +366,7 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
   b_vs = ((b_v2<<16)-(b_v1<<16)) / sc_d;
 
   /* Zero the accumulators */
-  r_ca = g_ca = b_ca = r_ica = g_ica = b_ica = 0;
+  r_sa = g_sa = b_sa = r_ca = g_ca = b_ca = r_ica = g_ica = b_ica = 0;
 
   /* Calculate the sine and cosine scales */
   r_vsc = (r_vs*((long)c)) >> 8;
@@ -369,18 +375,6 @@ void hwr_gradient(struct cliprect *clip,int x,int y,int w,int h,
   g_vss = (g_vs*((long)s)) >> 8;
   b_vsc = (b_vs*((long)c)) >> 8;
   b_vss = (b_vs*((long)s)) >> 8;
-
-  /* Initial sine accumulator */
-  if (s<=0) { 
-    r_sa = r_v2<<8; 
-    g_sa = g_v2<<8; 
-    b_sa = b_v2<<8; 
-  }
-  else {
-    r_sa = r_v1<<8;
-    g_sa = g_v1<<8;
-    b_sa = b_v1<<8;
-  }
 
   /* If the scales are negative, start from the opposite side */
   if (r_vss<0) r_sa  = -r_vss*h;
