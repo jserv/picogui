@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.23 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: scroll.c,v 1.24 2000/09/03 20:42:05 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -202,6 +202,9 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     if (iserror(widget_set(w,WP_SCROLL,DATA->value)))
       return mkerror(ERRT_BADPARAM,18);
     DATA->binding = (handle) data;
+
+    /* If applicable, turn off transparency in the widget */
+    widget_set(w,WP_TRANSPARENT,0);
 
     break;
 
