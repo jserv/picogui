@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.1 2001/05/02 04:37:57 micahjd Exp $
+/* $Id: kbfile.c,v 1.2 2001/05/04 23:27:29 micahjd Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -51,8 +51,6 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
    /* Re-byteorder-ize the header */
    hdr.file_len = ntohl(hdr.file_len);
    hdr.file_sum32 = ntohl(hdr.file_sum32);
-   hdr.vw = ntohs(hdr.vw);
-   hdr.vh = ntohs(hdr.vh);
    hdr.file_ver = ntohs(hdr.file_ver);
    hdr.num_patterns = ntohs(hdr.num_patterns);
    
@@ -79,8 +77,6 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
      return 1;
 
    /* Looks ok, store data */
-   pat->vw = hdr.vw;
-   pat->vh = hdr.vh;
    pat->num_patterns = hdr.num_patterns;
    
    return 0;
@@ -98,9 +94,11 @@ int kb_validate(FILE *f, struct mem_pattern *pat) {
 int kb_loadpattern(FILE *f, struct mem_pattern *pat,
 		   short patnum, pghandle canvas) {
    struct pattern_header pathdr;
+   struct request_header kbrqh;
    struct pgrequest rqh;
    unsigned long x;
    struct key_entry *k;
+   char *canvasbuf;
    
    /* If necessary, free the previous key table */
    if (pat->keys)
@@ -114,7 +112,7 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
 
       /* Load and byte-swap the pattern header */
       if (!fread(&pathdr,1,sizeof(pathdr),f))
-	return 1;
+	return 1;    /* Could fail if patnum is invalid */
       pathdr.canvasdata_len = ntohl(pathdr.canvasdata_len);
       pathdr.num_requests   = ntohs(pathdr.num_requests);
       pathdr.num_keys       = ntohs(pathdr.num_keys);
@@ -147,15 +145,40 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
    pathdr.num_keys       = ntohs(pathdr.num_keys);
    pat->num_keys = pathdr.num_keys;
    
-   /* Reset the canvas */
-   pgWriteCmd(canvas,PGCANVAS_NUKE,0);
-   pgWriteCmd(canvas,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,
-	      0,0,pat->vw,pat->vh,PG_MAP_SCALE);
-   
-   /* Load the canvasdata block into the canvas */
-   pgWriteData(canvas,pgFromStream(f,pathdr.canvasdata_len));
-   
-   /* FIXME: load requests here! */
+   /* Load the canvasdata */
+   canvasbuf = (char *) malloc(pathdr.canvasdata_len);
+   if (!canvasbuf)
+     return 1;
+   fread(canvasbuf,1,pathdr.canvasdata_len,f);
+      
+   /* Read requests */
+   for (;pathdr.num_requests;pathdr.num_requests--) {
+      char *rqhbuf;
+      pghandle result;
+      
+      /* Read the various headers */
+      fread(&kbrqh,1,sizeof(kbrqh),f);
+      fread(&rqh,1,sizeof(rqh),f);
+      kbrqh.canvasdata_offset = ntohl(kbrqh.canvasdata_offset);
+      rqh.type = ntohs(rqh.type);
+      rqh.size = ntohl(rqh.size);
+      
+      /* Validate canvasdata offset */
+      if (kbrqh.canvasdata_offset > (pathdr.canvasdata_len-4))
+	return 1;
+      
+      /* Load request data */
+      rqhbuf = (char *) malloc(rqh.size);
+      fread(rqhbuf,1,rqh.size,f);
+      result = pgEvalRequest(rqh.type,rqhbuf,rqh.size);
+      free(rqhbuf);
+
+      /* Link it in to the canvas data */
+      *((unsigned long *)(canvasbuf+kbrqh.canvasdata_offset)) = htonl(result);
+   }
+
+   /* Send to canvas (client lib frees memory) */
+   pgWriteData(canvas,pgFromTempMemory(canvasbuf,pathdr.canvasdata_len));
    
    /* Load key table into memory */
    if (pat->num_keys) {
@@ -163,8 +186,7 @@ int kb_loadpattern(FILE *f, struct mem_pattern *pat,
       pat->keys = (struct key_entry *) malloc(x);
       if (!pat->keys)
 	return 1;
-      if (!fread(pat->keys,1,x,f))
-	return 1;
+      fread(pat->keys,1,x,f);
       
       /* Byteswap the key entries */
       k = pat->keys;

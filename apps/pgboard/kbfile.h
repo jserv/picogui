@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.2 2001/05/02 04:37:57 micahjd Exp $
+/* $Id: kbfile.h,v 1.3 2001/05/04 23:27:29 micahjd Exp $
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 
@@ -27,7 +27,7 @@
 
 /************** File format */
 
-#define PGKB_FORMATVERSION  0x0001
+#define PGKB_FORMATVERSION  0x0002
 
 /* A keyboard file is made of a header then one or more patterns:
  * (The first pattern in the file is taken as the default)
@@ -46,9 +46,6 @@ struct keyboard_header {
    unsigned long  file_sum32;   /* 32-bit checksum of entire file except
 				 * these 4 bytes */
 
-   unsigned short vw;           /* Virtual width and height */
-   unsigned short vh;
-   
    unsigned short file_ver;     /* Format version */
    
    unsigned short num_patterns;
@@ -96,7 +93,6 @@ struct key_entry {
 
 struct mem_pattern {
    /* Filled in during kb_validate */
-   unsigned short vw,vh;
    unsigned short num_patterns;
 
    /* Filled in during kb_loadpattern */

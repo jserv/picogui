@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.3 2001/05/02 05:44:06 micahjd Exp $
+# $Id: kbcompile.pl,v 1.4 2001/05/04 23:27:29 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -69,16 +69,31 @@ while (<>) {
       s/(0x[0-9A-Fa-f]+)/eval($1)/ge;
       s/\'(.)\'/ord($1)/ge;
 
-      # Global definition
-      if (!$pattern and /\s*(\S+)\s*=\s*(.*)/) {
-      	 $global{$1} = $2;
-	 next;
-      }
-      
       # An entry in the :pattern section.
       if ($section eq 'pattern') {
          s/\s//g;
 	 ($cmd,@param) = split(/,/,$_);
+	 # Find commands that need request loaders
+	 $pnum = 0;
+	 foreach (@param) {
+	   $pnum++;                 # This will be 1-based, accounts for pgcommand header
+	   next if (!/[\(\)\"]/);
+	   # This is a request of some sort. Find the binary offset to this position
+	   $offset = length($pat_table{$pattern}) + 4 * $pnum;
+	   # Schtick a keyboard request header on
+	   $req_table{$pattern} .= pack "N", $offset;
+	   $req_count{$pattern}++;
+	   
+	   # Format the request itself
+	   
+	   if (/^\"([^\"]*)\"/) {
+	      # String
+       	      $req_table{$pattern} .= pack("nnN",$symbols{'PGREQ_MKSTRING'},0,length($1)).$1;
+	   }
+	   else {
+	      die "Unknown request?";
+ 	   }
+	 }
 	 # Pack into a pgcommand structure
 	 $pat_table{$pattern} .= pack "n2N*", $cmd, scalar(@param), @param;
 	 next;
@@ -104,8 +119,7 @@ foreach $pattern (@pattern_list) {
 }
 
 # Assemble the patterns, name, and all header fields after the checksum
-$file_data = pack("n4",split(/ /,$global{'virtual'}),
-	   $formatver,scalar(@pattern_list)).$pattern_data;
+$file_data = pack("n2",$formatver,scalar(@pattern_list)).$pattern_data;
 
 # Assemble the chunk before the checksum (magic and length)
 $file_prefix = "PGkb".pack("N",length($file_data)+12);

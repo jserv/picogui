@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.3 2001/05/02 05:44:06 micahjd Exp $
+/* $Id: pgboard.c,v 1.4 2001/05/04 23:27:29 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -49,6 +49,14 @@ int evtMouseDown(struct pgEvent *evt) {
       /* If we got this far, it was clicked */
       pgSendKeyInput(PG_TRIGGER_CHAR,k->key,k->mods);
       pgSendKeyInput(PG_TRIGGER_KEYDOWN,k->pgkey,k->mods);
+
+      /* For aestheticness? */
+      pgWriteCmd(evt->from,PGCANVAS_DEFAULTFLAGS,1,
+		 PG_GROPF_TRANSIENT | PG_GROPF_COLORED);
+      pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETLGOP,PG_LGOP_XOR);
+      pgWriteCmd(evt->from,PGCANVAS_GROP,6,
+		 PG_GROP_RECT,k->x,k->y,k->w,k->h,0xFFFFFF);
+      pgWriteCmd(evt->from,PGCANVAS_INCREMENTAL,0);
    }
    return 0;
 }
@@ -56,7 +64,10 @@ int evtMouseDown(struct pgEvent *evt) {
 int main(int argc,char **argv) {
    /* Initialize drawing, set mapping */
    pgInit(argc,argv);
-   pgRegisterApp(PG_APP_NORMAL,"Keyboard",0);
+   pgRegisterApp(PG_APP_NORMAL,"Keyboard",       /* FIXME. Better way of     */
+		 PG_APPSPEC_SIDE, PG_S_BOTTOM,   /* defining size, maybe an  */
+		 PG_APPSPEC_HEIGHT,75,           /* app type with small/no   */
+		 0);                             /* panelbar?                */
    wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
 
    /* Load a pattern */
