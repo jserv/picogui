@@ -4,6 +4,8 @@
 #include "tcpclient.h"
 #include "configfile.h"
 
+#include "picomail.h"
+
 #define BUFFERSIZE 4048
 
 #define true 1
@@ -137,10 +139,10 @@ mesgcount( char * line )
 
         line[i] = '\0';
         messages = atoi( line );
-        
         printf( "Messages Count: %d\n", messages );
     }
-        
+  //  else
+  //      free(line);
     return SUCCESS;
 }
 
@@ -151,10 +153,18 @@ mesgcount( char * line )
 int
 donothing( char * line )
 {
+//    free(line);
     return SUCCESS;
 }
 
 
+/* This function does nothing ;) */
+int
+doheader( char * line )
+{
+    addheader( "Sender", "Title", 0 );
+    return SUCCESS;
+}
 
 
 /* Login to the IMAP server... */
@@ -214,10 +224,12 @@ void
 imap_getlist()
 {
     char *command;
+    command = malloc(64);
     printf("imap_getlist\n");
     check_connection();
+    messages=2;
     sprintf( command, "FETCH %d:%d FULL", 1, messages );
-    docmd(command, &donothing);
+    docmd(command, &doheader);
 }
 
 

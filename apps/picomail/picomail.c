@@ -8,7 +8,7 @@
 #define CONFIG_FILE "/.picomail.conf"
 
 pghandle wBox, *wRow, wHead, wHBox;
-int dc, dr;
+int dc, dr, row;
 
 
 int closeboxHandler(struct pgEvent *evt) {
@@ -21,13 +21,27 @@ int getList(struct pgEvent *evt) {
    return 0;
 }
 
+void
+addheader( char * sender, char * title, int msg )
+{
+    pghandle wItem;
+    
+    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
+			  PG_DERIVE_INSIDE,
+			  wBox);
+    pgReplaceTextFmt(PGDEFAULT,"[%d] %s - (%s)",msg, title, sender);
+
+
+
+}
 
 int main(int argc, char *argv[])
 {
    char *home, *conffile;
 
    pghandle wToolbar, wScroll, wItem;
-
+   
+   row = 0;
    home = getenv("HOME");
    conffile = malloc( strlen(home) + strlen(CONFIG_FILE) + 1);
    if (home && conffile) {
@@ -56,13 +70,6 @@ int main(int argc, char *argv[])
 
 
    
-    wItem = pgNewWidget(PG_WIDGET_LISTITEM,
-			0 ? PGDEFAULT : PG_DERIVE_INSIDE,
-			0 ? PGDEFAULT : wBox);
-    pgReplaceTextFmt(PGDEFAULT,"Normal listitem #%d",0);
-
-
-
     
    pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
    pgSetWidget(PGDEFAULT,
