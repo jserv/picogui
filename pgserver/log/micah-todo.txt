@@ -58,4 +58,4 @@ PicoGUI Bugs
 - scrolling
 - FIXMEs
 - retest all video drivers
-
+- tiled blit() src_x and src_y ignored in most drivers
