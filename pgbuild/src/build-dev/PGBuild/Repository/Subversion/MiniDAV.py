@@ -31,7 +31,7 @@ try:
 except IndexError:
     revision = None
 
-userAgent = "PicoGUI-MiniDAV"
+userAgent = "PGBuild-MiniDAV"
 if revision:
     userAgent += "/r%s" % revision
 
