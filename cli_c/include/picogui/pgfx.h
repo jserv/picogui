@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.16 2001/08/05 04:21:30 micahjd Exp $
+/* $Id: pgfx.h,v 1.17 2001/10/20 21:45:27 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -168,6 +168,8 @@ struct pgfx_lib {
    pgprim (*setsrc)(pgcontext c, pgu x,pgu y,pgu w,pgu h);  /* For bitmaps */
    //! Implementation of pgSetMapping nonvisual primitive
    pgprim (*setmapping)(pgcontext c, pgu x,pgu y,pgu w,pgu h,short type);
+   //! Implementation of pgSetClip nonvisual primitive
+   pgprim (*setclip)(pgcontext c, pgu x,pgu y,pgu w,pgu h);
    
    //! Implementation of pgUpdate
    void (*update)(pgcontext c);
@@ -314,6 +316,14 @@ inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h);
  * 
  */
 inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type);
+
+/*
+ * \brief Sets the context's clipping rectangle
+ *
+ * Set the clipping rectangle to the supplied coordinates
+ */
+inline pgprim pgSetClip(pgcontext c,pgu x,pgu y,pgu w,pgu h);
+
 /*! 
  * \brief Draws any undrawn primitives
  * 

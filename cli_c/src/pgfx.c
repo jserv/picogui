@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.6 2001/06/25 00:49:41 micahjd Exp $
+/* $Id: pgfx.c,v 1.7 2001/10/20 21:45:27 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -98,6 +98,9 @@ inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
 }
 inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type) {
    return (*(c)->lib->setmapping)(c,x,y,w,h,type);
+}
+inline pgprim pgSetClip(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->setclip)(c,x,y,w,h);
 }
 inline void pgContextUpdate(pgcontext c) {
    (*(c)->lib->update)(c);

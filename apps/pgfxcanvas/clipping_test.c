@@ -7,7 +7,9 @@ pgcontext gc;
 
 void animate(void) {
    int i;
-   /* Draw a random line in a random color */
+   /* Send 50 random rectangles, they all get rendered at once. This will
+    * temporarily use 100 gropnodes, (1 for the rectangle, 1 for color)
+    * but nothing is stored permanently */
    pgSetMapping(gc,0,0,100,100,PG_MAP_SCALE);
    pgSetClip(gc,20,20,60,60);
    pgSetLgop(gc,PG_LGOP_XOR);

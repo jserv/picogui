@@ -1,4 +1,4 @@
-/* $Id: pgfx_canvas.c,v 1.10 2001/07/29 21:22:59 micahjd Exp $
+/* $Id: pgfx_canvas.c,v 1.11 2001/10/20 21:45:27 micahjd Exp $
  *
  * picogui/pgfx_canvas.c - lib functions and registration for canvas
  *                         drawing through the PGFX interface
@@ -130,6 +130,12 @@ pgprim _pgfxcanvas_setmapping(pgcontext c,
    return 0;
 }
 
+pgprim _pgfxcanvas_setclip(pgcontext c, 
+			   pgu x,pgu y,pgu w,pgu h) {
+  pgWriteCmd(c->device,PGCANVAS_GROP,5,PG_GROP_SETCLIP,x,y,w,h);
+  return 0;
+}
+
 void _pgfxcanvas_update(pgcontext c) {
    if (c->flags == PGFX_IMMEDIATE)
      pgWriteCmd(c->device,PGCANVAS_INCREMENTAL,0);
@@ -168,6 +174,7 @@ pgcontext pgNewCanvasContext(pghandle canvas,short mode) {
    l.setangle   = _pgfxcanvas_setangle;
    l.setsrc     = _pgfxcanvas_setsrc;
    l.setmapping = _pgfxcanvas_setmapping;
+   l.setclip    = _pgfxcanvas_setclip;
    l.update     = _pgfxcanvas_update;
    
    ctx->lib = &l;
