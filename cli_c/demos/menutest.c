@@ -139,6 +139,10 @@ int btnCustomMenu(short event,pghandle from,long param) {
   return 0;
 }
 
+int btnExit(short event,pghandle from,long param) {
+  exit(0);
+}
+
 /****** Main program */
 
 int main(int argc, char *argv[])
@@ -170,6 +174,13 @@ int main(int argc, char *argv[])
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
   pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnCustomMenu);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("X"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,

@@ -1,4 +1,4 @@
-/* $Id: msgdialog.c,v 1.3 2000/11/04 20:27:08 micahjd Exp $
+/* $Id: msgdialog.c,v 1.4 2000/11/12 21:52:56 micahjd Exp $
  *
  * msgdialog.c - message dialog box demo
  *
@@ -39,6 +39,10 @@ int rundemo(short event,pghandle from,long param) {
   return 0;
 }
 
+int btnExit(short event,pghandle from,long param) {
+  exit(0);
+}
+
 /* a main() to make a little launcher for our demo */
 int main(int argc, char *argv[])
 {
@@ -53,6 +57,13 @@ int main(int argc, char *argv[])
 	      PG_WP_SIDE,PG_S_LEFT,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&rundemo);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("X"),
+	      PG_WP_SIDE,PG_S_RIGHT,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
