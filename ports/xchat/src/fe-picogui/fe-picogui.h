@@ -1,6 +1,8 @@
 struct fe_pg_gui {
 	pghandle app;
-	pghandle textbox;
+	pghandle output;
+	short int output_type;
+	pghandle input;
 };
 
 typedef int (*socket_callback) (void *source, int condition, void *user_data);

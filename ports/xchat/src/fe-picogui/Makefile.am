@@ -8,4 +8,4 @@ endif
 
 INCLUDES = -I$(includedir) -DLOCALEDIR=\"$(datadir)/locale\"
 
-xchat_picogui_SOURCES = fe-picogui.c $(glibc)
+xchat_picogui_SOURCES = fe-picogui.c output.c $(glibc)

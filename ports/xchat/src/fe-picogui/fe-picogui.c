@@ -73,22 +73,45 @@ fe_new_window (struct session *sess)
 {
 	char buf[512];
 	pghandle scroll;
+	struct fe_pg_gui *gui=NULL;
+	short int output_type=PG_WIDGET_TERMINAL;
 
-	sess->gui = malloc (sizeof(struct fe_pg_gui));
-	((struct fe_pg_gui *)sess->gui)->app =
-		pgRegisterApp(PG_APP_NORMAL, "PicoGUI X-Chat", 0);
-	pgNewWidget(PG_WIDGET_FIELD, PGDEFAULT, PGDEFAULT);
+	gui = (struct fe_pg_gui*) sess->gui = malloc(sizeof(struct fe_pg_gui));
+	memset(gui, 0, sizeof(*gui));
+	/* App */
+	gui->app = pgRegisterApp(PG_APP_NORMAL, "PicoGUI X-Chat", 0);
+	gui->input = pgNewWidget(PG_WIDGET_FIELD, PGDEFAULT, PGDEFAULT);
 	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_BOTTOM, 0);
 	pgBind(PGDEFAULT, PG_WE_ACTIVATE, fieldActivate, NULL);
 	pgFocus(PGDEFAULT);
+	/* Chat area */
 	pgNewWidget(PG_WIDGET_BOX, PGDEFAULT, PGDEFAULT);
-	((struct fe_pg_gui *)sess->gui)->textbox =
-		pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, PGDEFAULT);
-	pgSetWidget(PGDEFAULT, /*PG_WP_SIDE, PG_S_LEFT,*/
-			PG_WP_TEXTFORMAT, pgNewString("+HTML"), 0);
-	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_BEFORE, PGDEFAULT);
-	pgSetWidget(scroll, /*PG_WP_SIDE, PG_S_RIGHT,*/ PG_WP_BIND,
-			((struct fe_pg_gui *)sess->gui)->textbox, 0);
+	pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
+	/* FIXME - scrollbar gets overdrawn */
+	/* this is a textbox bug. another one is that wrapped text somehow 
+	 * winds up after all other text. */
+	scroll=pgNewWidget(PG_WIDGET_SCROLL, PG_DERIVE_INSIDE, PGDEFAULT);
+	pgSetWidget(scroll, PG_WP_SIDE, PG_S_RIGHT, 0);
+	/* FIXME - preference? */
+	gui->output_type = output_type;
+	gui->output = pgNewWidget(output_type, PGDEFAULT, PGDEFAULT);
+	pgSetWidget(scroll, PG_WP_BIND, gui->output, 0);
+	switch(output_type) {
+		case PG_WIDGET_TEXTBOX:
+			/* set the textbox to autoscroll, append HTML */
+			pgSetWidget(PGDEFAULT, PG_WP_AUTOSCROLL, 1,
+				PG_WP_SIDE, PG_S_LEFT,
+				PG_WP_TEXTFORMAT, pgNewString("+HTML"), 0);
+			break;
+		case PG_WIDGET_TERMINAL:
+			/* don't let the terminal widget get focus */
+			/* FIXME: need to prevent PG_TRIGGER_ACTIVATE */
+			pgSetWidget(PGDEFAULT, PG_WP_TRIGGERMASK,
+				pgGetWidget(PGDEFAULT, PG_WP_TRIGGERMASK) &
+				~PG_TRIGGER_DOWN, 0);
+			/* FIXME: hide cursor */
+			break;
+	}
 
 	if (!sess->server->front_session)
 		sess->server->front_session = sess;
@@ -141,242 +164,6 @@ fe_new_window (struct session *sess)
 #endif
 	strcat (buf, "\n\n");
 	fe_print_text (sess, buf);
-}
-
-static int
-get_stamp_str (time_t tim, char *dest, int size)
-{
-	return strftime (dest, size, prefs.stamp_format, localtime (&tim));
-}
-
-static int
-timecat (char *buf)
-{
-	char stampbuf[64];
-
-	get_stamp_str (time (0), stampbuf, sizeof (stampbuf));
-	strcat (buf, stampbuf);
-	return strlen (stampbuf);
-}
-
-static int colconv[] = { 0xcfcfcf, 0x000000, 0x0000cc, 0x00cc00, 0xdd0000,
-	0xaa0000, 0xbb00bb, 0xffaa00, 0xeedd22, 0x33de55, 0x00cccc, 0x33ddee,
-	0x0000ff, 0xee22ee, 0x777777, 0x999999 };
-
-void
-fe_print_text (struct session *sess, char *text)
-{
-	/* TODO: make it print to PicoGUI! */
-	int dotime = FALSE;
-	char num[8];
-#ifdef HAVE_REVERSE
-	int reverse = 0;
-#endif
-	int under = 0, bold = 0, color = 0,
-		comma, k, i = 0, j = 0, len = strlen (text);
-	unsigned char *newtext = malloc (len + 1024);
-	pghandle pgstr, textbox = ((struct fe_pg_gui *)sess->gui)->textbox;
-
-	newtext[0] = 0;
-	if(text[i]!=3)
-	{
-		strcpy(newtext, "<font>");
-		j=6;
-		color=1;
-	}
-	if (prefs.timestamp)
-	{
-		j += timecat (newtext+j);
-	}
-	while (i < len)
-	{
-		if (dotime && text[i] != 0)
-		{
-			dotime = FALSE;
-			newtext[j] = 0;
-			j += timecat (newtext);
-		}
-		switch (text[i])
-		{
-		case '<':
-			strcpy(&newtext[j], "&lt;");
-			j += strlen(newtext+j);
-			break;
-		case '&':
-			strcpy(&newtext[j], "&amp;");
-			j += strlen(newtext+j);
-			break;
-		case 3:
-			i++;
-			if(color)
-			{
-				color = FALSE;
-				strcpy(&newtext[j], "</font>");
-				j += strlen(newtext+j);
-			}
-			if (!isdigit (text[i]) && color)
-				continue;
-			k = 0;
-			comma = FALSE;
-			while (i < len)
-			{
-				if (text[i] >= '0' && text[i] <= '9' && k < 2)
-				{
-					num[k] = text[i];
-					k++;
-				} else
-				{
-					int mirc;
-					num[k] = 0;
-					if (k == 0)
-					{
-						color=TRUE;
-						strcpy(&newtext[j], "<font>");
-						j += strlen(newtext+j);
-					} else
-					{
-						if (comma)
-							break;
-						mirc = atoi (num);
-						mirc = colconv[mirc];
-						sprintf ((char *) &newtext[j], "<font color=\"#%06x\">", mirc);
-						color = TRUE;
-						j += strlen (newtext+j);
-					}
-					switch (text[i])
-					{
-					case ',':
-						if(comma)
-							goto jump;
-						comma = TRUE;
-						break;
-					default:
-						goto jump;
-					}
-					k = 0;
-				}
-				i++;
-			}
-			break;
-		case '\026':				  /* REVERSE */
-#ifdef HAVE_REVERSE
-			if (reverse)
-			{
-				reverse = FALSE;
-				strcpy (&newtext[j], "\\033[27m");
-			} else
-			{
-				reverse = TRUE;
-				strcpy (&newtext[j], "\\033[7m");
-			}
-			j += strlen (newtext+j);
-#endif
-			break;
-		case '\037':				  /* underline */
-			if (under)
-			{
-				under = FALSE;
-				strcpy (&newtext[j], "</ul>");
-			} else
-			{
-				under = TRUE;
-				strcpy (&newtext[j], "<ul>");
-			}
-			j += strlen (newtext+j);
-			break;
-		case '\002':				  /* bold */
-			if (bold)
-			{
-				bold = FALSE;
-				strcpy (&newtext[j], "</b>");
-			} else
-			{
-				bold = TRUE;
-				strcpy (&newtext[j], "<b>");
-			}
-			j += strlen (newtext+j);
-			break;
-		case '\007':
-			if (!prefs.filterbeep)
-			{
-				fe_beep();
-				j++;
-			}
-			break;
-		case '\017':				  /* reset all */
-			if (color)
-			{
-				strcpy (&newtext[j], "</font>");
-				color = FALSE;
-			}
-			else
-				newtext[j]=0;
-#ifdef HAVE_REVERSE
-			if (reverse)
-			{
-				strcat (&newtext[j], "[unreverse]");
-				reverse = FALSE;
-			}
-#endif
-			if (bold)
-			{
-				strcat (&newtext[j], "</b>");
-				bold = FALSE;
-			}
-			if (under)
-			{
-				strcat (&newtext[j], "</ul>");
-				under = FALSE;
-			}
-			j += strlen(newtext+j);
-			break;
-		case '\t':
-			newtext[j++] = ' ';
-			break;
-		case '\n':
-			if (prefs.timestamp)
-				dotime = TRUE;
-		case '\r':
-			strcpy(&newtext[j], "<br>");
-			j += 4;
-			break;
-		default:
-			newtext[j++] = text[i];
-		}
-		i++;
-jump:
-	}
-	if (color)
-	{
-		strcpy (&newtext[j], "</font>");
-		color = FALSE;
-	}
-	else
-		newtext[j]=0;
-#ifdef HAVE_REVERSE
-	if (reverse)
-	{
-		strcat (&newtext[j], "[unreverse]");
-		reverse = FALSE;
-	}
-#endif
-	if (bold)
-	{
-		strcat (&newtext[j], "</b>");
-		bold = FALSE;
-	}
-	if (under)
-	{
-		strcat (&newtext[j], "</ul>");
-		under = FALSE;
-	}
-
-	/* ouput into textbox */
-	pgstr=pgNewString(newtext);
-	pgSetWidget(textbox, PG_WP_TEXT, pgstr, 0);
-	pgDelete(pgstr);
-	pgSubUpdate(textbox);
-	free (newtext);
 }
 
 void
@@ -568,19 +355,23 @@ int selectwrapper (int n, fd_set *readfds, fd_set *writefds,
 	}
 
 	/* find the shortest timeout event */
-	shortest = 0;
-	list = tmr_list;
-	while (list)
-	{
-		te = (timerevent *) list->data;
-		if (te->next_call < shortest || shortest == 0)
-			shortest = te->next_call;
-		list = list->next;
-	}
-	if(shortest)	/* FIXME this timeout format sucks! */
+	if(tmr_list)
 	{
 		gettimeofday (&now, NULL);
+
+		shortest = now.tv_sec * 1000 + now.tv_usec / 1000 +
+			23*60*60*1000;	/* we wait a max of 23 hours */
+		list = tmr_list;
+		while (list)
+		{
+			te = (timerevent *) list->data;
+			if (te->next_call < shortest)
+				shortest = te->next_call;
+			list = list->next;
+		}
 		delay = shortest - ((now.tv_sec * 1000) + (now.tv_usec / 1000));
+		if(delay<0)
+			delay=0;
 		now.tv_sec = delay / 1000;
 		now.tv_usec = (delay % 1000) * 1000;
 		if(timeout)
@@ -604,6 +395,7 @@ afterselect(int result, fd_set *rfds)
 	socketevent *se;
 	timerevent *te;
 	struct timeval now;
+	static int last=0;
 
 	/* these should already be the same */
 	fe_pg_rfds=rfds;
@@ -654,6 +446,8 @@ afterselect(int result, fd_set *rfds)
 	{
 		te = (timerevent *) list->data;
 		list = list->next;
+		if (now.tv_sec < last)
+			te->next_call -= 24*60*60*1000;
 		if (now.tv_sec * 1000 + (now.tv_usec / 1000) >= te->next_call)
 		{
 			/* if the callback returns 0, it must be removed */
@@ -666,6 +460,7 @@ afterselect(int result, fd_set *rfds)
 			}
 		}
 	}
+	last=now.tv_sec;
 }
 
 void

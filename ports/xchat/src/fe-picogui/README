@@ -2,3 +2,5 @@ fe-picogui README
 ~~~~~~~~~~~~~~
 
 This is an experimental PicoGUI frontend for X-Chat.
+It can use either a terminal or a textbox widget for its main output,
+but currently this can only be changed in fe-picogui.c.
