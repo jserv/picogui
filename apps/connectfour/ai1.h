@@ -26,6 +26,8 @@
 #ifndef __AI1_H__
 #define __AI1_H__
 
+#include "connectfour.h"
+
 void ai1(struct board *it);
 
 #endif /* __AI1_H__ */

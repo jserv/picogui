@@ -29,9 +29,9 @@
 #include "connectfour.h"
 #include "rules.h"
 
-
 void aicall(struct board *it);
 void randommove(struct board *it);
+int move(struct board *it, int location);
 
 #endif  /* __AI_H__ */
 

@@ -39,10 +39,10 @@ void aicall(struct board *it)
     case 1:
       ai1(it);
       break;
-      /*case 2:
+    case 2:
       ai2(it);
       break;
-    case 3:
+      /*case 3:
       ai3(it);
       break;
     case 4:
@@ -53,5 +53,10 @@ void aicall(struct board *it)
 
 void randommove(struct board *it)
 {
-  while(putpiece(rand()%7,COMP,it) < 0);
+  while(move(it,rand()%7) < 0);
+}
+
+int move(struct board *it, int location)
+{
+  return putpiece(location,COMP,it);
 }

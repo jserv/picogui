@@ -76,7 +76,7 @@ int NewGame(struct pgEvent *evt)
 {
   int ail;
   board *gee;
-  switch(ail = pgMenuFromString("Skill Level One"/*|Skill Level Two|Skill Level Three|Skill Level Four"*/))
+  switch(ail = pgMenuFromString("Skill Level One|Skill Level Two"/*|Skill Level Three|Skill Level Four"*/))
     {
     case 1:
       pgReplaceTextFmt(info,"Skill Level One");
@@ -132,8 +132,6 @@ int piecedrop(struct pgEvent *evt)
   /* store the location of the click */
   int loc;
 
-  fprintf(stderr,"Clickski at x = %d y = %d\n",evt -> e.pntr.x, evt -> e.pntr.y);
-  
   //make sure it is properly formatted
   if(evt->e.pntr.x < 0 || evt->e.pntr.x > 70)
     return 0;
@@ -147,7 +145,7 @@ int piecedrop(struct pgEvent *evt)
       win((loc / 10)%10,loc%10,loc/100);
       return 0;
     }
- aicall(evt->extra);
+  aicall(evt->extra);
   loc = wincheck(evt->extra);
   if(loc)
     lose((loc / 10)%10,loc%10,loc/100);
@@ -162,17 +160,13 @@ int putpiece(int location, int type, struct board *foot)
 {
   int i = 0;
 
-  fprintf(stderr,"%d  :  %d\n",location,type);
   //find the next available spot on the board to fill
   if(foot->grid[location][5] == 0)
      while(foot->grid[location][i]!=0) i++;
   else
     return -1;
-  
-  fprintf(stderr,"%d\n",i);
   foot->grid[location][i] = type;
   drawpiece(location,i,type);
-  fprintf(stderr,"returning %d\n");
   return i;
 }
 
