@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.13 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: serial40x4.c,v 1.14 2002/03/16 10:20:24 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -241,7 +241,7 @@ void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
    int i_lcd,i;
    u8 *oldp,*newp;
    /* Output buffer big enough to hold one frame with worst-case encoding */
-   u8 outbuf[1024];
+   u8 outbuf[2048];
    u8 *outp = outbuf;
    
    /* start comparing the buffers */
@@ -276,8 +276,15 @@ void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
 	 i_lcd = i;
       }
       
-      /* Output character */
-      *(outp++) = *newp;
+      /* Escape any backslashes in the data to be written */
+      if (*newp == '\\') {
+	*(outp++) = '\\';
+	*(outp++) = '\\';
+      }
+      else
+	/* Output character */
+	*(outp++) = *newp;
+
       if (i_lcd!=127)            /* barrier between controllers */
 	i_lcd++;
       if (i_lcd==40)             /* Weird line wrapping */
