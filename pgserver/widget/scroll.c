@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.73 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: scroll.c,v 1.74 2002/11/11 08:18:28 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -161,7 +161,7 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
      * this probably shouldn't happen, so if we can, bug some developer about it.
      */
     if (lock) {
-      guru("Something's causing layout engine oscillation via the scroll widget!");
+      //guru("Something's causing layout engine oscillation via the scroll widget!");
       return;
     }
     lock++;
