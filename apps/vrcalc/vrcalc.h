@@ -60,6 +60,7 @@ Node* currentStack;
 char number[11];
 int count=0; //how many characters are there? (max: 10)
 char sign=' ';
+int isResult = 0; // Flag indicating the current number is a result
 
 double evaluate(Node* stack);
 void dClear(dNode* stack);

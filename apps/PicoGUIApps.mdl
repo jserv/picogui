@@ -54,7 +54,10 @@ runtime = [
               help = "Test application to send commands to the Virtual Keyboard" ),
     Runtime ( 'fieldtest', 'Field test',
               content = [ 'bin/fieldtest' ],
-              help = "Text input widget" )
+              help = "Text input widget" ),
+    Runtime ( 'vrcalc', 'vrcalc',
+              content = [ 'bin/vrcalc' ],
+              help = "Basic calculator" )
     ]
 
 def prepare (module, platform, project):

@@ -1,4 +1,4 @@
-SUBDIRS = pgboard pterm fieldtest
+SUBDIRS = pgboard pterm fieldtest vrcalc
 
 if ENABLE_BEE
 

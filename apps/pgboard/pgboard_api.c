@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.7 2001/11/20 16:07:24 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.8 2001/11/21 09:25:22 cgrigis Exp $
  *
  * kbd_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -26,7 +26,10 @@
  * 
  */
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>

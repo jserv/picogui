@@ -19,6 +19,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <picogui.h>
 #include <stdio.h>
 #include <math.h>
@@ -261,6 +265,12 @@ int btnSecond(struct pgEvent *evt) {
 }
 int btnDelete(struct pgEvent *evt) {
   if (!second) {
+    if (isResult)
+      {
+	/* No delete on a result */
+	return 0;
+      }
+
     if (count) {
       if (number[count-1]=='.')
 	doNumber('@'); //dummy function do delete the decimal point
@@ -332,6 +342,18 @@ int btnPower(struct pgEvent *evt) {
 
 int doNumber(char n) {
   static int dec=0; //no decimal yet
+  if (isResult)
+    {
+      int i;
+      isResult = 0;
+      /* Clear the pending number */
+      count = 0;
+      for (i = 0;i < 11; i++)
+	number [i] = '\0';
+      number [0]='\0';
+      sign = ' ';
+    }
+
   if (n=='@')
     return dec=0; // Used by the delete button to delete decimal point
   if (count==0)
@@ -386,7 +408,7 @@ int btnMinus(struct pgEvent *evt) {
   return doOperation(SUBTRACTION);
 }
 int btnZero(struct pgEvent *evt) {
-  if (count!=0)
+  if (count!=0 && !isResult)
     doNumber('0');
   return 0;
 }
@@ -415,11 +437,33 @@ int btnEquals(struct pgEvent *evt) {
   }
   evaluate(currentStack);
 
-  count=0;
-  for (temp=0;temp<11;++temp)
-    number[temp]='\0';
-  number[0]='\0';
-  sign=' ';
+  {
+    /* Make the result the current pending number */
+    int i, j;
+    char * ans = pgGetString (pgGetWidget (display, PG_WP_TEXT));
+
+    sign = ' ';
+    for (i = 0, j = 0; i < 12; i++)
+      {
+	if (ans [i] == '-')
+	  {
+	    sign = '-';
+	  }
+	else
+	  {
+	    number [j] = ans [i];
+	    if (number [j] == '\0')
+	      {
+		break;
+	      }
+	    j++;
+	  }
+      }
+    count = j;
+
+    /* Mark it as a result */
+    isResult = 1;
+  }
   
   // Clean up all memory and start with a blank slate
   sClear(currentStack);
@@ -586,7 +630,12 @@ double evaluate(Node* stack) {
   // this mess of loops removes any trailing zeros (for a nicer display)
   for (counter=0;counter<12;counter++)
     ans[counter]='\0';
+#ifdef POCKETBEE
+  /* uClibc's libm has a lower precision */
+  snprintf(ans,12,"%.3f",answer + 0.0005);
+#else
   snprintf(ans,12,"%.8f",answer);
+#endif
   for (counter=0;counter<12;counter++) {
     if (ans[counter]=='.') {
       for (counter=11;counter>=0;counter--) {
