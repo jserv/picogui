@@ -1,13 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.7 2001/11/12 17:45:38 cgrigis Exp $
+dnl $Id: configure.in,v 1.8 2001/11/14 22:31:38 bornet Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
 
 AM_CONFIG_HEADER(pgboard/config.h)
 
-AM_INIT_AUTOMAKE(picogui-apps, 0.1)
+AM_INIT_AUTOMAKE(picogui-apps, 0.2)
 
 AM_ACLOCAL_INCLUDE(macros)
 
