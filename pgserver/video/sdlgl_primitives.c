@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.19 2002/11/23 02:01:41 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.20 2002/11/23 12:01:24 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -503,7 +503,7 @@ void sdlgl_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   for (i=0,j=radius;j!=1;i++)
     j >>= 1;
 
-  gl_feedback(x,y,w,h,PG_LGOP_NONE,GL_LINEAR_MIPMAP_NEAREST,GL_BACK,GL_TRUE,i);
+  gl_feedback(x,y,w,h,PG_LGOP_NONE,GL_NEAREST_MIPMAP_NEAREST,GL_BACK,GL_TRUE,i);
 }
 
 /* The End */

@@ -72,7 +72,8 @@ object default {
   };
 
   fTranslucent = fillstyle {
-    Blur(x,y,w,h,2);
+    /* Use our special "Feedback" primitive to pixelize the background */
+    GL.feedback(x,y,w,h,GL_NEAREST,GL_BACK,0x10004);
     SetLgop(PG_LGOP_ALPHA);
     SetColor(PGCF_ALPHA | alpha | bgcolor);
     Rect(x,y,w,h);
@@ -89,7 +90,7 @@ object default {
 
     GL.pushmatrix();
     GL.translatef(0,-(1+wiggle)<<16,(-2+wiggle)<<16);
-    GL.feedback(x,y,w,h);
+    GL.feedback(x,y,w,h,GL_LINEAR,GL_FRONT,0);
     GL.popmatrix();
 
     SetLgop(PG_LGOP_MULTIPLY);
@@ -111,7 +112,7 @@ object default {
 
   fgcolor = 0x000000;
   bgcolor = 0xffffff;
-  alpha   = 0x60000000;
+  alpha   = 0x68000000;
 
   margin  = 0;
   spacing = 5;
@@ -143,14 +144,6 @@ object panelbar {
 
 object base.panelbtn {
   side = PG_S_RIGHT;
-}
-
-object textbox {
-  bgfill = fillstyle {
-    fFlame(x,y,w,h);
-  };
-  fgcolor = 0xFFFFFF;
-  bgcolor = 0x000000;
 }
 
 object closebtn text = "X";
