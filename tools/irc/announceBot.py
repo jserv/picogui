@@ -18,7 +18,9 @@ import time, irc_colors, sys
 f = open(channelFile)
 channelList = {}
 for line in f.readlines():
-    channelList[line.strip()] = 1
+    line = line.strip()
+    if line:
+        channelList[line] = 1
 f.close()
 
 accounts = [
@@ -79,7 +81,7 @@ class AnnounceServer(LineReceiver):
                 pass
 
         f = open(channelFile, "w")
-        f.write("\n".join(channelList.keys()))
+        f.write("\n".join(channelList.keys()) + "\n")
         f.close()
 
 class BotConversation(basechat.Conversation):
