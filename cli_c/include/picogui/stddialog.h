@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.3 2001/07/30 07:15:02 micahjd Exp $
+/* $Id: stddialog.h,v 1.4 2001/07/31 01:59:45 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -38,6 +38,15 @@
  * C client library.
  * Usually this file does not need to be included
  * separately, it is included with <tt>\#include <picogui.h></tt>
+ */
+
+/*!
+ * \defgroup stddialog Standard Dialogs
+ *
+ * Various prepackaged dialogs are supplied by the client library,
+ * for things like choosing files, picking dates, or entering text.
+ *
+ * \{
  */
 
 /*!
@@ -134,6 +143,8 @@ int pgMenuFromArray(pghandle *items,int numitems);
  * \sa pgDialogBox
  */
 int pgDatePicker(int *year, int *month, int *day, const char *title);
+
+//! \}
 
 #endif /* __H_STDDIALOG */
 /* The End */
