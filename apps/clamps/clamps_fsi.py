@@ -38,9 +38,7 @@ class filesystemInterface:
     def upDir(self):
         pathList = string.split(self.path, os.sep)
         del pathList[len(pathList)-2]
-        print pathList
-        newPath = string.join(pathList, '/')
-        print newPath
+        newPath = string.join(pathList, os.sep)
         self.path = newPath
 
     def isRootDir(self):
@@ -63,6 +61,7 @@ class filesystemAbstractor:
             raise "FSI exists"
         
     def getFilesystem(self, URI):
+        print URI
         if self.filesystems.has_key(URI):
             return self.filesystems[URI]
         else:
@@ -71,5 +70,3 @@ class filesystemAbstractor:
     def getDefaultFilesystem(self):
         return self.defaultFSI
 
-fsi = filesystemInterface()
-print fsi.listFiles()

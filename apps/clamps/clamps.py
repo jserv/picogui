@@ -14,10 +14,11 @@ class clampsInterface:
         #The application
         self.app = PicoGUI.Application("Clamps")
 
+        #Currently selected file
+        self.selectedFile = None
+
         #Path variables
-        self.path = "file:///home/carpman/"
         self.diritems = list()
-        self.hideDotfiles = 1
 
         #Content handler
         self.contentHandler = contentHandler
@@ -45,12 +46,13 @@ class clampsInterface:
         metaview.size = 70
         metaview.side = "bottom"
         self.dirview = metaview.addWidget("box", "inside")
-        self.dirview.side = "bottom"
+        self.dirview.side = "top"
         scroll = metaview.addWidget("scroll", "inside").bind = self.dirview
 
     def redraw(self):
         #Set the pathView location
         self.pathView.text = self.fsi.getPath()
+        self.app.text = "Clamps - " + self.fsi.getPath()
 
         #Delete the old files
         for item in self.diritems:
@@ -89,13 +91,17 @@ class clampsInterface:
         self.redraw()
 
     def handleFile(self, ev, button):
-        filename = self.app.server.getstring(button.text)[:-1]
-        splitName = string.split(filename, '.', 1)
-        if len(splitName) > 1:
-            self.contentHandler.handleFile(splitName[1], self.path+filename)
+        if self.selectedFile != None and self.selectedFile == button:
+            filename = self.app.server.getstring(button.text)[:-1]
+            splitName = string.split(filename, '.', 1)
+            if len(splitName) > 1:
+                self.contentHandler.handleFile(splitName[1], self.path+filename)
+            else:
+                self.fsi.followDir(filename)
+                self.redraw()
         else:
-            self.fsi.followDir(filename)
-            self.redraw()
+            self.selectedFile = button
+            button.on = 1
 
     def changedir(self, ev, button):
         self.path = self.path+self.app.server.getstring(button.text)[:-1]
@@ -104,7 +110,7 @@ class clampsInterface:
 content = contentManager()
 fsa = clamps_fsi.filesystemAbstractor()
 file_fsi = clamps_fsi.filesystemInterface()
-fsa.addFilesystem("file://", file_fsi, 1)
+fsa.addFilesystem("file", file_fsi, 1)
 clamps = clampsInterface(fsa, content)
 clamps.redraw()
 clamps.app.run()
