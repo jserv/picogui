@@ -25,7 +25,8 @@ typenames = {
     0x40A:	'kbd char',	# A focused keyboard character recieved 
     0x40B:	'kbd keyup',	# A focused raw keyup event 
     0x40C:	'kbd keydown',	# A focused raw keydown event 
-    0x301:	'appmsg',	# Messages from another application 
+    0x301:	'appmsg',	# Messages from another application
+    0x307:	'titlechange',	# xterm dynamic title for the terminal widget
 
     # Non-widget events
     0x1001:	'theme inserted',	# This notifies all clients when a theme
