@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.47 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: widget.h,v 1.48 2002/01/22 02:37:29 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -86,8 +86,10 @@ union trigparam {
     s16 divx,divy;
   } mouse;
   struct {
-    s16 key;
-    s16 mods;
+    s16 key;      /* PGKEY_* constant */
+    s16 mods;     /* PGMOD_* constant */
+    u16 flags;    /* PG_KF_* constants */
+    u16 consume;  /* Increment this to consume the key event */
   } kbd;
   struct {
     u32 size;
@@ -400,6 +402,9 @@ struct widget *widget_traverse(struct widget *w, int direction, int count);
 
 /* sends a trigger to a widget */
 int send_trigger(struct widget *w, long type, union trigparam *param);
+
+/* Invokes the spirits of guru() and stdout for debuggativity */
+void magic_button(s16 key);
 
 #endif /* __WIDGET_H */
 

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.120 2002/01/21 09:45:51 cgrigis Exp $
+/* $Id: constants.h,v 1.121 2002/01/22 02:37:29 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -985,6 +985,14 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_DOWN       (1<<9)  /* Mouse down */
 #define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
 #define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
+
+/* More flags used in PicoGUI's keyboard triggers to indicate the circumstances
+ * under which a key event is received.
+ */
+#define PG_KF_FOCUSED           (1<<0)  /* The widget receiving the event is focused */
+#define PG_KF_CHILD_FOCUSED     (1<<1)  /* Any child widget of this one is focused */
+#define PG_KF_CONTAINER_FOCUSED (1<<2)  /* Any container of this widget is focused */
+#define PG_KF_ALWAYS            (1<<3)  /* This is always on */
 
 
 //! \}
