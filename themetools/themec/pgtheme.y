@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.33 2002/01/03 23:50:55 lonetech Exp $
+/* $Id: pgtheme.y,v 1.34 2002/01/04 04:49:52 lonetech Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -63,6 +63,7 @@
 %token <num>     FSFUNC
 %token <str>     STRING 
 %token <str>     UNKNOWNSYM
+%token <propval> FINDTHEMEOBJECT
 %token <propval> LOADBITMAP
 %token <propval> COPY
 %token <propval> FONT
@@ -221,6 +222,28 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
   	    sizeof(struct pgreqd_mkfont));
   $$.loader = PGTH_LOAD_REQUEST;
 }	   	   
+           |  FINDTHEMEOBJECT '(' STRING ')' {
+  struct pgrequest *req;
+  unsigned char *buf;
+  int len=strlen($3);
+
+  /* Allocate the buffer */
+  if (!(buf = malloc(sizeof(struct pgrequest)+len)))
+    yyerror("memory allocation error");
+
+  /* Reserve space for the request header */
+  req = (struct pgrequest *) buf;
+  memset(req,0,sizeof(struct pgrequest));
+  req->type = htons(PGREQ_FINDTHOBJ);
+  req->size = htonl(len);
+
+  /* copy string and discard original */
+  memcpy(buf+sizeof(struct pgrequest),$3,len);
+  free($3);
+
+  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+len));
+  $$.loader = PGTH_LOAD_REQUEST;
+}
            |  LOADBITMAP '(' STRING ')' {
   FILE *bitf;
   unsigned long size;

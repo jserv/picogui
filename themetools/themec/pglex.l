@@ -1,5 +1,5 @@
 %{
-/* $Id: pglex.l,v 1.3 2001/10/10 01:52:31 micahjd Exp $
+/* $Id: pglex.l,v 1.4 2002/01/04 04:49:52 lonetech Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -52,6 +52,7 @@ ColorAdd        { return COLORADD; }
 ColorSub        { return COLORSUB; }
 ColorDiv        { return COLORDIV; }
 ColorMult       { return COLORMULT; }
+FindThemeObject { return FINDTHEMEOBJECT; }
 LoadBitmap      { return LOADBITMAP; }
 Copy            { return COPY; }
 Font            { return FONT; }
