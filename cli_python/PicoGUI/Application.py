@@ -147,9 +147,18 @@ class Application(Widget.Widget):
                 for i in range(queued):
                     self.poll_next_event()
             else: #nothing queued - wait a bit more
-                while not self._event_stack:
+                # this should work, but doesn't
+##                 while not self._event_stack:
+##                     self.send(self, 'idle')
+##                     self.poll_next_event(self.idle_delay)
+##                     self.server.update()
+                # so instead:
+                queued = None
+                while not queued:
                     self.send(self, 'idle')
-                    self.poll_next_event(self.idle_delay)
+                    time.sleep(self.idle_delay / 1000.0)
+                    queued = self.server.checkevent()
+                self.poll_next_event()
 
             try:
                 self.dispatch_events()
