@@ -21,7 +21,7 @@ struct btndata {
 		   of a text button and the 'bitmap' param structure
 		   will be used. */
 };
-#define DATA ((struct btndata *)self->data)
+#define DATA ((struct btndata *)(self->data))
 
 void bitbutton(struct divnode *d) {
   int x,y,w,h;
@@ -77,7 +77,7 @@ g_error button_install(struct widget *self) {
   self->out = &self->in->next->next;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
-    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE;
+    TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;
 
   return sucess;
 }
@@ -156,6 +156,7 @@ glob button_get(struct widget *self,int property) {
 }
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
+
   /* Figure out the button's new state */
   switch (type) {
 
@@ -173,17 +174,21 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_UP:
+    if (DATA->on && param->mouse.chbtn==1) {
+      post_event(WE_ACTIVATE,self,0);
+      DATA->on=0;
+    }
+    break;
+
   case TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
     break;
-    
-  }
 
-  /* Was it a sucessful trigger? */
-  if ((type==TRIGGER_UP && param->mouse.chbtn==1) || type==TRIGGER_DIRECT) {
-    /* Send an event back to the client app */
-    post_event(WE_ACTIVATE,self,0);
+  case TRIGGER_DIRECT:
+    post_event(WE_ACTIVATE,self,1);
+    break;
+    
   }
 
   /* This code for updating the button's appearance modifies

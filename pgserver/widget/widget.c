@@ -1,7 +1,7 @@
 /*
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
- * $Revision: 1.10 $
+ * $Revision: 1.11 $
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -200,15 +200,15 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   param.mouse.chbtn = btn ^ prev_btn;
   prev_btn = btn;
 
-  if (type == TRIGGER_UP && capture) {
-    call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
-    capture = NULL;
-  }
-
   divmatch = NULL;
   widgetunder(x,y,dts->top->head);
   if (divmatch) {
     under = divmatch->owner;
+
+    if (type == TRIGGER_UP && capture && (capture!=under)) {
+      call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
+      capture = NULL;
+    }
 
     /* First send the 'raw' event, then handle the cooked ones. */
     call_update |= (i = send_trigger(under,type,&param));
@@ -221,8 +221,13 @@ void dispatch_pointing(long type,int x,int y,int btn) {
     }
 
   }
-  else
+  else {
     under = NULL;
+    if (type == TRIGGER_UP && capture) {
+      call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
+      capture = NULL;
+    }
+  }
 
   if (under!=prev_under) {
     /* Mouse has moved over a different widget */
