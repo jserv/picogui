@@ -16,3 +16,4 @@ config.cache
 aclocal.m4
 .menuconfig.log
 libtool
+.swp

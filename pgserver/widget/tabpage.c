@@ -1,4 +1,4 @@
-/* $Id: tabpage.c,v 1.8 2003/03/19 18:14:11 lalo Exp $
+/* $Id: tabpage.c,v 1.9 2003/03/25 16:57:33 micahjd Exp $
  *
  * tabpage.c - A page in a tabbed book. It can be inserted into any
  *             container and automatically link with other tab pages
@@ -121,6 +121,7 @@ static int is_tab_property(int property) {
   case PG_WP_DISABLED:
   case PG_WP_HOTKEY_FLAGS:
   case PG_WP_HOTKEY_CONSUME:
+  case PG_WP_HOTKEY_MODIFIERS:
   case PG_WP_HOTKEY:
   case PG_WP_ALIGN:
   case PG_WP_COLOR:
