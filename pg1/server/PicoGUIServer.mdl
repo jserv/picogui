@@ -73,9 +73,14 @@ def prepare (module, platform, project):
                            platform, project)
 
     # Other cflags and libs
-    ocflags, olibs = flags ((('btkey-report', 'library'),),
-                            platform, project)
-
+    if platform.native:
+        ocflags, olibs = flags ((('btkey-report', 'library'),),
+                                platform, project)
+    else:
+        ocflags = ""
+        olibs = ""
+        
+        
     command = [
         "--sysconfdir=/etc",
         "--prefix=%s" % module.path ['prefix'],
@@ -218,6 +223,10 @@ fi
 
 # start pgserver
 pm_tell unblock picogui-server
+while test $? -gt 0
+do
+  pm_tell unblock picogui-server
+done
 ''')
 
     else:
