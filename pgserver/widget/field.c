@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.25 2001/05/31 06:00:45 micahjd Exp $
+/* $Id: field.c,v 1.26 2001/05/31 06:14:21 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -306,15 +306,11 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
   }
 
-
-  /* If we're busy rebuilding the grop list, don't bother poking
-     at the individual nodes */
-//  if (self->in->div->grop_lock || !self->in->div->grop)
-//    return;
-
-  /* Update stuff */
-//  fieldstate(self);
-  div_setstate(self->in->div,self->in->div->state);
+  /* Update appearance. Can't use div_setstate any more because the new
+   * state equality checking stuff would optimize out this update! */
+  div_rebuild(self->in->div);
+   if (self->dt == dts->top)
+         update(NULL,1);
 }
 
 /* Apply the current visual state */
