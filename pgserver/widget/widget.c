@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.172 2002/04/12 22:19:49 micahjd Exp $
+/* $Id: widget.c,v 1.173 2002/04/13 20:02:45 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -762,7 +762,7 @@ void widgetunder(int x,int y,struct divnode *div) {
     
     /* If this divnode has an interactive widget as its owner, and it
      * is visible, store it in div_under_crsr */
-    if (div->owner && div->owner->trigger_mask && div->build)
+    if (div->owner && div->owner->trigger_mask && (div->grop || div->build))
       div_under_crsr = div;
 
     /* Always store the deepest match in here */
