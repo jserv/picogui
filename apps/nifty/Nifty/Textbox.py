@@ -37,3 +37,5 @@ class Textbox(Workspace):
             except:
                 import traceback
                 traceback.print_exc()
+        if callable(cmd):
+            cmd(self)
