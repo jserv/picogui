@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.5 2002/11/04 12:11:32 micahjd Exp $
+/* $Id: managedwindow.c,v 1.6 2002/11/04 14:05:13 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -31,6 +31,8 @@
 struct managedwindowdata {
   struct divtree *my_dt;
   handle text;            /* Stored handle to the text, so we can get PG_WP_TEXT later */
+
+  unsigned int already_sized : 1;
 };
 #define DATA WIDGET_DATA(0,managedwindowdata)
 
@@ -141,8 +143,23 @@ glob managedwindow_get(struct widget *self,int property) {
 }
 
 void managedwindow_resize(struct widget *self) {
-  if (self->in->child.w && self->in->child.h)
-    VID(window_set_size)(DATA->my_dt->display,self->in->child.w,self->in->child.h);
+  if (self->in->child.w && self->in->child.h && !DATA->already_sized) {
+    s16 w = self->in->child.w;
+    s16 h = self->in->child.h;
+
+    /* Make sure the window size is reasonable */
+    if (w < 8)
+      w = 10;
+    if (h < 8)
+      h = 10;
+    if (w > vid->lxres)
+      w = vid->lxres;
+    if (h > vid->lyres)
+      h = vid->lyres;
+
+    VID(window_set_size)(DATA->my_dt->display,w,h);
+    DATA->already_sized = 1;
+  }
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.206 2002/11/04 13:14:05 micahjd Exp $
+/* $Id: widget.c,v 1.207 2002/11/04 14:05:14 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -47,8 +47,6 @@ g_error widget_create(struct widget **w, handle *h, int type,
 		      struct divtree *dt, handle container, int owner) {
 
    g_error e;
-
-   appmgr_widget_remap(&type);
 
    DBG("type %d, container %d, owner %d\n",type,container,owner);
 
