@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.20 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: stddialog.c,v 1.21 2003/03/19 18:17:26 lalo Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -68,7 +68,7 @@ void dlgbtn(pghandle tb,u32 payload,int textproperty,
 	      PG_WP_TEXT,pgGetServerRes(textproperty),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,key),
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 iconproperty),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  iconproperty+1),
@@ -84,7 +84,7 @@ void dlgicon(pghandle at,int prop) {
   pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,at);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_LEFT,
-	      PG_WP_BITMAP,bit,
+	      PG_WP_IMAGE,bit,
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,prop+1),
 	      0);
   }
@@ -266,7 +266,7 @@ pghandle pgInputDialog(const char *title, const char *message,
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_CANCEL),
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_CANCEL),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_CANCEL_MASK),
@@ -277,7 +277,7 @@ pghandle pgInputDialog(const char *title, const char *message,
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_HOTKEY_OK),
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_OK),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_OK_MASK),

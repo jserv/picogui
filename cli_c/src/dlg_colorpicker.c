@@ -1,4 +1,4 @@
-/* $Id: dlg_colorpicker.c,v 1.4 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: dlg_colorpicker.c,v 1.5 2003/03/19 18:17:21 lalo Exp $
  *
  * dlg_colorpicker.c - Implementation of the pColorPicker() function.
  *                     The current implementation is simple and only allows
@@ -170,7 +170,7 @@ int pgColorPicker(pgcolor *c, const char *title) {
 	      PG_WP_TEXT,pgNewString("Ok"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_RETURN,
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_OK),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_OK_MASK),
@@ -181,7 +181,7 @@ int pgColorPicker(pgcolor *c, const char *title) {
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_CANCEL),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_CANCEL_MASK),

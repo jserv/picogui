@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.18 2003/01/01 03:42:54 micahjd Exp $
+/* $Id: dlg_filepicker.c,v 1.19 2003/03/19 18:17:23 lalo Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -697,7 +697,7 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_TEXT,pgNewString("Cancel"),
 	      PG_WP_HOTKEY,PGKEY_ESCAPE,
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_CANCEL),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_CANCEL_MASK),
@@ -709,7 +709,7 @@ const char *pgFilePicker(pgfilter filefilter, const char *pattern,
 	      PG_WP_TEXT,pgNewString((flags&PG_FILE_SAVEBTN) ? 
 				     "Save" : "Open"),
 	      PG_WP_HOTKEY,PGKEY_RETURN,
-	      PG_WP_BITMAP,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
+	      PG_WP_IMAGE,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					 PGTH_P_ICON_OK),
 	      PG_WP_BITMASK,pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,
 					  PGTH_P_ICON_OK_MASK),
