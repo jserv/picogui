@@ -1,4 +1,4 @@
-/* $Id: platforms.c,v 1.1 2000/10/12 16:30:36 pney Exp $
+/* $Id: platforms.c,v 1.2 2000/10/26 19:48:09 pney Exp $
  *
  * platforms.c - groups some platforms dependant functions 
  *
@@ -57,5 +57,37 @@ void* realloc(void* ptr, size_t size)
 
   return new;
 }
+
+/* htonl, htons, ntohl, ntohs not provided in the libc.a of uclinux */
+#ifdef BIG_ENDIAN
+#  define htonl(x)  ((unsigned int)(x))
+#  define htonl(x)  ((unsigned short)(x))
+#  define ntohl(x)  ((unsigned int)(x))
+#  define ntohl(x)  ((unsigned short)(x))
+#endif /* BIG_ENDIAN */
+
+#ifdef LITTLE_ENDIAN
+#  define htonl(x)  ((__u32)( \
+                    (((__u32)(x) & (__u32)0x000000ffUL) << 24) | \
+                    (((__u32)(x) & (__u32)0x0000ff00UL) <<  8) | \
+                    (((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
+                    (((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
+
+#  define htonl(x)  ((__u16)( \
+                    (((__u16)(x) & (__u16)0x00ffU) << 8) | \
+                    (((__u16)(x) & (__u16)0xff00U) >> 8) ))
+
+#  define ntohl(x)  ((__u32)( \
+                    (((__u32)(x) & (__u32)0x000000ffUL) << 24) | \
+                    (((__u32)(x) & (__u32)0x0000ff00UL) <<  8) | \
+                    (((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
+                    (((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
+
+#  define ntohl(x)  ((__u16)( \
+                    (((__u16)(x) & (__u16)0x00ffU) << 8) | \
+                    (((__u16)(x) & (__u16)0xff00U) >> 8) ))
+#endif /* LITTLE_ENDIAN */
+
+
 
 #endif /* UCLINUX */
