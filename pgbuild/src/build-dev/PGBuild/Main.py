@@ -52,6 +52,11 @@ def parseCommandLine(config, argv):
                                 version=PGBuild.version,
                                 option_class=Option)
 
+    # Override Optik's default options (for consistent grammar and capitalization)
+
+    optik.STD_HELP_OPTION.help    = "Shows this help message and exits."
+    optik.STD_VERSION_OPTION.help = "Shows the version number and exits."
+
     ############# General options
 
     parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
