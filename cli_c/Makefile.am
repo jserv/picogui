@@ -1,4 +1,4 @@
-SUBDIRS = src include demos
+SUBDIRS = src include
 
 
 # ruiles for compiling in the Bee environment
