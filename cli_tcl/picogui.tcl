@@ -21,7 +21,7 @@ array set pg_widget {\
 	label		1\
 	scroll		2\
 	indicator	3\
-	bitmap		4\
+	bitmap		1\
 	button		5\
 	panel		6\
 	popup		7\
@@ -31,13 +31,14 @@ array set pg_widget {\
 	menuitem	11\
 	terminal	12\
 	canvas		13\
-	checkbutton	14\
+	checkbox	14\
 	flatbutton	15\
 	ltstitem	16\
 	submenuitem	17\
 	radiobutton	18\
 	textbox		19\
 	panelbar	20\
+	simplemenu	21\
 }
 array set pg_request {\
 	update		1\
@@ -63,6 +64,8 @@ array set pg_wp {\
 	transparent	9\
 	bitmap		12\
 	thobj		25\
+	margin		29\
+	spacing		55\
 }
 array set pg_app { \
 	normal	1\
@@ -286,14 +289,6 @@ proc pgSetSide {widget side} {
 		set side $pg_s($side)
 	}
 	pgSetWidget $widget $pg_wp(side) $side
-}
-proc pgDialog {title} {
-	global pg_derive pg_wp pg_th_o pg_s
-	set popup [pgNewPopup 0 0]
-	set label [pgNewLabel $title]
-	pgSetWidget $label $pg_wp(transparent) 0
-	pgSetWidget $label $pg_wp(thobj) $pg_th_o(label_dlgtitle)
-	return $popup
 }
 proc pgNewFont {name style size} {
 	global pg_request

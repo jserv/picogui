@@ -1,5 +1,6 @@
 #!/usr/bin/tclsh
 source picogui.tcl
+source stddlg.tcl
 
 set NUMFRAMES 13
 set imagebase "../apps/bouncyball/data/ball%02d.jpeg"
@@ -17,7 +18,6 @@ while {$imgnr<$NUMFRAMES} {
 }
 
 set dlg [pgDialog "Boing!"]
-
 set ok [pgNewButton "Ok"]
 pgSetSide $ok bottom
 
