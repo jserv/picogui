@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.1 2002/02/23 07:57:59 micahjd Exp $
+/* $Id: zaurus.c,v 1.2 2002/02/23 08:13:55 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -134,13 +134,19 @@ void zaurus_message(u32 message, u32 param, u32 *ret) {
       ioctl(zaurus_buz_fd, SHARP_BUZZER_MAKESOUND, SHARP_BUZ_SCHEDULE_ALARM);
       break;
 
-      /*
+#if 0   /* I couln't get this to work... maybe try again later -- Micah */
     case PG_SND_VISUALBELL: {
-      struct sharp_led_status s = { SHARP_LED_MAIL_EXISTS, LED_MAIL_NEWMAIL_EXISTS };
-      ioctl(zaurus_led_fd, SHARP_LED_SETSTATUS, &s);
+      struct sharp_led_status s1 = { SHARP_LED_PHONE_IN, 1 };
+      struct sharp_led_status s2 = { SHARP_LED_MAIL_EXISTS, 1 };
+      struct sharp_led_status s3 = { SHARP_LED_SALARM, 1 };
+      struct sharp_led_status s4 = { SHARP_LED_DALARM, 1 };
+      ioctl(zaurus_led_fd, SHARP_LED_SETSTATUS, &s1);
+      ioctl(zaurus_led_fd, SHARP_LED_SETSTATUS, &s2);
+      ioctl(zaurus_led_fd, SHARP_LED_SETSTATUS, &s3);
+      ioctl(zaurus_led_fd, SHARP_LED_SETSTATUS, &s4);
     }
       break;
-      */
+#endif
 
     }
     break;
