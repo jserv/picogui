@@ -474,7 +474,7 @@ _constants = {
             'line':		  (0x50, _stop),
             'ellipse':		  (0x60, _stop),
             'fellipse':		  (0x70, _stop),
-            'text':		  (0x04, _stop),
+            'text':		  (0x04, ((_getString,),)),
             'bitmap':		  (0x14, _stop),
             'tilebitmap':	  (0x24, _stop),
             'fpolygon':		  (0x34, _stop),
