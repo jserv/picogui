@@ -1,4 +1,4 @@
-/* $Id: vr3ts.c,v 1.4 2001/08/10 23:42:32 sbarnes Exp $
+/* $Id: vr3ts.c,v 1.5 2001/11/15 12:18:58 micahjd Exp $
  *
  * vr3ts.c - input driver for the Agenda VR3. This contains code from
  *           Agenda's xfree86 patch along with the framework from
@@ -161,59 +161,6 @@ inline XYPOINT DeviceToScreen(XYPOINT p) {
 	return out;
 }
 
-/* Currently this just maps the silkscreen buttons to keyboard keys.
- * Input in the handwriting area is currently ignored, I'll find the best way
- * to pass that on to a handwriting recognizer later. 
- */
-
-void handle_silkscreen_buttons(int x, int y, int state) {
-   int column = -1, row;
-   short key;
-   /* Mapping of silkscreen buttons to keys. */
-   static short keymap[] = {
-      PGKEY_MENU, PGKEY_RETURN, PGKEY_LSUPER,
-      PGKEY_CAPSLOCK, PGKEY_ESCAPE, PGKEY_NUMLOCK
-   };
-
-   /* Ignore stylus dragging in buttons */
-   if (state==2)
-     return;
-   
-   if (y < 169)
-     return;
-   
-   if (y < 187)
-     row = 0; /* Edit/kbd */
-   else if (y < 203)
-     row = 1; /* OK/exit */
-   else
-     row = 2; /* main/123 */
-   
-   if (x < 20)
-     column = 0;
-   else if (x > 141)
-     column = 1;
-   
-   if  (column == -1) {
-      /* FIXME: handwriting input goes here */
-      
-      return;
-   }
-   
-   /* Map silkscreen buttons to keyboard */
-   key = keymap[3 * column + row];
-   
-   /* Send keyboard event */
-   if (state) {
-      if (key < 128)  /* Not a 'weird' key */
-	dispatch_key(TRIGGER_CHAR,key,0);
-      dispatch_key(TRIGGER_KEYDOWN,key,0);
-   }
-   else
-     dispatch_key(TRIGGER_KEYUP,key,0);
-}
-
-
 /******************************************** Implementations */
 
 static int VrTpanelInit() {
@@ -280,6 +227,11 @@ int vr3ts_fd_activate(int fd) {
    unsigned int b=0;
    int result;
    int noskip=0;
+
+   /* Is this for us? */
+   if (fd!=vr3ts_fd)
+     return 0;
+
    result=VrTpanelRead(fd,&x,&y,&z,&b);
 
    switch (result) {
