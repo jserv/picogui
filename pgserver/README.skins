@@ -7,9 +7,26 @@ are skin configuration files. To try the Agenda VR3 skin, for example:
 
   pgserver -nc skin/vr3.conf
   
-Currently skins only make pgserver look neat and help you design your
-application with an LCD's color constraints in mind. Skins already simulate
-the backlight, and soon they will have support for the hardware buttons and
-silkscreen area that many handhelds have.
+Skins simulate the LCD's color constraints, and allow you to test some
+features that would otherwise be untestable on a desktop PC: the backlight,
+silkscreen area, and hardware buttons available on many handhelds.
+
+Adding a new skin involves creating three files:
+
+ - skin-foo.jpeg:
+   This is a photo of the handheld, scaled so that the size of the LCD
+   is an exact multiple of the LCD's actual resolution.
+ 
+ - skin-foo.map:
+   This is an HTML image map, created with the Gimp's imagemap plugin,
+   describing the hardware buttons and silkscreen area. Only rectangles are
+   supported, and the "URL" for each rectangle is actually the numerical value
+   of the PGKEY to send.
+   
+ - skin-foo.conf:
+   The PicoGUI configuration file sets general options, and provides the name
+   of the jpeg and map files. Usually it is easiest to copy and modify an
+   existing skin's conf file, but for a deeper understanding of each option
+   read the README.configfile file.
 
 -- Micah
