@@ -2,15 +2,19 @@ from Buffer import Buffer
 from Terminal import Terminal
 import os, pty, fcntl, termios, struct
 
+_marker = []
+
 class Subprocess(Buffer):
     "Represents another process displaying in our workspace"
 
     widget = Terminal
-    _argv = ("sh", "sh", "--login")
+    _argv = _marker
 
     def __init__(self, argv=None):
         if argv is not None:
             self._argv = argv
+        if self._argv is _marker:
+            self._get_login_shell()
         (pid, fd) = pty.fork()
         if pid == 0:
             self._spawn()
@@ -25,6 +29,12 @@ class Subprocess(Buffer):
     def _spawn(self):
         # we're the child process, run something
         os.execlp(*self._argv)
+
+    def _get_login_shell(self):
+        import pwd
+        uid = os.getuid()
+        shell = pwd.getpwuid(uid)[6]
+        self.__class__._argv = (shell, '-' + shell)
 
     def notify_changed(self, ev):
         os.write(self._ptyfd, ev.data)
