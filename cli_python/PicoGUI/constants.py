@@ -315,17 +315,21 @@ _constants = {
         }),
         'hotkey':			(19, {
         }),
-        'extdevents':			(20, {	# for buttons, a mask of extra events to send
+        'extdevents':			(20, {	# mask of extra events to send
             'pointer up':      (0x0001, {}),
             'pointer down':    (0x0002, {}),
             'noclick':         (0x0004, {}),
             'pointer move':    (0x0008, {}),
+            'pointer':         (0x0009, {}),
             'key':             (0x0010, {}),
             'char':            (0x0020, {}),
+            'kbd':	       (0x0030, {}),
             'toggle':          (0x0040, {}),
             'exclusive':       (0x0080, {}),
             'focus':           (0x0100, {}),
             'no hotspot':      (0x0200, {}),
+            'none':	       (0, {}),
+            _default:	       (0, {}),
         }),
         'direction':			(21, {
             'horizontal':	(0, {}),
