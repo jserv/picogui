@@ -1,0 +1,41 @@
+proc FromFile {filename} {
+        set data ""
+        set f [open $filename]
+        fconfigure $f -translation binary
+        while { ![eof $f] } {
+                set data [append data [read -nonewline $f]]
+        }
+        close $f
+        return $data
+}
+
+if {[llength $argv] != 4} {
+	puts "Usage $argv0 inputfile outputfile replacestring arrayname"
+}
+set input [lindex $argv 0]
+set output [lindex $argv 1]
+set search [lindex $argv 2]
+set arrayname [lindex $argv 3]
+
+set fdata [split [FromFile $input] "\n"]
+set data ""
+set cut [string length $search]
+foreach line $fdata {
+	set start [string first $search $line]
+	if {$start ==0} {
+		set line [string range $line $cut end ]
+		set line [regsub -all " +" [regsub -all "\t+" $line " "] " "]
+		set data [lappend data $line]
+	}
+}
+foreach line $data {
+	set line [split $line]
+	set temp([string tolower [lindex $line 0]]) [lindex $line 1]
+}
+set out [open $output w]
+puts $out "array set $arrayname \""
+foreach line [lsort [array names temp]] {
+	puts $out "\t$line\t$temp($line)"
+}
+puts $out "\""
+close $out
