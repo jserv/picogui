@@ -216,11 +216,12 @@ if __name__ == '__main__':
             reactor.connectUNIX(socketName, f)
             reactor.run()
 
-            # and now send to the first bot, so it goes into the main channels
-            socketName = socketBaseName + ".1"
-            f = AnnounceClientFactory()
-            reactor.connectUNIX(socketName, f)
-            reactor.run()
+            # and now if we are not the first bot, send there, so it goes into the main channels
+            if not socketName == socketBaseName + ".1":
+                socketName = socketBaseName + ".1"
+                f = AnnounceClientFactory()
+                reactor.connectUNIX(socketName, f)
+                reactor.run()
 
             
         except IndexError:
