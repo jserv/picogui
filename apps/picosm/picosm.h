@@ -1,7 +1,8 @@
 typedef struct {
 
+  pghandle wApp;
+
   //Boxes
-  pghandle wBigBox;
   pghandle wLoginBox;
   pghandle wPasswdBox;
   pghandle wButtonBox;

@@ -90,16 +90,17 @@ int evtShutdown(struct pgEvent *evt){
 picosmUI *buildUI(void){
   picosmUI *newUI = (picosmUI *)malloc(sizeof(picosmUI));
 
-  if(!(newUI->wBigBox = pgFindWidget("PSMBigBox"))){
-    newUI->wBigBox = pgNewWidget(PG_WIDGET_BOX, 0, 0);
-    pgSetWidget(newUI->wBigBox,
-		PG_WP_NAME,pgNewString("PSMBigBox"),
+  if(!(newUI->wApp = pgFindWidget("PSMApp"))){
+    newUI->wApp = pgCreateWidget(PG_WIDGET_DIALOGBOX);
+    pgSetWidget(newUI->wApp,
+		PG_WP_NAME,pgNewString("PSMApp"),
+		PG_WP_TEXT,pgNewString("PicoGUI Login"),
 		0);
   }
 
   if(!(newUI->wButtonBox = pgFindWidget("PSMButtonBox"))){
     newUI->wButtonBox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_INSIDE, 
-				    newUI->wBigBox);
+				    newUI->wApp);
     pgSetWidget(newUI->wButtonBox,
 		PG_WP_NAME,pgNewString("PSMButtonBox"),
 		PG_WP_TRANSPARENT, 1,
@@ -108,7 +109,7 @@ picosmUI *buildUI(void){
 
   if(!(newUI->wPasswdBox = pgFindWidget("PSMPasswdBox"))){
     newUI->wPasswdBox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_INSIDE, 
-				    newUI->wBigBox);
+				    newUI->wApp);
     pgSetWidget(newUI->wPasswdBox,
 		PG_WP_NAME,pgNewString("PSMPasswdBox"),
 		PG_WP_TRANSPARENT, 1,
@@ -117,7 +118,7 @@ picosmUI *buildUI(void){
 
   if(!(newUI->wLoginBox = pgFindWidget("PSMLoginBox"))){
     newUI->wLoginBox = pgNewWidget(PG_WIDGET_BOX, PG_DERIVE_INSIDE, 
-				   newUI->wBigBox);
+				   newUI->wApp);
     pgSetWidget(newUI->wLoginBox,
 		PG_WP_NAME,pgNewString("PSMLoginBox"),
 		PG_WP_TRANSPARENT, 1,
@@ -130,10 +131,8 @@ picosmUI *buildUI(void){
     pgSetWidget(newUI->wLoginLabel, 
 		PG_WP_NAME,pgNewString("PSMLoginLabel"),
 		PG_WP_TEXT, pgNewString("Login: "),
-		PG_WP_ALIGN, PG_A_CENTER,
-		PG_WP_SIDE, PG_S_LEFT,
-		PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
-		PG_WP_SIZE, 30,
+		PG_WP_ALIGN, PG_A_RIGHT,
+		PG_WP_SIDE, PG_S_ALL,
 		0);
   }
 
@@ -154,10 +153,8 @@ picosmUI *buildUI(void){
     pgSetWidget(newUI->wPasswdLabel, 
 		PG_WP_NAME,pgNewString("PSMPasswdLabel"),
 		PG_WP_TEXT, pgNewString("Password: "),
-		PG_WP_ALIGN, PG_A_CENTER,
-		PG_WP_SIDE, PG_S_LEFT,
-		PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
-		PG_WP_SIZE, 30,
+		PG_WP_ALIGN, PG_A_RIGHT,
+		PG_WP_SIDE, PG_S_ALL,
 		0);
   }
 
@@ -174,23 +171,25 @@ picosmUI *buildUI(void){
 		0);
     //}
 
-  if(!(newUI->wLogon = pgFindWidget("PSMLogon"))){
-    newUI->wLogon = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE,
-				newUI->wButtonBox);
-    pgSetWidget(newUI->wLogon,
-		PG_WP_NAME,pgNewString("PSMLogon"),
-		PG_WP_ALIGN, PG_A_CENTER,
-		PG_WP_TEXT, pgNewString("Log on"),
-		0);
-  }
-
   if(!(newUI->wClear = pgFindWidget("PSMClear"))){
     newUI->wClear = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE, 
 				newUI->wButtonBox);
     pgSetWidget(newUI->wClear,
 		PG_WP_NAME,pgNewString("PSMClear"),
 		PG_WP_ALIGN, PG_A_CENTER,
+		PG_WP_SIDE, PG_S_RIGHT,
 		PG_WP_TEXT, pgNewString("Clear"),
+		0);
+  }
+
+  if(!(newUI->wLogon = pgFindWidget("PSMLogon"))){
+    newUI->wLogon = pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_INSIDE,
+				newUI->wButtonBox);
+    pgSetWidget(newUI->wLogon,
+		PG_WP_NAME,pgNewString("PSMLogon"),
+		PG_WP_ALIGN, PG_A_CENTER,
+		PG_WP_SIDE, PG_S_RIGHT,
+		PG_WP_TEXT, pgNewString("Log on"),
 		0);
   }
 
@@ -200,7 +199,7 @@ picosmUI *buildUI(void){
     pgSetWidget(newUI->wReboot,
 		PG_WP_NAME,pgNewString("PSMReboot"),
 		PG_WP_ALIGN, PG_A_CENTER,
-		PG_WP_SIDE, PG_S_RIGHT,
+		PG_WP_SIDE, PG_S_LEFT,
 		PG_WP_TEXT, pgNewString("Reboot"),
 		0);
   }
@@ -211,7 +210,7 @@ picosmUI *buildUI(void){
     pgSetWidget(newUI->wPowerOff,
 		PG_WP_NAME,pgNewString("PSMPowerOff"),
 		PG_WP_ALIGN, PG_A_CENTER,
-		PG_WP_SIDE, PG_S_RIGHT,
+		PG_WP_SIDE, PG_S_LEFT,
 		PG_WP_TEXT, pgNewString("Power Off"),
 		0);
   }
@@ -233,8 +232,6 @@ int main(int argc, char **argv){
 
   pgInit(argc, argv);
 
-  pgRegisterApp(PG_APP_NORMAL, "Login", 0);
-
   if(existCheck = fopen("/etc/picogui/picosm.wt", "r")){
     fclose(existCheck);
     wTemplate = pgFromFile("/etc/picogui/picosm.wt");
@@ -242,6 +239,9 @@ int main(int argc, char **argv){
   }
   interface = buildUI();
   bindUI(interface);
+
+  pgUpdate();
+  pgFocus(interface->wLoginBox);
 
   pgEventLoop();
   
