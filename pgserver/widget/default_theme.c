@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.5 2000/06/07 06:49:54 micahjd Exp $
+/* $Id: default_theme.c,v 1.6 2000/06/07 07:35:29 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -43,7 +43,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(1,mkcolor(0,0,0)),
 
   /* 01 button.fill */
-  EL_ACTIVE(mkcolor(255,255,255),mkcolor(200,200,255),mkcolor(127,127,255)),
+  EL_ACTIVE(mkcolor(192,224,255),mkcolor(192,192,255),mkcolor(128,128,128)),
   
   /* 02 button.overlay */
   EL_NULL,
@@ -52,19 +52,19 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(-1,mkcolor(0,0,0)),  
 
   /* 04 toolbar.fill */
-  EL_FLAT(0,mkcolor(220,255,220)),
+  EL_FLAT(0,mkcolor(192,192,192)),
 
   /* 05 scrollbar.border */ 
   EL_FLAT(-1,mkcolor(0,0,0)),  
 
   /* 06 scrollbar.fill */
-  EL_FLAT(0,mkcolor(220,220,255)),
+  EL_FLAT(0,mkcolor(128,128,128)),
 
   /* 07 scrollind.border */
   EL_FLAT(1,mkcolor(0,0,0)),  
 
   /* 08 scrollind.fill */
-  EL_ACTIVE(mkcolor(220,255,220),mkcolor(255,255,220),mkcolor(220,255,255)),  
+  EL_ACTIVE(mkcolor(255,255,192),mkcolor(192,224,255),mkcolor(192,192,255)),
 
   /* 09 scrollind.overlay */
   EL_NULL,
@@ -73,7 +73,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(1,mkcolor(0,0,0)),  
 
   /* 11 indicator.fill */
-  EL_FLAT(0,mkcolor(220,255,220)),  
+  EL_FLAT(0,mkcolor(64,64,128)),  
 
   /* 12 indicator.overlay */
   EL_FLAT(0,mkcolor(128,128,255)),  
@@ -94,7 +94,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(1,mkcolor(0,0,0)),  
 
   /* 18 popup.fill */
-  EL_FLAT(0,mkcolor(192,192,192)),  
+  EL_FLAT(0,mkcolor(255,255,224)),  
 
 };
 
