@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.4 2000/09/21 05:55:45 micahjd Exp $
+/* $Id: constants.h,v 1.5 2000/09/22 11:02:21 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -230,9 +230,10 @@ typedef unsigned long pghandle;
 
 /* Constants used for rship, the relationship between 
    a widget and its parent */
-#define PG_DERIVE_BEFORE 0
-#define PG_DERIVE_AFTER  1
-#define PG_DERIVE_INSIDE 2
+#define PG_DERIVE_BEFORE_OLD  0    /* Deprecated version of PG_DERIVE_BEFORE */
+#define PG_DERIVE_AFTER       1
+#define PG_DERIVE_INSIDE      2
+#define PG_DERIVE_BEFORE      3
 
 /* Types of widgets (in the same order they are
    in the table in widget.c) */

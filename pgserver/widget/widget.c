@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.41 2000/09/09 01:46:16 micahjd Exp $
+/* $Id: widget.c,v 1.42 2000/09/22 11:02:22 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -103,14 +103,22 @@ g_error widget_create(struct widget **w,int type,
 g_error widget_derive(struct widget **w,
 		      int type,struct widget *parent,
 		      handle hparent,int rship,int owner) {
-  if (rship==PG_DERIVE_INSIDE)
+  switch (rship) {
+
+  case PG_DERIVE_INSIDE:
     return widget_create(w,type,parent->dt,parent->sub,hparent,owner);
-  else if (rship==PG_DERIVE_AFTER)
+
+  case PG_DERIVE_AFTER:
     return widget_create(w,type,parent->dt,parent->out,parent->container,owner);
-  else if (rship==PG_DERIVE_BEFORE)
+
+  case PG_DERIVE_BEFORE:
+  case PG_DERIVE_BEFORE_OLD:
     return widget_create(w,type,parent->dt,parent->where,parent->container,owner);
-  else
+   
+  default:
     return mkerror(PG_ERRT_BADPARAM,22);
+
+  }
 }
 
 /* Used internally */
