@@ -7,11 +7,13 @@
 """
 from twisted.internet import reactor, protocol
 import sys, email, os
+import irc_colors
 
 logFile = "/home/commits/mail.log"
 statsDir = "/home/commits/stats"
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
+import re
 
 # Allowed commands, split up into those with content and those without
 allowedTextCommands = ("Announce",)
@@ -60,6 +62,16 @@ def incrementProjectCommits(project):
         f.write("%d\n" % count)
         f.close()
 
+def applyColorTags(message):
+    # We support tags of the form {red}, {bold}, {normal}, etc.
+    message = re.sub('{bold}', irc_colors.BOLD, message)
+    message = re.sub('{normal}', irc_colors.NORMAL, message)
+    message = re.sub('{reverse}', irc_colors.REVERSE, message)
+    message = re.sub('{underline}', irc_colors.UNDERLINE, message)
+    for color in irc_colors.COLORS:
+        message = re.sub('{%s}' % color, irc_colors.COLOR_PREFIX + irc_colors.COLORS[color], message)
+    return message
+
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         import sys
@@ -68,18 +80,22 @@ class AnnounceClient(protocol.Protocol):
         f.write(mailMsg.as_string())
         f.close()
         subjectFields = mailMsg['Subject'].split(" ")
-        # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
-        messages = mailMsg.get_payload().split("\n")[:40]
+        message = mailMsg.get_payload()
         subjectFields[1] = subjectFields[1].lower()
         if subjectFields[1][0] == "#":
             subjectFields[1] = subjectFields[1][1:]
+
+        message = applyColorTags(message)
 
         if not subjectFields[1] in badChannels:
 
             # Send allowed text commands
             if subjectFields[0] in allowedTextCommands:
+                # Our lame little stat page
                 incrementProjectCommits(subjectFields[1])
-                for line in messages:
+                
+                # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
+                for line in message.split("\n")[:40]:
                     line = line.strip()
                     if len(line) > 0:
                         self.transport.write("%s %s %s\r\n" %
