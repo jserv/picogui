@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.26 2002/10/24 03:00:55 micahjd Exp $
+/* $Id: toolbar.c,v 1.27 2002/11/16 06:25:37 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -39,10 +39,10 @@ void toolbar_resize(struct widget *self) {
     m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   else
     m = 0;
-  
+
   /* minimum size */
-  self->in->div->preferred.h = theme_lookup(PGTH_O_TOOLBAR,PGTH_P_HEIGHT);
-  self->in->div->preferred.w = theme_lookup(PGTH_O_TOOLBAR,PGTH_P_WIDTH);
+  self->in->div->preferred.h = theme_lookup(self->in->div->state,PGTH_P_HEIGHT);
+  self->in->div->preferred.w = theme_lookup(self->in->div->state,PGTH_P_WIDTH);
 
   /* Manually set border size */
   self->in->div->flags &= ~DIVNODE_SIZE_AUTOSPLIT;
@@ -94,11 +94,6 @@ g_error toolbar_set(struct widget *self,int property, glob data) {
       set_widget_rebuild(self);
       break;	
 
-    case PG_WP_STATE:
-      self->in->div->state = data;
-      set_widget_rebuild(self);
-      break;
-      
     default:
       return mkerror(ERRT_PASS,0);
    }
