@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.50 2001/08/05 10:50:52 micahjd Exp $
+/* $Id: video.h,v 1.51 2001/09/15 03:18:13 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -574,6 +574,9 @@ g_error pnm_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
 bool jpeg_detect(const u8 *data, u32 datalen);
 g_error jpeg_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
+
+bool bmp_detect(const u8 *data, u32 datalen);
+g_error bmp_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
 /* Runs the supplied function for all loaded bitmaps
  * (a superset of handle_iterate's results)

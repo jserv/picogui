@@ -4,7 +4,7 @@ noinst_LIBRARIES = libformats.a
 
 libformats_a_SOURCES =
 
-EXTRA_libformats_a_SOURCES = pnm.c jpeg.c
+EXTRA_libformats_a_SOURCES = pnm.c jpeg.c bmp.c
 
 libformats_a_LIBADD       = $(FORMATS:%.c=%.o)
 libformats_a_DEPENDENCIES = $(FORMATS:%.c=%.o)
