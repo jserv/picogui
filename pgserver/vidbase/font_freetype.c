@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.24 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: font_freetype.c,v 1.25 2002/10/17 00:09:51 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -41,6 +41,7 @@
 #include FT_FREETYPE_H
 #include FT_CACHE_H
 #include FT_GLYPH_H
+#include FT_IMAGE_H
 #include FT_CACHE_CHARMAP_H
 #include FT_CACHE_IMAGE_H
 
@@ -404,13 +405,13 @@ void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct 
 
   switch (bg->bitmap.pixel_mode) {
 
-  case FT_PIXEL_MODE_GRAY:
+  case ft_pixel_mode_grays:
     VID(alpha_charblit)(dest,bg->bitmap.buffer,x,y,bg->bitmap.width,
 			bg->bitmap.rows,bg->bitmap.pitch,ft_pick_gamma_table(col),
 			angle,col,clip,lgop);
     break;
 
-  case FT_PIXEL_MODE_MONO:
+  case ft_pixel_mode_mono:
     VID(charblit) (dest,bg->bitmap.buffer,x,y,bg->bitmap.width,bg->bitmap.rows,
 		   0,angle,col,clip,lgop, bg->bitmap.pitch);
     break;
@@ -781,15 +782,15 @@ void ft_get_face_style(FT_Face f, struct font_style *fs) {
   for (i=0;i<f->num_charmaps;i++) {
     switch (f->charmaps[i]->encoding) {
 
-    case FT_ENCODING_UNICODE:
+    case ft_encoding_unicode:
       fs->style |= PG_FSTYLE_ENCODING_UNICODE;
       break;
 
-    case FT_ENCODING_ADOBE_LATIN_1:
+    case ft_encoding_latin_1:
       fs->style |= PG_FSTYLE_ENCODING_ISOLATIN1;
       break;
 
-    case FT_ENCODING_MS_SYMBOL:
+    case ft_encoding_symbol:
       fs->style |= PG_FSTYLE_SYMBOL;
       break;
     }
