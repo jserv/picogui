@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.53 2002/02/14 13:05:14 micahjd Exp $
+/* $Id: field.c,v 1.54 2002/03/26 03:47:20 instinc Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -73,7 +73,7 @@ g_error bufcheck_grow(struct widget *self);     /* Check the buffer
 g_error bufcheck_shrink(struct widget *self);   /* Check before removing */
 void fieldstate(struct widget *self);
 
-void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
+void build_field(struct gropctxt *c, u16 state,struct widget *self) {
   struct fontdesc *fd;
   handle hfd;
   
@@ -248,7 +248,7 @@ glob field_get(struct widget *self,int property) {
   }
 }
 
-void field_trigger(struct widget *self,long type,union trigparam *param) {
+void field_trigger(struct widget *self, s32 type, union trigparam *param) {
   switch (type) {
 
     /* When clicked, request keyboard focus */
@@ -314,7 +314,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
     case PGKEY_ESCAPE:
       return;
        
-    default:
+//    default:
     }
 
     param->kbd.consume++;

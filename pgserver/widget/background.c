@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.10 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: background.c,v 1.11 2002/03/26 03:47:20 instinc Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -67,7 +67,7 @@ glob background_get(struct widget *self,int property) {
   return 0;
 }
 
-void background_trigger(struct widget *self,long type,union trigparam *param) {
+void background_trigger(struct widget *self,s32 type,union trigparam *param) {
   if (sysevent_owner)
      post_event(PG_NWE_BGCLICK,NULL,param->mouse.chbtn,sysevent_owner,NULL);
 }

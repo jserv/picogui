@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.100 2002/02/11 19:39:23 micahjd Exp $
+/* $Id: button.c,v 1.101 2002/03/26 03:47:20 instinc Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -397,7 +397,7 @@ glob button_get(struct widget *self,int property) {
   }
 }
 
-void button_trigger(struct widget *self,long type,union trigparam *param) {
+void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   int event=-1;
   struct widget *w;
   union trigparam tp;

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.53 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: scroll.c,v 1.54 2002/03/26 03:47:20 instinc Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -55,7 +55,7 @@ struct scrolldata {
 		       the point that was clicked */
   int release_delta;
   int value,old_value;
-  unsigned long wait_tick;
+  u32 wait_tick;
   int thumbscale;
 };
 #define DATA ((struct scrolldata *)(self->data))
@@ -73,7 +73,7 @@ void scrollupdate(struct widget *self) {
   self->dt->flags |= DIVTREE_NEED_REDRAW;
 }
 
-void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
+void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
   struct widget *wgt;
   s16 oldres;
 
@@ -261,8 +261,8 @@ glob scroll_get(struct widget *self,int property) {
   return 0;
 }
 
-void scroll_trigger(struct widget *self,long type,union trigparam *param) {
-  unsigned long tick;
+void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
+  u32 tick;
   bool force = 0;     /* Force div_setstate to redraw? */
    
   switch (type) {

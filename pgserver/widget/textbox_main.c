@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.34 2002/02/26 06:42:16 micahjd Exp $
+/* $Id: textbox_main.c,v 1.35 2002/03/26 03:47:20 instinc Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -222,7 +222,7 @@ void textbox_move_cursor(struct widget *self, union trigparam *param) {
   text_caret_on(&DATA->c);
 }
 
-void textbox_trigger(struct widget *self,long type,union trigparam *param) {
+void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   switch (type) {
 
     /* When clicked, request keyboard focus */

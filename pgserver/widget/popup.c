@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.49 2002/02/18 10:04:58 micahjd Exp $
+/* $Id: popup.c,v 1.50 2002/03/26 03:47:20 instinc Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -230,7 +230,7 @@ glob popup_get(struct widget *self,int property) {
 
 /* The DEACTIVATE event can be sent by a click outside the popup, or by pressing escape
  */
-void popup_trigger(struct widget *self,long type,union trigparam *param) {
+void popup_trigger(struct widget *self,s32 type,union trigparam *param) {
 
   switch (type) {
 

@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.39 2002/03/25 02:25:29 micahjd Exp $
+/* $Id: canvas.c,v 1.40 2002/03/26 03:47:20 instinc Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -31,8 +31,8 @@
 #include <pgserver/widget.h>
 #include <picogui/canvas.h>
 
-void canvas_command(struct widget *self, unsigned short command, 
-		    unsigned short numparams,signed long *params);
+void canvas_command(struct widget *self, u16 command, 
+		    u16 numparams, s32 *params);
 
 struct canvasdata {
   struct gropctxt ctx;
@@ -84,7 +84,7 @@ void canvas_inputmap(struct widget *self,s16 *x,s16 *y) {
 /*********************************** Widget interfacing */
 
 void build_canvas(struct gropctxt *c,
-		  unsigned short state,struct widget *self) {
+		  u16 state,struct widget *self) {
    /* Just pass this on to the app */
    post_event(PG_WE_BUILD,self,
 	      (self->in->div->w << 16) | self->in->div->h,0,NULL);
@@ -139,7 +139,7 @@ glob canvas_get(struct widget *self,int property) {
    return 0;
 }
 
-void canvas_trigger(struct widget *self,long type,union trigparam *param) {
+void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    int evt;
    s16 mx,my;
    
@@ -148,9 +148,9 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
       
       struct pgcommand *cmd;
       char *buffer = param->stream.data;
-      unsigned long remaining = param->stream.size;
+      u32 remaining = param->stream.size;
       int i;
-      signed long *params;
+      s32 *params;
       
       while (remaining) {
 	 
@@ -161,12 +161,12 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
 	 cmd->command = ntohs(cmd->command);
 	 cmd->numparams = ntohs(cmd->numparams);
 	 
-	 params = (signed long *) (buffer + sizeof(struct pgcommand));
+	 params = (s32 *) (buffer + sizeof(struct pgcommand));
 	 
 	 buffer += sizeof(struct pgcommand) + 
-	   cmd->numparams * sizeof(signed long);
+	   cmd->numparams * sizeof(s32);
 	 remaining -= sizeof(struct pgcommand) + 
-	   cmd->numparams * sizeof(signed long);
+	   cmd->numparams * sizeof(s32);
 	 if (remaining < 0)
 	   return;
 	 
@@ -333,8 +333,8 @@ void canvas_resize(struct widget *self) {
 
 /*********************************** Commands */
    
-void canvas_command(struct widget *self, unsigned short command, 
-		    unsigned short numparams,signed long *params) {
+void canvas_command(struct widget *self, u16 command, 
+		    u16 numparams, s32 *params) {
    int i;
 
    /* Must we fix the gropctxt's pointers? */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.167 2002/03/22 21:01:46 micahjd Exp $
+/* $Id: widget.c,v 1.168 2002/03/26 03:47:20 instinc Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -159,7 +159,7 @@ g_error widget_create(struct widget **w, int type, struct divtree *dt, handle co
       /* This widget is not supported, return the error code we
        * conveniently crammed into the 'remove' field */
       g_free(*w);
-      return (g_error) (long) (*w)->def->remove;
+      return (g_error) (s32) (*w)->def->remove;
   }
 
   //
@@ -659,7 +659,7 @@ void reset_widget_pointers(void) {
    Set a timer.  At the time, in ticks, specified by 'time',
    the widget will recieve a TRIGGER_TIMER
 */
-void install_timer(struct widget *self,unsigned long interval) {
+void install_timer(struct widget *self,u32 interval) {
   struct widget *w;
 
   /* Remove old links */
@@ -771,7 +771,7 @@ void widgetunder(int x,int y,struct divnode *div) {
 }
 
 /* Internal function that sends a trigger to a widget if it accepts it. */
-int send_trigger(struct widget *w, long type,
+int send_trigger(struct widget *w, s32 type,
 			 union trigparam *param) {
   if (w && w->def && w->def->trigger &&
       (w->trigger_mask & type)) {
@@ -782,7 +782,7 @@ int send_trigger(struct widget *w, long type,
 }
 
 /* Sends a trigger to all of a widget's children */
-void r_send_trigger(struct widget *w, long type,
+void r_send_trigger(struct widget *w, s32 type,
 		    union trigparam *param, u16 *stop,int forward) {
   struct widget *bar;
   
@@ -980,7 +980,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   struct app_info **app;
   struct app_info *ap;
   union trigparam param;
-  long keycode = (mods<<16) | key;     /* Combines mods and the key */
+  s32 keycode = (mods<<16) | key;     /* Combines mods and the key */
   int kflags;
   struct divtree *dt;
   struct widget *bar;

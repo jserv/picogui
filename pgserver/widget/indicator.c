@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.29 2002/02/11 19:39:24 micahjd Exp $
+/* $Id: indicator.c,v 1.30 2002/03/26 03:47:20 instinc Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -28,9 +28,9 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define VALUE ((long)self->data)
+#define VALUE ((s32)self->data)
 
-void build_indicator(struct gropctxt *c,unsigned short state,struct widget *self) {
+void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Set orientation */
   if (c->w > c->h)
     self->in->div->state = PGTH_O_INDICATOR_H;

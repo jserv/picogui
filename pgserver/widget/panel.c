@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.76 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: panel.c,v 1.77 2002/03/26 03:47:20 instinc Exp $
  *
  * panel.c - Holder for applications. It uses a panelbar for resizing purposes,
  *           and optionally supplies some standard buttons for the panel.
@@ -49,7 +49,7 @@ struct paneldata {
  * course we're in a callback triggered by that button.
  */
 g_error panel_std_button(handle *h, struct widget *self, int thobj, int thobj_on, int thobj_hilight, int exev,
-			 int (*callback)(int event, struct widget *from, long param, int owner, char *data)) {
+			 int (*callback)(int event, struct widget *from, s32 param, int owner, char *data)) {
   struct widget *w, *bar;
   g_error e;
 
@@ -101,7 +101,7 @@ struct widget *panel_getpanel(struct widget *button) {
 
 /**** Callbacks */
 
-int panel_close_callback(int event, struct widget *from, long param, int owner, char *data) {
+int panel_close_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
   p = panel_getpanel(from);
   if (p && event==PG_WE_ACTIVATE) {
@@ -113,7 +113,7 @@ int panel_close_callback(int event, struct widget *from, long param, int owner, 
   return 1; /* Absorb event */
 }
 
-int panel_rotate_callback(int event, struct widget *from, long param, int owner, char *data) {
+int panel_rotate_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
   p = panel_getpanel(from);
   if (p && event==PG_WE_ACTIVATE) {
@@ -130,7 +130,7 @@ int panel_rotate_callback(int event, struct widget *from, long param, int owner,
   return 1; /* Absorb event */
 }
 
-int panel_zoom_callback(int event, struct widget *from, long param, int owner, char *data) {
+int panel_zoom_callback(int event, struct widget *from, s32 param, int owner, char *data) {
   struct widget *p;
   p = panel_getpanel(from);
   if (p && event==PG_WE_ACTIVATE) {

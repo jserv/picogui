@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.5 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: panelbar.c,v 1.6 2002/03/26 03:47:20 instinc Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -49,7 +49,7 @@
 					 as a panel roll-up */
 
 struct panelbardata {
-  unsigned long wait_tick;    /* To limit the frame rate */
+  u32 wait_tick;    /* To limit the frame rate */
   int oldsize;                /* Size before we started dragging */
   int unrolled;               /* Size when the panel is unrolled */
   int x,y;                    /* Mouse x,y at click */
@@ -74,13 +74,13 @@ int panel_effective_split(struct divnode *d);
 int panel_throttle(struct widget *self);
 
 /* Two different versions of the trigger function */
-void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *param);
-void panelbar_trigger_solid(struct widget *self,long type,union trigparam *param);
+void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param);
+void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param);
 
 /**** Build and resize */
 
 int panel_throttle(struct widget *self) {
-  unsigned long tick;
+  u32 tick;
 
   /* If possible, use the input driver to see when we're behind
    * and skip a frame. Otherwise, just use a timer as a throttle */
@@ -220,7 +220,7 @@ glob panelbar_get(struct widget *self,int property) {
 }
 
 /* Decide on either sprite or solid dragging */
-void panelbar_trigger(struct widget *self,long type,union trigparam *param) {
+void panelbar_trigger(struct widget *self,s32 type,union trigparam *param) {
 #ifdef CONFIG_DRAGSOLID
   if (DATA->solid)
     panelbar_trigger_solid(self,type,param);
@@ -229,7 +229,7 @@ void panelbar_trigger(struct widget *self,long type,union trigparam *param) {
     panelbar_trigger_sprite(self,type,param);
 }
 
-void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *param) {
+void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param) {
   bool force = 0;
   struct widget *boundwidget;
   int s;
@@ -387,7 +387,7 @@ void panelbar_trigger_sprite(struct widget *self,long type,union trigparam *para
 }
 
 #ifdef CONFIG_DRAGSOLID
-void panelbar_trigger_solid(struct widget *self,long type,union trigparam *param) {
+void panelbar_trigger_solid(struct widget *self,s32 type,union trigparam *param) {
   bool force = 0;
   struct widget *boundwidget;
   int s;

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.49 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: terminal.c,v 1.50 2002/03/26 03:47:20 instinc Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -44,7 +44,7 @@
 
 struct termdata {
   /* Time of the last update, used with CURSOR_WAIT */
-  unsigned long update_time;
+  u32 update_time;
 
   /* character info */
   handle font,deffont;
@@ -178,7 +178,7 @@ void terminal_resize(struct widget *self) {
   load_terminal_theme(self);
 }
    
-void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self) {
+void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
   int neww,newh;
   struct gropnode *grid;
   pghandle bitmap = theme_lookup(self->in->div->state,PGTH_P_BITMAP1);
@@ -218,7 +218,7 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
     /* Resize the buffer if necessary */
     if (neww != DATA->bufferw || newh != DATA->bufferh) {
       u8 *newbuffer,*p;
-      long newbuffer_size,i;
+      s32 newbuffer_size,i;
       /* Blit parameters */
       int src_y,dest_y,w,h;
       
@@ -437,7 +437,7 @@ glob terminal_get(struct widget *self,int property) {
   }
 }
 
-void terminal_trigger(struct widget *self,long type,union trigparam *param) {
+void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
   term_rectprepare(self);   /* Changes must be enclosed
 			     * by term_rectprepare and term_realize */
   
@@ -930,7 +930,7 @@ void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
    u8 *p;
    int i;
    int size = chars<<1;
-   long offset = (fromx + fromy * DATA->bufferw)<<1;
+   s32 offset = (fromx + fromy * DATA->bufferw)<<1;
    
    /* Clear the buffer: set attribute bytes to ATTR_DEFAULT
     * and character bytes to blanks */
