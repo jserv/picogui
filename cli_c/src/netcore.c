@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.24 2001/12/04 18:48:10 cgrigis Exp $
+/* $Id: netcore.c,v 1.25 2001/12/12 03:49:16 epchristi Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -851,7 +851,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: netcore.c,v 1.24 2001/12/04 18:48:10 cgrigis Exp $\n");
+	fprintf(stderr,"$Id: netcore.c,v 1.25 2001/12/12 03:49:16 epchristi Exp $\n");
 	exit(1);
       }
 
@@ -1058,16 +1058,6 @@ pgidlehandler pgSetIdle(long t,pgidlehandler handler) {
 #ifdef ENABLE_THREADING_SUPPORT
 void pgFlushRequests(void) {
 
-   //
-   // Free event data
-   //
-   if (_pg_return.type == PG_RESPONSE_EVENT &&
-       (_pg_return.e.event.type & PG_EVENTCODINGMASK) == PG_EVENTCODING_DATA &&
-        _pg_return.e.event.e.data.pointer) {
-    free(_pg_return.e.event.e.data.pointer);
-    _pg_return.e.event.e.data.pointer = NULL;
-  }
-
   //
   // Send something if we've got something
   //
@@ -1173,7 +1163,6 @@ void pgFlushRequests(void) {
 #ifdef ENABLE_THREADING_SUPPORT
 void *pgDispatchEvent(void *na) {
   struct _pghandlernode *n;
-  pthread_t thread_id;
   struct pgEvent *currentEvent;
   
   /* Search the handler list, executing the applicable ones */
@@ -1242,7 +1231,7 @@ void pgEventLoop(void) {
      * (a handler might call pgFlushRequests and overwrite it) */
 
     pgGetEvent();
-    pgEventThreadEvent = _pg_return.e.event;
+    memcpy(&pgEventThreadEvent, &_pg_return.e.event, sizeof(struct pgEvent));
     sem_post(&eventLoopSem);
 
   }
@@ -1342,7 +1331,7 @@ struct pgEvent *pgGetEvent(void) {
 #endif // ENABLE_THREADING_SUPPORT
  
 /* Add the specified handler to the list */
-void pgBind(pghandle widgetkey,unsigned short eventkey,
+void pgBind(pghandle widgetkey,short eventkey,
 	    pgevthandler handler, void *extra) {
    struct _pghandlernode *p,*n = NULL;
    

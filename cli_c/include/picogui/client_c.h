@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.74 2001/11/09 09:04:32 micahjd Exp $
+/* $Id: client_c.h,v 1.75 2001/12/12 03:49:16 epchristi Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -6,6 +6,8 @@
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved. 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -414,7 +416,7 @@ void pgSubUpdate(pghandle widget);
  * 
  * \sa pgevthandler, pgEvent
  */
-void pgBind(pghandle widgetkey,unsigned short eventkey,
+void pgBind(pghandle widgetkey,short eventkey,
 	    pgevthandler handler,void *extra);
 
 #ifdef FD_SET
@@ -735,6 +737,9 @@ pghandle pgRegisterApp(short int type,const char *name, ...);
  */
 pghandle pgNewWidget(short int type,short int rship,
 		     pghandle parent);
+
+pghandle pgCreateWidget(short int type, pghandle parent);
+void pgAttachWidget(pghandle parent, short int rship, pghandle widget);
 
 /*!
  * \brief Create a popup box, centered on the screen
@@ -1365,6 +1370,41 @@ void pgLeaveContext(void);
 //! \}
 
 //! \}
+
+/*
+ * pgListInsertAt(pghandle list, pghandle widget_to_insert, int position)
+ * This function will insert a widget at a specific location in a list.
+ */
+void pgListInsertAt(pghandle list, pghandle widget, int position);
+
+/*
+ * pgListInsertWidget(pghandle list, pghandle widget_to_insert, pghandle parent, int rship)
+ * This function will insert a widget with respect to a parent and a relationship to that parent.
+ */
+void pgListInsertWidget(pghandle list, pghandle widget, pghandle parent, int rship);
+
+/*
+ * pgListRemoveAt(pghandle list, int position)
+ * This function will remove a widget at a specific location in the list
+ */
+void pgListRemoveAt(pghandle list, int position);
+
+/*
+ * pgListRemoveWidget(pghandle list, pghandle widget_to_remove)
+ * This function will remove a widget from a list, addressed by it's handle
+ */
+void pgListRemove(pghandle list, pghandle widget);
+
+
+/*
+ * This function adds a menu to a menubar
+ */
+void pgAddMenu(pghandle menubar, pghandle menu);
+
+/*
+ */
+void pgRemoveMenu(pghandle menubar, pghandle menu);
+
 
 #endif /* __H_PG_CLI_C */
 /* The End */

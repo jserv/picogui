@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.42 2001/10/07 07:01:25 micahjd Exp $
+/* $Id: widget.h,v 1.43 2001/12/12 03:49:16 epchristi Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -6,7 +6,9 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
- *
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.   
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -260,6 +262,9 @@ DEF_WIDGET_PROTO(listitem)
 DEF_WIDGET_PROTO(submenuitem);
 DEF_WIDGET_PROTO(radiobutton);
 DEF_WIDGET_PROTO(textbox);			
+DEF_WIDGET_PROTO(keyscroll)
+DEF_WIDGET_PROTO(list)
+DEF_WIDGET_PROTO(menubar)
     
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;
@@ -271,11 +276,9 @@ extern int sysevent_owner;
 /* Special function to generate a popup root widget */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner);
 
-g_error widget_create(struct widget **w,int type,
-		      struct divtree *dt,struct divnode **where,
-		      handle container,int owner);
-g_error widget_derive(struct widget **w,int type,struct widget *parent,
-		      handle hparent,int rship,int owner);
+g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner);
+g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner);
+
 void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);
 glob widget_get(struct widget *w, int property);
@@ -362,6 +365,7 @@ void customize_button(struct widget *self,int state,int state_on,
 		      int state_hilight,int state_on_nohilight,
 		      void *extra, void (*event)(struct widget *extra,
 						 struct widget *button));
+void customize_button_text(struct widget *self, glob data);
 
 /* Clips a popup's main divnode to fit on the screen,
  * used when changing video modes */

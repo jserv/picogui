@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.66 2001/11/23 04:24:09 micahjd Exp $
+/* $Id: dispatch.c,v 1.67 2001/12/12 03:49:16 epchristi Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -8,8 +8,9 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
- *
  * Thread-safe code added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * 
  * This program is free software; you can redistribute it and/or
@@ -144,7 +145,7 @@ g_error rqh_update(int owner, struct pgrequest *req,
 
 g_error rqh_mkwidget(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
-  struct widget *w,*parent;
+  struct widget *w = NULL,*parent = NULL;
   handle h;
   handle xh;
   g_error e,etmp;
@@ -155,6 +156,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   */
   switch (ntohs(arg->type)) {
   case PG_WIDGET_PANEL:
+  case PG_WIDGET_MENUBAR:
   case PG_WIDGET_POPUP:
   case PG_WIDGET_BACKGROUND:
     return mkerror(PG_ERRT_BADPARAM,58);
@@ -190,6 +192,81 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
 
   return sucess;
 }
+
+g_error rqh_createwidget(int owner, struct pgrequest *req,
+		                   void *data, unsigned long *ret, int *fatal) {
+  struct widget *w,*parent;
+  handle h;
+  handle xh;
+  g_error e,etmp;
+  reqarg(createwidget);
+
+  /* Don't allow direct creation of 'special' widgets that must
+     be created by other means (app registration, popup boxes)
+  */
+  switch (ntohs(arg->type)) {
+  case PG_WIDGET_PANEL:
+  case PG_WIDGET_POPUP:
+  case PG_WIDGET_BACKGROUND:
+    return mkerror(PG_ERRT_BADPARAM,58);
+  }
+
+  etmp = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
+  if (iserror(etmp))
+     return etmp;
+  
+  e = widget_create(&w, ntohs(arg->type), parent->dt, parent->container, owner);
+  errorcheck;
+
+  e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+  errorcheck;
+  
+  *ret = h;
+
+  return sucess;
+}
+
+g_error rqh_attachwidget(int owner, struct pgrequest *req,
+		                   void *data, unsigned long *ret, int *fatal) {
+  struct widget *w,*parent;
+  handle h;
+  handle xh;
+  g_error e,etmp;
+  reqarg(attachwidget);
+
+  etmp = rdhandle((void**) &parent,PG_TYPE_WIDGET,owner,xh=ntohl(arg->parent));
+  if (iserror(etmp)) {
+    if (ntohs(arg->rship) == PG_DERIVE_INSIDE) {
+      /* Allow creating widgets in foreign containers if the container
+       * has its 'publicbox' bit set
+       */
+      e = rdhandle((void**) &parent,PG_TYPE_WIDGET,-1,xh);
+      errorcheck;
+      if (!parent->publicbox)
+	return etmp;
+    }
+    else
+      return etmp;
+  }
+  if (!parent) return mkerror(PG_ERRT_BADPARAM,59);
+
+  /* Don't let an app put stuff outside its root widget */
+  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=PG_DERIVE_INSIDE)
+    return mkerror(PG_ERRT_BADPARAM,60);
+
+  //
+  // Get the handle to the widget
+  //
+  etmp = rdhandle((void **) &w, PG_TYPE_WIDGET, owner, ntohl(arg->widget));
+  if ( iserror(etmp) )
+     return etmp;
+
+  //
+  // Call widget_derive to actually do the attaching.  widget_derive will notice that the widget already
+  // has been created and not create it again.  In this case, it will just do the attachment.
+  return widget_derive(&w,w->type,parent,xh,ntohs(arg->rship),owner);  
+
+} // rqh_attachwidget
 
 g_error rqh_mkbitmap(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {

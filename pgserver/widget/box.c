@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.17 2001/09/08 19:26:03 micahjd Exp $
+/* $Id: box.c,v 1.18 2001/12/12 03:49:17 epchristi Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -83,6 +83,37 @@ g_error box_set(struct widget *self,int property, glob data) {
   case PG_WP_MARGIN:
     self->in->div->split = data;
     MARGIN_OVERRIDE = 1;       /* Prevent automatic setting of margins */
+    break;
+    
+  case PG_WP_HILIGHTED:
+    {
+      struct divnode *sub;
+
+      if ( data ) {
+
+         //
+         //
+         // Hilight this widget
+         //
+         widget_set(self, PG_WP_THOBJ, PGTH_O_BOX_HILIGHT);
+      }
+      else {
+
+         // 
+         // Un hilight this widget
+         //
+         widget_set(self, PG_WP_THOBJ, PGTH_O_BOX);
+      }
+
+      //
+      // Pass the message onto the other sub widgets
+      //
+      if ( self->sub ) {
+         for (sub = *self->sub; sub != NULL; sub = sub->next ) {
+            widget_set(sub->owner, PG_WP_HILIGHTED, data);
+         }
+      }
+    }
     break;
     
   default:

@@ -49,6 +49,8 @@ RQH(findwidget)
 RQH(checkevent)
 RQH(sizebitmap)
 RQH(appmsg)
+RQH(createwidget)
+RQH(attachwidget)
 RQH(undef)        /* undef must be last */
 
 /* The End */

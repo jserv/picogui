@@ -8,6 +8,6 @@ include_HEADERS = \
 	pgfx.h \
 	pgkeys.h \
    theme.h \
-	stddialog.h
-	
-	
+	stddialog.h \
+	list.h \
+   menu.h

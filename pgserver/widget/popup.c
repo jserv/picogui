@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.39 2001/11/07 02:41:39 micahjd Exp $
+/* $Id: popup.c,v 1.40 2001/12/12 03:49:17 epchristi Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -7,7 +7,9 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
- *
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ *   
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -76,7 +78,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   errorcheck;
   
   /* Add the new popup widget - a simple theme-enabled container widget */
-  e = widget_create(wgt,PG_WIDGET_POPUP,dts->top,&dts->top->head->next,0,owner);
+  e = widget_create(wgt,PG_WIDGET_POPUP,dts->top, 0, owner);
+  errorcheck;
+  
+  e = widget_attach(*wgt,dts->top,&dts->top->head->next,0,owner);  
   errorcheck;
 
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going

@@ -1,10 +1,12 @@
-/* $Id: panel.c,v 1.67 2001/10/14 00:46:47 micahjd Exp $
+/* $Id: panel.c,v 1.68 2001/12/12 03:49:17 epchristi Exp $
  *
  * panel.c - Holder for applications
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
- *
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -274,25 +276,32 @@ g_error panel_install(struct widget *self) {
   self->in->div->next->state = PGTH_O_PANEL;
 
   /* Close Button */
-  e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt,&self->in->div->div,
-		    self->container,self->owner);
+  e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt, self->container, self->owner);
   errorcheck;
+  e = widget_attach(DATA->btn_close, self->dt,&self->in->div->div, self->container,self->owner);
+  errorcheck;
+  
   customize_button(DATA->btn_close,PGTH_O_CLOSEBTN,PGTH_O_CLOSEBTN_ON,
 		   PGTH_O_CLOSEBTN_HILIGHT,PGTH_O_CLOSEBTN_ON,self,
 		   &panelbtn_close);
 
   /* Rotate Button */
-  e = widget_create(&DATA->btn_rotate,PG_WIDGET_BUTTON,self->dt,DATA->btn_close->out,
-		    self->container,self->owner);
+  e = widget_create(&DATA->btn_rotate,PG_WIDGET_BUTTON,self->dt, self->container, self->owner);
   errorcheck;
+  e = widget_attach(DATA->btn_rotate, self->dt,DATA->btn_close->out,
+                    self->container,self->owner);
+  errorcheck;
+  
   customize_button(DATA->btn_rotate,PGTH_O_ROTATEBTN,PGTH_O_ROTATEBTN_ON,
 		   PGTH_O_ROTATEBTN_HILIGHT,PGTH_O_ROTATEBTN_ON,
 		   self,&panelbtn_rotate);
 
   /* Zoom Button */
-  e = widget_create(&DATA->btn_zoom,PG_WIDGET_BUTTON,self->dt,DATA->btn_rotate->out,
-		    self->container,self->owner);
+  e = widget_create(&DATA->btn_zoom,PG_WIDGET_BUTTON,self->dt, self->container, self->owner);
   errorcheck;
+  e = widget_attach(DATA->btn_zoom, self->dt,DATA->btn_rotate->out, self->container,self->owner);
+  errorcheck;
+  
   customize_button(DATA->btn_zoom,PGTH_O_ZOOMBTN,PGTH_O_ZOOMBTN_ON,
 		   PGTH_O_ZOOMBTN_HILIGHT,PGTH_O_ZOOMBTN_ON,
 		   self,&panelbtn_zoom);

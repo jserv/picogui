@@ -9,6 +9,7 @@ libwidget_a_SOURCES = \
     toolbar.c \
     scroll.c \
     widget.c \
+    menubar.c \
     button.c \
     popup.c \
     box.c \
@@ -21,6 +22,7 @@ libwidget_a_SOURCES = \
     radiobutton.c \
     textbox_main.c \
     textbox_document.c \
+    list.c \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \

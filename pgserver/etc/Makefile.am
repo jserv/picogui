@@ -17,4 +17,4 @@ gen-pgserver-conf: gen-pgserver-conf.c
 	$(CC_FOR_BUILD) $< -o $@ -I../include -I$(srcdir)/../gcore
 
 clean:
-	rm $(sysconf_DATA)
+	rm -f $(sysconf_DATA)

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.32 2001/11/09 09:04:32 micahjd Exp $
+/* $Id: api.c,v 1.33 2001/12/12 03:49:16 epchristi Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -8,6 +8,8 @@
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.  
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +37,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define DBG(fmt, args...) printf( "%s: " fmt, __FUNCTION__ , ## args); fflush(stdout)
 
 /******* The simple functions that don't need args or return values */
 
@@ -539,6 +542,53 @@ void  pgSetWidget(pghandle widget, ...) {
   va_end(v);
 }
 
+pghandle pgCreateWidget(short int type, pghandle parent) {
+   struct pgreqd_createwidget arg;
+
+   arg.type = htons(type);
+   arg.parent = htonl(parent ? parent : _pgdefault_widget);
+
+#ifdef ENABLE_THREADING_SUPPORT  
+{
+  pgClientReturnData retData;
+  sem_init(&retData.sem, 0, 0);
+  _pg_add_request(PGREQ_CREATEWIDGET,&arg,sizeof(arg), (unsigned int)&retData, 1);
+  sem_wait(&retData.sem);
+  _pgdefault_rship = PG_DERIVE_AFTER;
+  _pgdefault_widget = retData.ret.e.retdata;
+  return retData.ret.e.retdata;
+}
+#else
+  _pg_add_request(PGREQ_CREATEWIDGET,&arg,sizeof(arg));
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+
+  /* Default is inside this widget */
+  _pgdefault_rship = PG_DERIVE_AFTER;
+  _pgdefault_widget = _pg_return.e.retdata;
+  
+  /* Return the new handle */
+  return _pg_return.e.retdata;
+#endif  
+}
+
+void pgAttachWidget(pghandle parent, short int rship, pghandle widget) {
+
+   struct pgreqd_attachwidget arg;
+
+   arg.widget = htonl(widget);
+   arg.parent = htonl(parent ? parent : _pgdefault_widget);   
+   arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
+   
+#ifdef ENABLE_THREADING_SUPPORT
+  _pg_add_request(PGREQ_ATTACHWIDGET,&arg,sizeof(arg), -1, 0);
+#else  
+  _pg_add_request(PGREQ_ATTACHWIDGET,&arg,sizeof(arg));
+#endif  
+   
+}
+
 pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
   struct pgreqd_mkwidget arg;
 
@@ -552,7 +602,7 @@ pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
   arg.parent = htonl(parent ? parent : _pgdefault_widget);
   arg.rship  = htons(rship  ? rship  : _pgdefault_rship);
 
-#ifdef ENABLE_THREADING_SUPPORT
+#ifdef ENABLE_THREADING_SUPPORT  
 {
   pgClientReturnData retData;
   sem_init(&retData.sem, 0, 0);
@@ -562,6 +612,7 @@ pghandle pgNewWidget(short int type,short int rship,pghandle parent) {
   _pgdefault_widget = retData.ret.e.retdata;
   return retData.ret.e.retdata;
 }
+ 
 #else
   _pg_add_request(PGREQ_MKWIDGET,&arg,sizeof(arg));
 
@@ -1162,5 +1213,47 @@ void pgAppMessage(pghandle dest, struct pgmemdata data) {
   _pg_free_memdata(data);
   free(buf);
 }
+
+void pgListInsertAt(pghandle list, pghandle widget, int position) {
+
+   pgWriteCmd(list, PGLIST_INSERT_AT, 2, widget, position);
+      
+}  // End of pgListInsertAt
+
+void pgListInsertWidget(pghandle list, pghandle widget, pghandle parent, int rship) {
+
+   if ( rship != PG_DERIVE_AFTER || rship != PG_DERIVE_BEFORE )
+      return;
+   
+   pgWriteCmd(list, PGLIST_INSERT_AT_PARENT, 3, widget, parent, rship);
+   
+}  // End of pgListInsertWidget
+
+void pgListRemoveAt(pghandle list, int position) {
+
+   pgWriteCmd(list, PGLIST_REMOVE_AT, 1, position);
+   
+}  // End of pgListRemoveAt
+
+void pgListRemove(pghandle list, pghandle widget) {
+
+   pgWriteCmd(list, PGLIST_REMOVE, 1, widget);
+   
+}  // End of pgListRemove
+
+
+void pgAddMenu(pghandle menubar, pghandle menu)
+{
+   pgWriteCmd(menubar, PGMENU_ADD, 1, menu);
+
+} // End of pgAddMenu
+
+void pgRemoveMenu(pghandle menubar, pghandle menu)
+{
+   pgWriteCmd(menubar, PGMENU_REMOVE, 1, menu);
+
+} // End of pgAddMenu
+
+
 
 /* The End */

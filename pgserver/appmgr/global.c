@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.48 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: global.c,v 1.49 2001/12/12 03:49:16 epchristi Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -6,6 +6,8 @@
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.   
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -92,6 +94,7 @@ handle string_pguierrdlg;
 handle string_pguicompat;
 handle default_textcolors;
 
+
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
   struct widget *w;
@@ -112,9 +115,11 @@ g_error appmgr_init(void) {
 #endif
    
   /* Make the background widget */
-  e = widget_create(&bgwidget,PG_WIDGET_BACKGROUND,dts->root,
-		    &dts->root->head->next,0,-1);
+  e = widget_create(&bgwidget,PG_WIDGET_BACKGROUND,dts->root, 0, -1);
   errorcheck;
+  e = widget_attach(bgwidget, dts->root, &dts->root->head->next,0,-1);
+  errorcheck;
+  
   e = mkhandle(&hbgwidget,PG_TYPE_WIDGET,-1,bgwidget);   
   errorcheck;
 
@@ -192,6 +197,10 @@ g_error appmgr_init(void) {
 	       errortext(mkerror(0,32)));
   errorcheck;
 
+#ifdef DEBUG_INIT
+   printf("Init: appmgr: success\n");
+#endif
+
   return sucess;
 }
 
@@ -239,7 +248,7 @@ void appmgr_unregowner(int owner) {
 
 g_error appmgr_register(struct app_info *i) {
   struct app_info *dest;
-  struct widget *w;
+  struct widget *w = NULL;
   struct divnode *p;
   struct divtree *tree;
   g_error e;
@@ -256,9 +265,13 @@ g_error appmgr_register(struct app_info *i) {
      * toolbar, if applicable, and update htbboundary. */
     if (wtbboundary)
       e = widget_derive(&w,PG_WIDGET_TOOLBAR,wtbboundary,htbboundary,PG_DERIVE_AFTER,i->owner);
-    else
-      e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
-    errorcheck;
+    else {
+      e = widget_create(&w,PG_WIDGET_TOOLBAR,dts->root, 0, i->owner);
+      errorcheck;
+      e = widget_attach(w,dts->root,&dts->root->head->next,0,i->owner);
+      errorcheck;
+    }
+    
     e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
     errorcheck;    
     htbboundary = i->rootw;
@@ -300,6 +313,22 @@ g_error appmgr_register(struct app_info *i) {
     e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
     errorcheck;
     
+    break;
+
+  case PG_APP_MENUBAR:
+    /* Put the new app right before the background widget */
+    e = widget_derive(&w,PG_WIDGET_MENUBAR,bgwidget,hbgwidget,PG_DERIVE_BEFORE,i->owner);
+    errorcheck;
+    e = mkhandle(&i->rootw,PG_TYPE_WIDGET,i->owner,w);
+    errorcheck;    
+
+    /* Set all the properties */
+    e = widget_set(w,PG_WP_TEXT,i->name);
+    errorcheck;
+    e = widget_set(w,PG_WP_SIDE,i->side);
+    errorcheck;
+    e = widget_set(w,PG_WP_SIZE,(i->side & (PG_S_LEFT|PG_S_RIGHT)) ? i->w : i->h);
+    errorcheck;
     break;
 
   default:

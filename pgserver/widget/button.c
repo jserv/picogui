@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.80 2001/11/04 16:11:32 micahjd Exp $
+/* $Id: button.c,v 1.81 2001/12/12 03:49:17 epchristi Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -68,6 +68,20 @@ void customize_button(struct widget *self,int state,int state_on,
   DATA->event = event;
 
   resizewidget(self);
+}
+
+void customize_button_text(struct widget *self, glob data)
+{
+  char *str;
+
+  printf(__FUNCTION__ ":button_text %x\n",data);
+
+  if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+    return mkerror(PG_ERRT_HANDLE,13);
+  DATA->text = (handle) data;
+  resizewidget(self);
+  self->in->flags |= DIVNODE_NEED_RECALC;
+  self->dt->flags |= DIVTREE_NEED_RECALC;
 }
 
 struct btnposition {

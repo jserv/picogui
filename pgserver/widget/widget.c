@@ -1,11 +1,13 @@
-/* $Id: widget.c,v 1.124 2001/11/23 11:00:16 micahjd Exp $
+/* $Id: widget.c,v 1.125 2001/12/12 03:49:17 epchristi Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
- *
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ *    
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -77,6 +79,8 @@ DEF_HYBRIDWIDGET_TABLE(listitem,button)
 DEF_HYBRIDWIDGET_TABLE(submenuitem,button)
 DEF_HYBRIDWIDGET_TABLE(radiobutton,button)
 DEF_WIDGET_TABLE(textbox)
+DEF_WIDGET_TABLE(list)
+DEF_WIDGET_TABLE(menubar)
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -103,54 +107,104 @@ int sysevent_owner;
    
 int timerlock = 0;
 /******** Widget interface functions */
+ 
+g_error widget_create(struct widget **w, int type, struct divtree *dt, handle container, int owner) {
 
-g_error widget_create(struct widget **w,int type,
-		      struct divtree *dt,struct divnode **where,
-		      handle container,int owner) {
-  g_error e;
+   g_error e;
 
-  if ((type > PG_WIDGETMAX) || (!dt) || (!where)) return 
-      mkerror(PG_ERRT_BADPARAM,20);
+   //
+   // Check the type.
+   //
+   if ( (!dt) || type > PG_WIDGETMAX )
+      return mkerror(PG_ERRT_BADPARAM, 20);
 
 #ifdef DEBUG_KEYS
   num_widgets++;
 #endif
-  e = g_malloc((void **)w,sizeof(struct widget));
-  errorcheck;
-  memset(*w,0,sizeof(struct widget));
 
+  //
+  // Allocate new widget memory and zero it out.
+  //
+  e = g_malloc((void **)w, sizeof(struct widget));
+  errorcheck;
+  memset(*w, 0, sizeof(struct widget));
+
+  //
+  // Initialize the elements we can.  Since this widget is unattached.
+  //
   (*w)->owner = owner;
   (*w)->type = type;
   (*w)->def = widgettab + type;
   (*w)->dt = dt;
   (*w)->container = container;
 
-  if ((*w)->def->install)
+  //
+  // Manufacture an instance of the desired widget.
+  //
+  if ((*w)->def->install) {
      (*(*w)->def->install)(*w);
-   else {
+  }
+  else {
       /* This widget is not supported, return the error code we
        * conveniently crammed into the 'remove' field */
-
       g_free(*w);
       return (g_error) (*w)->def->remove;
-   }
+  }
 
+  //
+  // That is is for widget creation.
+  //
+  return sucess;
+  
+}  // End of widget_create()
+ 
+g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **where, handle container, int owner) {
+  g_error e;
+  struct divnode *div;
+  
+  //
+  // Initial error checking
+  //
+  if ( (!dt) || (!where) || (w->owner != owner) )
+     return  mkerror(PG_ERRT_BADPARAM,20);
+
+  //
+  // Initialize the rest of the widget data structure
+  //
+  w->dt = dt;
+  w->container = container;
+
+  //
+  // Change the dt on all subwidgets.  Since this widget is now being attached.
+  //
+  for ( div = w->in->div; div != NULL; div = div->next ) {
+
+     //
+     // Only adjust those we own
+     //
+     if ( div->owner->owner == owner ) {
+        div->owner->dt = dt;
+        div->owner->container = container;
+     }
+  }
+  
   /* If we just added a widget that can accept text input, and this is inside
    * a popup box, keep it in the nontoolbar area so keyboards still work */
-  if ((*w)->trigger_mask & TRIGGER_CHAR &&
-      dt->head->next && dt->head->next->div && 
-      dt->head->next->div->owner->type == PG_WIDGET_POPUP)
+  if (w->trigger_mask & TRIGGER_CHAR && dt->head->next && dt->head->next->div && 
+      dt->head->next->div->owner->type == PG_WIDGET_POPUP) {
     dt->head->next->div->flags |= DIVNODE_POPUP_NONTOOLBAR;
-
+  }
+  
   /* Add the widget to the divtree */
-  *(*w)->out = *where;
-  *where = (*w)->in;
-  (*w)->where = where;
-  if (*(*w)->out && (*(*w)->out)->owner)
-    (*(*w)->out)->owner->where = (*w)->out;
-     
+  *w->out = *where;
+  *where = w->in;
+  w->where = where;
+  if (w->out && *w->out && (*w->out)->owner) {
+    (*w->out)->owner->where = w->out;
+  }
+  
   /* Resize for the first time */
-  resizewidget(*w);
+  resizewidget(w);
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
@@ -160,17 +214,32 @@ g_error widget_create(struct widget **w,int type,
 g_error widget_derive(struct widget **w,
 		      int type,struct widget *parent,
 		      handle hparent,int rship,int owner) {
+
+  g_error e;
+  
   switch (rship) {
 
   case PG_DERIVE_INSIDE:
-    return widget_create(w,type,parent->dt,parent->sub,hparent,owner);
+     if (*w == NULL ) {
+        e = widget_create(w, type, parent->dt, hparent, owner);
+        errorcheck;
+     }
+     return widget_attach(*w, parent->dt,parent->sub,hparent,owner);
 
   case PG_DERIVE_AFTER:
-    return widget_create(w,type,parent->dt,parent->out,parent->container,owner);
+     if ( *w == NULL ) {
+        e = widget_create(w, type, parent->dt, parent->container, owner);
+        errorcheck;
+     }
+     return widget_attach(*w,parent->dt,parent->out,parent->container,owner);
 
   case PG_DERIVE_BEFORE:
   case PG_DERIVE_BEFORE_OLD:
-    return widget_create(w,type,parent->dt,parent->where,parent->container,owner);
+     if ( *w == NULL ) {
+        e = widget_create(w, type, parent->dt, parent->container, owner);
+        errorcheck;
+     }
+     return widget_attach(*w,parent->dt,parent->where,parent->container,owner);
    
   default:
     return mkerror(PG_ERRT_BADPARAM,22);
@@ -256,12 +325,12 @@ void widget_remove(struct widget *w) {
 
     }
     else {
-      if (w->out) {
+      if (w->out && *w->out) {
 	*w->where = *w->out;
        	if (*w->out && (*w->out)->owner)
 	  (*w->out)->owner->where = w->where;
       }
-      else
+      else if ( w->where )
 	*w->where = NULL;
     }
     
@@ -403,6 +472,21 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
    case PG_WP_TRIGGERMASK:
      w->trigger_mask = data;
      break;
+     
+   case PG_WP_HILIGHTED:
+    {
+      struct divnode *sub;
+
+      //
+      // Pass the message onto the other sub widgets
+      //
+      if ( w->sub ) {
+         for (sub = *w->sub; sub != NULL; sub = sub->next ) {
+            widget_set(sub->owner, PG_WP_HILIGHTED, data);
+         }
+      }
+    }
+    break;
 
     default:
       return mkerror(PG_ERRT_BADPARAM,6);   /* Unknown property */
@@ -410,7 +494,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
    return sucess;
 }
 
-glob inline widget_get(struct widget *w, int property) {
+glob widget_get(struct widget *w, int property) {
    if (!(w && w->def->get))
      return 0;
    
@@ -472,7 +556,7 @@ void redraw_bg(struct widget *self) {
   else
 #endif
     container->in->flags |= DIVNODE_NEED_REDRAW;
-  container->dt->flags |= DIVTREE_NEED_REDRAW;
+  if ( container->dt ) container->dt->flags |= DIVTREE_NEED_REDRAW;
 }
 
 /***** Trigger stuff **/
@@ -915,7 +999,8 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 			  widget */
 
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
-  
+
+  printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
   inactivity_reset();
 
   /* For rotating arrow keys along with the rest of PicoGUI */
@@ -1096,6 +1181,7 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   if (suppress) return;
 
   /* All other keypresses go to the focused widget (if any) */
+  printf(__FUNCTION__": kbdfocus = 0x%x\n", kbdfocus);
   if (kbdfocus) {
     param.kbd.key = key;
     param.kbd.mods = mods;
@@ -1150,8 +1236,11 @@ void reload_hotkeys(void) {
  * should send unused keys here.
  */
 void global_hotkey(u16 key,u16 mods, u32 type) {
+
+   printf(__FUNCTION__": Enter\n");
   if (type == TRIGGER_KEYDOWN) {
-   
+
+     printf(__FUNCTION__": type == TRIGGER_KEYDOWN\n");
     if (!mods) {
       /* Key down, no modifiers */
 

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.44 2001/09/03 02:04:00 micahjd Exp $
+/* $Id: scroll.c,v 1.45 2001/12/12 03:49:17 epchristi Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -170,10 +170,15 @@ g_error scroll_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case PG_WP_VALUE:
-    DATA->value = data;
-    scrollevent(self);
-    scrollupdate(self);
-    break;
+   if (data < 0) {
+      data = 0;
+   }
+   DATA->value = data;
+   scrollevent(self);
+   scrollupdate(self);
+   div_setstate(self->in->div,PGTH_O_SCROLL_ON,1);
+
+   break;
 
   case PG_WP_SIZE:
     DATA->res = data;

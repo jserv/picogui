@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.70 2001/11/15 11:18:12 micahjd Exp $
+/* $Id: network.h,v 1.71 2001/12/12 03:49:16 epchristi Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -8,7 +8,10 @@
  *
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
- * 
+ *
+ * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
+ * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -162,8 +165,10 @@ struct pghello {
 #define PGREQ_CHECKEVENT   43  /* Return number of queued events |    none */
 #define PGREQ_SIZEBITMAP   44  /* Find the size of a bitmap      |  handle */
 #define PGREQ_APPMSG       45  /* Send PG_WE_APPMSG to any widget|  struct */
+#define PGREQ_CREATEWIDGET 46  /* Create widget                  |  struct */
+#define PGREQ_ATTACHWIDGET 47  /* Attach widget                  |  struct */
 
-#define PGREQ_UNDEF        46  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        48  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -180,6 +185,16 @@ struct pghello {
 
 struct pgreqd_handlestruct {
   u32 h;   /* for requests that just use a handle */
+};
+
+struct pgreqd_createwidget {
+   u16 type;
+   u32 parent;
+};
+struct pgreqd_attachwidget {
+   u32 parent;
+   u16 rship;
+   u32 widget;
 };
 
 struct pgreqd_mkwidget {

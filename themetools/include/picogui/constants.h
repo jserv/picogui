@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.41 2001/10/12 06:20:44 micahjd Exp $
+/* $Id: constants.h,v 1.42 2001/12/12 03:49:17 epchristi Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -71,9 +71,10 @@
  * \{
  */
 
-#define PG_APP_NORMAL  1     //!< Normal application for pgRegisterApp
-#define PG_APP_TOOLBAR 2     //!< Toolbar application for pgRegisterApp
-#define PG_APPMAX      2     //!< Current maximum value used in PG_APP_* constants
+#define PG_APP_NORMAL   1     //!< Normal application for pgRegisterApp
+#define PG_APP_TOOLBAR  2     //!< Toolbar application for pgRegisterApp
+#define PG_APP_MENUBAR  3     //!< RidgeRun application for pgRegisterApp
+#define PG_APPMAX       3     //!< Current maximum value used in PG_APP_* constants
 
 #define PG_APPSPEC_SIDE      1    //!< Force the app to a specified side
 #define PG_APPSPEC_SIDEMASK  2    //!< A bitmask of acceptable sides for an application
@@ -147,8 +148,9 @@
  *   - PG_FSTYLE_DEFAULT
  *   - PG_FSTYLE_SYMBOL
  *   - PG_FSTYLE_SUBSET
- *   - PG_FSTYLE_EXTENDED
- *   - PG_FSTYLE_IBMEXTEND
+ *   - PG_FSTYLE_ENCODING_ISOLATIN1
+ *   - PG_FSTYLE_ENCODING_IBM
+ *   - PG_FSTYLE_ENCODING_UNICODE
  * 
  * \{
  */
@@ -157,18 +159,24 @@
 #define PG_FSTYLE_DEFAULT      (1<<1)    //!< The default font in its category, fixed or proportional.
 #define PG_FSTYLE_SYMBOL       (1<<2)    //!< Font contains nonstandard chars and will not be chosen unless specifically requested
 #define PG_FSTYLE_SUBSET       (1<<3)    //!< Font does not contain all the ASCII chars before 127, and shouldn't be used unless requested
-#define PG_FSTYLE_EXTENDED     (1<<4)    //!< Contains international characters above 127 
-#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< Has IBM-PC extended characters
-
+#define PG_FSTYLE_EXTENDED     (1<<4)    //!< (deprecated) Contains international characters above 127 
+#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< (deprecated) Has IBM-PC extended characters
 #define PG_FSTYLE_DOUBLESPACE  (1<<7)    //!< Add extra space between lines
 #define PG_FSTYLE_BOLD         (1<<8)    //!< Use or simulate a bold version of the font
 #define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
 #define PG_FSTYLE_UNDERLINE    (1<<10)   //!< Underlined text
 #define PG_FSTYLE_STRIKEOUT    (1<<11)   //!< Strikeout, a line through the middle of the text
-#define PG_FSTYLE_GRAYLINE     (1<<12)   //!< A faint underline
+#define PG_FSTYLE_GRAYLINE     (1<<12)   //!< deprecated
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
+#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
+#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
+#define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
+
+#define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
+                                       PG_FSTYLE_ENCODING_IBM|\
+                                       PG_FSTYLE_ENCODING_UNICODE)
 
 //! \}
 
@@ -346,10 +354,15 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
 #define PGTH_O_TEXTBOX               57   //!< Textbox widget
 #define PGTH_O_TERMINAL              58   //!< Terminal widget
+#define PGTH_O_LIST                  59   //!< RidgeRun's list box widget
+#define PGTH_O_MENUBUTTON            60   //!< DSPLinux Application Menu
+#define PGTH_O_MENUBUTTON_ON         61   //!< DSPLinux Application Menu
+#define PGTH_O_MENUBUTTON_HILIGHT    62   //!< DSPLinux Application Menu
+#define PGTH_O_LABEL_HILIGHT         63   //!< Label hilight or select - See PG_WP_HILIGHTED
+#define PGTH_O_BOX_HILIGHT           64   //!< Box hilight or select - See PG_WP_HILIGHTED
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    59
-
+#define PGTH_ONUM                    65
 //! \}
 
 /*** Loaders */
@@ -723,6 +736,7 @@ typedef unsigned long pghandle;
 #define PG_VID_ROTATE90       0x0004  //!< Rotate flags are mutually exclusive
 #define PG_VID_ROTATE180      0x0008
 #define PG_VID_ROTATE270      0x0010
+#define PG_VID_ROTATEMASK     0x001C  //!< Mask of all rotate flags
 
 #define PG_FM_SET             0      //!< Sets all flags to specified value
 #define PG_FM_ON              1      //!< Turns on specified flags
@@ -748,11 +762,15 @@ typedef unsigned long pghandle;
 #define PGDM_BRIGHTNESS       6   //!< Set display brightness, 0x00-0xFF
 #define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
 #define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
-#define PGDM_INPUT_SETCAL     9   //!< param is a handle to a new calibration string
+#define PGDM_INPUT_SETCAL     9   //!< Param is a handle to a new calibration string
+#define PGDM_CURSORBLKEN     10   //!< Cursor blanking on/off
+#define PGDM_INPUT_CALEN     11   //!< Turn calibration mode on/off
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
 #define PG_SND_VISUALBELL     3   //!< Flash the visual bell if available
+#define PG_SND_ALARM          4
+#define PG_SND_SHORTBEEP      5   //!< Shorter beep
 
 #define PG_POWER_OFF          0   //!< Turn completely off
 #define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
@@ -793,7 +811,9 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
 #define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGETMAX          19    /* For error checking */
+#define PG_WIDGET_LIST        20    /* RidgeRun's list box widget */
+#define PG_WIDGET_MENUBAR     21
+#define PG_WIDGETMAX          21    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -827,6 +847,15 @@ typedef unsigned long pghandle;
 				 * in this container */
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
 #define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
+#define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for 
+				 * PG_WP_TEXT. fourCC format, with optional
+				 * preceeding '+' to prevent erasing existing
+				 * data, just append at the cursor position
+				 */
+#define PG_WP_TRIGGERMASK 31    /* Mask of extra triggers accepted (self->trigger_mask) */
+#define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
+#define PG_WP_SELECTED    33    /* List property to select a row. */
+#define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.102 2001/11/23 11:00:15 micahjd Exp $
+/* $Id: constants.h,v 1.103 2001/12/12 03:49:16 epchristi Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -71,9 +71,10 @@
  * \{
  */
 
-#define PG_APP_NORMAL  1     //!< Normal application for pgRegisterApp
-#define PG_APP_TOOLBAR 2     //!< Toolbar application for pgRegisterApp
-#define PG_APPMAX      2     //!< Current maximum value used in PG_APP_* constants
+#define PG_APP_NORMAL   1     //!< Normal application for pgRegisterApp
+#define PG_APP_TOOLBAR  2     //!< Toolbar application for pgRegisterApp
+#define PG_APP_MENUBAR  3     //!< RidgeRun application for pgRegisterApp
+#define PG_APPMAX       3     //!< Current maximum value used in PG_APP_* constants
 
 #define PG_APPSPEC_SIDE      1    //!< Force the app to a specified side
 #define PG_APPSPEC_SIDEMASK  2    //!< A bitmask of acceptable sides for an application
@@ -353,10 +354,15 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
 #define PGTH_O_TEXTBOX               57   //!< Textbox widget
 #define PGTH_O_TERMINAL              58   //!< Terminal widget
+#define PGTH_O_LIST                  59   //!< RidgeRun's list box widget
+#define PGTH_O_MENUBUTTON            60   //!< DSPLinux Application Menu
+#define PGTH_O_MENUBUTTON_ON         61   //!< DSPLinux Application Menu
+#define PGTH_O_MENUBUTTON_HILIGHT    62   //!< DSPLinux Application Menu
+#define PGTH_O_LABEL_HILIGHT         63   //!< Label hilight or select - See PG_WP_HILIGHTED
+#define PGTH_O_BOX_HILIGHT           64   //!< Box hilight or select - See PG_WP_HILIGHTED
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    59
-
+#define PGTH_ONUM                    65
 //! \}
 
 /*** Loaders */
@@ -806,7 +812,9 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_SUBMENUITEM 17    /* Menuitem with a submenu arrow */
 #define PG_WIDGET_RADIOBUTTON 18    /* Like a check box, but exclusive */
 #define PG_WIDGET_TEXTBOX     19    /* Client-side text layout */
-#define PG_WIDGETMAX          19    /* For error checking */
+#define PG_WIDGET_LIST        20    /* RidgeRun's list box widget */
+#define PG_WIDGET_MENUBAR     21
+#define PG_WIDGETMAX          21    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -846,6 +854,9 @@ typedef unsigned long pghandle;
 				 * data, just append at the cursor position
 				 */
 #define PG_WP_TRIGGERMASK 31    /* Mask of extra triggers accepted (self->trigger_mask) */
+#define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
+#define PG_WP_SELECTED    33    /* List property to select a row. */
+#define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

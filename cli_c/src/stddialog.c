@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.9 2001/11/14 09:57:28 micahjd Exp $
+/* $Id: stddialog.c,v 1.10 2001/12/12 03:49:16 epchristi Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -230,21 +230,30 @@ int pgMenuFromString(char *items) {
  *                 context will be entered before the
  *                 string handles are created
  */
+#ifdef ENABLE_THREADING_SUPPORT
+int pgMenuFromArray(pghandle *items,int numitems, pgevthandler handler) {
+#else
 int pgMenuFromArray(pghandle *items,int numitems) {
+#endif  
   int i;
-
-  pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
+  pghandle returnHandle;
+  returnHandle = pgNewPopupAt(PG_POPUP_ATCURSOR,PG_POPUP_ATCURSOR,0,0);
 
   for (i=0;i<numitems;i++) {
-    pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    printf("Menu Item => %d\n", pgNewWidget(PG_WIDGET_MENUITEM,0,0));
     pgSetWidget(PGDEFAULT,
 		PG_WP_TEXT,items[i],
 		0);
     pgSetPayload(PGDEFAULT,i+1);
   }
 
+#ifdef ENABLE_THREADING_SUPPORT
+  pgUpdate();
+  pgBind(PGBIND_ANY, PGBIND_ANY, handler, returnHandle);
+#else  
   /* Return event */
   return pgGetPayload(pgGetEvent()->from);
+#endif  
 }
 
 /* Like a messge dialog, with an input field */
