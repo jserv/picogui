@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.124 2002/10/23 06:17:26 micahjd Exp $
+/* $Id: button.c,v 1.125 2002/10/28 20:30:41 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -77,7 +77,8 @@ struct btndata {
 
   int hotkey;
   int hotkey_flags;
-  int hotkey_consume;
+  unsigned int hotkey_consume : 1;
+  unsigned int hotkey_down : 1;
 
   /* Mask of extended (other than ACTIVATE) events to send
    * and other flags*/
@@ -531,8 +532,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_KEYDOWN:
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP.
      */
-    if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
-      param->kbd.consume++;      
+    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
+      DATA->hotkey_down = 1;
+      if (DATA->hotkey_consume)
+	param->kbd.consume++;      
       return;
     }
     
@@ -608,8 +611,10 @@ void button_trigger(struct widget *self,s32 type,union trigparam *param) {
       printf("PG_TRIGGER_KEYUP: button %p, hotkey_received was %d\n",self, DATA->hotkey_received);
 #endif
 
-      /* Make sure we don't do this twice */
-      if (DATA->hotkey_received)
+      /* Make sure we don't do this twice, or without
+       * accepting the corresponding keydown.
+       */
+      if (DATA->hotkey_received || !DATA->hotkey_down)
 	return;
       DATA->hotkey_received = 1;
       

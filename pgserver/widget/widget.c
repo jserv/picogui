@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.204 2002/10/24 11:23:06 micahjd Exp $
+/* $Id: widget.c,v 1.205 2002/10/28 20:30:42 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -411,7 +411,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
 	data = 0;
       if (maindiv->translation.x != -data) {
 	maindiv->translation.x = -data;
-	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;;
+	maindiv->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_NEED_RECALC;
 	w->dt->flags |= DIVTREE_NEED_REDRAW;
 	hotspot_free();
       }

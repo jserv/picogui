@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.21 2002/10/28 01:00:59 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.22 2002/10/28 20:30:42 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -129,6 +129,13 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
   case PG_WP_MULTILINE:
     DATA->doc->multiline = data;
+    
+    /* Single-line textboxen scroll horizontally */
+    if (DATA->doc->multiline)
+      self->in->div->flags &= ~DIVNODE_EXTEND_HEIGHT;
+    else
+      self->in->div->flags |= DIVNODE_EXTEND_HEIGHT | DIVNODE_DIVSCROLL;
+    break;
 
   case PG_WP_TEXTFORMAT:
     DATA->textformat = data;
