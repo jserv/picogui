@@ -33,6 +33,10 @@ UMASK=033
 * ^List-Id:.*XFree86
 | /home/commits/tools/irc/filters/xfree86.py
 
+:0
+* ^Subject: \[Emacs-commit\]
+| /home/commits/tools/irc/filters/emacs.sh
+
 ###### Automatic sourceforge tracker filtering
 
 :0
