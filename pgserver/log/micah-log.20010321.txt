@@ -1,0 +1,681 @@
+---- Wednesday, March 21
+
+Adding PGREQ_SETMODE. Separating video driver init from mode setting.
+The sdl driver and ez328_Chipslice driver seem to be obsolete. I'm removing
+them to make maintainance easier, but they are still accessable from the CVS
+archives if necessary.
+- video/sdl.c
+- video/ez328_chipslice_lcd.c
+- video/ez328_chipslice_lcd.h
+
+Updated sdl.c for the new init/setmode functions. Updated ez328, will test
+it when I get home.
+
+Added handle_iterate() to go through all bitmaps and munge them when rotating.
+Because the actual bitmap changes when it is rotated (in the current
+implementation) I am changing the sprite stuff to use a pointer to a
+pointer. If the pointer to bitmap in the handlenode changes, it will then
+still work. This is also important later when we do our own heap management.
+
+Added entermode/exitmode functions to video driver, use them in rotate90
+to handle rotating and unrotating the bitmaps
+
+---- Tuesday, March 20
+
+Rotation works well except for scrolling and rotated vertical character
+blits (which would now be upside down)
+
+Added a compile-time option for 'solid' panel dragging as opposed to the usual
+sprite-based stuff. It's CPU intensive, but fun.
+For proper handling of CPU-intensive processes that are driven by mouse
+movement, the input drivers should have a way to check if events are pending.
+Implemented this.
+
+Fixed the uClinux theme interpreter bug in fillstyle.c!
+
+---- Sunday, March 18
+
+Starting rotation. I have the easy parts (no blits) working. No runtime mode
+switching yet, still very preliminary.
+
+---- Friday, March 16
+
+Happy Friday!
+
+I brought the uCsimm hardware today, so I should be able to debug the theme
+loading. 
+Argh. Seems to be a problem with the power supply, maybe. It's spontaneously
+hanging when I use the ethernet.
+
+---- Thursday, March 15
+
+sdlfb now forces the screenw width to be aligned in < 8bpp modes, fixing a
+segfault bug
+
+Completed a rather nifty little slab() function for linear1, which should
+help with many things including rectangles!
+Threw in a bar() as a bonus.
+
+Added absolute positioning widget properties (read only)
+
+Started adding rotation via video wrapper libs. Converted all (*vid->func)
+style calls to a macro VID(func)
+
+---- Monday, March 12
+
+Starting to add resource loading support, but I'm not really sure how to
+go about doing it.
+
+---- The whole darn weekend, March 9 - March 11
+
+Toshiba laptop had hard disk trouble. Exchanged it, and the new one had a
+bad pixel. Trying sony instead :-/
+New VAIO has some real nice points, like 2 battery sockets, a touchpad, 
+integrated ethernet, and a serial port.
+Major gripe is the lack of hardware scaling for resolutions < 1024x768.
+Power management doesn't work very well under linux because it's ACPI and the
+drivers are very new.
+The VAIO also has an Intel 815EM video chipset, which isn't that great, but
+it's better than the Toshiba's Mach64. It'll run halflife at 1024x768, and
+quake3 at 800x600 or so.
+This thing also has a fan (though a very quiet one) so it's not so much of a
+lap warmer as the Toshiba.
+
+---- Thursday, March 8
+
+Split up the client library into multiple files
+- cli_c/src/picogui_client.c
++ cli_c/src/netcore.c
++ cli_c/src/api.c
++ cli_c/src/clientlib.h
+
+Because uClinux doesn't have a libtool AFAIK, it would be too messy to
+integrate uClinux into the existing makefile. Making a second makefile just
+for uClinux
++ cli_c/Makefile.uclinux
+
+It seems to work except for a linker problem with _cleanup.
+I had the same thing with the pgserver, and 'fixed' it by removing _cleanup
+from the crt0 and using the _cleanup in platform.c
+Any ideas?
+
+Made icons for the terminal (preparing to add resource directory support,
+including standard icons)
+
+---- Wednesday, March 7
+
+Adding flexible bitmap loading/saving
++ formats
++ formats/pnm.c
+
+Added bitmap formats to the -l display. Because it now shows more
+information than it used to, I made it more compact. Instead of a table for
+font properties, each font name has characters after it showing its flags.
+Newlines are no longer generously sprinkled throughout.
+
+Fixed bug in theme_remove (crashes if memtheme==NULL)
+which would make it segfault if its first theme load resulted in an error
+after the theme heap is allocated.
+
+Added support for any bit depth VBL in the fbdev driver
+
+---- Tuesday, March 6
+
+Implemented PG_SZMODE_CNTFRACT. Added a PG_WP_TRANSPARENT to the box widget.
+Added a real grid to the calculator demo
+
+Made small adjustments to pseudo3d_modcolor.ths
+
+Fixed up defaultvbl blits a lot, aqua doesn't crash now.
+Fixed tile blits more, now aqua works in defaultvbl.
+
+---- Friday, March 2
+
+The panelbar disabling works now.
+Fixed a long-standing bug in container redrawing that would mess up 'demo'
+sometimes.
+
+Added real data type definitions to include/pgserver/common.h
+I will gradually migrate to them
+
+Starting to clean up widget set/get code so sizing, sides, and other common
+things are in one place and not duplicated.
+Got this implemented so widgets can pass on unhandled properties (only sets
+for now) to the code in widget_set that handles a few common properties.
+Now I can easily implement sizing modes and things like that.
+
+Implemented PG_WP_SIZEMODE
+
+Some fixes to makefile config system
+Made an updated defaults file
+
+---- Thursday, March 1
+
+Added the possibility to disable the panelbar (repalces panel.c with a
+much simpler version) and prevent users from manually resizing
+
+---- Wednesday, February 28
+
+Finished SDL emulation of low bit depths
+Fixed a serious bug in XBM loading for bpp < 8
+
+The linear1 and linear2 stubs work nicely (but I need to verify color
+conversion in gradients works ok)
+
+linear4 is usually nice but the blit sometimes crashes.
+Commented out the currently-non-good blits.
+Added a stub for linear16
+
+Now I have stub functionality for most bit depths, I will start
+starting/finishing the 'real' code for drivers now.
+
+---- Tuesday, February 27
+
+Added emulation of low bit depths to sdlfb via color palette munging.
+Preparing to add support for low color depths via linear1, linear2, and
+linear4.
+Yay for new options in config menu!
+
+Except for a couple little byte alignment issues, the SDL emulation for low
+bit depths works fine. Ah, the joys of ElectricFence, reminding me that even
+a simple GUI is a complex system.
+
+---- Monday, February 26
+
+Wow, it has been a busy weekend. The hinge on Trinity was getting so bad
+that my parents got me a new laptop on Friday (early graduation present!)
+It's a super-nifty Celeron 700 with Debian Woody on it. It should accelerate
+development quite a bit, and I'll remove some of the crufty bits I used for
+debugging on Trinity with SVGAlib. 
+By the way, it's named Erwin (after the AI :)
+We didn't win, but Science Bowl on Saturday was loads of fun
+
+Made the Chipslice config option only appear when uClinux is selected, fixed
+strip in uClinux.
+
+Adding bpp selection to ez328.c
+Chipslice config doesn't remove it's input driver, fixed it.
+
+Fixed a stupid bug, now the linear1 and linear2 stubs work (but very slowly)
+Still something wrong with bitmaps... all xbm's seem to have their bytes
+reversed. This is a problem in the defaultvbl. I fix, i fix!
+
+Removing the now unnecessary low-bpp emulation from the svgafb driver, it's
+now unnecessary. (it never worked anyway)
+
+---- Thursday, February 23
+
+Verified optional-widget code
+Fixed namespacing in linear1,2,4
+
+Added config options for error messages
+
+Added more config options, this time some security options to turn off the
+more powerful^H^H^H^H^H^H^H^Hdangerous client-side functions.
+Also added a menu for quota options, but haven't implemented this yet.
+
+---- Wednesday, February 22
+
+I wrote some stubs for linear1 and linear2 that currently require the slow
+defaultvbl functions, but at least they should work. Best of all, it's a
+framework for writing the rest.
++ vidbase/linear1.c
++ vidbase/linear2.c
+
+Made all VBLs optional, made the terminal and canvas widgets optional.
+
+---- Tuesday, February 21
+
+Added code to svgafb to emulate low bit depths in 8bpp for testing linear1,2,4
+It segfaults and I have trouble debugging the SVGAlib stuff with one monitor
+so I'll do it when I get home.
+
+Added defaults for the configuration menu
++ config.defaults
+
+---- Friday, February 16
+
+Found something interesting... in uClinux the menuitem widgets are actually
+terminal widgets! After complaining a bit, opening a popup menu reveals
+little terminal widgets. This is probably also why the canvas isn't working,
+maybe there's a mistake in the function table for the widgets.
+
+Wrote a working svgalib input driver for mouse and keyboard
++ apps/pgremote/svgainput.c
+
+Got the canvas widget fixed. Terminal starts up but crashes on keyboard input.
+
+---- Thursday, February 15
+
+Wrote the help file for menuconfig, config.help
++ config.help
+
+Modified makefile and video drivers to skip the file if the video driver
+is compiled in. This speeds up compilation a bit.
+
+Adding video driver test modes (Pascal's suggestion :)
++ debug/videotest.c
+
+Changed copyright messages for the new milennium...
+(affects nearly every file)
+
+---- Wednesday, February 14
+
+Brandon informed me that pgBind is crufty, and so I add support for
+rebinding and unbinding things and it now works just as client_c.h says it
+will.
+
+I need to write some real docs, especially for the client lib...
+
+To fix tiled blits (and for a nice background) I put together a simple
+background theme using the nifty tile from Propaganda
++ themetools/examples/bg_graywaves.ths
+
+Fixed tiled blits in the old sdl driver and linear8
+
+---- Tuesday, February 13
+
+There's something wrong with the tile blits... (in all video drivers?)
+
+Anyway, wrote a remote input driver (mouse only) for gpm
++ apps/pgremote/gpmremote.c
+
+Replaced the Makefile.cfg system with a nifty one using Menuconfig (from
+Linux)
+
+---- Monday, February 12
+
+To reduce the size of pgserver and make it better suited for low-bpp
+displays, I replaced the hand cursor (that took about 4k in the binary) with
+a tiny XBM cursor that takes practically no space.
+I will be adding theme support to the cursor so the hand cursor can be
+reborn as a theme.
+
+---- Weekend, February 10-11
+
+Posted pictures of the uCsimm and PicoGUI on the web page. The linear4
+driver has working line, pixel, rectangle, and blit functions
+
+---- Friday, February 9
+
+Updated pgremote to have proper keyboard support, and work with SDL.
+Not perfect, but almost completely functional.
+
+Starting the linear4 driver!
+
+---- Thursday, February 8
+
+Since there's no input device on my ucSimm presently, I'm adding client-side
+support for networked input devices.
+
+Got a remote control working that lets me work the mouse and keyboard from
+a networked computer!
+
+---- Wednesday, February 7
+
+Ack. That ucLinux stuff I put in CVS _was_ mostly right except that I forgot
+a break; after the 8bpp case in  the pnm image loader...
+
+I need to get NFS and m68k-gcc installed on this laptop! The ucSimm system
+turns out to be nicely portable.
+
+The bug in themec turned out to be a strategically-placed-missing-semicolon :-/
+
+Working on ucLinux port using the new hardware...
+Kludged together a driver using linear8. Pixels are reminiscent of Atari,
+but it gets me an entire 160x200 at a good speed.
+
+A few problems with the port so far:
+
+- Word alignment. I think i fixed most of this, and the theme loader no
+longer crashes, but it doesn't work right either.
+
+- Driver, of course!
+
+- Canvas widget and terminal are broke
+
+- Need to implement a custom heap-management system. ucLinux's memory
+mapping is slow and seems to leak quite a bit. Total memory as reported by
+ps starts out at a reasonable 53k but can grow to over 600k after running
+and closing many things. Still, pgserver running the demo app takes less
+memory than the shell!
+
+---- Tuesday, February 6
+
+Added support for font descriptors in the theme compiler. Now a line of the
+form:
+font = Font("name",15,PG_FSTYLE_BOLD);
+can be used just like pgNewFont to create font handles for themes.
+
+Hmm... still something odd about the font stuff in themec. Sometimes it
+corrupts other data. Need fix it...
+
+---- Monday, February 5
+
+Added client-side code for registering and unregistering as the owner of
+shared resources. So far this encompasses exclusive keyboard/mouse control
+and 'system events'
+
+The system events are what I'm interested in, as that (for now) means the
+background click event. This is crucial for setting up a launcher based on
+a "root menu" with optional toolbar and launching panel. (get the best of
+all three worlds :)
+
+Starting a real launcher app, pgl
++ apps/pgl
++ apps/pgl/main.c
++ apps/pgl/Makefile
+
+Nifty! background click menu works nicely!
+
+In order to do custom menus correctly, added pgSizeText to client library
+
+Adding a simple theme for monochrome LCDs
++ themetools/examples/lcdmono.ths
+
+Got my 320x200 LCD and ucsimm working together! Just need to fix a bug in
+the LCD power supply and figure out why so much percussive maintenance is
+necessary :)
+
+---- Friday and weekend, February 2 - 4
+
+Almost finished building a second development machine using the ucSimm and
+320x200 LCD. It works, but needs better mounting and I need to make a kernel
+image for it.
+The -25V power supply made with a MAX717 isn't the most efficient (because I
+didn't have good inductors handy) but it works.
+
+
+---- Thursday, February 1
+
+Finished updating the client code for pgEvent.
+Turns out some casual changes I made in the client code (changing a couple
+small malloc() calls to alloca()) reveals a memory corruption bug in
+pgMenuFromString. Also found an logic error that sometimes prevented
+setwidget from having any effect.
+
+It's ready to put on CVS now, hope this big change doesn't aggrivate people
+(myself included) too much but I think it's for the best.
+
+---- Wednesday, January 31
+
+Brandon seems to be good at finding things I overlook :)
+On his request I added a much-needed 'extra' pointer for passing arbitrary
+data to event handlers.
+
+Since an extra parameter to the events would break things anyway, (and at
+this stage I'm much more interested in making a clean interface than
+preserving compatibility with old junk) I did a small overhaul of the
+client's event processing. Now the client lib decodes event parameters,
+(using the new EVENTCODING constants) and packages it into a neat little
+pgEvent structure.
+
+Yay, today the ucSimm came in! Thank you Pascal!
+
+Pascal gave me a pointer to Smartdata's neat project for expanding and
+porting Waba. Also suggested a fourth option (in that list below) as making
+a wrapper that emulates a subset of the AWT, to run small 'normal java' apps.
+
+---- Tuesday, January 30
+
+I was just taking a look through the Wabasoft web site. Unfortunately, the
+iMacs here have no floppy disks so I have to wait till I get home to peruse
+the source code, but this is looking very cool. Looks like there will be
+three methods of developing client programs for PicoGUI
+
+1. C, using the cli_C client library
+2. Java, using the WabaVM and a Waba version of the native PicoGUI client API
+3. Java, using the WabaVM and an emulation of waba's UI classes
+
+Since the Waba classes have sockets it would be possible to write the entire
+client lib in Java, but it's probably worth adding code to the VM itself to
+speed it all up. Option 1 gives the best performance and flexibility but
+limited portability, option 2 gives good portability (any platform running
+PicoGUI) and flexibility but limits you to apps made specifically for
+PicoGUI, and option 3 limits flexibility somewhat but lets you run apps
+designed for the Palm or Windows CE devices too! This is pretty neat!
+
+In fact, if all clients were written in Java and some sort of multitasking
+could be added to the VM itself, it would indeed by _possible_ to integrate
+Waba and pgserver into one binary and go without an operating system at
+all... replacing ucLinux with a bare-bones filesystem and memory manager.
+This seems closer to what the Kaffe and PocketLinux projects are working on,
+but this would run on CPUs less than 75mhz ;-)
+
+But, of course, that's an extreme. Though it is possible...
+
+Now working on fixing that annoying "disappearing terminal" bug. Oddly
+enough, seems to work right when debugging is on :)
+It's not specifically a PicoGUI bug, it's an IPC thing. The child process is
+dying before it sucessfully exec()'s the shell.
+
+Ah... With the clean6 font I added yesterday I can get 125x75 on my laptop's
+640x480 screen!
+
+Fixed the terminal. Root cause of it all was I was using the return value of
+read() to determine when the shell exits instead of using SIGCHLD like I'm
+supposed to. Also fixed a bug in the resizing. (both client and server side)
+
+Terminal still needs command line switches to change font, or run an
+alternate program.
+
+Added the above mentioned command line options, plus one to pause on exit
+(ignore SIGCHLD)
+
+---- Monday, January 29
+
+Yay! I found the handle bug! After adding tons of debuggative cruft to
+handle.c and wading through the log files, it hit me!
+
+This is the scenario:
+
+1. An auxiliary handle for a theme is created. A fillstyle, for example.
+2. That handle is grouped with the theme's handle
+3. The theme is forced to relocate to another node by htree_delete
+4. The group pointer on the fillstyle is invalid
+5. Another handle is allocated in its place eventually
+6. That new handle is deleted, triggering a group delete of the fillstyle or
+   other auxiliary data
+   
+This can be very simply solved by making the handlenode "personality
+transplant" code update group pointers.
+I'll change this on a fresh copy of the code- i added so many debugging
+#ifdefs to handle.c that I'll look through the diff but probably just delete
+it all.
+
+This relocating behavior might be a bit troublesome for my idea of a "null
+handle" system for ucLinux. Since ucLinux has no real memory protection
+anyway, it couldn't hurt just to let the app have a pointer to the
+handlenode. You still need the nodes themselves for memory management. I
+suppose that in this situation I will need to store the nodes in a linked
+list instead of the htree.
+
+A few more things come to me... After a quick grep, I made sure no code
+directly uses the group pointer but handle.c. This means it's impossible
+that this bug could cause the ucLinux wierdness, but it does mean that I can
+fix this whole mess by using a handle ID instead of a pointer. I'm not sure
+why I used a pointer in the first place, maybe I thought I might have to use
+the handle's data rather than just compare it.
+
+The handle verification really should have picked up on this, but now that I
+understand my false assumption-- a particular pointer will always be the
+same handle-- I realize that my verification code had the same problem!
+
+Yep, the only changes I made in this copy were setting freed memory to a known
+value and the handle verification, niether of which are important or useful
+now. I'm reverting my code to the CVS...
+
+Added the above fix to handle.[ch] and it works great! The little torture-test
+program ("Dialog box of doom!") that would always crash now runs to infinity
+and beyond!
+
+---- Friday and weekend, January 26-28
+
+Working on the ucLinux port. Got NFS set up on Kiwi with a 115k PPP link.
+Better than the 9600 baud connection, but I can't wait for ethernet :)
+
+PicoGUI runs on ucLinux, but has intermittant problems I think are related
+to memory segments. (bss vs data vs text) Hacked together a quick LCD driver
+for Kiwi, display works! Theme loader always crashes, so haven't experimented
+with themes and fonts made for tiny screens.
+
+---- Thursday, January 25
+
+Trying the handle test framework again...
+Added the debug flag DEBUG_HANDLEVERIFY, that implements a linked list to
+'check up on' the htree.
+
+With the guru events and handle verification on, still no errors when the
+handle tree goes dead.
+On the bright side, with all debugging commands on I used grep to pinpoint
+the spot when extra memory is freed. Looks like a problem with contexts-
+when the dialog box context is freed (normally deleting only widgets and a
+string) it spontaneously deleted a few fillstyles!
+This is easy to detect because the memory counters drop lower than they would
+normally.
+Now to take those addresses and do a stack backtrace or something...
+
+---- Tuesday, January 23
+
+Taking a little diversion to do canvas event handling. Starting the
+"Blackout" application to test this.
+
++ apps/blackout
++ apps/blackout/blackout.c
++ apps/blackout/Makefile
+
+Blackout is working nicely.
+I think I'll try something a little more complicated and a lot more
+nostalgic and try to port BrickHit to PicoGUI! (BrickHit is an old
+pong/breakout style game I wrote in True BASIC when I was little :) I don't
+remember the exact scoring rules, but it should be close enough.
+
++ apps/brickhit
++ apps/brickhit/brickhit.c
++ apps/brickhit/Makefile
+
+Oops, my 'make clean' accidentaly deleted the debug directory before I had a
+chance to commit it...
+Well, it wasn't working right anyway. I need to write something that deletes
+and adds completely randomly (but keeps the tree size within some limits)
+
+---- Monday, January 22
+
+This morning Pascal offered to give me a ucSimm they never use. I think I'll
+take him up on that!
+
+Starting a test framework for the handle system
+
++ debug
++ debug/handletest.c
++ debug/Makefile
+
+---- Friday and weekend, January 19-21
+
+Got canvas working for animation!
+Still have a race condition in the client library, and that handle bug.
+It's on CVS, but I forgot to do a cvs update on Trinity...
+
+I'm itching to do the 68EZ328 port. Kiwi is hooked up and pingable, but I
+can only get serial line speeds so development work is painful.
+
+---- Thursday, January 18
+
+Added pgWriteCmd to client.
+Starting test program for canvas widget:
+
++ demos/canvastest.c
+
+---- Wednesday, January 17
+
+Period today was cut short by english oral, but I finished a preliminary
+picogui/canvas.h header. It's mainly documentation- there are only 16 lines
+or so of actual code.
+
+Working on client side:
++ include/picogui/canvas.h
+
+---- Tuesday, January 16
+
+Starting the canvas widget!
++ widget/canvas.c
+
+Adding a header file with command structures
++ include/picogui/canvas.h
+
+---- Weekend, January 13-15
+
+More video driver improvements, including the crazy ncurses driver.
+Made some web updates and sent a status newsletter on the mailing list.
+
+---- Friday, January 12
+
+Happy Friday!
+
+Just got paged blits working. linear8 runs nicely on my VESA 1.2 laptop
+screen now though it's not as fast as the unstable vgagl driver. (paged
+framebuffers force doublebuffering on)
+Replaced many for loops in linear8 with the inline-asm __mem* functions
+
+Fixed a subtle but possibly disasterous error in handle.c; this could be the
+source of the handle tree problems I've been having lately. There is one
+special case in htree_delete() in which it must copy the 'identity' of a
+handle node from one to another. When I added the 'group' field to the
+handle node, I forgot to add a line to copy it. (I added a warning in
+handle.h to this effect; hopefully this won't happen again.)
+The outcome of all this is that a handle's group can be randomly reassigned
+to another handle's group. When one handle is deleted, others might randomly
+disappear. This is consistant with observed behavior.
+
+I don't, however, think this is the only problem... Sometimes handles would
+appear to swap pointers with each other, or do other strange things. <insert
+sound of plane crash>
+Unless I find something really obvious I'll make a testbed program I can use
+to evaluate the handle functions seperately.
+
+Yep, verified that handles still have problems.
+
+Added a command line switch for double-buffering
+
+Modified svgagl library to support runtime doublebuffering, and removed a
+few archaic crufty bits.
+
+---- Thursday, January 11
+
+Using the paged blit from vgagl. Also converting existing code to use
+inlined assembler string functions (memcpy et al) if possible.
++ pgserver/include/inlstring.h
+
+---- Wednesday, January 10
+
+Implementing paged double-buffer blits, so svgafb works on nonlinear devices
+(like my 640x480 mode!)
+Paged blit is only slightly functional so far, but it's started...
+
+Added some simple but very effective optimizations to textgrid, like not
+calling outchar for spaces!
+
+---- Tuesday, January 9
+
+Fixed bugs in linear8 driver and scrolling (grop.c)
+Compiles under windows now but doesn't accept connections correctly
+
+Today Brandon falls in love with the framebuffer device. If only I had Vesa
+2.0 on Trinity!
+
+---- Monday, January 8
+
+video/linear8.c:
+fixed small bugs in text blit, implemented clipping in the vertical text
+blit. Still working on a very subtle bug in clipping x1 in the vertical blit.
+
+Thank goodness for editor backups. *.c and *.o are so similar!
+
+Brandon ran PicoGUI on his laptop for the first time. Notes:
+	- sdl driver works, but exhibits odd
+	  translucent artifacts around cursor
+	- sdlfb driver works fine for the most part but colors are messed up
+I think both of these are due to the window manager or X mapping my colors
+strangely. Need to figure out how to get direct palette access
+
+--- The / Beginning --- (of this log...) ---
