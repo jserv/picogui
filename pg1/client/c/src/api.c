@@ -993,7 +993,7 @@ void * pgSyncAppMessage (pghandle dest, struct pgmemdata data)
 #endif
   pgBind (source, PG_WE_APPMSG, syncmsg_handler, & answer);
       
-  * ((pghandle *) data.pointer) = source;
+  * ((pghandle *) data.pointer) = htonl (source);
 
   pgAppMessage (dest, data);
   
