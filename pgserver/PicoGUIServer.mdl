@@ -18,7 +18,8 @@ prefix = '/usr'
 
 depends = [
     'resourcemanager', 'kernel',
-    ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux'))
+    ('libjpeg', S ('platform/ppc-linux') | S ('platform/native-linux')),
+    ('busybox', S ('platform/ppc-linux'))
     ]
     
 runtime = [
@@ -168,9 +169,10 @@ rm_task unblock picogui-server
         fd.write ('''#!/bin/sh
 # Set the framebuffer device in 16bpp (YUV)
 echo "setting framebuffer device to 16bpp YUV ..."
-fbset -n -g 640 480 640 480 16
+fbset -n -g 640 480 640 480 16 > /dev/null
     
 # start pgserver
+sleep 2   # maybe necessary ?
 rm_task unblock picogui-server
 ''')
 
