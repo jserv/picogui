@@ -45,6 +45,7 @@ runtime = [
                                  ('kernel/keyboard', S ('product/remora')),
                                  ('libjpeg/library', ~ S ('platform/m68k-pic-coff')),
                                  ('libpng/library', ~ S ('platform/m68k-pic-coff')),
+                                 ('btkey-report/install', S ('platform/native-linux')),
                                  ],
                      help = "Install the PicoGUI Server" ),
 
@@ -54,7 +55,9 @@ runtime = [
                                  'bin/picogui-launcher.sh' ],
                      
                      depends = [ 'picoguiserver/install',
-                                 'processmanager/start' ],
+                                 'processmanager/start',
+                                 ('btkey-report/start', S ('platform/native-linux')),
+                                 ],
 
                      rcscript = "\n# launch pgserver\npicogui-launcher.sh\n",
                      
