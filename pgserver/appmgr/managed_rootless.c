@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.2 2002/10/24 03:00:53 micahjd Exp $
+/* $Id: managed_rootless.c,v 1.3 2002/10/24 03:32:40 micahjd Exp $
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI
@@ -42,29 +42,31 @@ g_error appmgr_managed_rootless_init(void) {
   if (!VID(is_rootless)())
     return mkerror(PG_ERRT_BADPARAM,142);  /* Requires rootless mode */
 
-
   return success;
-}
-
-void appmgr_managed_rootless_shutdown(void) {
 }
 
 g_error appmgr_managed_rootless_reg(struct app_info *i) {
-  return success;
-}
+  struct widget *w;
+  g_error e;
+  
+  /* FIXME: this needs to handle toolbar apps correctly */
 
-void appmgr_managed_rootless_unreg(struct app_info *i) {
+  e = widget_create(&w,&i->rootw,PG_WIDGET_MANAGEDWINDOW,dts->root, 0, i->owner);
+  errorcheck;
+
+  e = widget_set(w,PG_WP_TEXT,i->name);
+  errorcheck;
+
+  return success;
 }
 
 
 /**************************************** Registration */
 
 struct appmgr appmgr_managed_rootless = {
-             name:  "managed_rootless",
-             init:  appmgr_managed_rootless_init,
-         shutdown:  appmgr_managed_rootless_shutdown,
-              reg:  appmgr_managed_rootless_reg,
-            unreg:  appmgr_managed_rootless_unreg,
+   name:  "managed_rootless",
+   init:  appmgr_managed_rootless_init,
+    reg:  appmgr_managed_rootless_reg,
 };
 
 /* The End */
