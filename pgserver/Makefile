@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.31 2000/10/19 01:21:23 micahjd Exp $
+# $Id: Makefile,v 1.32 2000/10/26 19:46:33 pney Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -70,6 +70,14 @@ ifeq ($(strip $(PLATFORM)),uclinux)
         CFLAGS := $(CFLAGS) -fPIC -DUCLINUX
         BINNAME := uclinux-$(BINNAME)
         LDFLAGS := $(LDFLAGS)
+endif
+
+# Target arch
+ifeq ($(strip $(ENDIAN)),BIG_ENDIAN)
+	CFLAGS := $(CFLAGS) -DBIG_ENDIAN
+endif
+ifeq ($(strip $(ENDIAN)),LITTLE_ENDIAN)
+	CFLAGS := $(CFLAGS) -DLITTLE_ENDIAN
 endif
 
 # Extra compiler flags needed by drivers

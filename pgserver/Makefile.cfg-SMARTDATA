@@ -1,4 +1,4 @@
-# $Id: Makefile.cfg-SMARTDATA,v 1.1 2000/10/12 16:28:25 pney Exp $
+# $Id: Makefile.cfg-SMARTDATA,v 1.2 2000/10/26 19:46:33 pney Exp $
 #
 # This file has compile-time options for PicoGUI, including
 # which fonts and drivers are to be compiled in.
@@ -17,9 +17,13 @@
 ######################################## Compile settings
 
 #### Target system (uncomment only one)
-PLATFORM = linux
+#PLATFORM = linux
 #PLATFORM = windows
-#PLATFORM = uclinux
+PLATFORM = uclinux
+
+#### Arch endian type
+ENDIAN = BIG_ENDIAN
+#ENDIAN = LITTLE_ENDIAN
 
 #### Strip binary? (yes/no)
 STRIPBIN = no
@@ -28,7 +32,7 @@ STRIPBIN = no
 #CFLAGS := $(CFLAGS) -DTINY_MESSAGES
 
 #### DEBUG flag
-#CFLAGS := $(CFLAGS) -DDEBUG
+CFLAGS := $(CFLAGS) -DDEBUG
 
 #### ElectricFence malloc debugging
 #LDFLAGS := $(LDFLAGS) -lefence
@@ -39,6 +43,9 @@ STRIPBIN = no
 #### gprof profiling
 #CFLAGS := $(CFLAGS) -pg
 #LDFLAGS := $(LDFLAGS) -pg
+
+#### Quantization 4 gray levels
+#CFLAGS := $(CFLAGS) -DQUANTIZE_4COLOR
 
 ######################################## Fonts
 
@@ -53,9 +60,9 @@ FONTS := $(FONTS) font/utopia.fi
 ######################################## Drivers
 
 #### Video drivers. Uncomment any number of them.
-DRV := $(DRV) -DDRIVER_SDL                    # SDL driver
-DRV := $(DRV) -DDRIVER_SDLMIN                 # Debugging only!
-DRV := $(DRV) -DDRIVER_SVGA                   # SVGAlib driver
+#DRV := $(DRV) -DDRIVER_SDL                    # SDL driver
+#DRV := $(DRV) -DDRIVER_SDLMIN                 # Debugging only!
+#DRV := $(DRV) -DDRIVER_SVGA                   # SVGAlib driver
 #DRV := $(DRV) -DDRIVER_EZ328_CHIPSLICE        # SMARTDATA driver
 
 #### SMARTDATA spec. video drivers. Uncomment only one of them.
@@ -65,7 +72,7 @@ DRV := $(DRV) -DDRIVER_SVGA                   # SVGAlib driver
 #### Input drivers. Uncomment any number of
 #### the following. Note that most video drivers
 #### will not link without a matching input driver
-DRV := $(DRV) -DDRIVER_SDLINPUT               # For the SDL driver
-DRV := $(DRV) -DDRIVER_SVGAINPUT              # For the SVGA driver
+#DRV := $(DRV) -DDRIVER_SDLINPUT               # For the SDL driver
+#DRV := $(DRV) -DDRIVER_SVGAINPUT              # For the SVGA driver
 
 ### The End ###
