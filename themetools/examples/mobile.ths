@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.9 2001/09/03 06:03:17 micahjd Exp $
+/* $Id: mobile.ths,v 1.10 2001/09/03 21:36:40 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -77,6 +77,8 @@ object default {
   icon.message.mask  = Copy(default::icon.message);
   icon.warning.mask  = Copy(default::icon.warning);
   icon.question.mask = Copy(default::icon.question);
+
+  string.pguierr = "%s error\n%s\n%s\nTerminate App?";
 }
 
 /* Spiffy input fields */
