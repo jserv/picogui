@@ -1,4 +1,4 @@
-/* $Id: input_drivers.c,v 1.4 2002/11/08 08:23:06 micahjd Exp $
+/* $Id: input_drivers.c,v 1.5 2002/12/10 16:07:21 gobry Exp $
  *
  * input_drivers.c - Abstract input driver interface
  *
@@ -84,8 +84,11 @@ g_error load_inlib(g_error (*regfunc)(struct inlib *i),
   /* Avoid duplicates */
   p = inlib_list;
   while (p) {
-    if (p->regfunc == regfunc)
-      return mkerror(PG_ERRT_BADPARAM,76);
+    if (p->regfunc == regfunc) {
+      if (inl) * inl = p;
+      return success;
+    }
+
     p = p->next;
   }
 
