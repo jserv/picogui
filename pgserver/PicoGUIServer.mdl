@@ -12,8 +12,13 @@ Provides the PicoGUI server, which is responsible for the
 graphical interface.
 """
 
-depends = [ 'kernel', 'resourcemanager', ('libjpeg', S ('platform/ppc-linux')) ]
+basics  = [ 'kernel', 'resourcemanager' ]
 
+depends = basics + [ ('libjpeg', S ('platform/ppc-linux')) ]
+
+asserts = basics + [ (S ('module/picoguiserver') &
+                      S ('platform/ppc-linux')) >> S ('platform/ppc-linux') ]
+    
 runtime = [
 
             Runtime ('install', 'Install PicoGUI Server',
