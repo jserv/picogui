@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.9 2000/10/10 00:33:36 micahjd Exp $
+/* $Id: errortext.c,v 1.10 2000/10/19 01:21:23 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -122,6 +122,19 @@ static const char *errors[] = {
   /* 77 */  "Nonexistant video driver",
   /* 78 */  "All installed video drivers failed!",
   /* 79 */  "Unknown PG_APPSPEC constant!",
+  /* 80 */  "This is not a PicoGUI theme file (bad magic number)",
+  /* 81 */  "Length mismatch in PicoGUI theme file (possible file truncation)",
+  /* 82 */  "Bad checksum in PicoGUI theme file (probable file corruption)",
+  /* 83 */  "Theme file does not have a header!",
+  /* 84 */  "Unexpected EOF in theme file (bug in theme compiler?)",
+  /* 85 */  "Theme heap overflow (bug in theme compiler?)",
+  /* 86 */  "Out-of-range offset in theme file (bug in theme compiler?)",
+  /* 87 */  "Unknown loader in theme (theme is newer than server?)",
+  /* 88 */  "Stack underflow in fillstyle interpreter",
+  /* 89 */  "Stack overflow in fillstyle interpreter",
+  /* 90 */  "Local variable out of range in fillstyle",
+  /* 91 */  "Fillstyle opcode parameter truncated",
+  /* 92 */  "Invalid handle in handle_group()",
 };
 
 #endif /* TINY_MESSAGES */

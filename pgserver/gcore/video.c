@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.11 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: video.c,v 1.12 2000/10/19 01:21:23 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -759,6 +759,22 @@ g_error def_bitmap_getsize(struct stdbitmap *bmp,int *w,int *h) {
   *h = bmp->h;
 }
 
+#ifndef min
+#define min(a,b) (((a)<(b))?(a):(b))
+#endif
+
+void def_tileblit(struct stdbitmap *src,
+		  int src_x,int src_y,int src_w,int src_h,
+		  int dest_x,int dest_y,int dest_w,int dest_h) {
+  int i,j;
+
+  /* Do a tiled blit */
+  for (i=0;i<dest_w;i+=src_w)
+    for (j=0;j<dest_h;j+=src_h)
+      (*vid->blit)(src,src_x,src_y,NULL,dest_x+i,dest_y+j,min(dest_w-i,src_w),
+		   min(dest_h-j,src_h),PG_LGOP_NONE);
+}
+
 /******************************************** Vidlib admin functions */
 
 /* Set up a default vidlib, then let the driver add it's
@@ -797,6 +813,7 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   vid->dim = &def_dim;
   vid->scrollblit = &def_scrollblit;
   vid->charblit = &def_charblit;
+  vid->tileblit = &def_tileblit;
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
   vid->bitmap_loadpnm = &def_bitmap_loadpnm;
   vid->bitmap_new = &def_bitmap_new;

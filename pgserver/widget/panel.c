@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.29 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: panel.c,v 1.30 2000/10/19 01:21:24 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -29,8 +29,6 @@
 #include <pgserver/video.h>
 #include <pgserver/timer.h>
 
-#define PANELMARGIN (HWG_MARGIN<<1)
-
 #define PANELBAR_SIZE 15
 
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
@@ -45,8 +43,6 @@
 
 /* A shortcut... */
 #define PANELBAR_DIV self->in->next->div
-
-void themeify_panel(struct divnode *d);
 
 struct paneldata {
   int on,over;
@@ -69,22 +65,11 @@ struct paneldata {
 };
 #define DATA ((struct paneldata *)(self->data))
 
-void panelbar(struct divnode *d) {
-  int x,y,w,h;
-  x=y=0; w=d->w; h=d->h;
+void themeify_panel(struct widget *self);
 
-  addelement(d,&current_theme[PG_E_PANELBAR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_PANELBAR_FILL],&x,&y,&w,&h);
-
-  themeify_panel(d);
-}
-
-void panel(struct divnode *d) {
-  int x,y,w,h;
-  x=y=0; w=d->w; h=d->h;
-
-  addelement(d,&current_theme[PG_E_PANEL_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_PANEL_FILL],&x,&y,&w,&h);
+void resize_panel(struct widget *self) {
+  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+  self->in->next->split = theme_lookup(self->in->next->div->state,PGTH_P_WIDTH);
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -103,22 +88,23 @@ g_error panel_install(struct widget *self) {
   errorcheck;
   self->in->flags |= PG_S_TOP;
 
-  /* This draws the panel background and provides a border */
+  /* This draws the panel background  */
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
-  self->in->div->split = PANELMARGIN;
-  self->in->div->on_recalc = &panel;
+  self->in->div->build = &build_bgfill_only;
+  self->in->div->state = PGTH_O_PANEL;
 
   /* Split off another chunk of space for the bar */
   e = newdiv(&self->in->next,self);
   errorcheck;
   self->in->next->flags |= PG_S_TOP;
-  self->in->next->split = PANELBAR_SIZE;
 
   /* And finally, the divnode that draws the panelbar */
   e = newdiv(&self->in->next->div,self);
-  self->in->next->div->on_recalc = &panelbar;
+  errorcheck;
+  self->in->next->div->build = &build_bgfill_only;
+  self->in->next->div->state = PGTH_O_PANELBAR;
 
   self->sub = &self->in->div->div;
   self->out = &self->in->next->next;
@@ -126,6 +112,8 @@ g_error panel_install(struct widget *self) {
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | 
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE |
     TRIGGER_DRAG | TRIGGER_MOVE;
+
+  self->resize = &resize_panel;
 
   return sucess;
 }
@@ -234,7 +222,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
-    themeify_panel(PANELBAR_DIV);
+    themeify_panel(self);
     update();
 
     /* Lock the screen */
@@ -401,50 +389,17 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
   }
 
-  themeify_panel(PANELBAR_DIV);
-
-  /* Use the Power of the almighty update() to redraw the screen! */
-  update();
+  themeify_panel(self);
 }
 
-void themeify_panel(struct divnode *d) {
-  int state;
-  struct widget *self = d->owner;
-
-  /* Apply the current state to the elements */
+void themeify_panel(struct widget *self) {
+  /* Apply the current state  */
   if (DATA->on)
-    state = PG_STATE_ACTIVATE;
+    div_setstate(self->in->next->div,PGTH_O_PANELBAR_ON);
   else if (DATA->over)
-    state = PG_STATE_HILIGHT;
+    div_setstate(self->in->next->div,PGTH_O_PANELBAR_HILIGHT);
   else
-    state = PG_STATE_NORMAL;
-
-  applystate(d->grop,
-	     &current_theme[PG_E_PANELBAR_BORDER],state);
-  applystate(d->grop->next,
-	     &current_theme[PG_E_PANELBAR_FILL],state);
-
-  /* Rotate the gradient on the panelbar
-     depending on the side it is attached to */
-  switch (self->in->flags & (~SIDEMASK)) {
-  case PG_S_RIGHT:
-    d->grop->param.gradient.angle += 90;
-    d->grop->next->param.gradient.angle += 90;
-    break;
-  case PG_S_BOTTOM:
-    d->grop->param.gradient.angle += 180;
-    d->grop->next->param.gradient.angle += 180;
-    break;
-  case PG_S_LEFT:
-    d->grop->param.gradient.angle += 270;
-    d->grop->next->param.gradient.angle += 270;
-    break;
-  }
-
-
-  /* Redraw this node only */
-  d->flags |= DIVNODE_NEED_REDRAW;
-  self->dt->flags |= DIVTREE_NEED_REDRAW;   
+    div_setstate(self->in->next->div,PGTH_O_PANELBAR);
 }
 
 /* The End */

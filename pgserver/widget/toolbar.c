@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: toolbar.c,v 1.9 2000/10/19 01:21:24 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -27,12 +27,15 @@
 
 #include <pgserver/widget.h>
 
-void toolbar(struct divnode *d) {
-  int x,y,w,h;
-  x=y=0; w=d->w; h=d->h;
+void resize_toolbar(struct widget *self) {
+  int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 
-  addelement(d,&current_theme[PG_E_TOOLBAR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_TOOLBAR_FILL],&x,&y,&w,&h);
+  if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
+    self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
+  else
+    self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
+
+  self->in->div->split = m;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -44,15 +47,16 @@ g_error toolbar_install(struct widget *self) {
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
-  self->in->split = HWG_BUTTON+HWG_MARGIN*2;
   self->out = &self->in->next;
 
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &toolbar;
+  self->in->div->build = &build_bgfill_only;
+  self->in->div->state = PGTH_O_TOOLBAR;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
-  self->in->div->split = HWG_MARGIN;
   self->sub = &self->in->div->div;
+
+  self->resize = &resize_toolbar;
 
   return sucess;
 }

@@ -1,6 +1,7 @@
-/* $Id: box.c,v 1.8 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: box.c,v 1.9 2000/10/19 01:21:24 micahjd Exp $
  *
- * box.c - Generic container for laying out widgets
+ * box.c - Generic container for holding a group of widgets. It's sizing and
+ *         appearance are defined by the theme.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,18 +28,18 @@
 
 #include <pgserver/widget.h>
 
-#define BOXMARGIN (HWG_MARGIN<<1)
+#define MANUALSIZE  ((int)self->data)   /* nonzero to disregard theme sizing */
 
-/* The only data to store is a color, so just stick it in the data
-   pointer... 
-*/
-#define BOXCOLOR ((hwrcolor)self->data)
+void resize_box(struct widget *self) {
+  int m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
 
-void box(struct divnode *d) {
-  struct widget *self = d->owner;
+  if (!MANUALSIZE)
+    if (self->in->flags & (PG_S_TOP | PG_S_BOTTOM))
+      self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT)+(m<<1);
+    else
+      self->in->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH)+(m<<1);
 
-  grop_frame(&d->grop,BOXMARGIN-1,BOXMARGIN-1,
-	     d->w-BOXMARGIN-2,d->h-BOXMARGIN-2,BOXCOLOR);
+  self->in->div->split = m;
 }
 
 g_error box_install(struct widget *self) {
@@ -47,14 +48,15 @@ g_error box_install(struct widget *self) {
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
-  self->in->split = HWG_BUTTON+(BOXMARGIN<<1);
-  self->out = &self->in->next;
-
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->flags |= DIVNODE_SPLIT_BORDER;
-  self->in->div->split = BOXMARGIN;
+  self->in->div->build = &build_bgfill_only;
+  self->in->div->state = PGTH_O_BOX;
+
+  self->out = &self->in->next;
   self->sub = &self->in->div->div;
+  self->resize = &resize_box;
 
   return sucess;
 }
@@ -79,15 +81,9 @@ g_error box_set(struct widget *self,int property, glob data) {
   case PG_WP_SIZE:
     if (data<0) data = 0;
     self->in->split = data;
+    MANUALSIZE = 1;
     redraw_bg(self);
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_BORDERCOLOR:
-    BOXCOLOR = data;
-    self->in->div->on_recalc = &box;
-    self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -105,6 +101,7 @@ glob box_get(struct widget *self,int property) {
     return self->in->flags & (~SIDEMASK);
 
   case PG_WP_SIZE:
+    resize_box(self);
     return self->in->split;
 
   }

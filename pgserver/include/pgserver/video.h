@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.4 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: video.h,v 1.5 2000/10/19 01:21:23 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -250,6 +250,16 @@ struct vidlib {
   void (*scrollblit)(int src_x,int src_y,
 		     int dest_x,int dest_y,
 		     int w,int h);
+
+  /* Reccomended
+   *   Blits a bitmap or a section of a bitmap repeatedly
+   *   to cover an area. Used by many bitmap themes.
+   *
+   * Default implementation: Many calls to blit()!
+   */
+  void (*tileblit)(hwrbitmap src,
+		   int src_x,int src_y,int src_w,int src_h,
+		   int dest_x,int dest_y,int dest_w,int dest_h);
 
   /* Reccomended
    *   Used for character data.  Blits 1bpp data from

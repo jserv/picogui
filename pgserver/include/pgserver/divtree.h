@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: divtree.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -39,6 +39,7 @@ struct dtstack;
 struct divtree;
 struct divnode;
 struct gropnode;
+struct gropctxt;
 
 /* This is a stack of divtrees.  The one on top is the currently active
  * tree, and is updated by the renderer.  Trees below this are grayed out
@@ -70,49 +71,28 @@ struct divtree {
 
 typedef short int alignt;
 
-/* Parameter structures for gropnodes and divnodes */
-union grop_param {
-  /* Stuff for drawing text */
-  struct {          /* This structure is used when on_recalc == &text */
-    hwrcolor col;
-    handle string,fd;
-  } text;
-
-  /* Bitmaps */
-  struct {
-    handle bitmap;
-    int lgop;
-  } bitmap;
-
-  /* Gradient */
-  struct {
-    hwrcolor c1,c2;
-    int angle,translucent;
-  } gradient;
-
-  /* colors */
-  hwrcolor c;
-};
-
 struct divnode {
-   /* The 'secondary pointer', contains the space that was 
-    * divided off, usually. This is rendered second. */
-   struct divnode *div;
-   /* The 'main pointer', contains the left-over space. This is rendered
-    * first. */
-   struct divnode *next;
-   
-   unsigned short int flags;
-   int split;   /* Depending on flags, the pixels or percent to split at */
-   
-   /* This function is called after the node is recalculated, so for example
-    * a widget can recreate its groplist with new dimensions */
-   void (*on_recalc)(struct divnode *self);
-   
-   /* If this pointer is not null, the groplist is rendered to this divnode */
-   struct gropnode *grop;
-   int grop_lock;  /* Nonzero when groplist is being built and it shouldn't
+  /* The 'secondary pointer', contains the space that was 
+   * divided off, usually. This is rendered second. */
+  struct divnode *div;
+  /* The 'main pointer', contains the left-over space. This is rendered
+   * first. */
+  struct divnode *next;
+  
+  unsigned short int flags;
+  int split;   /* Depending on flags, the pixels or percent to split at */
+  
+  /* When the widget is resized or changes state, this is used to rebuild the
+     groplist. It defines the appearance of the widget. */
+  void (*build)(struct gropctxt *c,unsigned short state,struct widget *self);
+  
+  /* If this pointer is not null, the groplist is rendered to this divnode */
+  struct gropnode *grop;
+  int grop_lock;  /* Nonzero when groplist is being built and it shouldn't
 		      be modified */
+  
+  /* The divnode's state - indicates which theme object to get parameters from */
+  unsigned short state;
    
   /* Widget that owns it, used for updating widget 'where' pointers
      on deleting a widget */
@@ -161,46 +141,46 @@ typedef unsigned short int sidet;
 		     DIVNODE_SPLIT_BORDER|DIVNODE_SPLIT_CENTER| \
                      DIVNODE_SPLIT_IGNORE|DIVNODE_SPLIT_EXPAND))
 
+/* The maximum number of parameters a gropnode could need (client
+   doesn't depend on this number. only for memory allocation purposes!)
+*/
+#define NUMGROPPARAMS    5
+
 struct gropnode {
-  int type;
+  short int type,x,y,w,h,flags;
   struct gropnode *next;   
-  int x,y;  /* Not absolute- transformed by values in the divnode */
-  
-  int w,h;
-  
-  /* The rest of the parameters aren't always used, and depend on type */
-  union grop_param param;
+  unsigned long param[NUMGROPPARAMS];
 };
- 
+
+/* These are applied to new gropnodes */
+extern short int defaultgropflags;
+
+/***************** grop contexts */
+
+/* The grop context stores the information necessary for one 'session' of
+   gropnode building or updating */
+
+struct gropctxt {
+  struct gropnode **headpp;   /* Head of groplist */
+  struct gropnode *current;   /* Current position */
+  unsigned short n;           /* Numerical position in gropnode list */
+  int x,y,w,h;                /* Current coordinates */
+};
+
+/* Set up a grop context for rendering to a divnode */
+void gropctxt_init(struct gropctxt *ctx, struct divnode *div);
+
+/* Add a new gropnode to the context. Caller fills in
+   all the grop's parameters (ctx->current->foo) afterwards. */
+g_error addgrop(struct gropctxt *ctx, int type,int x,int y,int w,int h);
+
 /***************** grop functions */
 
 void grop_render(struct divnode *div);
 void grop_addnode(struct gropnode **headpp,struct gropnode *node);
 void grop_free(struct gropnode **headpp);
-void grop_getextent(struct gropnode *head,int *x1,int *y1,int *x2,int *y2);
-g_error grop_pixel(struct gropnode **headpp,
-		   int x, int y, hwrcolor c);
-g_error grop_line(struct gropnode **headpp,
-		  int x1, int y1, int x2, int y2, hwrcolor c);
-g_error grop_rect(struct gropnode **headpp,
-		  int x, int y, int w, int h, hwrcolor c);
-g_error grop_dim(struct gropnode **headpp);
-g_error grop_frame(struct gropnode **headpp,
-		   int x, int y, int w, int h, hwrcolor c);
-g_error grop_slab(struct gropnode **headpp,
-		  int x, int y, int l, hwrcolor c);
-g_error grop_bar(struct gropnode **headpp,
-		 int x, int y, int l, hwrcolor c);
-g_error grop_text(struct gropnode **headpp,
-		  int x, int y, handle fd, hwrcolor col, handle str);
-g_error grop_bitmap(struct gropnode **headpp,
-		    int x, int y, int w, int h, handle b, int lgop);
-g_error grop_gradient(struct gropnode **headpp,
-		      int x, int y, int w, int h, hwrcolor c1, hwrcolor c2,
-		      int angle,int translucent);
-g_error grop_null(struct gropnode **headpp);
 
-void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y);
+void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y);
 
 /***************** divnode functions */
 

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: widget.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -38,7 +38,7 @@
 #include <pgserver/g_error.h>
 #include <pgserver/g_malloc.h>
 #include <pgserver/pgmain.h>
-#include <pgserver/theme.h>
+#include <pgserver/svrtheme.h>
 
 struct blob;
 struct widgetdef;
@@ -118,6 +118,10 @@ struct widget {
    
   /* The divtree this widget is part of */
   struct divtree *dt;
+
+  /* This is called whenever sizing parameters have changed, such
+     as when a theme is loaded */
+  void (*resize)(struct widget *self);
   
   /* If this is a root widget, an unprivelidged app can only derive
      widgets inside it, not before or after it */
@@ -191,6 +195,7 @@ DEF_WIDGET_PROTO(panel)
 DEF_STATICWIDGET_PROTO(popup)
 DEF_STATICWIDGET_PROTO(box)
 DEF_WIDGET_PROTO(field)
+DEF_STATICWIDGET_PROTO(background)
 
 /* Set to the client # if a client has taken over the input device */
 extern int keyboard_owner;

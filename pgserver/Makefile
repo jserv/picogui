@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.30 2000/10/12 16:53:22 pney Exp $
+# $Id: Makefile,v 1.31 2000/10/19 01:21:23 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -29,14 +29,15 @@ BINNAME = pgserver
 
 SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/toolbar.c widget/scroll.c widget/widget.c gcore/grop.c \
-       gcore/g_malloc.c gcore/div.c gcore/font.c widget/theme.c \
+       gcore/g_malloc.c gcore/div.c gcore/font.c \
        gcore/handle.c gcore/g_error.c appmgr/global.c widget/button.c \
-       widget/panel.c widget/default_theme.c widget/popup.c widget/box.c \
+       widget/panel.c widget/popup.c widget/box.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
        gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
        net/dispatch.c net/eventq.c video/svga.c input/svgainput.c \
-       video/sdlmin.c video/sdl.c input/sdlinput.c \
-       video/ez328_chipslice_lcd.c gcore/platforms.c
+       video/ez328_chipslice_lcd.c gcore/platforms.c input/sdlinput.c \
+       video/sdl.c video/sdlmin.c theme/memtheme.c theme/fillstyle.c \
+       widget/background.c
 
 HDR := include/pgserver/*.h include/picogui/*.h
 
@@ -44,7 +45,7 @@ CFLAGS := -Iinclude
 
 ######## Flags and Tools
 
-CFLAGS := $(CFLAGS) -O3 -g -c
+CFLAGS := $(CFLAGS) -g -c
 LDFLAGS := 
 
 # These are default, can be overridden later
@@ -108,12 +109,19 @@ endif
 # Oodles of scripts to convert the .fdf and .fi files into
 # an object file
 font/fontdata.o : font/*.fdf font/*.fi Makefile.cfg script/fontdef.pl
+	chmod a+x script/*.pl
 	script/fontdef.pl $(FONTS) > fonts.tmp.c
 	$(GCC) -o font/fontdata.o fonts.tmp.c $(CFLAGS)
 	rm -f fonts.tmp.c
 
 %.o : %.c $(HDR) Makefile.cfg
 	$(GCC) -o $@ $< $(CFLAGS) $(DRV)
+
+Makefile.cfg:
+	@echo "***** No Makefile.cfg found. Installing sample..."
+	@echo "***** If you would like to configure PicoGUI,"
+	@echo "***** edit Makefile.cfg"
+	cp Makefile.cfg.sample Makefile.cfg
 
 ### The End ###
 

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.7 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: dispatch.c,v 1.8 2000/10/19 01:21:23 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -41,12 +41,12 @@ DEF_REQHANDLER(mkstring)
 DEF_REQHANDLER(free)
 DEF_REQHANDLER(set)
 DEF_REQHANDLER(get)
-DEF_REQHANDLER(setbg)
+DEF_REQHANDLER(mktheme)
 DEF_REQHANDLER(in_key)
 DEF_REQHANDLER(in_point)
 DEF_REQHANDLER(in_direct)
 DEF_REQHANDLER(wait)
-DEF_REQHANDLER(themeset)
+DEF_REQHANDLER(mkfillstyle)
 DEF_REQHANDLER(register)
 DEF_REQHANDLER(mkpopup)
 DEF_REQHANDLER(sizetext)
@@ -59,7 +59,7 @@ DEF_REQHANDLER(mkcontext)
 DEF_REQHANDLER(rmcontext)
 DEF_REQHANDLER(focus)
 DEF_REQHANDLER(getstring)
-DEF_REQHANDLER(restoretheme)
+DEF_REQHANDLER(undef)
 DEF_REQHANDLER(setpayload)
 DEF_REQHANDLER(getpayload)
 DEF_REQHANDLER(undef)
@@ -73,12 +73,12 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(free)
   TAB_REQHANDLER(set)
   TAB_REQHANDLER(get)
-  TAB_REQHANDLER(setbg)
+  TAB_REQHANDLER(mktheme)
   TAB_REQHANDLER(in_key)
   TAB_REQHANDLER(in_point)
   TAB_REQHANDLER(in_direct)
   TAB_REQHANDLER(wait)
-  TAB_REQHANDLER(themeset)
+  TAB_REQHANDLER(mkfillstyle)
   TAB_REQHANDLER(register)
   TAB_REQHANDLER(mkpopup)
   TAB_REQHANDLER(sizetext)
@@ -91,7 +91,7 @@ g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(rmcontext)
   TAB_REQHANDLER(focus)
   TAB_REQHANDLER(getstring)
-  TAB_REQHANDLER(restoretheme)
+  TAB_REQHANDLER(undef)
   TAB_REQHANDLER(setpayload)
   TAB_REQHANDLER(getpayload)
   TAB_REQHANDLER(undef)
@@ -179,6 +179,7 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
   switch (ntohs(arg->type)) {
   case PG_WIDGET_PANEL:
   case PG_WIDGET_POPUP:
+  case PG_WIDGET_BACKGROUND:
     return mkerror(PG_ERRT_BADPARAM,58);
   }
 
@@ -204,40 +205,23 @@ g_error rqh_mkwidget(int owner, struct pgrequest *req,
 g_error rqh_mkbitmap(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   struct bitmap *bmp;
-  unsigned char *bits;
-  long bitsz;
   handle h;
   g_error e;
   int w;
-  reqarg(mkbitmap);
   
-  bits = ((unsigned char *)data)+sizeof(struct pgreqd_mkbitmap);
-  bitsz = req->size - sizeof(struct pgreqd_mkbitmap);
+  /* The file format is autodetected. Formats that can't be detected
+     will have seperate functions for loading them (XBM for example) */
 
-  if (arg->w && arg->h) {
-    /* XBM */
-    w = ntohs(arg->w);
-    if (w%8)
-      w = w/8 + 1;
-    else
-      w = w/8;
-    if (bitsz < (w*ntohs(arg->h)))
-      return mkerror(PG_ERRT_BADPARAM,61);
-    e = (*vid->bitmap_loadxbm)(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
-			       (*vid->color_pgtohwr)(ntohl(arg->fg)),
-			       (*vid->color_pgtohwr)(ntohl(arg->bg)));
-  }
-  else {
-    /* PNM */
-    e = (*vid->bitmap_loadpnm)(&bmp,bits,bitsz);
-  }
+  /* So far the only available type is PNM :) */
+
+  /* PNM */
+  e = (*vid->bitmap_loadpnm)(&bmp,data,req->size);
   errorcheck;
 
   e = mkhandle(&h,PG_TYPE_BITMAP,owner,bmp);
   errorcheck;
   
   *ret = h;
-
   return sucess;
 }
 
@@ -304,12 +288,6 @@ g_error rqh_get(int owner, struct pgrequest *req,
   return sucess;
 }
 
-g_error rqh_setbg(int owner, struct pgrequest *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  reqarg(handlestruct);
-  return appmgr_setbg(owner,ntohl(arg->h));
-}
-
 g_error rqh_undef(int owner, struct pgrequest *req,
 		   void *data, unsigned long *ret, int *fatal) {
   return mkerror(PG_ERRT_BADPARAM,62);
@@ -327,25 +305,6 @@ g_error rqh_in_point(int owner, struct pgrequest *req,
   reqarg(in_point);
   dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
 		    ntohs(arg->btn));
-  return sucess;
-}
-
-g_error rqh_themeset(int owner, struct pgrequest *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  reqarg(themeset);
-
-  /* Don't worry about errors here.  If they try to set a nonexistant
-     theme, its no big deal.  Just means that the theme is a later
-     version than this widget set.
-  */
-  
-  themeset(ntohs(arg->element),ntohs(arg->state),ntohs(arg->param),
-	   ntohl(arg->value));
-
-  /* Do a global recalc (Yikes!) */
-  dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-  dts->top->flags |= DIVTREE_NEED_RECALC;
-
   return sucess;
 }
 
@@ -653,12 +612,6 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
   return ERRT_NOREPLY;
 }
 
-g_error rqh_restoretheme(int owner, struct pgrequest *req,
-			 void *data, unsigned long *ret, int *fatal) {
-  restoretheme();
-  return sucess;
-}
-
 g_error rqh_setpayload(int owner, struct pgrequest *req,
 		       void *data, unsigned long *ret, int *fatal) {
   unsigned long *ppayload;
@@ -686,6 +639,50 @@ g_error rqh_getpayload(int owner, struct pgrequest *req,
 
   return sucess;
 }
+
+g_error rqh_mktheme(int owner, struct pgrequest *req,
+		    void *data, unsigned long *ret, int *fatal) {
+  struct pgmemtheme *th;
+  handle h;
+  g_error e;
+  
+  /* Load the theme, and make a handle of it. theme_load does
+   * a good job of error checking by itself, so no need
+   * for that here
+   * (besides, who could hope for a humble request handler to
+   * understand a compiled theme file ;-)
+   */
+
+  e = theme_load(&h,owner,data,req->size);
+  errorcheck;
+
+  *ret = h;
+
+  return sucess;
+}
+
+g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
+			void *data, unsigned long *ret, int *fatal) {
+  char *buf;
+  handle h;
+  g_error e;
+
+  /* FIXME: This should perform some sanity checks on the fillstyle,
+     at least stack underflow/overflow and invalid opcodes. */
+
+  e = g_malloc((void **) &buf,req->size+sizeof(unsigned long));
+  errorcheck;
+  *((unsigned long *)buf) = req->size;
+  memcpy(buf+sizeof(unsigned long),data,req->size);
+
+  e = mkhandle(&h,PG_TYPE_FILLSTYLE,owner,buf);
+  errorcheck;
+
+  *ret = h;
+  return sucess;
+}
+
+
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.22 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: label.c,v 1.23 2000/10/19 01:21:24 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -32,37 +32,35 @@
 struct labeldata {
   handle text,font;
   int transparent,align;
-  pgcolor bg,fg;
 };
 #define DATA ((struct labeldata *)(self->data))
 
 void resizelabel(struct widget *self);
 
-/* param.text */
-void text(struct divnode *d) {
-  /* This aligns the text in the available rectangle
-     using the value of d->param.text.align. It is seperated
-     from the edge by the font's hspace/vspace
-  */
+void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   int x,y,w,h;
   struct fontdesc *fd;
   char *str;
-  struct widget *self = d->owner;
+  handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
+
+  if (!DATA->transparent)
+    exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* Measure the exact width and height of the text and align it */
-  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font))
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
       || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
       || !str) return;
   sizetext(fd,&w,&h,str);
-  if (w>d->w) w = d->w;
-  if (h>d->h) h = d->h;
-  align(d,DATA->align,&w,&h,&x,&y);
+  if (w>c->w) w = c->w;
+  if (h>c->h) h = c->h;
+  align(c,DATA->align,&w,&h,&x,&y);
 
-  if (!DATA->transparent)
-    grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
-
-  grop_text(&d->grop,x,y,DATA->font,DATA->fg,DATA->text);
+  addgrop(c,PG_GROP_TEXT,x,y,w,h);
+  c->current->param[0] = DATA->text;
+  c->current->param[1] = font;
+  c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
+  c->current->flags |= PG_GROPF_TRANSLATE;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -83,10 +81,10 @@ g_error label_install(struct widget *self) {
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &text;
-  DATA->bg = 0xFFFFFF;
+  self->in->div->build = &build_label;
+  self->in->div->state = PGTH_O_LABEL;
   DATA->align = PG_A_CENTER;
-  DATA->font = defaultfont;
+  self->resize = &resizelabel;
 
   return sucess;
 }
@@ -113,19 +111,6 @@ g_error label_set(struct widget *self,int property, glob data) {
     resizelabel(self);
     if (DATA->transparent)
       redraw_bg(self);
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_COLOR:
-    DATA->fg = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_BGCOLOR:
-    DATA->bg = data;
-    DATA->transparent = 0;
-    self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -200,12 +185,6 @@ glob label_get(struct widget *self,int property) {
   case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case PG_WP_BGCOLOR:
-    return DATA->bg;
-
-  case PG_WP_COLOR:
-    return DATA->fg;
-
   case PG_WP_TRANSPARENT:
     return DATA->transparent;
 
@@ -224,7 +203,8 @@ glob label_get(struct widget *self,int property) {
   case PG_WP_VIRTUALH:
     if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,DATA->text)) 
         || !str) break;
-    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,DATA->font)) 
+    if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,DATA->font ? 
+			 DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT))) 
         || !fd) break;
     sizetext(fd,&tw,&th,str);
     return th;
@@ -235,14 +215,16 @@ glob label_get(struct widget *self,int property) {
 }
  
 void resizelabel(struct widget *self) {
-  int w,h;
+  int w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   struct fontdesc *fd;
   char *str;
+  handle font = DATA->font ? DATA->font : 
+    theme_lookup(self->in->div->state,PGTH_P_FONT);
 
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
 
-  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,DATA->font))
+  if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
 	      || !fd) return;
   if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,DATA->text))
 	      || !str) return;
@@ -251,10 +233,10 @@ void resizelabel(struct widget *self) {
   
   if ((self->in->flags & PG_S_TOP) ||
       (self->in->flags & PG_S_BOTTOM))
-    self->in->split = h;
+    self->in->split = h+m;
   else if ((self->in->flags & PG_S_LEFT) ||
 	   (self->in->flags & PG_S_RIGHT))
-    self->in->split = w;
+    self->in->split = w+m;
 }
 
 /* The End */

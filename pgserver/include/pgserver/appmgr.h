@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: appmgr.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
@@ -62,9 +62,6 @@ extern struct app_info *applist;
 /* Init & Free */
 g_error appmgr_init(void);
 void appmgr_free(void);
-
-/* Pass it a bitmap handle, or NULL to restore default background */
-g_error appmgr_setbg(int owner,handle bitmap);
 
 /* Register a new application. 
    Fill out the app_info structure, then call this.

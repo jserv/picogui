@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.33 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: button.c,v 1.34 2000/10/19 01:21:24 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -33,135 +33,55 @@
 
 struct btndata {
   int on,over;
-  int x,y;
-  int dxt;    /* X of the text, relative to the x above */
-  int dyt;    /* Ditto, for the text's Y */
   handle bitmap,bitmask,text,font;
-  int align;
-  hwrcolor textcolor;
 };
 #define DATA ((struct btndata *)(self->data))
 
-void resizebutton(struct widget *self);
-void buttonstate(struct widget *self);
+void resize_button(struct widget *self);
 
-void button(struct divnode *d) {
-  int ex,ey,ew,eh,x,y,txt_h;
-  int w=0,h=0; /* Size of the bitmap and text combined */
-  struct bitmap *bit=NULL,*bitmask=NULL;
-  int bw,bh;  /* Bitmap size */
-  char *text=NULL;
-  struct fontdesc *fd=NULL;
-  struct widget *self = d->owner;
+struct btnposition {
+  /* Coordinates calculated in position_button */
+  int x,y,w,h;  /* Coordinates of bitmap and text combined */
+  int bx,by,bw,bh;  /* Bitmap, relative to bitmap+text */
+  int tx,ty,tw,th;  /* Text, relative to bitmap+text */ 
 
-  ex=ey=0; ew=d->w; eh=d->h;
+  /* position_button looks this up anyway */
+  handle font;
+};
 
-#ifdef DEBUG
-  printf("Button recalc\n");
-#endif
+/* Code to generate the button coordinates, needed to resize or build the button */
+void position_button(struct widget *self,struct btnposition *bp);
 
-  addelement(d,&current_theme[PG_E_BUTTON_BORDER],&ex,&ey,&ew,&eh);
-  addelement(d,&current_theme[PG_E_BUTTON_FILL],&ex,&ey,&ew,&eh);
+void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
+  struct btnposition bp;
 
-  /* Dereference the handles */
-  rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap);
-  rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask);
-  rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text);
-  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->font);
+  /* Background */
+  exec_fillstyle(c,state,PGTH_P_BGFILL);
 
-  /* Find the total width and height */
-  if (text) {
-    sizetext(fd,&w,&h,text);
-    txt_h = h;
-  }
-  if (bit) {
-    (*vid->bitmap_getsize)(bit,&bw,&bh);
-    w += bw;
-    if (bh>h) h = bh;
-  }
-  if (bit && text)
-    w += HWG_MARGIN;
+  position_button(self,&bp);
 
-  /* Align, and save the upper-left coord for later */
-  align(d,DATA->align,&w,&h,&x,&y);
-
-  /* If the text is bigger than the bitmap, center the bitmap in the text */
-  if (text && bit && bh<txt_h)
-      y-=(DATA->dyt=(bh>>1)-(txt_h>>1));
-
-  DATA->x = x;
-  DATA->y = y;
+  /* Align the whole thing */
+  align(c,theme_lookup(state,PGTH_P_ALIGN),&bp.w,&bp.h,&bp.x,&bp.y);
 
   /* AND the mask, then OR the bitmap. Yay for transparency effects! */
-  if (DATA->on) {
-    x+=ON_OFFSET;
-    y+=ON_OFFSET;
+  if (DATA->bitmask) {
+    addgrop(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
+    c->current->param[0] = DATA->bitmask;
+    c->current->param[1] = PG_LGOP_AND;
   }
-  if (DATA->bitmask)
-    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmask,PG_LGOP_AND);
-  else
-    grop_null(&d->grop);
-  if (DATA->bitmap)
-    grop_bitmap(&d->grop,x,y,bw,bh,DATA->bitmap,PG_LGOP_OR);
-  else
-    grop_null(&d->grop);
+  if (DATA->bitmap) {
+    addgrop(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
+    c->current->param[0] = DATA->bitmap;
+    c->current->param[1] = PG_LGOP_OR;
+  }
 
-  /* Put the text to the right of the bitmap, and vertically center them
-   * independently
-   */
+  /* Text */
   if (DATA->text) {
-    if (bit) {
-      x+=(DATA->dxt=bw+HWG_MARGIN);
-      /* If the bitmap is bigger, center the text relative to the bitmap */
-      if (bh>txt_h) 
-	DATA->dyt=(bh>>1)-(txt_h>>1);
-      y+=DATA->dyt;
-    }
-    else
-      DATA->dxt = DATA->dyt = 0;
-    grop_text(&d->grop,x,y,DATA->font,DATA->textcolor,DATA->text);
+    addgrop(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
+    c->current->param[0] = DATA->text;
+    c->current->param[1] = bp.font;
+    c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
   }
-  else
-    grop_null(&d->grop);
-  
-  addelement(d,&current_theme[PG_E_BUTTON_OVERLAY],&ex,&ey,&ew,&eh);
-
-  buttonstate(self);
-}
-
-/* Find the current visual state and apply it */
-void buttonstate(struct widget *self) {
-  int state,x,y;
-
-  /* This code for updating the button's appearance modifies
-     the grops directly because it does not need a recalc, only
-     a single-node redraw. Recalcs propagate like a virus, and
-     require recreating grop-lists.
-     Redraws don't spread to other nodes, and they are very fast.
-  */
-  x = DATA->x;
-  y = DATA->y;
-  if (DATA->on && DATA->over) {
-    state = PG_STATE_ACTIVATE;
-    x += ON_OFFSET;
-    y += ON_OFFSET;
-  }
-  else if (DATA->over)
-    state = PG_STATE_HILIGHT;
-  else
-    state = PG_STATE_NORMAL;
-  applystate(self->in->div->grop,
-	     &current_theme[PG_E_BUTTON_BORDER],state);
-  applystate(self->in->div->grop->next,
-	     &current_theme[PG_E_BUTTON_FILL],state);
-  applystate(self->in->div->grop->next->next->next->next->next,
-	     &current_theme[PG_E_BUTTON_OVERLAY],state);
-  self->in->div->grop->next->next->x = x;
-  self->in->div->grop->next->next->next->x = x;
-  self->in->div->grop->next->next->y = y;
-  self->in->div->grop->next->next->next->y = y;
-  self->in->div->grop->next->next->next->next->x = x+DATA->dxt;
-  self->in->div->grop->next->next->next->next->y = y+DATA->dyt;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -174,29 +94,27 @@ g_error button_install(struct widget *self) {
   errorcheck;
   memset(self->data,0,sizeof(struct btndata));
 
-  DATA->font = defaultfont;
-  DATA->align = PG_A_CENTER;
-
   /* Main split */
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_LEFT;
-  self->in->split = HWG_BUTTON;
 
   /* Visible node */
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &button;
+  self->in->div->build = &build_button;
+  self->in->div->state = PGTH_O_BUTTON;
 
   /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
   errorcheck;
   self->in->next->flags |= PG_S_LEFT;
-  self->in->next->split = HWG_MARGIN;
   self->out = &self->in->next->next;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT;
+
+  self->resize = &resize_button;
 
   return sucess;
 }
@@ -224,30 +142,17 @@ g_error button_set(struct widget *self,int property, glob data) {
     if (data!=PG_S_ALL) {
       self->in->next->flags &= SIDEMASK;
       self->in->next->flags |= ((sidet)data);
-      resizebutton(self);
+      resize_button(self);
     }
     self->dt->flags |= DIVTREE_NEED_RECALC;
     redraw_bg(self);
-    break;
-
-  case PG_WP_ALIGN:
-    if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,32);
-    DATA->align = (alignt) data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_COLOR:
-    DATA->textcolor = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
   case PG_WP_BITMAP:
     if (!iserror(rdhandle((void **)&bit,PG_TYPE_BITMAP,-1,data)) && bit) {
       DATA->bitmap = (handle) data;
       psplit = self->in->split;
-      resizebutton(self);
+      resize_button(self);
       if (self->in->split != psplit) {
 	redraw_bg(self);
 	self->in->flags |= DIVNODE_PROPAGATE_RECALC;
@@ -272,7 +177,7 @@ g_error button_set(struct widget *self,int property, glob data) {
       return mkerror(PG_ERRT_HANDLE,35);
     DATA->font = (handle) data;
     psplit = self->in->split;
-    resizebutton(self);
+    resize_button(self);
     if (self->in->split != psplit) {
       redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
@@ -286,7 +191,7 @@ g_error button_set(struct widget *self,int property, glob data) {
       return mkerror(PG_ERRT_HANDLE,36);
     DATA->text = (handle) data;
     psplit = self->in->split;
-    resizebutton(self);
+    resize_button(self);
     if (self->in->split != psplit) {
       redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
@@ -313,12 +218,6 @@ glob button_get(struct widget *self,int property) {
 
   case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
-
-  case PG_WP_ALIGN:
-    return DATA->align;
-
-  case PG_WP_COLOR:
-    return DATA->textcolor;
 
   case PG_WP_BITMAP:
     return DATA->bitmap;
@@ -386,18 +285,15 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     
   }
 
-  /* If we're busy rebuilding the grop list, don't bother poking
-     at the individual nodes */
-  if (self->in->div->grop_lock || !self->in->div->grop)
-    return;
-
-  buttonstate(self);
-
   /* Update, THEN send the event. */
 
-  self->in->div->flags |= DIVNODE_NEED_REDRAW;
-  self->dt->flags |= DIVTREE_NEED_REDRAW;   
-  if (self->dt==dts->top) update();
+  if (DATA->on)
+    div_setstate(self->in->div,PGTH_O_BUTTON_ON);
+  else if (DATA->over)
+    div_setstate(self->in->div,PGTH_O_BUTTON_HILIGHT);
+  else
+    div_setstate(self->in->div,PGTH_O_BUTTON);
+
   if (event>=0)
     post_event(PG_WE_ACTIVATE,self,event,0);
 }
@@ -405,51 +301,134 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 /* HWG_BUTTON is the minimum size (either dimension) for a button.
    This function resizes if the text or bitmap goes over that minimum.
 */
-void resizebutton(struct widget *self) {
-  int w=0,h=0; /* Size of the bitmap and text combined */
-  int bw,bh; /* Bitmap size */
-  struct bitmap *bit=NULL,*bitmask=NULL;
-  char *text=NULL;
-  struct fontdesc *fd=NULL;
+void resize_button(struct widget *self) {
+  struct btnposition bp;
+  int w,h,m;
 
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
-  
-  /* Dereference the handles */
+
+  /* Space between buttons */
+  self->in->next->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING);
+
+  /* Minimum size and margin */
+  w = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH);
+  h = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT);
+  m = theme_lookup(PGTH_O_BUTTON,PGTH_P_MARGIN);
+
+  /* Calculate everything */
+  position_button(self,&bp);
+
+  /* Orientation */
+  if ((self->in->flags & PG_S_TOP) ||
+      (self->in->flags & PG_S_BOTTOM))
+
+    /* Vertical */
+    if (bp.h > h)
+      self->in->split = bp.h + (m<<1);
+    else
+      self->in->split = h;
+
+  else if ((self->in->flags & PG_S_LEFT) ||
+	   (self->in->flags & PG_S_RIGHT))
+
+    /* Horizontal */
+    if (bp.w > w)
+      self->in->split = bp.w + (m<<1);
+    else
+      self->in->split = w;
+}
+
+/* Code to generate the button coordinates, needed to resize or build the button */
+void position_button(struct widget *self,struct btnposition *bp) {
+  hwrbitmap bit = NULL,bitmask = NULL;
+  struct fontdesc *fd = NULL;
+  char *text = NULL;
+
+  /* Dereference */
   rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap);
   rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask);
   rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text);
-  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->font);
+  bp->font = DATA->font ? DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT);
+  rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font);
 
-#ifdef DEBUG
-  printf("Resize button.  Text: '%s'\n",text);
-#endif
-
-  /* Find the total width and height */
+  /* Find sizes */
   if (text)
-    sizetext(fd,&w,&h,text);
-  if (bit) {
-    (*vid->bitmap_getsize)(bit,&bw,&bh);
-    w += bw;
-    if (bh>h) h = bh;
+    sizetext(fd,&bp->tw,&bp->th,text);
+  if (bit)
+    (*vid->bitmap_getsize)(bit,&bp->bw,&bp->bh);
+  
+  /* Position the text and bitmap relative to each other */
+  if (text && bit) {
+    int s = theme_lookup(self->in->div->state,PGTH_P_BITMAPSIDE);
+    int m = theme_lookup(self->in->div->state,PGTH_P_BITMAPMARGIN);
+
+    if (s & (PG_S_TOP | PG_S_BOTTOM)) {
+      /* Horizontal positioning for top/bottom */
+      if (bp->bw>bp->tw) {
+	bp->w = bp->bw;
+	bp->bx = 0;
+	bp->tx = (bp->bw-bp->tw)>>1;
+      }
+      else {
+	bp->w = bp->tw;
+	bp->tx = 0;
+	bp->bx = (bp->tw-bp->bw)>>1;
+      }
+
+      /* Vertical size */
+      bp->h = bp->th+bp->bh+m;
+
+      if (s & PG_S_TOP) {
+	/* Vertical positioning for top */
+	bp->by = 0;
+	bp->ty = bp->bh+m;
+      }
+      else {
+	/* Vertical positioning for bottom */
+	bp->ty = 0;
+	bp->by = bp->th+m;
+      }
+    }
+    else {
+      /* Vertical positioning for left/right */
+      if (bp->bh>bp->th) {
+	bp->h = bp->bh;
+	bp->by = 0;
+	bp->ty = (bp->bh-bp->th)>>1;
+      }
+      else {
+	bp->h = bp->th;
+	bp->ty = 0;
+	bp->by = (bp->th-bp->bh)>>1;
+      }
+
+      /* Horizontal size */
+      bp->w = bp->tw+bp->bw+m;
+
+      if (s & PG_S_LEFT) {
+	/* Horizontal positioning for left */
+	bp->bx = 0;
+	bp->tx = bp->bw+m;
+      }
+      else {
+	/* Horizontal positioning for right */
+	bp->tx = 0;
+	bp->bx = bp->tw+m;
+      }
+    }      
   }
-  if (bit && text)
-    w += HWG_MARGIN;
 
-  /* Set split to w or h depending on split orientation */
-  if ((self->in->flags & PG_S_TOP) ||
-      (self->in->flags & PG_S_BOTTOM))
-    self->in->split = h;
-  else if ((self->in->flags & PG_S_LEFT) ||
-	   (self->in->flags & PG_S_RIGHT))
-    self->in->split = w;
-
-  /* HWG_BUTTON is the minimum */
-  if (self->in->split < HWG_BUTTON)
-    self->in->split = HWG_BUTTON;
-  else {
-    /* If we're going over the limit anyway, add some margin */
-    self->in->split += HWG_MARGIN<<1;
+  /* Only one? */
+  else if (text) {
+    bp->w = bp->tw;
+    bp->h = bp->th;
+    bp->tx = bp->ty = 0;
+  }
+  else if (bit) {
+    bp->w = bp->bw;
+    bp->h = bp->bh;
+    bp->bx = bp->by = 0;
   }
 }
 

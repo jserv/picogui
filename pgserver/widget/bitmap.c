@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.20 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: bitmap.c,v 1.21 2000/10/19 01:21:24 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -30,34 +30,33 @@
 struct bitmapdata {
   handle bitmap,bitmask;
   int align,lgop,transparent;
-  pgcolor fill;
 };
 #define DATA ((struct bitmapdata *)(self->data))
 
-/* display a bitmap, with alignment */
-void bitmap(struct divnode *d) {
-  int x,y,w,h;
+void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct bitmap *bit;
-  struct widget *self = d->owner;
+  int x,y,w,h;
 
   if (!DATA->transparent)
-    grop_rect(&d->grop,0,0,d->w,d->h,DATA->fill);
-
-  /* Here if the bitmap is null we don't want to be blitting from the
-     screen... */
+    exec_fillstyle(c,state,PGTH_P_BGFILL);
+  
+  /* Size and add the bitmap itself */
   if (DATA->bitmap && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
       DATA->bitmap)) && bit) {
     (*vid->bitmap_getsize)(bit,&w,&h);
-    align(d,DATA->align,&w,&h,&x,&y);
+    align(c,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
     if (DATA->bitmask && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
-	DATA->bitmask)) && bit)
-      grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,PG_LGOP_AND);
-    else
-      grop_null(&d->grop);
+					   DATA->bitmask)) && bit) {
+      addgrop(c,PG_GROP_BITMAP,x,y,w,h);
+      c->current->param[0] = DATA->bitmask;
+      c->current->param[1] = PG_LGOP_AND;
+    }
 
-    grop_bitmap(&d->grop,x,y,w,h,DATA->bitmap,DATA->lgop);
+    addgrop(c,PG_GROP_BITMAP,x,y,w,h);
+    c->current->param[0] = DATA->bitmap;
+    c->current->param[1] = DATA->lgop;
   }
 }
 
@@ -81,8 +80,8 @@ g_error bitmap_install(struct widget *self) {
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &bitmap;
-  DATA->fill = 0xFFFFFF;
+  self->in->div->build = &build_bitmap;
+  self->in->div->state = PGTH_O_BITMAP;
   DATA->align = PG_A_CENTER;
   DATA->lgop = PG_LGOP_NONE;
 
@@ -107,13 +106,6 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 
       DIVNODE_PROPAGATE_RECALC;
     resizebitmap(self);
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_BGCOLOR:
-    DATA->fill = data;
-    DATA->transparent = 0;
-    self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -176,9 +168,6 @@ glob bitmap_get(struct widget *self,int property) {
   case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
 
-  case PG_WP_COLOR:
-    return DATA->fill;
-    
   case PG_WP_TRANSPARENT:
     return DATA->transparent;
 

@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: pgnet.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -41,7 +41,6 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/widget.h>
-#include <pgserver/theme.h>
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
@@ -156,6 +155,9 @@ struct event *get_event(int owner,int remove);
 #define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct pgrequest *req, void *data, unsigned long *ret, int *fatal);
 /* Make a handler table entry */
 #define TAB_REQHANDLER(n) &rqh_##n ,
+
+/* Request handler table */
+extern g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*);
 
 #endif /* __H_PGNET */
 /* The End */

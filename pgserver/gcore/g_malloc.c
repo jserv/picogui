@@ -1,10 +1,9 @@
-
-/* $Id: g_malloc.c,v 1.8 2000/10/10 00:33:36 micahjd Exp $
+/* $Id: g_malloc.c,v 1.9 2000/10/19 01:21:23 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
- * During debugging, tacks on a size_t to the beginning of all allocated memory,
- * and keeps track of memory usage
+ * During debugging, tacks on a size_t to the beginning of all
+ * allocated memory, and keeps track of memory usage
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.24 2000/10/10 00:33:36 micahjd Exp $
+/* $Id: div.c,v 1.25 2000/10/19 01:21:23 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -30,7 +30,7 @@
 #include <pgserver/widget.h>
 
 /* Fill in the x,y,w,h of this divnode's children node based on it's
- * x,y,w,h and it's split. Also call the on_recalc members if present.
+ * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
  */
 void divnode_recalc(struct divnode *n) {
@@ -186,36 +186,12 @@ void divnode_recalc(struct divnode *n) {
 	div, only propagate to next if our changes affected other nodes. 
       */
      if (n->div) {
-       n->div->flags |= DIVNODE_NEED_RECALC | 
-	 (n->flags & DIVNODE_PROPAGATE_RECALC);
-       if (n->div->on_recalc && (!n->div->grop_lock)) {
-	 n->div->grop_lock++;
-	 if (n->div->grop_lock==1) {
-	   grop_free(&n->div->grop);
-	   (*n->div->on_recalc)(n->div);
-	 }
-	 n->div->grop_lock = 0;
-#ifdef DEBUG
-	 printf("div: on_recalc(0x%X)\n",n->div);
-#endif
-	 n->div->flags |= DIVNODE_NEED_REDRAW;
-       }
-     }
-     
+       n->div->flags |= DIVNODE_NEED_RECALC | (n->flags & DIVNODE_PROPAGATE_RECALC);
+       div_rebuild(n->div);
+     }     
      if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
        n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-       if (n->next->on_recalc && (!n->next->grop_lock)) {
-	 n->next->grop_lock++;
-	 if (n->next->grop_lock==1) {
-	   grop_free(&n->next->grop);
-	   (*n->next->on_recalc)(n->next);
-	 }
-	 n->next->grop_lock = 0;
-#ifdef DEBUG
-	 printf("next: on_recalc(0x%X)\n",n->next);
-#endif
-	 n->next->flags |= DIVNODE_NEED_REDRAW;
-       }
+       div_rebuild(n->next);
      }
      
      /* We're done */
@@ -399,7 +375,7 @@ void dts_pop(void) {
 /* Aligns a 'thing' of specified width and height in the specified divnode
  * according to the alignment type specified in align.
  */
-void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y) {
+void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y) {
   switch (align) {
   case PG_A_CENTER:
     *x = (d->w-*w)/2;
@@ -444,6 +420,8 @@ void align(struct divnode *d,alignt align,int *w,int *h,int *x,int *y) {
     *h = d->h;
     break;
   }
+  *x += d->x;
+  *y += d->y;
 }
 
 /* The End */

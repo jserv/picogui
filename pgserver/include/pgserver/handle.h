@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.4 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: handle.h,v 1.5 2000/10/19 01:21:23 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -56,7 +56,8 @@ struct handlenode {
   int context;
   unsigned long int payload;   /* Client-definable data */
   void *obj;
-  struct handlenode *left,*right,*parent;
+  struct handlenode *group;  /* Parent of this handle group */
+  struct handlenode *left,*right,*parent;  /* For the red-black tree */
 };
 
 /* Allocates a new handle for obj 
@@ -96,6 +97,12 @@ g_error handle_bequeath(handle dest, handle src, int srcowner);
 
 /* Changes the object pointer of a handle */
 g_error rehandle(handle h, void *obj);
+
+/* Add handle to another handle's group so they are freed at the same time */
+g_error handle_group(int owner,handle from, handle to);
+
+/* Call the resize() function on all widgets with handles */
+void resizeall(void);
 
 #endif /* __HANDLE_H */
 /* The End */

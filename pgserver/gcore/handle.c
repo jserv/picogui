@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.19 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: handle.c,v 1.20 2000/10/19 01:21:23 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -339,6 +339,9 @@ void object_free(struct handlenode *n) {
     case PG_TYPE_WIDGET:
       widget_remove(n->obj);
       break;
+    case PG_TYPE_THEME:
+      theme_remove(n->obj);
+      break;
     default:
       g_free(n->obj);
     }
@@ -375,6 +378,18 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   return sucess;
 }
 
+/* Add handle to another handle's group so they are freed at the same time */
+g_error handle_group(int owner,handle from, handle to) {
+  /* First, validate both handles */
+  struct handlenode *f = htree_find(from);
+  struct handlenode *t = htree_find(to);
+  if (!(f && t && from && to)) return mkerror(PG_ERRT_HANDLE,92);
+  if (owner>=0 && ((t->owner != owner) || (f->owner !=owner))) 
+    return mkerror(PG_ERRT_HANDLE,27);
+  t->group = f;
+  return sucess;
+}
+
 /* Reads the handle, returns NULL if handle is invalid or if it
    doesn't match the required type */
 g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
@@ -394,6 +409,33 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
   return sucess;
 }
 
+/* Deletes all handles owned by owner with a context >= 'context',
+   (all handles if owner is -1)
+   Traverses seperately to find each handle because the tree could
+   be rearranged by deletion
+*/
+int r_handle_cleanup(struct handlenode *n,int owner,int context,
+		     struct handlenode *group) {
+  struct handlenode ncopy;
+
+  if ((!n) || (n==NIL)) return 0;
+
+  ncopy = *n;
+
+  if ( ((owner<0) || (owner==n->owner)) && (n->context>=context) &&
+       ((!group) || group==n->group)) {
+    htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
+    object_free(&ncopy);
+    return 1;
+  }
+  if (r_handle_cleanup(n->left,owner,context,group)) return 1;
+  if (r_handle_cleanup(n->right,owner,context,group)) return 1;
+  return 0;
+}
+void handle_cleanup(int owner,int context) {
+  while (r_handle_cleanup(htree,owner,context,NULL));
+}
+
 /* Deletes the handle, and if HFLAG_NFREE is not set it frees the object */
 g_error handle_free(int owner,handle h) {
   struct handlenode *n = htree_find(h);
@@ -407,39 +449,18 @@ g_error handle_free(int owner,handle h) {
   if (!h) return sucess;
   if (!n) return sucess;
 
-  ncopy = *n;
-
   if (owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
-  htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
+
+  /* Remove from the handle tree BEFORE deleting the object itself */
+  ncopy = *n;
+  htree_delete(n);
   object_free(&ncopy);
 
+  /* See if this node had any group members that need to be expunged */
+  r_handle_cleanup(htree,-1,-1,n);
+
   return sucess;
-}
-
-/* Deletes all handles owned by owner with a context >= 'context',
-   (all handles if owner is -1)
-   Traverses seperately to find each handle because the tree could
-   be rearranged by deletion
-*/
-int r_handle_cleanup(struct handlenode *n,int owner,int context) {
-  struct handlenode ncopy;
-
-  if ((!n) || (n==NIL)) return 0;
-
-  ncopy = *n;
-
-  if (((owner<0) || (owner==n->owner)) && (n->context>=context)) {
-    htree_delete(n);    /* Remove from the handle tree BEFORE deleting the object itself */
-    object_free(&ncopy);
-    return 1;
-  }
-  if (r_handle_cleanup(n->left,owner,context)) return 1;
-  if (r_handle_cleanup(n->right,owner,context)) return 1;
-  return 0;
-}
-void handle_cleanup(int owner,int context) {
-  while (r_handle_cleanup(htree,owner,context));
 }
 
 /* A fairly interesting function.  Destroys any data referenced by
@@ -501,6 +522,22 @@ g_error handle_payload(unsigned long **pppayload,int owner,handle h) {
   return sucess;
 }
 
+/* Recursive part of resizeall() */
+void r_resizeall(struct handlenode *n) {
+  if ((!n) || (n==NIL)) return;
+  
+  if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==PG_TYPE_WIDGET && 
+      n->obj && ((struct widget *)n->obj)->resize)
+    ((struct widget *)n->obj)->resize((struct widget*)n->obj);
+
+  r_resizeall(n->left);
+  r_resizeall(n->right);
+}
+
+/* Call the resize() function on all widgets with handles */
+void resizeall(void) {
+  r_resizeall(htree);
+}
 
 /* The End */
 

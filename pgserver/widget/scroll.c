@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.26 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: scroll.c,v 1.27 2000/10/19 01:21:24 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -51,32 +51,38 @@ struct scrolldata {
 		      an event being sent back to the client */
 
   unsigned long wait_tick;
+  int thumbscale;
 };
 #define DATA ((struct scrolldata *)(self->data))
 
-void scrollbar(struct divnode *d) {
-  int x,y,w,h;
-  struct widget *self = d->owner;
+/* When value changes, update the grop coordinates */
+void scrollupdate(struct widget *self) {
+  self->in->div->ty = DATA->value * DATA->thumbscale / DATA->res;
+
+  self->in->div->flags |= DIVNODE_NEED_REDRAW;
+  self->dt->flags |= DIVTREE_NEED_REDRAW;
+}
+
+void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   struct widget *wgt;
-  
+
   /* Size ourselves to fit the widget we are bound to */
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			DATA->binding)) && wgt) 
     DATA->res = widget_get(wgt,PG_WP_VIRTUALH) - wgt->in->h;
 
-  /* Background for the whole bar */
-  x=y=0; w=d->w; h=d->h;
-  addelement(d,&current_theme[PG_E_SCROLLBAR_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_SCROLLBAR_FILL],&x,&y,&w,&h);
+  /* Background for the bar */
+  exec_fillstyle(c,state,PGTH_P_BGFILL);
 
-  /* Within the remaining space, figure out where the indicator goes */
-  y += DATA->value * (h-(h>>HEIGHT_DIV)) / DATA->res;
-  h = h>>HEIGHT_DIV;
+  /* The scrollbar thumb */
+  DATA->thumbscale = (c->h-(c->h>>HEIGHT_DIV));
+  c->h = c->h>>HEIGHT_DIV;
+  defaultgropflags = PG_GROPF_TRANSLATE;
+  exec_fillstyle(c,state,PGTH_P_OVERLAY);
+  defaultgropflags = 0;
 
-  /* Add the indicator elements */
-  addelement(d,&current_theme[PG_E_SCROLLIND_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_SCROLLIND_FILL],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_SCROLLIND_OVERLAY],&x,&y,&w,&h);
+  /* Update the scroll position */
+  scrollupdate(self);
 }
 
 /* When the value changes, send an event */
@@ -95,51 +101,9 @@ void scrollevent(struct widget *self) {
   }
 }
 
-/* When value changes, update the grop coordinates */
-void scrollupdate(struct widget *self) {
-  int state;
-
-  /* If we're busy rebuilding the grop list, don't bother poking
-     at the individual nodes */
-  if (self->in->div->grop_lock || !self->in->div->grop)
-    return;
-  
-  /* Apply the current state to the elements */
-  if (DATA->on)
-    state = PG_STATE_ACTIVATE;
-  else if (DATA->over)
-    state = PG_STATE_HILIGHT;
-  else
-    state = PG_STATE_NORMAL;
-  applystate(self->in->div->grop,
-	     &current_theme[PG_E_SCROLLBAR_BORDER],state);
-  applystate(self->in->div->grop->next,
-	     &current_theme[PG_E_SCROLLBAR_FILL],state);
-  applystate(self->in->div->grop->next->next,
-	     &current_theme[PG_E_SCROLLIND_BORDER],state);
-  applystate(self->in->div->grop->next->next->next,
-	     &current_theme[PG_E_SCROLLIND_FILL],state);
-  applystate(self->in->div->grop->next->next->next->next,
-	     &current_theme[PG_E_SCROLLIND_OVERLAY],state);
-
-  /* Border */
-  self->in->div->grop->next->next->y = DATA->value * 
-    (self->in->div->h-(self->in->div->h>>HEIGHT_DIV)) / DATA->res;
-  /* Fill */
-  self->in->div->grop->next->next->next->y = 
-    self->in->div->grop->next->next->y + (
-    (current_theme[PG_E_SCROLLIND_BORDER].width >= 0) ?
-    current_theme[PG_E_SCROLLIND_BORDER].width : 0);
-  /* Overlay */
-  self->in->div->grop->next->next->next->next->y = 
-    self->in->div->grop->next->next->next->y + (
-    (current_theme[PG_E_SCROLLIND_FILL].width >= 0) ?
-    current_theme[PG_E_SCROLLIND_FILL].width : 0);
-
-  self->in->div->flags |= DIVNODE_NEED_REDRAW;
-  self->dt->flags |= DIVTREE_NEED_REDRAW;   
+void resize_scroll(struct widget *self) {
+  self->in->split = theme_lookup(PGTH_O_SCROLL,PGTH_P_WIDTH);
 }
-
 
 /* Here, the divnodes are set up.
    Groplist is created in the on_recalc handler (above).
@@ -156,14 +120,15 @@ g_error scroll_install(struct widget *self) {
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_RIGHT;
-  self->in->split = HWG_SCROLL;
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &scrollbar;
+  self->in->div->build = &build_scroll;
+  self->in->div->state = PGTH_O_SCROLL;
   self->out = &self->in->next;
-
   self->trigger_mask = TRIGGER_DRAG | TRIGGER_ENTER | TRIGGER_LEAVE |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
+
+  self->resize = &resize_scroll;
 
   return sucess;
 }
@@ -206,6 +171,10 @@ g_error scroll_set(struct widget *self,int property, glob data) {
     /* If applicable, turn off transparency in the widget */
     widget_set(w,PG_WP_TRANSPARENT,0);
 
+    /* Use a special scroll-enhanced theme if possible */
+    if (w->type == PG_WIDGET_LABEL)
+      w->in->div->state = PGTH_O_LABEL_SCROLL;
+
     break;
 
   default:
@@ -242,9 +211,12 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     
   case TRIGGER_DOWN:
     if (param->mouse.chbtn==1) {
-      DATA->grab_offset = param->mouse.y - self->in->div->y - 
-	self->in->div->grop->next->next->y;
 
+      DATA->value++;
+
+      DATA->grab_offset = param->mouse.y - self->in->div->y - 
+	self->in->div->ty;
+      
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -10;
       else if (DATA->grab_offset > (self->in->div->h>>HEIGHT_DIV))
@@ -253,11 +225,13 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 	DATA->on=1;
 	DATA->release_delta = 0;
       }
-
+      
       /* Set up a timer for repeating the scroll */
       if (DATA->release_delta != 0)
 	install_timer(self,SCROLLSPEED);
     }
+    else
+      return;
     break;
 
     /* Well, it gets the job done: */
@@ -315,11 +289,19 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
 
     scrollevent(self);
     break;
-
   }
 
   scrollupdate(self);
 
+  /* Change State */
+  if (type != TRIGGER_DRAG)
+    if (DATA->on)
+      div_setstate(self->in->div,PGTH_O_SCROLL_ON);
+    else if (DATA->over)
+      div_setstate(self->in->div,PGTH_O_SCROLL_HILIGHT);
+    else
+      div_setstate(self->in->div,PGTH_O_SCROLL);
+  
   /* Use a precious update to animate the scrollbar */
   if (self->dt==dts->top) update();
 }

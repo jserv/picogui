@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.10 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: svga.c,v 1.11 2000/10/19 01:21:24 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -138,7 +138,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
   if (h<=0) return;
   
   if (dest) return;   /*** FIX THIS ***/
-
+  
   if (w>(src->w-src_x) || h>(src->h-src_y)) {
     int i,j;
 

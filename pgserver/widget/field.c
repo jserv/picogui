@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.14 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: field.c,v 1.15 2000/10/19 01:21:24 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -42,7 +42,6 @@
 
 struct fielddata {
   handle font;
-  pgcolor fg,bg;
   int focus,on,flash_on;
 
   /* Maximum size the field can hold */
@@ -55,6 +54,9 @@ struct fielddata {
 
   /* Amount of space in the buffer that is used (including null termination) */
   unsigned int bufuse;
+
+  /* A copy of the context to start drawing in */
+  struct gropctxt startctxt;
 };
 #define DATA ((struct fielddata *)(self->data))
 
@@ -63,15 +65,21 @@ g_error bufcheck_grow(struct widget *self);     /* Check the buffer
 g_error bufcheck_shrink(struct widget *self);   /* Check before removing */
 void fieldstate(struct widget *self);
 
-void field(struct divnode *d) {
+void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   int x,y,w,h;
   struct fontdesc *fd;
-  struct widget *self = d->owner;
+  handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
+
+  exec_fillstyle(c,state,PGTH_P_BGFILL);
 
   /* Center the font vertically and use the same amount of margin on the side */
   if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
-		       DATA->font)) || !fd) return;
+		       font)) || !fd) return;
   
+  /* Save it for later */
+  DATA->startctxt = *c;
+
+#if 0
   /* Draw order: background, text, cursor, border */
   grop_rect(&d->grop,-1,-1,-1,-1,DATA->bg);
   grop_text(&d->grop,fd->margin,(d->h>>1) - (fd->font->h>>1),
@@ -80,6 +88,7 @@ void field(struct divnode *d) {
   grop_frame(&d->grop,-1,-1,-1,-1,0x000000);
 
   fieldstate(self);
+#endif 0
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -110,9 +119,8 @@ g_error field_install(struct widget *self) {
   self->out = &self->in->next;
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &field;
-  DATA->bg = 0xFFFFFF;
-  DATA->font = defaultfont;
+  self->in->div->build = &build_field;
+  self->in->div->state = PGTH_O_FIELD;
 
   self->trigger_mask = TRIGGER_UP | TRIGGER_ACTIVATE | TRIGGER_CHAR |
     TRIGGER_DEACTIVATE | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_TIMER;
@@ -142,18 +150,6 @@ g_error field_set(struct widget *self,int property, glob data) {
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_COLOR:
-    DATA->fg = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    break;
-
-  case PG_WP_BGCOLOR:
-    DATA->bg = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -193,12 +189,6 @@ glob field_get(struct widget *self,int property) {
 
   case PG_WP_SIDE:
     return self->in->flags & (~SIDEMASK);
-
-  case PG_WP_BGCOLOR:
-    return DATA->bg;
-
-  case PG_WP_COLOR:
-    return DATA->fg;
 
   case PG_WP_FONT:
     return (glob) DATA->font;
@@ -335,13 +325,15 @@ void fieldstate(struct widget *self) {
        self->in->div->w - fd->margin - CURSORWIDTH) - tw + fd->margin;    
   }
 
+#if 0
   /* Appear or disappear the cursor depending on focus and cursor
      flashing state */
   if (DATA->flash_on)
     self->in->div->grop->next->next->param.c = DATA->fg;
   else
     self->in->div->grop->next->next->param.c = DATA->bg;
-  
+#endif   
+
 }
 
 /* If the buffer doesn't have room for one more char, enlarge it */

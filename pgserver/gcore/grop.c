@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.19 2000/10/10 00:33:36 micahjd Exp $
+/* $Id: grop.c,v 1.20 2000/10/19 01:21:23 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -30,6 +30,8 @@
 #include <pgserver/g_malloc.h>
 #include <pgserver/font.h>
 #include <pgserver/handle.h>
+
+short int defaultgropflags;
 
 /* This renders a divnode's groplist using the x,y,w,h,tx,ty from 
  * the divnode. The grop is translated by (x+tx,y+ty) and clipped to
@@ -99,92 +101,113 @@ void grop_render(struct divnode *div) {
   div->oty = div->ty;
 
   while (list) {
-    if (list->w==-1 && list->h==-1) {
-      /* -1,-1 is the magical code that causes the grop to fill
-	 the entire divnode, and not scroll */
-      x = div->x;
-      y = div->y;
-      w = div->w;
-      h = div->h;
-    }
-    else if (list->w < -1 || list->h < -1) {
+    if ((list->w <= 0 || list->h <= 0) && list->type!=PG_GROP_LINE) {
       /* There is no spoon */
       list = list->next;
       continue;
     }
-    else {
-      x = list->x+div->x+div->tx;
-      y = list->y+div->y+div->ty;
-      w = list->w;
-      h = list->h;
+
+    x = list->x+div->x;
+    y = list->y+div->y;
+    w = list->w;
+    h = list->h;
+
+    if (list->flags & PG_GROPF_TRANSLATE) {
+      x += div->tx;
+      y += div->ty;
     }
 
     switch (list->type) {
     case PG_GROP_PIXEL:
-      (*vid->pixel)(x,y,list->param.c);
+      (*vid->pixel)(x,y,list->param[0]);
       break;
     case PG_GROP_LINE:
-      (*vid->line)(x,y,w+x,h+y,list->param.c);
+      (*vid->line)(x,y,w+x,h+y,list->param[0]);
       break;
     case PG_GROP_RECT:
-      (*vid->rect)(x,y,w,h,list->param.c);
+      (*vid->rect)(x,y,w,h,list->param[0]);
       break;
     case PG_GROP_DIM:
       (*vid->dim)();
       break;
     case PG_GROP_FRAME:
-      (*vid->frame)(x,y,w,h,list->param.c);
+      (*vid->frame)(x,y,w,h,list->param[0]);
       break;
     case PG_GROP_SLAB:
-      (*vid->slab)(x,y,w,list->param.c);
+      (*vid->slab)(x,y,w,list->param[0]);
       break;
     case PG_GROP_BAR:
-      (*vid->bar)(x,y,h,list->param.c);
+      (*vid->bar)(x,y,h,list->param[0]);
       break;
     case PG_GROP_TEXT:
       if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
-			   list->param.text.string)) || !str) break;
+			   list->param[0])) || !str) break;
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   list->param.text.fd)) || !fd) break;
+			   list->param[1])) || !fd) break;
 
-      outtext(fd,x,y,list->param.text.col,str);
+      outtext(fd,x,y,list->param[2],str);
       break;
     case PG_GROP_BITMAP:
       if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			   list->param.bitmap.bitmap)) || !bit) break;
-      (*vid->blit)(bit,0,0,NULL,x,y,w,h,list->param.bitmap.lgop);
+			   list->param[0])) || !bit) break;
+      (*vid->blit)(bit,list->param[2],list->param[3],NULL,x,y,w,h,list->param[1]);
+      break;
+    case PG_GROP_TILEBITMAP:
+      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			   list->param[0])) || !bit) break;
+      (*vid->tileblit)(bit,
+		       list->param[1],
+		       list->param[2],
+		       list->param[3],
+		       list->param[4],
+		       x,y,w,h);
       break;
     case PG_GROP_GRADIENT:
       /* Gradients are fun! */
-      if (list->param.gradient.translucent &&
-	  (!list->param.gradient.c1) &&
-	  (!list->param.gradient.c2))
-	break;
       (*vid->gradient)(x,y,w,h,
-		       list->param.gradient.angle,
-		       list->param.gradient.c1,
-		       list->param.gradient.c2,
-		       list->param.gradient.translucent);      
+		       list->param[0],
+		       list->param[1],
+		       list->param[2],
+		       list->param[3]);      
       break;
     }
     list = list->next;
   }
 }
 
-/* Given a pointer to the groplist head pointer, this will add a new node to
-   the groplist. Also sets the 'next' pointer to NULL.
-*/
+/* Add a new gropnode to the context. Caller fills in
+   all the grop's parameters afterwards. */
+g_error addgrop(struct gropctxt *ctx, int type,int x,
+		int y,int w,int h) {
+  struct gropnode *p,*node;
+  g_error e;
 
-void grop_addnode(struct gropnode **headpp,struct gropnode *node) {
-  struct gropnode *p;
+  /* ctx == NULL is legal, used to disable actual output */
+  if (!ctx) return sucess;
+
+  /* This will probably soon be changed to a heap-based
+     system for allocating gropnodes 
+  */
+  e = g_malloc((void**)&node,sizeof(struct gropnode));
+  errorcheck;
+  node->type = type;
   node->next = NULL;
-  if (!*headpp) {
-    *headpp = node;
-    return;
+  node->flags = defaultgropflags;
+  node->x = x;
+  node->y = y;
+  node->w = w;
+  node->h = h;
+
+  if (!ctx->current)
+    *ctx->headpp = ctx->current = node;
+  else {
+    ctx->current->next = node;
+    ctx->current = node;
   }
-  p = *headpp;
-  while (p->next) p = p->next;
-  p->next = node;
+
+  ctx->n++;   /* There goes another gropnode! */
+
+  return sucess;
 }
 
 /* Delete the whole list */
@@ -200,179 +223,15 @@ void grop_free(struct gropnode **headpp) {
   *headpp = NULL;
 }
 
-/* Functions to emulate the hwr_* graphics primitives but store the result
-   in the groplist instead of immediately drawing it. Returns a pointer
-   to the new gropnode in n
-*/
-
-g_error grop_pixel(struct gropnode **headpp,
-		   int x, int y, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_PIXEL;
-  n->x = x;
-  n->y = y;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_line(struct gropnode **headpp,
-		  int x1, int y1, int x2, int y2, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_LINE;
-  n->x = x1;
-  n->y = y1;
-  n->w = x2;
-  n->h = y2;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_rect(struct gropnode **headpp,
-		  int x, int y, int w, int h, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_RECT;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = h;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_dim(struct gropnode **headpp) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_DIM;
-  n->x = n->y = n->w = n->h = 0;
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_frame(struct gropnode **headpp,
-		  int x, int y, int w, int h, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_FRAME;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = h;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_slab(struct gropnode **headpp,
-		  int x, int y, int w, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_SLAB;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = 1;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_bar(struct gropnode **headpp,
-		  int x, int y, int h, hwrcolor c) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_BAR;
-  n->x = x;
-  n->y = y;
-  n->h = h;
-  n->w = 1;
-  n->param.c = (*vid->color_pgtohwr)(c);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_text(struct gropnode **headpp,
-		  int x, int y, handle fd, hwrcolor col, handle str) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_TEXT;
-  n->x = x;
-  n->y = y;
-  n->w = n->h = 0;
-  n->param.text.string = str;
-  n->param.text.fd = fd;
-  n->param.text.col = (*vid->color_pgtohwr)(col);
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_bitmap(struct gropnode **headpp,
-		  int x, int y, int w, int h, handle b, int lgop) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_BITMAP;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = h;
-  n->param.bitmap.bitmap = b;
-  n->param.bitmap.lgop = lgop;
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_gradient(struct gropnode **headpp,
-		      int x, int y, int w, int h, hwrcolor c1, hwrcolor c2,
-		      int angle,int translucent) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_GRADIENT;
-  n->x = x;
-  n->y = y;
-  n->w = w;
-  n->h = h;
-  n->param.gradient.c1 = c1;
-  n->param.gradient.c2 = c2;
-  n->param.gradient.angle = angle;
-  n->param.gradient.translucent = translucent;
-  grop_addnode(headpp,n);
-  return sucess;
-}
-
-g_error grop_null(struct gropnode **headpp) {
-  struct gropnode *n;
-  g_error e;
-  e = g_malloc((void **) &n,sizeof(struct gropnode));
-  errorcheck;
-  n->type = PG_GROP_NULL;
-  n->x = n->y = n->w = n->h = 0;
-  grop_addnode(headpp,n);
-  return sucess;
+/* Set up a grop context for rendering to a divnode */
+void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
+  ctx->headpp = &div->grop;
+  ctx->current = div->grop;
+  ctx->n = 0;
+  ctx->x = 0;
+  ctx->y = 0;
+  ctx->w = div->w;
+  ctx->h = div->h;
 }
 
 /* The End */

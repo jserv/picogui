@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.43 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: widget.c,v 1.44 2000/10/19 01:21:24 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -41,6 +41,7 @@ DEF_WIDGET_TABLE(panel)
 DEF_STATICWIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
 DEF_WIDGET_TABLE(field)
+DEF_STATICWIDGET_TABLE(background)
 };
 
 /* These are needed to determine which widget is under the pointing
@@ -94,6 +95,9 @@ g_error widget_create(struct widget **w,int type,
   }
   else
     return mkerror(PG_ERRT_INTERNAL,21);
+
+  /* Resize for the first time */
+  if ((*w)->resize) (*(*w)->resize)(*w);
 
   dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
   dt->flags |= DIVTREE_NEED_RECALC;
@@ -379,7 +383,7 @@ void request_focus(struct widget *self) {
 void widgetunder(int x,int y,struct divnode *div) {
   if (!div) return;
   if (div->x<=x && div->y<=y && (div->x+div->w)>x && (div->y+div->h)>y
-      && div->owner && div->on_recalc && div->owner->trigger_mask)
+      && div->owner && div->build && div->owner->trigger_mask)
     divmatch = div;
   widgetunder(x,y,div->next);
   widgetunder(x,y,div->div);
@@ -513,6 +517,13 @@ void dispatch_key(long type,int key,int mods) {
       return;
     
 #ifdef DEBUG                /* The rest only work in debug mode */
+
+    case PGKEY_g:           /* Just for fun :) */
+      guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
+	   "    Either you have read the source code or\n"
+	   "    you have very persistantly banged your\n"
+	   "    head on the keyboard ;-)",divmatch);
+      return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
       (*vid->clip_off)();

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.13 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: popup.c,v 1.14 2000/10/19 01:21:24 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -33,6 +33,7 @@
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   g_error e;
+  int margin = theme_lookup(PGTH_O_POPUP,PGTH_P_MARGIN);
 
   /* Freeze the existing layer and make a new one */
   e = dts_push();
@@ -48,10 +49,10 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   /* Positioning, centering, and clipping */
   if (((signed short)x)==-1) x=(vid->xres>>1)-(w>>1); /*-1 centers */ 
   if (((signed short)y)==-1) y=(vid->yres>>1)-(h>>1);
-  (*wgt)->in->div->x = x-current_theme[PG_E_POPUP_BORDER].width;
-  (*wgt)->in->div->y = y-current_theme[PG_E_POPUP_BORDER].width;
-  (*wgt)->in->div->w = w+(current_theme[PG_E_POPUP_BORDER].width<<1);
-  (*wgt)->in->div->h = h+(current_theme[PG_E_POPUP_BORDER].width<<1);
+  (*wgt)->in->div->x = x-margin;
+  (*wgt)->in->div->y = y-margin;
+  (*wgt)->in->div->w = w+(margin<<1);
+  (*wgt)->in->div->h = h+(margin<<1);
   if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
   if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
   if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)
@@ -59,20 +60,8 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->yres)
     (*wgt)->in->div->h = vid->yres-(*wgt)->in->div->y-1;
 
-  /* If this is the first popup layer (after the root layer) dim the screen */
-  if (dts->top->next==dts->root)
-    grop_dim(&(*wgt)->in->grop);
-
   /* Yahoo! */
   return sucess;
-}
-
-void popup(struct divnode *d) {
-  int x,y,w,h;
-  x=y=0; w=d->w; h=d->h;
-
-  addelement(d,&current_theme[PG_E_POPUP_BORDER],&x,&y,&w,&h);
-  addelement(d,&current_theme[PG_E_POPUP_FILL],&x,&y,&w,&h);
 }
 
 g_error popup_install(struct widget *self) {
@@ -87,9 +76,10 @@ g_error popup_install(struct widget *self) {
 
   e = newdiv(&self->in->div,self);
   errorcheck;
-  self->in->div->on_recalc = &popup;
+  self->in->div->build = &build_bgfill_only;
+  self->in->div->state = PGTH_O_POPUP;
   self->in->div->flags = DIVNODE_SPLIT_BORDER;
-  self->in->div->split = current_theme[PG_E_POPUP_BORDER].width;
+  self->in->div->split = theme_lookup(PGTH_O_POPUP,PGTH_P_MARGIN);
 
   self->out = &self->in->next;
   self->sub = &self->in->div->div;

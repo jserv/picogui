@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.12 2000/10/12 16:41:42 pney Exp $
+/* $Id: pgmain.c,v 1.13 2000/10/19 01:21:23 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -54,6 +54,12 @@ pid_t my_pid;
 void sigterm_handler(int x);
 #endif
 
+/* For storing theme files to load later */
+struct themefilenode {
+  char *name;
+  struct themefilenode *next;
+};
+
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
   
@@ -66,7 +72,11 @@ int main(int argc, char **argv) {
   {  /* Restrict the scope of these vars so they go away after
 	initialization is done with them */
 
-    int c;
+    int c,fd;
+    struct stat st;
+    unsigned char *themebuf;
+    struct themefilenode *head = NULL,*tail = NULL,*p;
+    handle h;
 
     /* Default video mode: 0x0x0 (driver chooses) */
     int vidw=0,vidh=0,vidd=0,vidf=0;
@@ -82,7 +92,7 @@ int main(int argc, char **argv) {
 	 fix it though
       */
       
-      c = getopt(argc,argv,"fhlx:y:d:v:i:");
+      c = getopt(argc,argv,"fhlx:y:d:v:i:t:");
       if (c==-1)
 	break;
       
@@ -160,6 +170,20 @@ int main(int argc, char **argv) {
 			    ))) exit(1);
 	break;
 
+      case 't':        /* Theme */
+	/* Themes have to be loaded later in the initialization process,
+	   so for now just store the filenames */
+	if (iserror(prerror(g_malloc((void**)&p,
+				     sizeof(struct themefilenode))))) return 1;
+	p->name = strdup(optarg);
+	p->next = NULL;
+	if (tail)
+	  tail->next = p;
+	else
+	  head = tail = p;
+	tail = p;
+	break;
+
       case '?':        /* Need help */
       case 'h':
 #ifdef TINY_MESSAGES
@@ -170,7 +194,7 @@ int main(int argc, char **argv) {
 	     "DEBUG MODE ON\n\n"
 #endif
 	     "usage: pgserver [-fhl] [-x width] [-y height] [-d depth] [-v driver]\n"
-	     "                [-i driver] [session manager...]\n\n"
+	     "                [-i driver] [-t theme] [session manager...]\n\n"
 	     "  f : Fullscreen mode (if the driver supports it)\n"
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n\n"
@@ -178,7 +202,9 @@ int main(int argc, char **argv) {
 	     "  y height  : default screen height\n"
 	     "  d depth   : default bits per pixel\n"
 	     "  v driver  : default video driver (see -l)\n"
-	     "  i driver  : load an input driver, can use more than one (see -l)\n\n"
+	     "  i driver  : load an input driver, can use more than one (see -l)\n"
+	     "  t theme   : load a compiled theme file, can use more than one\n"
+	     "\n"
 	     "  If specified, a session manager process will be run after server\n"
 	     "  initialization is done, and the server will quit after the last\n"
 	     "  client disconencts.");
@@ -213,15 +239,43 @@ int main(int argc, char **argv) {
 	exit(1);
       }
     }
+
+
+    /* Subsystem initialization and error check */
+
+    if (iserror(prerror(dts_new())))     return 1;
+    if (iserror(prerror(net_init())))    return 1;
+    if (iserror(prerror(appmgr_init()))) return 1;
+    if (iserror(prerror(timer_init())))  return 1;
+
+    /* Load theme files and free linked list memory */
+
+    p = head;
+    while (p) {
+
+      /* Load */
+      if ((fd = open(p->name,O_RDONLY))<=0) {
+	perror(p->name);
+	return 1;
+      }
+      fstat(fd,&st);
+      if (iserror(prerror(g_malloc((void**)&themebuf,st.st_size)))) return 1;
+      read(fd,themebuf,st.st_size);
+      close(fd);
+      if (iserror(prerror(theme_load(&h,-1,themebuf,st.st_size)))) return 1;
+      g_free(themebuf);
+
+      /* Free memory */
+      tail = p;
+      p = p->next;
+      free(tail->name);  /* Must use the normal free() here because the pointer was
+			    not generated with g_malloc, but instead strdup() */
+      g_free(tail);
+    }
+
   }
 
   /*************************************** More Initialization */
-
-  /* Subsystem initialization and error check */
-  if (iserror(prerror(dts_new()))) exit(1);
-  if (iserror(prerror(net_init()))) exit(1);
-  if (iserror(prerror(appmgr_init()))) exit(1);
-  if (iserror(prerror(timer_init()))) exit(1);
 
 #ifndef WINDOWS
   /* Signal handler (it's usually good to have a way to exit!) */
