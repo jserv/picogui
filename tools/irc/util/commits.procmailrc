@@ -42,6 +42,6 @@ UMASK=033
 ###### Pass on allowed CIA messages to the email bot client
 
 :0
-* ^Subject: (Announce|JoinChannel|PartChannel|SendToChannels)
+* ^Subject: (Announce|JoinChannel|PartChannel|SendToChannels|SetProjectURL)
 | /home/commits/tools/irc/emailBotClient.py
 
