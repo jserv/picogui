@@ -229,3 +229,8 @@ CONFIG_FORMAT_PNM
       This is capable of loading any binary or ascii Portable
       Anymap in black and white, grayscale, or true color.
       
+
+CONFIG_ROTATE
+      This adds extra "video wrapper" libraries that allow the entire
+      screen to be rotated into a portrait or landscape mode. Good for
+      small LCD devices.

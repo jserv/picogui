@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.65 2001/03/08 01:22:22 micahjd Exp $
+# $Id: Makefile,v 1.66 2001/03/18 18:52:02 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.66  2001/03/18 18:52:02  micahjd
+# Starting to add rotation. Started a video wrapper lib, rotate90.c
+#
 # Revision 1.65  2001/03/08 01:22:22  micahjd
 # Added an infrastructure for automatically selecting a bitmap's format and
 # using the appropriate format. So far only the PNM loader is present, but
@@ -195,6 +198,11 @@ endif
 # Bitmap formats
 ifneq ($(CONFIG_FORMAT_PNM),)
     SRC := $(SRC) formats/pnm.c
+endif
+
+# Video wrappers
+ifneq ($(CONFIG_ROTATE),)
+    SRC := $(SRC) vidwrap/rotate90.c
 endif
 
 # These are lists used in macro-driven function tables
