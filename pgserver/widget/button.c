@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.14 2000/06/02 22:02:46 micahjd Exp $
+/* $Id: button.c,v 1.15 2000/06/03 17:50:42 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -134,8 +134,7 @@ g_error button_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
-	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (button)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |

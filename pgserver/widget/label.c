@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.6 2000/06/03 16:57:59 micahjd Exp $
+/* $Id: label.c,v 1.7 2000/06/03 17:50:43 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -97,8 +97,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   switch (property) {
 
   case WP_SIDE:
-    if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
-	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (label)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
@@ -129,15 +128,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case WP_ALIGN:
     if (data > AMAX) return mkerror(ERRT_BADPARAM,
 		     "WP_ALIGN param is not a valid align value (label)");
-    if (data==A_ALL || data==A_CENTER || 
-	self->in->div->param.text.align==A_ALL ||
-	self->in->div->param.text.align==A_CENTER) {
-      self->in->div->param.text.align = (alignt) data;
-      resizelabel(self);
-    }
-    else {
-      self->in->div->param.text.align = (alignt) data;
-    }
+    self->in->div->param.text.align = (alignt) data;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -209,26 +200,19 @@ void resizelabel(struct widget *self) {
   struct fontdesc *fd;
   char *str;
 
-  if (self->in->div->param.bitmap.align == A_ALL ||
-      self->in->div->param.bitmap.align == A_CENTER)
-    /* Expand to all free space (div will clip this) */
-    self->in->split = (HWR_WIDTH>HWR_HEIGHT) ? HWR_WIDTH : HWR_HEIGHT;
-  else {
-    
-    if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,self->in->div->param.text.fd).
-	type != ERRT_NONE || !fd) return;
-    if (rdhandle((void **)&str,TYPE_STRING,-1,self->in->div->param.text.string).
-	type != ERRT_NONE || !str) return;
-    
-    sizetext(fd,&w,&h,str);
-    
-    if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
-	(self->in->flags & DIVNODE_SPLIT_BOTTOM))
-      self->in->split = h;
-    else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
-	     (self->in->flags & DIVNODE_SPLIT_RIGHT))
-      self->in->split = w;
-  }
+  if (rdhandle((void **)&fd,TYPE_FONTDESC,-1,self->in->div->param.text.fd).
+      type != ERRT_NONE || !fd) return;
+  if (rdhandle((void **)&str,TYPE_STRING,-1,self->in->div->param.text.string).
+      type != ERRT_NONE || !str) return;
+  
+  sizetext(fd,&w,&h,str);
+  
+  if ((self->in->flags & DIVNODE_SPLIT_TOP) ||
+      (self->in->flags & DIVNODE_SPLIT_BOTTOM))
+    self->in->split = h;
+  else if ((self->in->flags & DIVNODE_SPLIT_LEFT) ||
+	   (self->in->flags & DIVNODE_SPLIT_RIGHT))
+    self->in->split = w;
 }
 
 /* The End */

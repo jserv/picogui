@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.11 2000/06/03 16:57:59 micahjd Exp $
+/* $Id: div.c,v 1.12 2000/06/03 17:50:42 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -41,8 +41,24 @@ void divnode_recalc(struct divnode *n) {
    if (n->flags & DIVNODE_NEED_RECALC) {
      split = n->split;
 
+     /* All available space for div */
+     if (n->flags & DIVNODE_SPLIT_EXPAND) {
+       if (n->div) {
+	 n->div->x = n->x;
+	 n->div->y = n->y;
+	 n->div->w = n->w;
+	 n->div->h = n->h;
+       }       
+       if (n->next) {
+	 n->div->x = n->x;
+	 n->div->y = n->y;
+	 n->div->w = 0;
+	 n->div->h = 0;
+       }       
+     }
+
      /* Vertical */
-     if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
+     else if (n->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM)) {
        if (n->flags & DIVNODE_UNIT_PERCENT)
 	 split = (n->h*split)/100;
        if (split>n->h) split = n->h;
@@ -288,7 +304,13 @@ void update(void) {
 
 /* Update the divtree's calculations and render (both only if necessary) */
 void r_dtupdate(struct divtree *dt) {
-  if (!dt) return;
+
+  /* Update the layers below only if this is a _complete_ update. */
+  if (dt->next && (dt->next->flags & DIVTREE_ALL_REDRAW)) 
+    r_dtupdate(dt->next);
+
+  /* Draw on the way back up from the recursion, so the layers appear
+     in the right order */
 
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.16 2000/06/02 07:44:03 micahjd Exp $
+/* $Id: widget.h,v 1.17 2000/06/03 17:50:43 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -183,8 +183,6 @@ DEF_STATICWIDGET_PROTO(popup)
 #define WP_TEXT        7
 #define WP_FONT        8
 #define WP_TRANSPARENT 9
-#define WP_BORDERCOLOR 10
-#define WP_BORDERSIZE  11
 #define WP_BITMAP      12
 #define WP_LGOP        13
 #define WP_VALUE       14

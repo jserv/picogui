@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.13 2000/06/02 07:41:32 micahjd Exp $
+/* $Id: divtree.h,v 1.14 2000/06/03 17:50:42 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -186,6 +186,7 @@ struct divnode {
 #define DIVNODE_SPLIT_CENTER    (1<<8) /* Keep div's w and h, center it */
 #define DIVNODE_PROPAGATE_RECALC (1<<9)
 #define DIVNODE_SPLIT_IGNORE   (1<<10) /* Don't bother the nodes' positions */
+#define DIVNODE_SPLIT_EXPAND   (1<<11) /* Expand div to all available space */
 
 /* Values for the 'side' parameter */
 
@@ -193,12 +194,16 @@ struct divnode {
 #define S_RIGHT   DIVNODE_SPLIT_RIGHT
 #define S_TOP     DIVNODE_SPLIT_TOP
 #define S_BOTTOM  DIVNODE_SPLIT_BOTTOM
+#define S_ALL     DIVNODE_SPLIT_EXPAND
 typedef unsigned short int sidet;
+#define VALID_SIDE(x) (x==S_LEFT || x==S_RIGHT || x==S_TOP || x==S_BOTTOM \
+		       || x==S_ALL)
 
 /* And the divnode's flags with this to clear the split type */
-#define SIDEMASK  (~(DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM|  \
-		     DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT|  \
-		     DIVNODE_SPLIT_BORDER|DIVNODE_SPLIT_CENTER))
+#define SIDEMASK  (~(DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM|    \
+		     DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT|    \
+		     DIVNODE_SPLIT_BORDER|DIVNODE_SPLIT_CENTER| \
+                     DIVNODE_SPLIT_IGNORE|DIVNODE_SPLIT_EXPAND))
 
 struct gropnode {
   int type;

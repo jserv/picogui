@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.7 2000/06/02 22:02:46 micahjd Exp $
+/* $Id: indicator.c,v 1.8 2000/06/03 17:50:42 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -117,8 +117,7 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     break;
 
   case WP_SIDE:
-    if ((data != S_LEFT) && (data != S_RIGHT) && (data != S_TOP) &&
-	(data != S_BOTTOM)) return mkerror(ERRT_BADPARAM,
+    if (!VALID_SIDE(data)) return mkerror(ERRT_BADPARAM,
 	"WP_SIDE param is not a valid side value (indicator)");
     self->in->flags &= SIDEMASK;
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC | 

@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.6 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: global.c,v 1.7 2000/06/03 17:50:42 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -89,6 +89,8 @@ g_error appmgr_init(void) {
   e = widget_set(bgwidget,WP_BITMAP,(glob)background);
   if (e.type != ERRT_NONE) return e;
   e = widget_set(bgwidget,WP_ALIGN,A_ALL);
+  if (e.type != ERRT_NONE) return e;
+  e = widget_set(bgwidget,WP_SIDE,S_ALL);
   if (e.type != ERRT_NONE) return e;
   e = mkhandle(&hbgwidget,TYPE_WIDGET,-1,bgwidget);   
   if (e.type != ERRT_NONE) return e;

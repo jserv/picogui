@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.2 2000/06/03 16:57:59 micahjd Exp $
+/* $Id: popup.c,v 1.3 2000/06/03 17:50:43 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -47,6 +47,11 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt) {
 
   (*wgt)->isroot = 1;  /* This widget has no siblings, so no point going
 			  outside it anyway */
+
+  /* Clip the size to the screen */
+  if (x<0) x=0; if (y<0) y=0;
+  if (x+w>=HWR_WIDTH) w = HWR_WIDTH-x-1;
+  if (y+h>=HWR_HEIGHT) h = HWR_HEIGHT-y-1;
 
   /* Positioning */
   (*wgt)->in->div->x = x;
