@@ -2,11 +2,12 @@
 source picogui.tcl
 pgui connect localhost 0
 
-set p [pgRegisterApp "Button Test" $pg_app(normal)]
-set l [pgwidget create button]
+set p [pgui register -title "Button Test" -type toolbar]
+
+set l [pgwidget create button -text "Hello World" -side all -font \
+	[pgNewFont "" $pg_fstyle(bold) 24]]
+
 pgwidget attach  $l inside $p
-pgwidget set $l -text "Hello World" -side all
-pgSetFont $l [pgNewFont "" $pg_fstyle(bold) 24]
 pgui update
 pgBind $l $pg_we(activate) {puts "hello"}
 pgBind any $pg_we(close) {puts "goodby"; exit}

@@ -4,6 +4,7 @@ pgui createbitmap -name filename|-data filedata
 pgui createbitmap -width width -height height
 pgui entercontext
 pgui leavecontext ?-id contextid?
+pgui register -title title -type normal|toolbar
 pgui update
 pgui waitevent
 

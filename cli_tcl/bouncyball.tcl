@@ -18,13 +18,9 @@ while {$imgnr<$NUMFRAMES} {
 	set img($imgnr) [pgui createbitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
-set dlg [pgwidget create dialogbox]
-set ok [pgwidget create button]
-set bmp [pgwidget create label]
-
-pgwidget set $dlg -text "Boing!"
-pgwidget set $ok -side bottom -text "Ok"
-pgwidget set $bmp -side all
+set dlg [pgwidget create dialogbox -text Boing!]
+set ok [pgwidget create button -text Ok -side bottom]
+set bmp [pgwidget create label -side all]
 
 pgwidget attach $ok inside $dlg
 pgwidget attach $bmp after $ok
