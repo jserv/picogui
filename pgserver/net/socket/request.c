@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.15 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: request.c,v 1.16 2000/06/07 08:51:23 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -56,7 +56,6 @@ void closefd(int fd) {
   handle_cleanup(fd);
   close(fd);
   FD_CLR(fd,&con);
-  update();
 
   /* Free the connection buffers */
   if (conbufs->owner==fd) {
@@ -289,9 +288,7 @@ void req_free(void) {
 
   if (!s) return;
   for (i=0;i<con_n;i++)
-    if (FD_ISSET(i,&con)) close(i);  /* Dont worry about cleaning up
-					individual connections here,
-					a global cleanup is pending */
+    if (FD_ISSET(i,&con)) closefd(i);
   close(s);
   s = 0;
 
