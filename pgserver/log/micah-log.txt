@@ -1,3 +1,16 @@
+---- Wednesday, February 7
+
+Ack. That ucLinux stuff I put in CVS _was_ mostly right except that I forgot
+a break; after the 8bpp case in  the pnm image loader...
+
+I need to get NFS and m68k-gcc installed on this laptop! The ucSimm system
+turns out to be nicely portable.
+
+The bug in themec turned out to be a strategically-placed-missing-semicolon :-/
+
+Working on ucLinux port using the new hardware...
+
+
 ---- Tuesday, February 6
 
 Added support for font descriptors in the theme compiler. Now a line of the

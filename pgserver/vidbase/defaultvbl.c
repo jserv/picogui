@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.11 2001/02/07 07:28:08 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.12 2001/02/08 02:37:07 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -733,6 +733,7 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
 
       case 8:
 	*(((unsigned char *)p)++) = hc;
+	break;
 	 
       case 16:
 	*(((unsigned short *)p)++) = hc;

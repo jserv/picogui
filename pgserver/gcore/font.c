@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.15 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: font.c,v 1.16 2001/02/08 02:37:07 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -45,9 +45,9 @@
 #define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
 						difference in size between the
 						request and the actual font */
-#define FCMP_STYLE    (1<<2)
-#define FCMP_DEFAULT  (1<<1)
-#define FCMP_NAME     (1<<0)
+#define FCMP_NAME     (1<<2)
+#define FCMP_STYLE    (1<<1)
+#define FCMP_DEFAULT  (1<<0)
 
 /* A function used by findfont that computes the 'closeness' between
    the request and a particular font */
