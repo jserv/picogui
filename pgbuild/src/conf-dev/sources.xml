@@ -29,7 +29,8 @@
     title   - A descriptive title for this configuration tree
     root    - The location that this tag should be merged into
               the main configuration tree at, specified as an
-              XPath. Defaults to "/"
+              XPath relative to the <pgbuild> node. Default
+              is to mount at the <pgbuild> node.
     author  - Author or maintainer of the configuration
     version - Configuration version
 -->
@@ -46,7 +47,7 @@
       <a href="http://navi.picogui.org/svn/picogui" />
     </site>
 
-    <!-- Sourceforge download mirrors -->//me
+    <!-- Sourceforge download mirrors -->
     <site name="sourceforge-download">
       <!-- Multiple URIs can be used to specify mirror sites -->
       <a href="http://umn.dl.sourceforge.net/sourceforge" />

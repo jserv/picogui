@@ -16,8 +16,8 @@ conf.mount(env.fs.Entry("test.xml"), "rw")
 # Show the list of mounts
 print conf.mounts
 
-# Print the whole config tree
-print conf.toprettyxml()
+# Write our merged config tree
+open("../conf-dev/test_out.xml","w").write(conf.toprettyxml())
 
 # Build a 'hello world'
 #prog = env.Program('hello', 'hello.c')

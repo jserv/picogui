@@ -168,6 +168,23 @@ class Tree(PGBuild.Node.XML.Document):
                 rTag(child, mdoc)
         rTag(dom, mdoc)
 
+        # Merge any top-level processing instruction nodes regardless
+        # of mount points. This, for example, lets our tree painlessly
+        # inherit a stylesheet defined in the conf package.
+        # Note that this merging rule is different than that for tags-
+        # parent is disregarded since we only work at the top level,
+        # and different attributes do not imply a tag is unique.
+        for newNode in dom.childNodes:
+            if newNode.nodeType == newNode.PROCESSING_INSTRUCTION_NODE:
+                # Delete any existing instruction with the same name
+                for oldNode in self.childNodes:
+                    if oldNode.nodeType == newNode.nodeType and oldNOde.nodeName == newNode.nodeName:
+                        self.removeChild(oldNode)
+                # The reason for messing with parentNode is explained below
+                # in the main appending code.
+                newNode.parentNode = None
+                self.dom.insertBefore(newNode.dom, selfPgb.dom)
+
         # This implements the semantics described in sources.xml for the
         # /pgbuild/@root attribute. If it's not present, the document
         # is mounted at the pgbuild element. Otherwise it's an XPath
