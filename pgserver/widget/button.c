@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.90 2002/01/22 12:25:09 micahjd Exp $
+/* $Id: button.c,v 1.91 2002/01/22 13:00:01 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -52,7 +52,8 @@ struct btndata {
   int state,state_on,state_hilight,state_on_nohilight,bitmap_side;
 
   int hotkey;
-  
+  int hotkey_flags;
+
   /* Mask of extended (other than ACTIVATE) events to send
    * and other flags*/
   int extdevents;
@@ -156,6 +157,7 @@ g_error button_install(struct widget *self) {
 
   DATA->theme_side = 1;
   DATA->bitmap_side = -1;
+  DATA->hotkey_flags = PG_KF_ALWAYS;
 
   /* Default states */
   DATA->state = PGTH_O_BUTTON;
@@ -287,6 +289,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->theme_side = 0;
     return mkerror(ERRT_PASS,0);
 
+  case PG_WP_HOTKEY_FLAGS:
+    DATA->hotkey_flags = data;
+    break;
+
   case PG_WP_HOTKEY:
     /* Process PGTH_P_HIDEHOTKEYS if it is set */
     switch (theme_lookup(widget_get(self,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
@@ -348,6 +354,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_HOTKEY:
     return (glob) DATA->hotkey;
 
+  case PG_WP_HOTKEY_FLAGS:
+    return (glob) DATA->hotkey_flags;
+
   default:
     return 0;
   }
@@ -379,14 +388,14 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_CHAR:
     if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
       param->kbd.consume++;
-    if (param->kbd.key == DATA->hotkey)
+    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags))
       param->kbd.consume++;
     return;
     
   case TRIGGER_KEYDOWN:
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP
      */
-    if (param->kbd.key == DATA->hotkey) {
+    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
       param->kbd.consume++;
       return;
     }
@@ -452,7 +461,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Hotkey was pressed, simulate a keypress
      */
-    if (param->kbd.key == DATA->hotkey) {
+    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
       param->kbd.consume++;
       
       /* If it's a toggle button, go ahead and make it change state. Otherwise
