@@ -9,7 +9,7 @@
  */
 
 property fBackground,fTranslucent, fSolid, fFramedTranslucent, fStippleFramedTranslucent;
-property fNop, frameColor, alpha, diamondShape;
+property fNop, frameColor, alpha;
 
 object default {
   name = "Lucid (incomplete)";
@@ -256,4 +256,41 @@ object scroll {
   };
 }
 
+/* The tabpage and its family */
+
+object tab.page {
+  margin = 4;
+  bgfill = fillstyle {
+    SetColor(frameColor);
+    SetLgop(PG_LGOP_STIPPLE);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+    fTranslucent(x+1,y,w-2,h-1);
+  };
+}
+object tab.bar {
+  margin = 0;
+  bgfill = fillstyle {
+    SetColor(frameColor);
+    SetLgop(PG_LGOP_STIPPLE);
+    Line(x,y+h-1,w,0);
+    SetLgop(PG_LGOP_NONE);
+    fTranslucent(x,y,w,h-1);
+  };
+}
+
+object tab {
+  bgfill = Copy(default::fStippleFramedTranslucent);
+  alpha   = 0x50000000;
+}
+
+object tab.on {
+  bgfill = fillstyle {
+    SetColor(frameColor);
+    SetLgop(PG_LGOP_STIPPLE);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+    fTranslucent(x+1,y+1,w-2,h-1);
+  };
+}
 /* The End */
