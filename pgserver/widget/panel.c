@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.58 2001/04/18 01:08:43 micahjd Exp $
+/* $Id: panel.c,v 1.59 2001/04/29 17:28:40 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -147,8 +147,8 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
 		    struct widget *self) {
   struct fontdesc *fd;
   char *str;
-  int x,y,w,h,m;
-  int al = theme_lookup(state,PGTH_P_ALIGN);
+  s16 x,y,w,h,m;
+  s16 al = theme_lookup(state,PGTH_P_ALIGN);
   handle font = theme_lookup(state,PGTH_P_FONT);
 
   /* Background */
@@ -171,10 +171,16 @@ void build_panelbar(struct gropctxt *c,unsigned short state,
   if (c->h > c->w)
     y = c->h - y;
 
-  addgrop(c,(c->w > c->h) ? PG_GROP_TEXT : PG_GROP_TEXTV,x,y,w,h);
+  addgrop(c,PG_GROP_SETCOLOR);
+  c->current->param[0] = theme_lookup(state,PGTH_P_FGCOLOR);
+  addgrop(c,PG_GROP_SETFONT);
+  c->current->param[0] = theme_lookup(state,PGTH_P_FONT);
+  if (c->w < c->h) {
+     addgrop(c,PG_GROP_SETANGLE);
+     c->current->param[0] = 90;
+  }
+  addgropsz(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
-  c->current->param[1] = theme_lookup(state,PGTH_P_FONT);
-  c->current->param[2] = theme_lookup(state,PGTH_P_FGCOLOR);
 }
 
 /**** Handlers for the panelbar buttons */
@@ -459,9 +465,9 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->s->bitmap = &DATA->sbit;
     
     /* Grab a bitmap of the panelbar to use as the sprite */
-    VID(unblit) (DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
-		   DATA->sbit,0,0,
-		   BARDIV->w,BARDIV->h);
+    VID(blit) (DATA->sbit,0,0,BARDIV->w,BARDIV->h,
+	       vid->display,DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
+	       PG_LGOP_NONE);
     DATA->s->clip_to = self->in;
 
 #endif /* CONFIG_DRAGSOLID */
@@ -525,6 +531,11 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
      tick = getticks();
      if (tick < DATA->wait_tick) return;
      DATA->wait_tick = tick + DRAG_DELAY;
+     
+     /* Race condition prevention?
+      * Without this, sometimes segfaults because DATA->s is NULL.
+      * Possibly events_pending() triggered another event? */
+     if (!DATA->s) return;
       
     /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.25 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: widget.h,v 1.26 2001/04/29 17:28:39 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -40,6 +40,7 @@
 #include <pgserver/pgmain.h>
 #include <pgserver/svrtheme.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/render.h>
 
 struct blob;
 struct widgetdef;
@@ -315,18 +316,18 @@ void reset_widget_pointers(void);
    first mouse button, bit 1 is the second, etc.
    Pointing device events should only be sent here for MOVE, UP, DOWN.
 */
-void dispatch_pointing(long type,int x,int y,int btn);
+void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn);
 
 /* This dispatches a key.  It is first checked against the global
    key owner table, and if not found there it is sent to the currently 
    focused widget.  The key is passed as the trigger param.
 */
-void dispatch_key(long type,int key,int mods);
+void dispatch_key(u32 type,s16 key,s16 mods);
   
 /* Dispatch a direct trigger to the widget with a matching direct_trigger.
    The param is passed directly
  */
-void dispatch_direct(char *name,long param);
+void dispatch_direct(char *name,u32 param);
 
 /* The divnode currently occupied by the pointing device */
 extern struct divnode *div_under_crsr;

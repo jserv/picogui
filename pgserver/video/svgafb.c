@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.9 2001/02/28 00:19:07 micahjd Exp $
+/* $Id: svgafb.c,v 1.10 2001/04/29 17:28:39 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -38,6 +38,10 @@
 
 #include <vga.h>
 
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
 /****************************************************** Definitions */
 
 #define dist(a,b) (((a)>(b))?((a)-(b)):((b)-(a)))
@@ -51,22 +55,23 @@ unsigned char svgafb_flags;
 unsigned long svgafb_fbsize;
 
 /* Function prototypes */
-int svgafb_closest_mode(int xres,int yres,int bpp);
-g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags);
+int svgafb_closest_mode(s16 xres,s16 yres,s16 bpp);
+g_error svgafb_init(void);
+g_error svgafb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 void svgafb_close(void);
-void svgafb_update_linear(int x,int y,int w,int h);
-void svgafb_update_paged(int x,int y,int w,int h);
+void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h);
+void svgafb_update_paged(s16 x,s16 y,s16 w,s16 h);
 g_error svgafb_regfunc(struct vidlib *v);
 
 /****************************************************** Init / Shutdown */
 
 /* The find-closest-mode helper function originally presented in svga.c */
-int svgafb_closest_mode(int xres,int yres,int bpp) {
-   int i,x,xbpp;
-   int best = -1;
-   unsigned int best_xresd = -1;
-   unsigned int best_yresd = -1;
-   int best_bpp = -1;
+int svgafb_closest_mode(s16 xres,s16 yres,s16 bpp) {
+   s16 i,x,xbpp;
+   s16 best = -1;
+   u16 best_xresd = -1;
+   u16 best_yresd = -1;
+   s16 best_bpp = -1;
    vga_modeinfo *inf;
 
    for (i=1;i<vga_lastmodenumber();i++)
@@ -99,29 +104,12 @@ int svgafb_closest_mode(int xres,int yres,int bpp) {
    return best;
 }
 
-g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error svgafb_init(void) {
    g_error e;
-   int mode,i,c;
-   vga_modeinfo *mi;
-
+   
    /* Must be root for this */
    if (geteuid())
      return mkerror(PG_ERRT_IO,46);
-   
-   svgafb_flags = 0;  /* We don't want double-buffer on yet so if we get
-		       * an unknown bpp it doesn't free the
-		       * nonexistant buffer */
-   
-   /* In a GUI environment, we don't want VC switches,
-    plus they usually crash on my system anyway,
-    and they use extra signals that might confuse 
-    select. */
-   vga_lockvc();
-   
-   vga_init();
-   
-   /* Find a good mode */
-   mode = svgafb_closest_mode(xres,yres,bpp);
    
    /* Load a main input driver. Do this before setting
     * video mode, so that the mouse is initialized
@@ -130,6 +118,32 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    e = load_inlib(&svgainput_regfunc,&inlib_main);
    errorcheck;
 
+   /* In a GUI environment, we don't want VC switches,
+    plus they usually crash on my system anyway,
+    and they use extra signals that might confuse 
+    select. */
+   vga_lockvc();
+   
+   vga_init();
+   
+   return sucess;
+}
+   
+g_error svgafb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
+   g_error e;
+   int mode,i,c;
+   vga_modeinfo *mi;
+
+   if (svgafb_flags & SVGAFB_DOUBLEBUFFER)
+     g_free(FB_MEM);
+   
+   svgafb_flags = 0;  /* We don't want double-buffer on yet so if we get
+		       * an unknown bpp it doesn't free the
+		       * nonexistant buffer */
+   
+   /* Find a good mode */
+   mode = svgafb_closest_mode(xres,yres,bpp);
+   
    vga_setmode(mode);
    mi = vga_getmodeinfo(mode);
 
@@ -162,8 +176,8 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
       
    
    /* Calculate the framebuffer's size */
-   vid->fb_bpl = (vid->xres * vid->bpp) >> 3;
-   svgafb_fbsize = vid->yres * vid->fb_bpl;
+   FB_BPL = (vid->xres * vid->bpp) >> 3;
+   svgafb_fbsize = vid->yres * FB_BPL;
 
    /* Was double-buffering requested? */
    if (flags & PG_VID_DOUBLEBUFFER)
@@ -187,11 +201,11 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
 
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
       /* Allocate the back buffer */
-      e = g_malloc((void **)&vid->fb_mem,svgafb_fbsize);
+      e = g_malloc((void **)&FB_MEM,svgafb_fbsize);
       errorcheck;
    }
    else
-     vid->fb_mem = vga_getgraphmem();
+     FB_MEM = vga_getgraphmem();
    
    /* Use our flags to choose an update function. Keep the default if we
     * aren't double-buffering, otherwise choose paged, linear, or conversion */
@@ -210,7 +224,7 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
 
 void svgafb_close(void) {
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER)
-     g_free(vid->fb_mem);
+     g_free(FB_MEM);
    
    unload_inlib(inlib_main);    /* Take out input driver */
    vga_setmode(0);
@@ -219,19 +233,19 @@ void svgafb_close(void) {
 /****************************************************** Update Blits */
 
 /* Normal copy blit */
-void svgafb_update_linear(int x,int y,int w,int h) {
+void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h) {
    unsigned char *src,*dest;
    unsigned long fbstart;
    
    /* Blit calculations */
-   fbstart = y * vid->fb_bpl + x;
+   fbstart = y * FB_BPL + x;
    dest = fbstart + graph_mem;
-   src  = fbstart + vid->fb_mem;
+   src  = fbstart + FB_MEM;
    
    /* Might prevent tearing? */
    vga_waitretrace();
    
-   for (;h;h--,src+=vid->fb_bpl,dest+=vid->fb_bpl)
+   for (;h;h--,src+=FB_BPL,dest+=FB_BPL)
      __memcpy(dest,src,w);
 }
 
@@ -243,7 +257,7 @@ void svgafb_update_linear(int x,int y,int w,int h) {
  * vgagl, probably written by Harm Hanemaayer (but if I am wrong please
  * correct me!)
  */
-void svgafb_update_paged(int x,int y,int w,int h) {
+void svgafb_update_paged(s16 x,s16 y,s16 w,s16 h) {
    unsigned long vp;
    int page;
    char *bp;
@@ -251,8 +265,8 @@ void svgafb_update_paged(int x,int y,int w,int h) {
    /* Might prevent tearing? */
    vga_waitretrace();
 
-   vp   = x + y * vid->fb_bpl;
-   bp   = vid->fb_mem + vp;
+   vp   = x + y * FB_BPL;
+   bp   = FB_MEM + vp;
    page = vp >> 16;
    vp  &= 0xffff;
    vga_setpage(page);
@@ -268,14 +282,14 @@ void svgafb_update_paged(int x,int y,int w,int h) {
 	    vga_setpage(page);
 	    __memcpy(graph_mem, bp + 0x10000 - vp,
 		     (vp + w) & 0xffff);
-	    vp = (vp + vid->fb_bpl) & 0xffff;
-	    bp += vid->fb_bpl;
+	    vp = (vp + FB_BPL) & 0xffff;
+	    bp += FB_BPL;
 	    continue;
 	 }
       };
       __memcpy(graph_mem + vp, bp, w);
-      bp += vid->fb_bpl;
-      vp += vid->fb_bpl;
+      bp += FB_BPL;
+      vp += FB_BPL;
    }
 }
 
@@ -284,7 +298,7 @@ void svgafb_update_paged(int x,int y,int w,int h) {
 g_error svgafb_regfunc(struct vidlib *v) {
    /* The VBL is loaded in svgafb_init so it can be selected based on bpp.
     * This is OK because the VBL will never overwrite init or close. */
-   
+   v->setmode = &svgafb_setmode;
    v->init = &svgafb_init;
    v->close = &svgafb_close;
    return sucess;

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.78 2001/04/18 03:09:53 micahjd Exp $
+/* $Id: widget.c,v 1.79 2001/04/29 17:28:40 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -512,7 +512,7 @@ int send_trigger(struct widget *w, long type,
   return 0;
 }
 
-void dispatch_pointing(long type,int x,int y,int btn) {
+void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   union trigparam param;
   memset(&param,0,sizeof(param));
 
@@ -625,7 +625,7 @@ int db_x,db_y,db_h;
    
 g_error debug_bitmaps(void **pobj) {
    hwrbitmap bmp = (hwrbitmap) *pobj;
-   int w,h;
+   s16 w,h;
    
    VID(bitmap_getsize) (bmp,&w,&h);
    if (db_x+10+w>vid->lxres) {
@@ -638,22 +638,24 @@ g_error debug_bitmaps(void **pobj) {
    
    if (db_y+45+h>vid->lyres) {
       struct fontdesc *df=NULL;
-      struct cliprect screenclip;
+      struct quad screenclip;
       screenclip.x1 = screenclip.y1 = 0;
       screenclip.x2 = vid->lxres-1;
       screenclip.y2 = vid->lyres-1;
       rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
 
-      outtext(df,10,vid->lyres-15,VID(color_pgtohwr) (0xFF8080),
+      outtext(vid->display,df,10,vid->lyres-15,VID(color_pgtohwr) (0xFFFF00),
 	      "Too many bitmaps for this screen. Change video mode and try again",
-	      &screenclip);
+	      &screenclip,0,0,PG_LGOP_NONE,0);
 
       return sucess;   /* Lies! :) */
    }
    
-   VID(rect) (db_x+3,db_y+38,w+4,h+4,VID(color_pgtohwr)(0xFFFFFF));
-   VID(rect) (db_x+4,db_y+39,w+2,h+2,VID(color_pgtohwr)(0x000000));
-   VID(blit) (bmp,0,0,db_x+5,db_y+40,w,h,PG_LGOP_NONE);
+   VID(rect) (vid->display,db_x+3,db_y+38,w+4,h+4,
+	      VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
+   VID(rect) (vid->display,db_x+4,db_y+39,w+2,h+2,
+	      VID(color_pgtohwr)(0x000000),PG_LGOP_NONE);
+   VID(blit) (vid->display,db_x+5,db_y+40,w,h,bmp,0,0,PG_LGOP_NONE);
 
    db_x += w+8;
    return sucess;
@@ -674,7 +676,7 @@ void r_grop_dump(struct divnode *div) {
       
       for (n=div->grop;n;n=n->next) {
 	 printf("  Gropnode: type 0x%04X flags 0x%04X at (%d,%d,%d,%d) params: ",
-		n->type,n->flags,n->x,n->y,n->w,n->h);
+		n->type,n->flags,n->r.x,n->r.y,n->r.w,n->r.h);
 	 for (i=0;i<PG_GROPPARAMS(n->type);i++)
 	   printf("%d ",n->param[i]);
 	 printf("\n");
@@ -693,7 +695,7 @@ void grop_dump(void) {
      
 #endif
    
-void dispatch_key(long type,int key,int mods) {
+void dispatch_key(u32 type,s16 key,s16 mods) {
   struct widget *p;
   union trigparam param;
   int suppress = 0;    /* If a keycode is used by a hotkey, it is only passed
@@ -749,7 +751,8 @@ void dispatch_key(long type,int key,int mods) {
       return;
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-      VID(clear) ();
+      VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
+		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
       VID(update) (0,0,vid->lxres,vid->lyres);
       return;
 
@@ -771,7 +774,8 @@ void dispatch_key(long type,int key,int mods) {
 
 	struct divtree *p;
 	/* Push through the black screen */
-	VID(clear) ();
+	VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
+		     VID(color_pgtohwr) (0),PG_LGOP_NONE);
 	VID(update) (0,0,vid->lxres,vid->lyres);
 	/* Force redrawing everything to the backbuffer */
 	p = dts->top;
@@ -790,8 +794,8 @@ void dispatch_key(long type,int key,int mods) {
       return;
 
     case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-      VID(rect) (0,0,vid->lxres,vid->lyres,
-		   VID(color_pgtohwr) (0x0000FF));
+      VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,
+		 VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
       VID(update) (0,0,vid->lxres,vid->lyres);
       return;
 
@@ -863,7 +867,7 @@ void dispatch_key(long type,int key,int mods) {
   }
 }
 
-void dispatch_direct(char *name,long param) {
+void dispatch_direct(char *name,u32 param) {
 #ifdef DEBUG_EVENT
   printf("Direct event: %s(0x%08X)\n",name,param);
 #endif

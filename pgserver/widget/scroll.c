@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.33 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: scroll.c,v 1.34 2001/04/29 17:28:40 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -78,9 +78,8 @@ void build_scroll(struct gropctxt *c,unsigned short state,struct widget *self) {
   /* The scrollbar thumb */
   DATA->thumbscale = (c->h-(c->h>>HEIGHT_DIV));
   c->h = c->h>>HEIGHT_DIV;
-  defaultgropflags = PG_GROPF_TRANSLATE;
+  c->defaultgropflags = PG_GROPF_TRANSLATE;
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
-  defaultgropflags = 0;
 
   /* Update the scroll position */
   scrollupdate(self);

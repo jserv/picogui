@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.12 2001/04/18 01:08:43 micahjd Exp $
+/* $Id: rotate90.c,v 1.13 2001/04/29 17:28:40 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -31,88 +31,90 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/render.h>
 
 /******* Simple wrapper functions */
 
-void rotate90_pixel(int x,int y,hwrcolor c) {
-   (*vid->pixel)(y,vid->yres-1-x,c);
+void rotate90_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->pixel)(dest,y,dy-1-x,c,lgop);
 }
-hwrcolor rotate90_getpixel(int x,int y) {
-   return (*vid->getpixel)(y,vid->yres-1-x);
+hwrcolor rotate90_getpixel(hwrbitmap src,s16 x,s16 y) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(src,&dx,&dy);
+   return (*vid->getpixel)(src,y,dy-1-x);
 }
-void rotate90_addpixel(int x,int y,pgcolor c) {
-   (*vid->addpixel)(y,vid->yres-1-x,c);
-}
-void rotate90_subpixel(int x,int y,pgcolor c) {
-   (*vid->subpixel)(y,vid->yres-1-x,c);
-}
-void rotate90_update(int x,int y,int w,int h) {
+void rotate90_update(s16 x,s16 y,s16 w,s16 h) {
    (*vid->update)(y,vid->yres-x-w,h,w);
 }
-void rotate90_rect(int x,int y,int w,int h,hwrcolor c) {
-   (*vid->rect)(y,vid->yres-x-w,h,w,c);
+void rotate90_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
+		   hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->rect)(dest,y,dy-x-w,h,w,c,lgop);
 }
-void rotate90_dim(int x,int y,int w,int h) {
-   (*vid->dim)(y,vid->yres-x-w,h,w);
-}
-void rotate90_coord_logicalize(int *x,int *y) {
-   int tx = *x;
+void rotate90_coord_logicalize(s16 *x,s16 *y) {
+   s16 tx = *x;
    *x = vid->yres-1-*y;
    *y = tx;
 }
 
 /******* Special-case wrapper functions */
 
-void rotate90_gradient(int x,int y,int w,int h,int angle,
-		       pgcolor c1,pgcolor c2,int translucent) {
-   (*vid->gradient)(y,vid->yres-x-w,h,w,angle-90,c1,c2,translucent);
+void rotate90_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
+		       pgcolor c1,pgcolor c2,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->gradient)(dest,y,dy-x-w,h,w,angle-90,c1,c2,lgop);
 }
-void rotate90_slab(int x,int y,int w,hwrcolor c) {
-   (*vid->bar)(y,vid->yres-x-w,w,c);
+void rotate90_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bar)(dest,y,dy-x-w,w,c,lgop);
 }
-void rotate90_bar(int x,int y,int h,hwrcolor c) {
-   (*vid->slab)(y,vid->yres-1-x,h,c);
+void rotate90_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->slab)(dest,y,dy-1-x,h,c,lgop);
 }
-void rotate90_line(int x1,int y1,int x2,int y2,hwrcolor c) {
-   (*vid->line)(y1,vid->yres-1-x1,y2,vid->yres-1-x2,c);
+void rotate90_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,
+		   s16 y2,hwrcolor c, s16 lgop) {
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->line)(dest,y1,dy-1-x1,y2,dy-1-x2,c,lgop);
 }
-void rotate90_blit(hwrbitmap src,int src_x,int src_y,
-		   int dest_x,int dest_y,int w,int h,int lgop) {
-   int bw,sx2;
-
-   if (src) {
-      (*vid->bitmap_getsize)(src,&sx2,&bw);
-   }
-   else {
-      bw = vid->yres;
-   }
+void rotate90_blit(hwrbitmap dest,s16 dest_x,s16 dest_y,s16 w, s16 h,
+		   hwrbitmap src,s16 src_x,s16 src_y,
+		   s16 lgop) {
+   s16 bw,sx2;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
+   (*vid->bitmap_getsize)(src,&sx2,&bw);
    sx2 = bw-(w%bw)-src_x;
    
-   (*vid->blit)(src,src_y,sx2,dest_y,vid->yres-dest_x-w,h,w,lgop);
+   (*vid->blit)(dest,dest_y,dy-dest_x-w,h,w,
+		src,src_y,sx2,lgop);
 }
-void rotate90_unblit(int src_x,int src_y,hwrbitmap dest,int dest_x,
-		     int dest_y,int w,int h) {
-   int bw,bh;
-   (*vid->bitmap_getsize)(dest,&bh,&bw);
-   (*vid->unblit)(src_y,vid->yres-src_x-w,dest,dest_y,bw-w-dest_x,h,w);
-}
-void rotate90_scrollblit(int src_x,int src_y,int dest_x,int dest_y,
-			 int w,int h) {
-   /* FIXME */
-}
-void rotate90_tileblit(hwrbitmap src,int src_x,int src_y,int src_w,
-		       int src_h,int dest_x,int dest_y,int dest_w,
-		       int dest_h) {
-   int bw,bh;
+void rotate90_tileblit(hwrbitmap dest,s16 dest_x,s16 dest_y,
+		       s16 dest_w,s16 dest_h,
+		       hwrbitmap src,s16 src_x,s16 src_y,
+		       s16 src_w,s16 src_h,s16 lgop) {
+   s16 bw,bh;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
    (*vid->bitmap_getsize)(src,&bh,&bw);
-   (*vid->tileblit)(src,src_y,bw-src_w-src_x,src_h,src_w,dest_y,
-		    vid->yres-dest_x-dest_w,dest_h,dest_w);
+   (*vid->tileblit)(dest,dest_y,dy-dest_x-dest_w,dest_h,dest_w,
+		    src,src_y,bw-src_w-src_x,src_h,src_w,
+		    lgop);
 }
-void rotate90_charblit(unsigned char *chardat,int dest_x,int dest_y,
-		       int w,int h,int lines,hwrcolor c,
-		       struct cliprect *clip) {
-   struct cliprect cr;
-   struct cliprect *crp;
+void rotate90_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
+		       s16 w,s16 h,s16 lines,s16 angle,hwrcolor c,
+		       struct quad *clip,bool fill, hwrcolor bg, s16 lgop) {
+   struct quad cr;
+   struct quad *crp;
+   s16 dx,dy;
+   (*vid->bitmap_getsize)(dest,&dx,&dy);
    
    if (clip) {
       cr.x1 = clip->y1;
@@ -123,38 +125,28 @@ void rotate90_charblit(unsigned char *chardat,int dest_x,int dest_y,
    }
    else
      crp = NULL;
-   (*vid->charblit_v)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
-}
-void rotate90_charblit_v(unsigned char *chardat,int dest_x,int dest_y,
-		       int w,int h,int lines,hwrcolor c,
-		       struct cliprect *clip) {
-   struct cliprect cr;
-   struct cliprect *crp;
    
-   if (clip) {
-      cr.x1 = clip->y1;
-      cr.y1 = vid->yres-1-clip->x2;
-      cr.x2 = clip->y2;
-      cr.y2 = vid->yres-1-clip->x1;
-      crp = &cr;
-   }
-   else
-     crp = NULL;
-   (*vid->charblit_u)(chardat,dest_y,vid->yres-1-dest_x,w,h,lines,c,crp);
+   /* Rotate the text */
+   angle -= 90;
+   angle %= 360;
+   if (angle<0) angle += 360;
+   
+   (*vid->charblit)(dest,chardat,dest_y,dy-1-dest_x,w,h,lines,angle,c,crp,
+		      fill,bg,lgop);
 }
 
 /******* Bitmap rotation */
 
 /* Tack that rotation onto any bitmap loading */
 
-g_error rotate90_bitmap_new(hwrbitmap *bmp,int w,int h) {
+g_error rotate90_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
    return (*vid->bitmap_new)(bmp,h,w);
 }
 
 #ifdef CONFIG_FORMAT_XBM
 g_error rotate90_bitmap_loadxbm(hwrbitmap *bmp,
-				unsigned char *data,
-				int w,int h,
+				const u8 *data,
+				s16 w,s16 h,
 				hwrcolor fg,
 				hwrcolor bg) {
    g_error e;
@@ -163,14 +155,14 @@ g_error rotate90_bitmap_loadxbm(hwrbitmap *bmp,
 }
 #endif
 
-g_error rotate90_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
+g_error rotate90_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    g_error e;
    e = (*vid->bitmap_load)(bmp,data,datalen);
    errorcheck;
    return (*vid->bitmap_rotate90)(bmp);
 }
 
-g_error rotate90_bitmap_getsize(hwrbitmap *bmp,int *w,int *h) {
+g_error rotate90_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
    return (*vid->bitmap_getsize)(bmp,h,w);
 }
 
@@ -199,21 +191,15 @@ g_error rotate90_exitmode(void) {
 void vidwrap_rotate90(struct vidlib *vid) {
    vid->pixel = &rotate90_pixel;
    vid->getpixel = &rotate90_getpixel;
-   vid->addpixel = &rotate90_addpixel;
-   vid->subpixel = &rotate90_subpixel;
    vid->update = &rotate90_update;
    vid->slab = &rotate90_slab;
    vid->bar = &rotate90_bar;
    vid->line = &rotate90_line;
    vid->rect = &rotate90_rect;
    vid->gradient = &rotate90_gradient;
-   vid->dim = &rotate90_dim;
    vid->blit = &rotate90_blit;
-   vid->unblit = &rotate90_unblit;
-   vid->scrollblit = &rotate90_scrollblit;
    vid->tileblit = &rotate90_tileblit;
    vid->charblit = &rotate90_charblit;
-   vid->charblit_v = &rotate90_charblit_v;
    vid->coord_logicalize = &rotate90_coord_logicalize;
 #ifdef CONFIG_FORMAT_XBM
    vid->bitmap_loadxbm = &rotate90_bitmap_loadxbm;

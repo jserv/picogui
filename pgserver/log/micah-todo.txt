@@ -53,7 +53,6 @@ DOCUMENTATION!
 PicoGUI Bugs
 -------------------------------
 
-- scrolling
 - FIXMEs
 - retest all video drivers
 - pgGetText of non-text handles crashes server
@@ -61,5 +60,4 @@ PicoGUI Bugs
 - Deleting a handle returned from WP_TEXT of a field crashes the server. Need
   a way to mark a handle as readable by app but not deletable.
 - Themes aren't necessarily loaded back in the right order when increasing bpp
-- Crash on resizing panel sometimes
-- Misc server crashes with gremlins??
+- Misc server crashes with gremlins

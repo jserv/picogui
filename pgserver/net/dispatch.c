@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.36 2001/03/30 23:34:08 micahjd Exp $
+/* $Id: dispatch.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -418,7 +418,7 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
 		     void *data, unsigned long *ret, int *fatal) {
   struct fontdesc *fd;
   char *txt;
-  int w,h;
+  s16 w,h;
   g_error e;
   reqarg(sizetext);
 
@@ -434,7 +434,7 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
   sizetext(fd,&w,&h,txt);
 
   /* Pack w and h into ret */
-  *ret = w<<16 | h;
+  *ret = (((u32)w)<<16) | h;
 
   return sucess;
 }
@@ -727,7 +727,7 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   handle h,htb;
   struct widget *w,*tb;
   unsigned long flags;
-  int bw=0,bh=0;
+  s16 bw=0,bh=0;
   struct fontdesc *fd;
   char *str;
   reqarg(mkmsgdlg);
@@ -813,10 +813,10 @@ g_error rqh_mkmenu(int owner, struct pgrequest *req,
   struct fontdesc *fd;
   struct widget *w,*wbox;
   handle h,hbox;
-  int bhmin,bw,bh,maxw = 0,ttlh = 0;
-  int i,num = req->size / 4;
-  unsigned long *items = data;
-  unsigned long *ppayload;
+  s16 bhmin,bw,bh,maxw = 0,ttlh = 0;
+  s16 i,num = req->size / 4;
+  u32 *items = data;
+  u32 *ppayload;
 
   /*** Find the maximum width and total height (and convert byte order) */
   e = rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,

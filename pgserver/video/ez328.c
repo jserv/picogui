@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.12 2001/03/23 01:31:30 bauermeister Exp $
+/* $Id: ez328.c,v 1.13 2001/04/29 17:28:39 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -33,6 +33,10 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 #include <asm/MC68EZ328.h>   /* Defines the CPU and peripheral's registers */
+
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
 
 /* Save all LCD registers, restore on exit */
 #define REGS_LEN     0x36
@@ -125,14 +129,14 @@ g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags) {
    vid->xres   = LXMAX;
    vid->yres   = LYMAX+1;
    vid->bpp    = bpp;
-   vid->fb_bpl = LVPW << 1;
+   FB_BPL = LVPW << 1;
    
    /* Allocate video memory */
-   if (vid->fb_mem)
-     g_free(vid->fb_mem);
-   e = g_malloc((void **) &vid->fb_mem, vid->yres * vid->fb_bpl);
+   if (FB_MEM)
+     g_free(FB_MEM);
+   e = g_malloc((void **) &FB_MEM, vid->yres * FB_BPL);
    errorcheck;
-   LSSA = (unsigned long) vid->fb_mem;
+   LSSA = (unsigned long) FB_MEM;
 
    return sucess;
 }
@@ -149,7 +153,7 @@ void ez328_close(void) {
    unload_inlib(inlib_main);   /* Chipslice loaded an input driver */
 #endif
 
-   g_free(vid->fb_mem);
+   g_free(FB_MEM);
 }
 
 g_error ez328_regfunc(struct vidlib *v) {

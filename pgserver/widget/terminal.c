@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.22 2001/04/10 02:28:01 micahjd Exp $
+/* $Id: terminal.c,v 1.23 2001/04/29 17:28:40 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -28,6 +28,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
+#include <pgserver/render.h>
 #include <ctype.h>
 
 /* Default text attribute */
@@ -227,15 +228,12 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   /************** Gropnodes */
 
   /* Background (solid color or bitmap) */
-  addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
+  addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->bitmap ? DATA->bitmap : textcolors[0];
-  c->current->param[1] = PG_LGOP_NONE;
-  c->current->param[2] = 0;
-  c->current->param[3] = 0;
   DATA->bg = c->current;
 
   /* Incremental grop for the background */
-  addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
+  addgropsz(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,0,0,0,0);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->bg->param[0];
   c->current->param[1] = PG_LGOP_NONE;
@@ -250,14 +248,14 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   }
    
   /* Non-incremental text grid */   
-  addgrop(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
+  addgropsz(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->font;
   c->current->param[2] = DATA->bufferw;
   c->current->param[3] = 0;
 
   /* Incremental grop for the text grid */
-  addgrop(c,PG_GROP_TEXTGRID,0,0,0,0);
+  addgrop(c,PG_GROP_TEXTGRID);
   c->current->flags   |= PG_GROPF_INCREMENTAL;
   c->current->param[0] = DATA->hbuffer;
   c->current->param[1] = DATA->font;
@@ -555,12 +553,12 @@ void term_realize(struct widget *self) {
 */
  
    /* Gropnode position (background and text) */
-   DATA->bginc->x = DATA->inc->x = DATA->x + DATA->updx * DATA->celw;
-   DATA->bginc->y = DATA->inc->y = DATA->y + DATA->updy * DATA->celh;
-   DATA->bginc->w = DATA->inc->w = DATA->updw * DATA->celw;
-   DATA->bginc->h = DATA->inc->h = DATA->updh * DATA->celh;
-   DATA->bginc->param[2] = DATA->bginc->x;
-   DATA->bginc->param[3] = DATA->bginc->y;
+   DATA->bginc->r.x = DATA->inc->r.x = DATA->x + DATA->updx * DATA->celw;
+   DATA->bginc->r.y = DATA->inc->r.y = DATA->y + DATA->updy * DATA->celh;
+   DATA->bginc->r.w = DATA->inc->r.w = DATA->updw * DATA->celw;
+   DATA->bginc->r.h = DATA->inc->r.h = DATA->updh * DATA->celh;
+   DATA->bginc->param[2] = DATA->bginc->r.x;
+   DATA->bginc->param[3] = DATA->bginc->r.y;
 
    /* Set the incremental update flag */
    self->in->div->flags |= DIVNODE_INCREMENTAL;

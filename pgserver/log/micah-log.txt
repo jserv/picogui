@@ -1,3 +1,52 @@
+2001-04-24    Micah Dowty <micahjd@users.sourceforge.net>
+
+Almost finished with video reorganization junk. Too many changes to
+think about now, it would be 'mind blowing'. Server seems good,
+fixed up themes. (Most themes decreased in size due to the changes)
+Fixing up apps to use the new structure.
+This is the preparatory work for adding cool server-side mappings
+and things.
+Ugh. Scrolling and terminal widget are still broke in server.
+
+2001-04-20    Micah Dowty <micahjd@users.sourceforge.net>
+
+Starting to modify the video drivers themselves to use the new format.
+
+      * video/svgagl.c: The vgagl driver has gotten way out of sync with the
+        rest, so I'm (temporarily?) retiring it to cut down on maintenance.
+
+2001-04-19    Micah Dowty <micahjd@users.sourceforge.net>
+
+Finished redoing the header files, rendering engine, and defaultvbl. Too
+many changes to list here, just assume that that I had to change every file :)
+
+2001-04-18    Micah Dowty <micahjd@users.sourceforge.net>
+
+Ah. I got the Helio stuff released on the PicoGUI web site last night. Time
+to start refixing the video stuff. Goals for this mini-overhaul are:
+ - Decrease the size of the gropnode by storing persistant state of the
+   rendering engine between gropnodes
+ - Flexible clipping
+ - LGOPs work for any primitive
+ - Rendering to screen or device-dependent bitmaps
+ - Gropnode coordinate transformations
+ 
+      * include/picogui/constants.h: Reworked gropnode format and lgops
+
+      * include/pgserver/divtree.h: gropnode stuff removed
+      
+      * include/pgserver/render.h: gropnode stuff put here
+      
+      * gcore/grop.c: rendering engine removed, now only contains memory
+        management sorts of code
+	
+      * gcore/render.c: Adding new rendering engine code here. The grop_render
+        function was getting horribly long and unmanageable, weighing in
+	at over 500 lines. Added a new structure for storing rendering state,
+	splitting up rendering into more discrete functions. Also separating
+	screen-dependant code out so another function can be added to render
+	into bitmaps.
+
 2001-04-17    Micah Dowty <micahjd@users.sourceforge.net>
 
 After reading the mips version of stdarg.h, it all made sense. Now i can fix

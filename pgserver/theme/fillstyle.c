@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.11 2001/03/21 02:21:33 micahjd Exp $
+/* $Id: fillstyle.c,v 1.12 2001/04/29 17:28:39 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -84,20 +84,21 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     /* The default fillstyle, if no theme is loaded or no 
        theme has defined the property*/
 
+    addgrop(ctx,PG_GROP_SETCOLOR);
+    ctx->current->param[0] = VID(color_pgtohwr) (0x000000);
+    
     switch (state) {
 
     case PGTH_O_BUTTON_ON:      /* 2 borders */
-      addgrop(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->current->param[0] = VID(color_pgtohwr) (0x000000);
+      addgropsz(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
       ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
     default:                    /* 1 border */
-      addgrop(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
-      ctx->current->param[0] = VID(color_pgtohwr) (0x000000);
+      addgropsz(ctx,PG_GROP_FRAME,ctx->x,ctx->y,ctx->w,ctx->h);
       ctx->x += 1; ctx->y += 1; ctx->w -= 2; ctx->h -= 2;
     case PGTH_O_LABEL_SCROLL:   /* No border */
-      addgrop(ctx,PG_GROP_RECT,ctx->x,ctx->y,ctx->w,ctx->h);
+      addgrop(ctx,PG_GROP_SETCOLOR);
       ctx->current->param[0] = VID(color_pgtohwr) (theme_lookup(state,PGTH_P_BGCOLOR));
-      
+      addgropsz(ctx,PG_GROP_RECT,ctx->x,ctx->y,ctx->w,ctx->h);      
     }
     return sucess;
   }
@@ -119,14 +120,14 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     op = *(p++);
     
     /* These must occur in MSB to LSB order! (see constants.h) */
-    if (op & PGTH_OPSIMPLE_LITERAL) {
-      /* 1-byte literal */
-      fsstack[fsstkpos++] = op & (PGTH_OPSIMPLE_LITERAL-1);
-    }
-    else if (op & PGTH_OPSIMPLE_GROP) {
+    if (op & PGTH_OPSIMPLE_GROP) {
       /* 1-byte gropnode */
       e = fsgrop(ctx,op & (PGTH_OPSIMPLE_GROP-1));
       errorcheck;
+    }
+    else if (op & PGTH_OPSIMPLE_LITERAL) {
+      /* 1-byte literal */
+      fsstack[fsstkpos++] = op & (PGTH_OPSIMPLE_LITERAL-1);
     }
     else if (op & PGTH_OPSIMPLE_CMDCODE) {
       /* Command code */
@@ -180,10 +181,6 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
 	 printf("Local theme lookup, property %d\n",fsa);
 #endif
 	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
-	break;
-
-      case PGTH_OPCMD_COLOR:
-	fsstack[fsstkpos-1] = VID(color_pgtohwr) (fsstack[fsstkpos-1]);
 	break;
 
       case PGTH_OPCMD_PLUS:
@@ -380,16 +377,34 @@ g_error fsgrop(struct gropctxt *ctx,int grop) {
   int params = PG_GROPPARAMS(grop);
   int i,j;
   
-  if (fsstkpos<params+4)
-    return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
-
-  e = addgrop(ctx,grop,fsstack[fsstkpos-params-4],fsstack[fsstkpos-params-3],
-	      fsstack[fsstkpos-params-2],fsstack[fsstkpos-params-1]);
+  if (PG_GROP_IS_UNPOSITIONED(grop)) {
+     
+     if (fsstkpos<params)
+       return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+     
+     e = addgrop(ctx,grop);
+  }
+  else {
+  
+     if (fsstkpos<params+4)
+       return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+     
+     e = addgropsz(ctx,grop,fsstack[fsstkpos-params-4],fsstack[fsstkpos-params-3],
+		   fsstack[fsstkpos-params-2],fsstack[fsstkpos-params-1]);
+  }
   errorcheck;
-  for (i=fsstkpos-params,j=0;j<params;i++,j++)
-    ctx->current->param[j] = fsstack[i]; 
 
-  fsstkpos -= params+4;
+  for (i=fsstkpos-params,j=0;j<params;i++,j++)
+     ctx->current->param[j] = fsstack[i]; 
+     
+  /* Special case: handle color conversion here (simplifies
+   * the themes themselves) */
+  if (grop == PG_GROP_SETCOLOR)
+     ctx->current->param[0] = VID(color_pgtohwr) (ctx->current->param[0]);
+   
+  fsstkpos -= params;
+  if (!PG_GROP_IS_UNPOSITIONED(grop))
+     fsstkpos -= 4;
 
   return sucess;
 }

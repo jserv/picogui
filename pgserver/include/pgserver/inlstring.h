@@ -100,7 +100,7 @@ static inline void *
 	       "cmpl $12,%%edx\n\t"
 	       "jl 1f\n\t"	/* if (count >= 12) */
 
-	       "movzbl %%al,%%ax\n\t"
+	       "movzbl %%al,%%eax\n\t"
 	       "movl %%eax,%%ecx\n\t"
 	       "shll $8,%%ecx\n\t"	/* c |= c << 8 */
 	       "orl %%ecx,%%eax\n\t"

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.32 2001/04/12 02:37:56 micahjd Exp $
+/* $Id: label.c,v 1.33 2001/04/29 17:28:40 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -40,7 +40,7 @@ struct labeldata {
 void resizelabel(struct widget *self);
 
 void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
-  int x,y,w,h;
+  s16 x,y,w,h;
   struct fontdesc *fd;
   char *str;
   handle font = DATA->font ? DATA->font : theme_lookup(state,PGTH_P_FONT);
@@ -61,14 +61,21 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
   if (h>c->h) h = c->h;
   align(c,DATA->align,&w,&h,&x,&y);
 
-  if (DATA->direction == PG_DIR_VERTICAL)
-    addgrop(c,PG_GROP_TEXTV,x,y+h,w,h);
-  else
-    addgrop(c,PG_GROP_TEXT,x,y,w,h);
-  c->current->param[0] = DATA->text;
-  c->current->param[1] = font;
-  c->current->param[2] = VID(color_pgtohwr) 
+  if (font != defaultfont) {
+     addgrop(c,PG_GROP_SETFONT);
+     c->current->param[0] = font;
+  }
+  addgrop(c,PG_GROP_SETCOLOR);
+  c->current->param[0] = VID(color_pgtohwr) 
      (theme_lookup(state,PGTH_P_FGCOLOR));
+   
+  if (DATA->direction) {
+     addgrop(c,PG_GROP_SETANGLE);
+     c->current->param[0] = DATA->direction; 
+  }
+     
+  addgropsz(c,PG_GROP_TEXT,x,y,w,h);
+  c->current->param[0] = DATA->text;
   c->current->flags |= PG_GROPF_TRANSLATE;
 }
 
@@ -168,7 +175,7 @@ g_error label_set(struct widget *self,int property, glob data) {
 glob label_get(struct widget *self,int property) {
   g_error e;
   handle h;
-  int tw,th;
+  s16 tw,th;
   char *str;
   struct fontdesc *fd;
 
@@ -213,7 +220,7 @@ glob label_get(struct widget *self,int property) {
 }
  
 void resizelabel(struct widget *self) {
-  int w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+  s16 w,h,m = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
   struct fontdesc *fd;
   char *str;
   handle font = DATA->font ? DATA->font : 

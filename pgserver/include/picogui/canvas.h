@@ -1,4 +1,4 @@
-/* $Id: canvas.h,v 1.3 2001/04/11 16:42:44 micahjd Exp $
+/* $Id: canvas.h,v 1.4 2001/04/29 17:28:39 micahjd Exp $
  *
  * picogui/canvas.h - This defines the commands sent from the client to a
  *                    canvas widget (Via RQH_WRITETO)
@@ -80,10 +80,9 @@
  * 
  * Parameters:
  *  1. Type (a PG_GROP_* constant)
- *  2. X position (relative to widget)
- *  3. Y position (relative to widget)
- *  4. width
- *  5. height
+ *  *. Unless the gropnode is 'unpositioned' (setcolor and friends) the
+ *     next 4 args are the x,y,w,h positioning (all 4 are required!)
+ *  *. Gropnode parameters
  *
  * Note on width and height: This is the standard way of measuring size in
  * PicoGUI. It is applicable in most cases, but there are a few notable
@@ -95,6 +94,7 @@
  *  4. In a line, width is interpreted as x2 - x1, height as y2 - y1. This
  *     means that a vertical line has zero width and it is alright for width
  *     or height to be negative.
+ *  5. A pixel should have width and height of 1
  * 
  */
 #define PGCANVAS_GROP        2
@@ -139,9 +139,8 @@
 
 /* Sets the parameters of the current gropnode.
  * These parameters are gropnode dependant, and not yet well documented.
- * As a last resort you can look in grop.c
- * Simple grops like line, recatngle, slab, etc. take a hwrcolor as their
- * first parameter.
+ * As a last resort you can look in grop.c or in a theme's source code.
+ * (themes use the same gropnode interface)
  * 
  * Parameters:
  *  *. Gropnode params
@@ -166,19 +165,18 @@
  */
 #define PGCANVAS_MUTATEGROP  7
 
-/* According to the bitmask, it converts the parameters
- * of the current gropnode from pgcolor to hwrcolor.
- * In a rectangle, for example, you must use SETGROP to send
- * the pgcolor as the first param, then call COLORCONV with
- * a bitmask of '1' to convert the first parameter to a hwrcolor
+/* Sets the default flags given to new gropnodes. Especially good for things
+ * like setting the PG_GROPF_TRANSIENT flags to make all new grops behave
+ * as if they're rendered immediately and not stored, or turing on the
+ * PG_GROPF_TRANSLATE flag to define a scrolled region of the canvas.
  * 
  * Parameters:
- *  1. Bitmask, LSB is the first param
+ *  1. Zero or more PG_GROPF_* constants or'ed together
  */
-#define PGCANVAS_COLORCONV   8
+#define PGCANVAS_DEFAULTFLAGS   8
 
 /* Sets the flags on the current grop. This is for marking grops as
- * incremental, pseudoincremental, translated, etc.
+ * incremental, pseudoincremental, translated, transient, etc.
  * 
  * Parameters:
  *  1. Zero or more PG_GROPF_* constants or'ed together

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.11 2001/04/25 09:54:32 gobry Exp $
+# $Id: fontdef.pl,v 1.12 2001/04/29 17:28:39 micahjd Exp $
 #
 # This reads in .fi files, and creates the static linked list
 # of font styles.  It also uses cnvfont to load the .fdf files
@@ -63,19 +63,19 @@ foreach $file (@fontfiles) {
     $norm = $bold = $ital = $bital = 'NULL';
 
     if ($fiparam{'NORMAL'}) {
-	$norm = '&'.$fiparam{'NORMAL'};
+	$norm = '(struct font *) &'.$fiparam{'NORMAL'};
 	$fdfs{$fiparam{'NORMAL'}} = 1;
     }
     if ($fiparam{'BOLD'}) {
-	$bold = '&'.$fiparam{'BOLD'};
+	$bold = '(struct font *) &'.$fiparam{'BOLD'};
 	$fdfs{$fiparam{'BOLD'}} = 1;
     } 
     if ($fiparam{'ITALIC'}) {
-	$ital = '&'.$fiparam{'ITALIC'};
+	$ital = '(struct font *) &'.$fiparam{'ITALIC'};
 	$fdfs{$fiparam{'ITALIC'}} = 1;
     } 
     if ($fiparam{'BOLDITALIC'}) {
-	$bital = '&'.$fiparam{'BOLDITALIC'}; 
+	$bital = '(struct font *) &'.$fiparam{'BOLDITALIC'}; 
 	$fdfs{$fiparam{'BOLDITALIC'}} = 1;
     }
 
@@ -221,7 +221,7 @@ foreach (sort @defs) {
     print "struct fontstyle_node const fsn$fnode = {\n";
     s/###/$link/;
     print "$_ };\n";
-    $link = "&fsn$fnode";
+    $link = "(struct fontstyle_node *) &fsn$fnode";
 }
 
 print "struct fontstyle_node *fontstyles = $link;\n/* The End */\n";

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.38 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: div.c,v 1.39 2001/04/29 17:28:39 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -416,7 +416,7 @@ void dts_pop(struct divtree *dt) {
 /* Aligns a 'thing' of specified width and height in the specified divnode
  * according to the alignment type specified in align.
  */
-void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y) {
+void align(struct gropctxt *d,alignt align,s16 *w,s16 *h,s16 *x,s16 *y) {
   switch (align) {
   case PG_A_CENTER:
     *x = (d->w-*w)/2;

@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.3 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: pnm.c,v 1.4 2001/04/29 17:28:39 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -32,7 +32,7 @@
 /**************************** Detect */
 
 /* Use the P* header as a 'magic number' */
-int pnm_detect(u8 *data, u32 datalen) {
+bool pnm_detect(const u8 *data, u32 datalen) {
    return (datalen > 5) && (data[0] == 'P') && 
           (data[1] > '0') && (data[1] < '7');
 }
@@ -40,7 +40,7 @@ int pnm_detect(u8 *data, u32 datalen) {
 /**************************** Load */
 
 /* Little function to skip to the next value in an ASCII file */
-void ascskip(unsigned char **dat,unsigned long *datlen) {
+void ascskip(const u8 **dat,u32 *datlen) {
   while (*datlen) {
     if (**dat == ' ' || **dat == '\t' || **dat == '\n' || **dat == '\r') {
       (*dat)++;
@@ -58,7 +58,7 @@ void ascskip(unsigned char **dat,unsigned long *datlen) {
 }
 
 /* Read a number from ascii data */
-int ascread(unsigned char **dat,unsigned long *datlen) {
+int ascread(const u8 **dat,u32 *datlen) {
   char buf[10];
   char *p = buf;
   int buflen=9;
@@ -73,9 +73,9 @@ int ascread(unsigned char **dat,unsigned long *datlen) {
   return atoi(buf);
 }
 
-g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen) {
+g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Convert from any of the pbmplus formats in binary or ascii */
-
+  struct stdbitmap **bmp = (struct stdbitmap **) hbmp;
   char format;
   int bin = 0;
   int bpp;

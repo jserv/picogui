@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.59 2001/04/10 00:54:57 micahjd Exp $
+/* $Id: button.c,v 1.60 2001/04/29 17:28:40 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -70,9 +70,9 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
 
 struct btnposition {
   /* Coordinates calculated in position_button */
-  int x,y,w,h;  /* Coordinates of bitmap and text combined */
-  int bx,by,bw,bh;  /* Bitmap, relative to bitmap+text */
-  int tx,ty,tw,th;  /* Text, relative to bitmap+text */ 
+  s16 x,y,w,h;  /* Coordinates of bitmap and text combined */
+  s16 bx,by,bw,bh;  /* Bitmap, relative to bitmap+text */
+  s16 tx,ty,tw,th;  /* Text, relative to bitmap+text */ 
 
   /* position_button looks this up anyway */
   handle font;
@@ -103,27 +103,35 @@ void build_button(struct gropctxt *c,unsigned short state,struct widget *self) {
 
   /* AND the mask, then OR the bitmap. Yay for transparency effects! */
   if (DATA->bitmask) {
-    addgrop(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
+    addgrop(c,PG_GROP_SETLGOP);
+    c->current->param[0] = PG_LGOP_AND;
+    addgropsz(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
     c->current->param[0] = DATA->bitmask;
-    c->current->param[1] = PG_LGOP_AND;
-    c->current->param[2] = 0;
-    c->current->param[3] = 0;
   }
   if (DATA->bitmap) {
-    addgrop(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
+    if (DATA->bitmask) {
+       addgrop(c,PG_GROP_SETLGOP);
+       c->current->param[0] = PG_LGOP_OR;
+    }
+    addgropsz(c,PG_GROP_BITMAP,bp.x+bp.bx,bp.y+bp.by,bp.bw,bp.bh);
     c->current->param[0] = DATA->bitmap;
-    c->current->param[1] = DATA->bitmask ? PG_LGOP_OR : PG_LGOP_NONE;
-    c->current->param[2] = 0;
-    c->current->param[3] = 0; 
+    if (DATA->bitmask) {
+       addgrop(c,PG_GROP_SETLGOP);
+       c->current->param[0] = PG_LGOP_NONE;
+    }
   }
 
   /* Text */
   if (DATA->text) {
-    addgrop(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
-    c->current->param[0] = DATA->text;
-    c->current->param[1] = bp.font;
-    c->current->param[2] = VID(color_pgtohwr) 
+    addgrop(c,PG_GROP_SETCOLOR);
+    c->current->param[0] = VID(color_pgtohwr) 
        (theme_lookup(state,PGTH_P_FGCOLOR));
+    if (bp.font != defaultfont) {
+       addgrop(c,PG_GROP_SETFONT);
+       c->current->param[0] = bp.font;
+    }
+    addgropsz(c,PG_GROP_TEXT,bp.x+bp.tx,bp.y+bp.ty,bp.tw,bp.th);
+    c->current->param[0] = DATA->text;
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.16 2001/04/14 07:47:53 micahjd Exp $
+/* $Id: divtree.h,v 1.17 2001/04/29 17:28:39 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -152,50 +152,6 @@ typedef unsigned short int sidet;
 		     DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT|    \
 		     DIVNODE_SPLIT_BORDER|DIVNODE_SPLIT_CENTER| \
                      DIVNODE_SPLIT_IGNORE|DIVNODE_SPLIT_EXPAND))
-
-/* The maximum number of parameters a gropnode could need (client
-   doesn't depend on this number. only for memory allocation purposes!)
-*/
-#define NUMGROPPARAMS    5
-
-struct gropnode {
-  short int type,flags,x,y,w,h;
-  struct gropnode *next;   
-  unsigned long param[NUMGROPPARAMS];
-};
-
-/* These are applied to new gropnodes */
-extern short int defaultgropflags;
-
-/***************** grop contexts */
-
-/* The grop context stores the information necessary for one 'session' of
- * gropnode building or updating. The groplist's structure may change
- * during rendering, so this context can only be valid for a short time!
- */
-
-struct gropctxt {
-  struct gropnode **headpp;   /* Head of groplist */
-  struct gropnode *current;   /* Current position */
-  unsigned short n;           /* Numerical position in gropnode list */
-  int x,y,w,h;                /* Current coordinates */
-};
-
-/* Set up a grop context for rendering to a divnode */
-void gropctxt_init(struct gropctxt *ctx, struct divnode *div);
-
-/* Add a new gropnode to the context. Caller fills in
-   all the grop's parameters (ctx->current->foo) afterwards. */
-g_error addgrop(struct gropctxt *ctx, int type,int x,int y,int w,int h);
-
-/***************** grop functions */
-
-void grop_render(struct divnode *div);
-void grop_addnode(struct gropnode **headpp,struct gropnode *node);
-void grop_free(struct gropnode **headpp);
-void grop_kill_zombies(void);
-
-void align(struct gropctxt *d,alignt align,int *w,int *h,int *x,int *y);
 
 /***************** divnode functions */
 

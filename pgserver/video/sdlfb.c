@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.12 2001/03/26 05:35:35 micahjd Exp $
+/* $Id: sdlfb.c,v 1.13 2001/04/29 17:28:39 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -40,16 +40,21 @@ SDL_Surface *sdl_vidsurf;
 int sdlfb_emucolors;
 #endif
 
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
 hwrcolor sdlfbemu_color_pgtohwr(pgcolor c);
 pgcolor sdlfbemu_color_hwrtopg(hwrcolor c);
-g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags);
+g_error sdlfb_init(void);
 void sdlfb_close(void);
-void sdlfb_update(int x,int y,int w,int h);
+void sdlfb_update(s16 x,s16 y,s16 w,s16 h);
 g_error sdlfb_regfunc(struct vidlib *v);
+g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 
-g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
+g_error sdlfb_init(void) {
   /* Avoid freeing a nonexistant backbuffer in close() */
-  vid->fb_mem = NULL;
+  FB_MEM = NULL;
    
   /* Default mode: 640x480 */
   if (!vid->xres) vid->xres = 640;
@@ -63,7 +68,7 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   return load_inlib(&sdlinput_regfunc,&inlib_main);
 }
 
-g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
+g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   unsigned long sdlflags = SDL_RESIZABLE;
   char str[80];
   SDL_Color palette[256];
@@ -79,9 +84,9 @@ g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
      xres &= ~((8/bpp)-1);
 
   /* Free the backbuffer */
-  if (vid->bpp && (vid->bpp<8) && vid->fb_mem) {
-     g_free(vid->fb_mem);
-     vid->fb_mem = NULL;
+  if (vid->bpp && (vid->bpp<8) && FB_MEM) {
+     g_free(FB_MEM);
+     FB_MEM = NULL;
   }
 #endif CONFIG_SDLEMU_BLIT
    
@@ -183,22 +188,23 @@ g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
      was requested) */
   vid->xres = sdl_vidsurf->w;
   vid->yres = sdl_vidsurf->h;
+   
 #ifdef CONFIG_SDLEMU_BLIT
   /* If we're blitting to a higher bpp, use another backbuffer */
   if (bpp<8) {
      g_error e;
      
      vid->bpp = bpp;
-     vid->fb_bpl = (vid->xres * bpp) >> 3;
-     e = g_malloc((void**)&vid->fb_mem,vid->fb_bpl * vid->yres);
+     FB_BPL = (vid->xres * bpp) >> 3;
+     e = g_malloc((void**)&FB_MEM,FB_BPL * vid->yres);
      errorcheck;
   }
   else
 #endif
   {
      vid->bpp  = sdl_vidsurf->format->BitsPerPixel;
-     vid->fb_mem = sdl_vidsurf->pixels;
-     vid->fb_bpl = sdl_vidsurf->pitch;
+     FB_MEM = sdl_vidsurf->pixels;
+     FB_BPL = sdl_vidsurf->pitch;
   }
    
   /* Info */
@@ -212,21 +218,21 @@ g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
 void sdlfb_close(void) {
 #ifdef CONFIG_SDLEMU_BLIT
   /* Free backbuffer */
-   if (vid->fb_mem && (vid->fb_mem != sdl_vidsurf->pixels))
-     g_free(vid->fb_mem);
+   if (FB_MEM && (FB_MEM != sdl_vidsurf->pixels))
+     g_free(FB_MEM);
 #endif   
   unload_inlib(inlib_main);   /* Take out our input driver */
   SDL_Quit();
 }
 
-void sdlfb_update(int x,int y,int w,int h) {
+void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
 #ifdef DEBUG_VIDEO
    printf("sdlfb_update(%d,%d,%d,%d)\n",x,y,w,h);
 #endif
 
 #ifdef CONFIG_SDLEMU_BLIT
    /* Do we need to convert and blit to the SDL buffer? */
-   if (vid->fb_mem != sdl_vidsurf->pixels) {
+   if (FB_MEM != sdl_vidsurf->pixels) {
       unsigned char *src;
       unsigned char *dest;
       unsigned char *srcline;
@@ -242,12 +248,12 @@ void sdlfb_update(int x,int y,int w,int h) {
       x &= ~7;
       
       /* Calculations */
-      srcline = src = vid->fb_mem + ((x * vid->bpp) >> 3) +y*vid->fb_bpl;
+      srcline = src = FB_MEM + ((x * vid->bpp) >> 3) +y*FB_BPL;
       destline = dest = sdl_vidsurf->pixels + x + y*vid->xres;
       bw = (w * vid->bpp) >> 3;
       
       /* Slow but it works (this is debug code, after all...) */
-      for (j=h;j;j--,src=srcline+=vid->fb_bpl,dest=destline+=sdl_vidsurf->pitch)
+      for (j=h;j;j--,src=srcline+=FB_BPL,dest=destline+=sdl_vidsurf->pitch)
 	for (i=bw;i;i--,src++)
 	  for (shift=maxshift,c=*src;shift>=0;shift-=vid->bpp)
 	    *(dest++) = (c >> shift) & mask;

@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.4 2001/04/11 16:42:44 micahjd Exp $
+/* $Id: theme.h,v 1.5 2001/04/29 17:28:39 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
@@ -30,7 +30,7 @@
 #define __THEME_H
 
 /* format version (file_ver) */
-#define PGTH_FORMATVERSION  0x0001
+#define PGTH_FORMATVERSION  0x0002
 
 /******** PicoGUI theme file format ********/
 /* All numbers in network byte order */

@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.11 2001/04/12 20:09:37 bauermeister Exp $
+/* $Id: linear4.c,v 1.12 2001/04/29 17:28:39 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -33,12 +33,17 @@
 
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy if possible*/
 #include <pgserver/video.h>
+#include <pgserver/render.h>
+
+/* Macros to easily access the members of vid->display */
+#define FB_MEM     (((struct stdbitmap*)dest)->bits)
+#define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 
 /* Macro for addressing framebuffer pixels. Note that this is only
  * used when an accumulator won't do, but it is a macro so a line address
  * lookup table might be implemented later if really needed.
  */
-#define LINE(y)        ((y)*vid->fb_bpl+vid->fb_mem)
+#define LINE(y)        ((y)*FB_BPL+FB_MEM)
 #define PIXELBYTE(x,y) (((x)>>1)+LINE(y))
 
 /* Table of masks used to isolate one pixel within a byte */
@@ -46,24 +51,35 @@ unsigned const char notmask4[] = { 0x0F, 0xF0 };
 
 /************************************************** Minimum functionality */
 
-void linear4_pixel(int x,int y,hwrcolor c) {
-   char *p = PIXELBYTE(x,y);
+void linear4_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+   char *p;
+   if (lgop != PG_LGOP_NONE) {
+      def_pixel(dest,x,y,c,lgop);
+      return;
+   }
+   p = PIXELBYTE(x,y);
    *p &= notmask4[x&1];
    *p |= c << ((1-(x&1))<<2);
 }
-hwrcolor linear4_getpixel(int x,int y) {
+hwrcolor linear4_getpixel(hwrbitmap dest,s16 x,s16 y) {
    return ((*PIXELBYTE(x,y)) >> ((1-(x&1))<<2)) & 0x0F;
 }
    
 /************************************************** Accelerated (?) primitives */
 
 /* Simple horizontal and vertical straight lines */
-void linear4_slab(int x,int y,int w,hwrcolor c) {
+void linear4_slab(hwrbitmap dest,s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
    /* Do the individual pixels at the end seperately if necessary,
     * and do most of it with memset */
    
-   char *p = PIXELBYTE(x,y);
+   char *p;
 
+   if (lgop != PG_LGOP_NONE) {
+      def_slab(dest,x,y,w,c,lgop);
+      return;
+   }
+   
+   p = PIXELBYTE(x,y);
    if (x&1) {
       *p &= 0xF0;
       *p |= c;
@@ -77,27 +93,39 @@ void linear4_slab(int x,int y,int w,hwrcolor c) {
       *p |= c << 4;
    }
 }
-void linear4_bar(int x,int y,int h,hwrcolor c) {
+void linear4_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
+   char *p;
+   unsigned char mask;
+
+   if (lgop != PG_LGOP_NONE) {
+      def_bar(dest,x,y,h,c,lgop);
+      return;
+   }
+
    /* Compute the masks ahead of time and reuse! */
-   
-   char *p = PIXELBYTE(x,y);
-   unsigned char mask = notmask4[x&1];
+   p = PIXELBYTE(x,y);
+   mask = notmask4[x&1];
    if (!(x&1)) c <<= 4;
    
-   for (;h;h--,p+=vid->fb_bpl) {
+   for (;h;h--,p+=FB_BPL) {
       *p &= mask;
       *p |= c;
    }
 }
 
 /* Raster-optimized version of Bresenham's line algorithm */
-void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
-  int stepx, stepy;
-  int dx = x2-x1;
-  int dy = y2-y1;
-  int fraction;
+void linear4_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,
+		  hwrcolor c,s16 lgop) {
+  s16 stepx, stepy;
+  s16 dx,dy;
+  s16 fraction;
   char *p;
    
+  if (lgop != PG_LGOP_NONE) {
+     def_line(dest,x1,y1,x2,y2,c,lgop);
+     return;
+  }
+
   dx = x2-x1;
   dy = y2-y1;
 
@@ -110,16 +138,16 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
   }
   if (dy<0) { 
     dy = -(dy << 1);
-    stepy = -vid->fb_bpl; 
+    stepy = -FB_BPL; 
   } else {
     dy = dy << 1;
-    stepy = vid->fb_bpl;
+    stepy = FB_BPL;
   }
 
-  y1 *= vid->fb_bpl;
-  y2 *= vid->fb_bpl;
+  y1 *= FB_BPL;
+  y2 *= FB_BPL;
 
-  p = vid->fb_mem + y1 + (x1>>1);
+  p = FB_MEM + y1 + (x1>>1);
   *p &= notmask4[x1&1];
   *p |= c << ((1-(x1&1))<<2);
 
@@ -134,7 +162,7 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       x1 += stepx;
       fraction += dy;
       
-      p = vid->fb_mem + y1 + (x1>>1);
+      p = FB_MEM + y1 + (x1>>1);
       *p &= notmask4[x1&1];
       *p |= c << ((1-(x1&1))<<2);
     }
@@ -151,7 +179,7 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       y1 += stepy;
       fraction += dx;
        
-      p = vid->fb_mem + y1 + (x1>>1);
+      p = FB_MEM + y1 + (x1>>1);
       *p &= notmask4[x1&1];
       *p |= c << ((1-(x1&1))<<2);
     }
@@ -160,12 +188,17 @@ void linear4_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 
 /* Basically draw this as repeated slabs: at the beginning and
  * end of each scanline we have to do partial bytes */
-void linear4_rect(int x,int y,int w,int h,hwrcolor c) {
-   char *l = PIXELBYTE(x,y);
-   char *p = l;
-   int w2;
+void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
+   u8 *l,*p;
+   s16 w2;
    
-   for (;h;h--,p=l+=vid->fb_bpl) {
+   if (lgop != PG_LGOP_NONE) {
+      def_rect(dest,x,y,w,h,c,lgop);
+      return;
+   }
+
+   p = l = PIXELBYTE(x,y);
+   for (;h;h--,p=l+=FB_BPL) {
       w2 = w;
       if (x&1) {
 	 *p &= 0xF0;
@@ -182,26 +215,12 @@ void linear4_rect(int x,int y,int w,int h,hwrcolor c) {
    }
 }
 
-void linear4_gradient(int x,int y,int w,int h,int angle,
-		      pgcolor c1, pgcolor c2,int translucent) {
-   /* FIXME! */
-}
-
-void linear4_dim(int x,int y,int w,int h) {
-   /* FIXME! */
-}
-
-/* Screen-to-screen bottom-up blit */
-void linear4_scrollblit(int src_x,int src_y,
-		    int dest_x,int dest_y,int w,int h) {
-   /* FIXME! */
-}
-
+#if 0  /* FIXME! charblit is buggy! */
 /* Blit from 1bpp packed character to the screen,
  * leaving zeroed pixels transparent */
 void linear4_charblit(unsigned char *chardat,int dest_x,
 		      int dest_y,int w,int h,int lines,
-		      hwrcolor c,struct cliprect *clip) {
+		      hwrcolor c,struct quad *clip) {
   char *dest,*destline;
   int bw = w;
   int iw;
@@ -231,7 +250,7 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
   if (clip) {
     if (clip->y1>dest_y) {
       hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
-      destline = (dest += hc * vid->fb_bpl);
+      destline = (dest += hc * FB_BPL);
       chardat += hc*bw;
     }
     if (clip->y2<(dest_y+h))
@@ -252,7 +271,7 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
   if (olines || clipping) {
     /* Slower loop, taking skewing and clipping into account */
     
-    for (;hc<h;hc++,destline=(dest+=vid->fb_bpl)) {
+    for (;hc<h;hc++,destline=(dest+=FB_BPL)) {
       if (olines && lines==hc) {
 	lines += olines;
 	if ((--dest_x)&1)
@@ -286,7 +305,7 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
      * Two different loops, depending on whether the destination is byte-aligned */
     
     if (dest_x&1) 
-       for (;hc<h;hc++,destline=(dest+=vid->fb_bpl))
+       for (;hc<h;hc++,destline=(dest+=FB_BPL))
 	 for (iw=bw;iw;iw--) {
 	    ch = *(chardat++);
 	    if (ch&0x80) {*destline &= 0xF0; *destline |= c;    } destline++; 
@@ -299,7 +318,7 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 	    if (ch&0x01) {*destline &= 0x0F; *destline |= c<<4; }
 	 }
      else
-       for (;hc<h;hc++,destline=(dest+=vid->fb_bpl))
+       for (;hc<h;hc++,destline=(dest+=FB_BPL))
 	 for (iw=bw;iw;iw--) {
 	    ch = *(chardat++);
 	    if (ch&0x80) {*destline &= 0x0F; *destline |= c<<4; }
@@ -313,20 +332,9 @@ void linear4_charblit(unsigned char *chardat,int dest_x,
 	 }
   }
 }
+#endif
 
-/* Like charblit, but rotate 90 degrees anticlockwise whilst displaying */
-void linear4_charblit_v(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,
-		  hwrcolor c,struct cliprect *clip) {
-   /* FIXME! */
-}
-
-void linear4_tileblit(struct stdbitmap *srcbit,
-		  int src_x,int src_y,int src_w,int src_h,
-		  int dest_x,int dest_y,int dest_w,int dest_h) {
-   /* FIXME! */
-}
-   
+#if 0   /* Blitter is buggy! FIXME! */
 void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
 		  int dest_x, int dest_y,
 		  int w, int h, int lgop) {
@@ -338,8 +346,8 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    /* Screen-to-screen blit */
    if (!srcbit) {
       srcbit = &screen;
-      screen.bits = vid->fb_mem;
-      screen.w = vid->fb_bpl;
+      screen.bits = FB_MEM;
+      screen.w = FB_BPL;
       screen.h = vid->yres;
    }
    
@@ -348,7 +356,7 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
    flag_l = dest_x&1;
    flag_r = (dest_x^w) & 1;
    
-   for (;h;h--,src=srcline+=srcbit->pitch,dest=destline+=vid->fb_bpl) {
+   for (;h;h--,src=srcline+=srcbit->pitch,dest=destline+=FB_BPL) {
       /* Check for an extra nibble at the beginning, and shift
        * pixels while blitting */
       if (flag_l) {
@@ -479,131 +487,20 @@ void linear4_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       }
    }
 }
-
-/* Nice simple screen-to-bitmap blit */
-void linear4_unblit(int src_x,int src_y,
-		    struct stdbitmap *destbit,int dest_x,int dest_y,
-		    int w,int h) {
-   unsigned char *dest,*destline,*src,*srcline;
-   int i,bw;
-   unsigned char flag_l;
-   
-   bw = /*(w>>1) -1; */ destbit->pitch;  /* FIXME: for w!=destbit->w this doesn't work! */
-   dest = destline = destbit->bits + (dest_x>>1) + dest_y*destbit->pitch;
-   src  = srcline  = PIXELBYTE(src_x,src_y);
-   flag_l = src_x&1;
-   
-   for (;h;h--,src=srcline+=vid->fb_bpl,dest=destline+=destbit->pitch) {
-      if (flag_l) {
-	 /* Shifted copy */
-	 for (i=bw;i;i--,dest++,src++)
-	   *dest = ((*src) << 4) | ((*(src+1)) >> 4);
-      }
-      else {
-	 /* Normal byte copy */
-	 __memcpy(dest,src,bw);
-      }
-   }
-}
-   
-/*********************************************** 180 deg stuff */
-
-#define X180     (vid->xres-1-x)
-#define Y180     (vid->yres-1-y)
-#define XW180    (vid->xres-x-w)
-#define YH180    (vid->yres-y-h)
-#define XX180(x) (vid->xres-1-x)
-#define YY180(y) (vid->yres-1-y)
-
-
-void linear4_pixel_180(int x,int y,hwrcolor c) {
-  linear4_pixel(X180, Y180, c);
-}
-
-hwrcolor linear4_getpixel_180(int x,int y) {
-  return linear4_getpixel(X180, Y180);
-}
-
-void linear4_slab_180(int x,int y,int w,hwrcolor c) {
-  linear4_slab(XW180, Y180, w, c);
-}
-
-void linear4_bar_180(int x,int y,int h,hwrcolor c) {
-  linear4_bar(X180, YH180, h, c);
-}
-
-void linear4_line_180(int x1,int y1,int x2,int y2,hwrcolor c) {
-  linear4_line(XX180(x1), YY180(y1), XX180(x2), YY180(y2), c);
-}
-
-void linear4_rect_180(int x,int y,int w,int h,hwrcolor c) {
-  linear4_rect(X180, Y180, w, h, c);
-}
-
-void linear4_charblit_180(unsigned char *chardat,
-			  int x, int y,int w,int h,int lines,
-			  hwrcolor c,struct cliprect *clip) {
-  linear4_charblit(chardat,
-		   X180, Y180, w,  h, lines, c, clip);
-}
-
-
-#ifdef CONFIG_ROTATE180
-# define LINEAR4_PIXEL      linear4_pixel_180
-# define LINEAR4_GETPIXEL   linear4_getpixel_180
-# define LINEAR4_SLAB       linear4_slab_180
-# define LINEAR4_BAR        linear4_bar_180
-# define LINEAR4_LINE       linear4_line_180
-# define LINEAR4_RECT       linear4_rect_180
-# define LINEAR4_GRADIENT   linear4_gradient_180
-# define LINEAR4_DIM        linear4_dim_180
-# define LINEAR4_SCROLLBLIT linear4_scrollblit_180
-# define LINEAR4_CHARBLIT   linear4_charblit_180
-# define LINEAR4_CHARBLIT_V linear4_charblit_v_180
-# define LINEAR4_TILEBLIT   linear4_tileblit_180
-# define LINEAR4_BLIT       linear4_blit_180
-# define LINEAR4_UNBLIT     linear4_unblit_180
-#else
-# define LINEAR4_PIXEL      linear4_pixel
-# define LINEAR4_GETPIXEL   linear4_getpixel
-# define LINEAR4_SLAB       linear4_slab
-# define LINEAR4_BAR        linear4_bar
-# define LINEAR4_LINE       linear4_line
-# define LINEAR4_RECT       linear4_rect
-# define LINEAR4_GRADIENT   linear4_gradient
-# define LINEAR4_DIM        linear4_dim
-# define LINEAR4_SCROLLBLIT linear4_scrollblit
-# define LINEAR4_CHARBLIT   linear4_charblit
-# define LINEAR4_CHARBLIT_V linear4_charblit_v
-# define LINEAR4_TILEBLIT   linear4_tileblit
-# define LINEAR4_BLIT       linear4_blit
-# define LINEAR4_UNBLIT     linear4_unblit
 #endif
 
 /************************************************** Registration */
 
 /* Load our driver functions into a vidlib */
 void setvbl_linear4(struct vidlib *vid) {
-  /* Start with the defaults */
   setvbl_default(vid);
 
-  /* Minimum functionality */
   vid->pixel          = &linear4_pixel;
   vid->getpixel       = &linear4_getpixel;
-   
-  /* Accelerated functions */
   vid->slab           = &linear4_slab;
   vid->bar            = &linear4_bar;
   vid->line           = &linear4_line;
   vid->rect           = &linear4_rect;
-//  vid->gradient       = &linear4_gradient;
-//  vid->dim            = &linear4_dim;
-//  vid->scrollblit     = &linear4_scrollblit;
-  vid->charblit       = &linear4_charblit;
-//  vid->charblit_v     = &linear4_charblit_v;
-//  vid->tileblit       = &linear4_tileblit;
-//  vid->blit           = &linear4_blit;
-//  vid->unblit         = &linear4_unblit;
 }
 
 /* The End */

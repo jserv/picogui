@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.22 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: g_error.c,v 1.23 2001/04/29 17:28:39 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -30,6 +30,7 @@
 #ifdef DEBUG_ANY
 /* Extra includes needed for guru screen */
 #include <pgserver/video.h>
+#include <pgserver/render.h>
 #include <pgserver/font.h>
 #include <pgserver/appmgr.h>
 #include <stdio.h>
@@ -65,7 +66,7 @@ g_error prerror(g_error e) {
 #ifdef CONFIG_FORMAT_XBM
 #define deadcomp_width 20
 #define deadcomp_height 28
-char const deadcomp_bits[] = {
+const u8 deadcomp_bits[] = {
   0xfe, 0xff, 0x07, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0xf1, 0xff, 0x08, 
   0x09, 0x00, 0x09, 0xa9, 0x50, 0x09, 0x49, 0x20, 0x09, 0xa9, 0x50, 0x09, 
   0x09, 0x00, 0x09, 0x09, 0x00, 0x09, 0x09, 0x00, 0x09, 0x89, 0x1f, 0x09, 
@@ -82,12 +83,13 @@ void guru(const char *fmt, ...) {
   char *p,*pline;
   char c;
   va_list ap;
-  struct cliprect screenclip;
+  struct quad screenclip;
    
   if (!vid) return;
 
   /* Setup */
-  VID(clear) ();
+  VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
+	     PG_LGOP_NONE);
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
   screenclip.x1 = screenclip.y1 = 0;
   screenclip.x2 = vid->lxres-1;
@@ -101,7 +103,8 @@ void guru(const char *fmt, ...) {
 					 deadcomp_width,deadcomp_height,
 					 VID(color_pgtohwr) (0xFFFF80),
 					 VID(color_pgtohwr) (0x000000)))) {
-	VID(blit) (icon,0,0,5,5,deadcomp_width,deadcomp_height,PG_LGOP_NONE);
+	VID(blit) (vid->display,5,5,deadcomp_width,deadcomp_height,
+		   icon,0,0,PG_LGOP_NONE);
 	VID(bitmap_free) (icon);
      }
   }
@@ -115,8 +118,8 @@ void guru(const char *fmt, ...) {
   vsnprintf(msgbuf,256,fmt,ap);
   va_end(ap);
 
-  outtext(df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),msgbuf,
-	  &screenclip);
+  outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
+	  msgbuf, &screenclip, 0,0,PG_LGOP_NONE,0);
   VID(update) (0,0,vid->lxres,vid->lyres);
 
 #ifdef CONFIG_STDERR_GURU

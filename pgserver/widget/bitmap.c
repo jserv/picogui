@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.29 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: bitmap.c,v 1.30 2001/04/29 17:28:40 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -36,7 +36,7 @@ struct bitmapdata {
 
 void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
   hwrbitmap bit;
-  int x,y,w,h;
+  s16 x,y,w,h;
 
   if (!DATA->transparent)
     exec_fillstyle(c,state,PGTH_P_BGFILL);
@@ -48,20 +48,26 @@ void build_bitmap(struct gropctxt *c,unsigned short state,struct widget *self) {
     align(c,DATA->align,&w,&h,&x,&y);
 
     /* Optional bitmask */
-    if (DATA->bitmask && !iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
-					   DATA->bitmask)) && bit) {
-      addgrop(c,PG_GROP_BITMAP,x,y,w,h);
-      c->current->param[0] = DATA->bitmask;
-      c->current->param[1] = PG_LGOP_AND;
-      c->current->param[2] = 0;
-      c->current->param[3] = 0;
+    if (DATA->bitmask) {
+       if (!iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,
+			     DATA->bitmask)) && bit) {
+	  addgrop(c,PG_GROP_SETLGOP);
+	  c->current->param[0] = PG_LGOP_AND;       
+	  addgropsz(c,PG_GROP_BITMAP,x,y,w,h);
+	  c->current->param[0] = DATA->bitmask;
+	  addgrop(c,PG_GROP_SETLGOP);
+	  c->current->param[0] = PG_LGOP_OR;
+       }
+       else
+	 DATA->bitmask = 0;
     }
 
-    addgrop(c,PG_GROP_BITMAP,x,y,w,h);
+    addgropsz(c,PG_GROP_BITMAP,x,y,w,h);
     c->current->param[0] = DATA->bitmap;
-    c->current->param[1] = DATA->lgop;
-    c->current->param[2] = 0;
-    c->current->param[3] = 0;
+    if (DATA->bitmask) {
+       addgrop(c,PG_GROP_SETLGOP);
+       c->current->param[0] = PG_LGOP_NONE;
+    }
   }
 }
 
@@ -184,7 +190,7 @@ glob bitmap_get(struct widget *self,int property) {
  
 void resizebitmap(struct widget *self) {
   hwrbitmap bit;
-  int w,h;
+  s16 w,h;
  
   if (self->sizelock) return;
    

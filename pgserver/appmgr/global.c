@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.38 2001/04/12 20:11:14 bauermeister Exp $
+/* $Id: global.c,v 1.39 2001/04/29 17:28:39 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -269,7 +269,7 @@ g_error appmgr_register(struct app_info *i) {
 /* Load the mouse cursor specified by the given theme object */
 void appmgr_loadcursor(int thobj) {
    hwrbitmap *bitmap,*mask;
-   int w,h;
+   s16 w,h;
    
    /* Load the cursor bitmaps, using the default if there is a problem */
    

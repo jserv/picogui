@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.5 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: null.c,v 1.6 2001/04/29 17:28:39 micahjd Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
@@ -31,7 +31,7 @@
 #include <pgserver/video.h>
 
 #ifdef DEBUG_VIDEO
-int driver_initialized;
+bool driver_initialized;
 #endif
 
 /******************************************** Implementations */
@@ -40,17 +40,19 @@ g_error null_init(void) {
 #ifdef DEBUG_VIDEO
    driver_initialized = 1;
 #endif
+   vid->display = NULL;
    if (!vid->xres) vid->xres = 640;
    if (!vid->yres) vid->xres = 480;
    if (!vid->bpp) vid->bpp = 8;
    return sucess;
 }
 
-g_error null_setmode(int xres,int yres,int bpp,unsigned long flags) {
+g_error null_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
    /* Just go along with whatever they want... */
    vid->xres = xres;
    vid->yres = yres;
    vid->bpp  = bpp;
+   vid->display = NULL;
    return sucess;
 }
 
@@ -60,7 +62,11 @@ void null_close(void) {
 }
 #endif
 
-void null_pixel(int x,int y,hwrcolor c) {
+void null_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+   if (dest) {
+      def_pixel(dest,x,y,c,lgop);
+      return;
+   }
 #ifdef DEBUG_VIDEO
    if (!driver_initialized)
      printf("Null driver: pixel set when uninitialized\n",x,y);
@@ -69,7 +75,9 @@ void null_pixel(int x,int y,hwrcolor c) {
 #endif
 }
 
-hwrcolor null_getpixel(int x,int y) {
+hwrcolor null_getpixel(hwrbitmap src,s16 x,s16 y) {
+   if (src)
+     return def_getpixel(src,x,y);
 #ifdef DEBUG_VIDEO
    if (!driver_initialized)
      printf("Null driver: pixel get when uninitialized\n",x,y);

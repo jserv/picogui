@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.36 2001/04/10 00:54:56 micahjd Exp $
+/* $Id: handle.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -33,7 +33,7 @@
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 
-#define NIL &sentinel
+#define NIL ((struct handlenode *)(&sentinel))
 struct handlenode const sentinel = {0,0,0,0,0,0,NULL,NIL,NIL,NIL};
 
 struct handlenode *htree = NIL;

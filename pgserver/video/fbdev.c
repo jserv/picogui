@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.6 2001/04/16 05:14:04 micahjd Exp $
+/* $Id: fbdev.c,v 1.7 2001/04/29 17:28:39 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -39,6 +39,10 @@
 #include <linux/vt.h>
 #include <linux/kd.h>
 
+/* Macros to easily access the members of vid->display */
+#define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
+#define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
 unsigned long fbdev_mapsize;
@@ -58,7 +62,7 @@ g_error fbdev_init(void) {
        (ioctl(fbdev_fd,FBIOGET_VSCREENINFO,&varinfo) < 0))
      return mkerror(PG_ERRT_IO,97);        /* Framebuffer ioctl error */
    
-   vid->fb_bpl = fixinfo.line_length;
+   FB_BPL = fixinfo.line_length;
    vid->xres   = varinfo.xres;
    vid->yres   = varinfo.yres;
    vid->bpp    = varinfo.bits_per_pixel;
@@ -114,9 +118,9 @@ g_error fbdev_init(void) {
    }
    
    /* Map it */
-   vid->fb_mem = mmap(0,fbdev_mapsize = fixinfo.smem_len,
+   FB_MEM = mmap(0,fbdev_mapsize = fixinfo.smem_len,
 		      PROT_READ|PROT_WRITE,MAP_SHARED,fbdev_fd,0);
-   if (vid->fb_mem == MAP_FAILED) {
+   if (FB_MEM == MAP_FAILED) {
       close(fbdev_fd);
       return mkerror(PG_ERRT_IO,96);       /* Error mapping framebuffer */
    }
@@ -161,7 +165,7 @@ g_error fbdev_init(void) {
 }
 
 void fbdev_close(void) {
-   munmap(vid->fb_mem,fbdev_mapsize);
+   munmap(FB_MEM,fbdev_mapsize);
    close(fbdev_fd);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.16 2001/03/23 00:35:05 micahjd Exp $
+/* $Id: ncurses.c,v 1.17 2001/04/29 17:28:39 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -34,6 +34,8 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/font.h>
+#include <pgserver/render.h>
 
 #include <curses.h>
 #include <gpm.h>
@@ -48,7 +50,7 @@ extern Gpm_Event ncurses_last_event;
 /* This is a little hack to trick PicoGUI's text rendering */
 
 /* Font width table: all chars are 1 character wide! */
-unsigned char const ncurses_font_vwtab[256] = {
+u8 const ncurses_font_vwtab[256] = {
      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -70,7 +72,7 @@ unsigned char const ncurses_font_vwtab[256] = {
 /* Table of indices to the bitmap table.
  * Each character is one character long, so this is simple.
  */
-long const ncurses_font_trtab[256] = {
+u32 const ncurses_font_trtab[256] = {
    0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
    0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,
    0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,
@@ -91,7 +93,7 @@ long const ncurses_font_trtab[256] = {
 
 /* Table of font 'bitmaps', really just their character code.
  */
-unsigned char const ncurses_font_bitmaps[256] = {
+u8 const ncurses_font_bitmaps[256] = {
    0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
    0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,
    0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,
@@ -111,12 +113,12 @@ unsigned char const ncurses_font_bitmaps[256] = {
 };
 
 struct font const ncurses_font = {
-   /* bitmaps = */ &ncurses_font_bitmaps,
+   /* bitmaps = */ (u8*) &ncurses_font_bitmaps,
    /* h = */ 1,
    /* hspace = */ 0,
    /* vspace = */ 0,
-   /* vwtab = */ &ncurses_font_vwtab,
-   /* trtab = */ &ncurses_font_trtab
+   /* vwtab = */ (u8*) &ncurses_font_vwtab,
+   /* trtab = */ (u32*) &ncurses_font_trtab
 };
 
 /* Bogus fontstyle node */
@@ -125,7 +127,7 @@ struct fontstyle_node ncurses_font_style = {
    /* size = */ 1,
    /* flags = */ PG_FSTYLE_FIXED,
    /* next = */ NULL,
-   /* normal = */ &ncurses_font,
+   /* normal = */ (struct font *) &ncurses_font,
    /* bold = */ NULL,
    /* italic = */ NULL,
    /* bolditalic = */ NULL,
@@ -158,7 +160,8 @@ g_error ncurses_init(void) {
    vid->xres = COLS;
    vid->yres = LINES;
    vid->bpp  = sizeof(chtype)*8;    /* Our pixel is a curses chtype */
-
+   vid->display = NULL;
+   
    /* Allocate our buffer */
    e = g_malloc((void**) &ncurses_screen,vid->xres * vid->yres * sizeof(chtype));
    errorcheck;
@@ -175,15 +178,21 @@ void ncurses_close(void) {
    g_free(ncurses_screen);
 }
 
-void ncurses_pixel(int x,int y,hwrcolor c) {
-   mvaddch(y,x,ncurses_screen[x + vid->xres * y] = c);
+void ncurses_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
+   if (dest || (lgop!=PG_LGOP_NONE))
+     def_pixel(dest,x,y,c,lgop);
+   else
+     mvaddch(y,x,ncurses_screen[x + vid->xres * y] = c);
 }
 
-hwrcolor ncurses_getpixel(int x,int y) {
-   return ncurses_screen[x + vid->xres * y];
+hwrcolor ncurses_getpixel(hwrbitmap src,s16 x,s16 y) {
+   if (src)
+     return def_getpixel(src,x,y);
+   else
+     return ncurses_screen[x + vid->xres * y];
 }
 
-void ncurses_update(int x,int y,int w,int h) {
+void ncurses_update(s16 x,s16 y,s16 w,s16 h) {
    refresh();
 
    /* Show the cursor */
@@ -193,17 +202,24 @@ void ncurses_update(int x,int y,int w,int h) {
 /**** Hack the normal font rendering a bit so we use regular text */
 
 void ncurses_font_newdesc(struct fontdesc *fd) {
-   fd->font = &ncurses_font;
+   fd->font = (struct font *) &ncurses_font;
    fd->margin = 0;
    fd->hline = -1;
    fd->italicw = 0;
    fd->fs = &ncurses_font_style;
 }
 
-void ncurses_charblit(unsigned char *chardat,int dest_x,
-		      int dest_y,int w,int h,int lines,
-		      hwrcolor c,struct cliprect *clip) {
+void ncurses_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
+		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
+		      hwrcolor c,struct quad *clip,bool fill, hwrcolor bg,
+		      s16 lgop) {
    chtype *location;
+   
+   if (lgop != PG_LGOP_NONE) {
+      def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,fill,bg,
+		   lgop);
+      return;
+   }
    
    /* Make sure we're within clip */
    if (clip && (dest_x<clip->x1 || dest_y<clip->y1 ||
@@ -291,7 +307,6 @@ g_error ncurses_regfunc(struct vidlib *v) {
    
    v->font_newdesc = &ncurses_font_newdesc;
    v->charblit = &ncurses_charblit;
-   v->charblit_v = &ncurses_charblit;
 
    v->sprite_show = &ncurses_sprite_show;
    

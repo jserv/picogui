@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.36 2001/04/14 22:33:13 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.37 2001/04/29 17:28:39 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -37,6 +37,7 @@
 
 #include <pgserver/video.h>
 #include <pgserver/font.h>
+#include <pgserver/render.h>
 
 /******* Table of available bitmap formats */
 
@@ -51,7 +52,7 @@ struct bitformat bitmap_formats[] = {
 
 /******* no-op functions */
 
-g_error def_setmode(int xres,int yres,int bpp,unsigned long flags) {
+g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   return sucess;
 }
 
@@ -65,10 +66,10 @@ g_error def_enterexitmode(void) {
    return sucess;
 }
 
-void def_update(int x,int y,int w,int h) {
+void def_update(s16 x,s16 y,s16 w,s16 h) {
 }
 
-void def_coord_logicalize(int *x,int *y) {
+void def_coord_logicalize(s16 *x,s16 *y) {
 }
 
 /******* colors */
@@ -125,61 +126,194 @@ pgcolor def_color_hwrtopg(hwrcolor c) {
     return c;
 }
 
-void def_addpixel(int x,int y,pgcolor c) {
-  /* Blech. Convert it to an RGB first for the proper effect.
-     Don't let the RGB components roll over either
-  */
-  int r,g,b;
-  pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(x,y));
+/******* lgop */
 
-  r = getred(oc);
-  g = getgreen(oc);
-  b = getblue(oc);
-  r += getred(c);
-  g += getgreen(c);
-  b += getblue(c);
-  
-  if (r>255) r=255;
-  if (g>255) g=255;
-  if (b>255) b=255;
+void def_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop){
+   switch (lgop) {
+      
+    case PG_LGOP_NONE:   /* Generic access to packed-pixel bitmaps */
+	{
+	   struct stdbitmap *bmp = (struct stdbitmap *) dest;
+	   u8 *dst = bmp->bits + bmp->pitch*y + ((x*vid->bpp)>>3);
+	   u8 shift,mask;
+	   s16 subpixel,subpixel2;
+	   switch (vid->bpp) {
+	    case 1:
+	    case 2:
+	    case 4:
+	      subpixel  = ((8/vid->bpp)-1);
+	      subpixel2 = ((1<<vid->bpp)-1);
+	      shift = (subpixel-(x&subpixel)) * vid->bpp;
+	      mask  = subpixel2<<shift;
+	      *dst &= ~mask;
+	      *dst |= (c << shift) & mask;
+	      break; 
+	      
+	    case 8:
+	      *dst = c;
+	      break;
+	      
+	    case 16:
+	      *((u16*)dst) = c;
+	      break;
+	      
+	    case 24:
+	      *(dst++) = (u8) c;
+	      *(dst++) = (u8) (c >> 8);
+	      *dst     = (u8) (c >> 16);
+	      break;
+	      
+	    case 32:
+	      *((u32*)dst) = c;
+	      break;     
+	   }
+	}
+      break;
 
-  (*vid->pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
+      /* LGOP implementations */
+
+    case PG_LGOP_OR:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) | c,
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_AND:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) & c,
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_XOR:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) ^ c,
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_INVERT:
+      (*vid->pixel)(dest,x,y,  
+		    (c ^ (~((u32)0))),
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_INVERT_OR:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) | (c ^ (~((u32)0))),
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_INVERT_AND:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) & (c ^ (~((u32)0))),
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_INVERT_XOR:
+      (*vid->pixel)(dest,x,y,  
+		    (*vid->getpixel)(dest,x,y) ^ (c ^ (~((u32)0))),
+		    PG_LGOP_NONE);
+      break;
+      
+    case PG_LGOP_ADD:
+	{
+	   s16 r,g,b;
+	   pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(dest,x,y));
+	   c = (*vid->color_hwrtopg) (c);
+	   
+	   r = getred(oc);
+	   g = getgreen(oc);
+	   b = getblue(oc);
+	   r += getred(c);
+	   g += getgreen(c);
+	   b += getblue(c);
+	   
+	   if (r>255) r=255;
+	   if (g>255) g=255;
+	   if (b>255) b=255;
+	   
+	   (*vid->pixel) (dest,x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)),
+			  PG_LGOP_NONE);
+	}
+      break;
+      
+    case PG_LGOP_SUBTRACT:
+	{
+	   s16 r,g,b;
+	   pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(dest,x,y));
+	   c = (*vid->color_hwrtopg) (c);
+	   
+	   r = getred(oc);
+	   g = getgreen(oc);
+	   b = getblue(oc);
+	   r -= getred(c);
+	   g -= getgreen(c);
+	   b -= getblue(c);
+	   
+	   if (r<0) r=0;
+	   if (g<0) g=0;
+	   if (b<0) b=0;
+	   
+	   (*vid->pixel) (dest,x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)),
+			  PG_LGOP_NONE);
+	}
+      break;
+      
+    case PG_LGOP_MULTIPLY:
+	{
+	   s16 r,g,b;
+	   pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(dest,x,y));
+	   c = (*vid->color_hwrtopg) (c);
+	   
+	   r = getred(oc) * getred(c) / 255;
+	   g = getgreen(oc) * getgreen(c) / 255;
+	   b = getblue(oc) * getblue(c) / 255;
+	   
+	   (*vid->pixel) (dest,x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)),
+			  PG_LGOP_NONE);
+	}
+      break;
+      
+   }
+}
+   
+hwrcolor def_getpixel(hwrbitmap src, s16 x, s16 y) {
+   struct stdbitmap *bmp = (struct stdbitmap *) src;
+   u8 *s = bmp->bits + bmp->pitch*y + ((x*vid->bpp)>>3);
+   u8 subpixel,shift;
+   switch (vid->bpp) {
+    case 1:
+    case 2:
+    case 4:
+      subpixel  = ((8/vid->bpp)-1);
+      shift = (subpixel-(x&subpixel)) * vid->bpp;
+      return ((*s) >> shift) & ((1<<vid->bpp)-1);
+      
+    case 16:
+      return *((u16*)s);
+      
+    case 24:
+      return s[2] | (s[1]<<8) | (s[0]<<16);
+      
+    case 32:
+      return *((u32*)s);
+   }
+   /* 8 */
+   return *s;
 }
 
-void def_subpixel(int x,int y,pgcolor c) {
-  /* Same idea, but subtract */
-  int r,g,b;
-  pgcolor oc = (*vid->color_hwrtopg) ((*vid->getpixel)(x,y));
 
-  r = getred(oc);
-  g = getgreen(oc);
-  b = getblue(oc);
-  r -= getred(c);
-  g -= getgreen(c);
-  b -= getblue(c);
-  
-  if (r<0) r=0;
-  if (g<0) g=0;
-  if (b<0) b=0;
+/******* primitives */
 
-  (*vid->pixel) (x,y,(*vid->color_pgtohwr)(mkcolor(r,g,b)));
-}
-
-/* Should be more than OK for most situations */
-void def_clear(void) {
-  (*vid->rect) (0,0,vid->xres,vid->yres,(*vid->color_pgtohwr)(0));
-}
-
-void def_slab(int x,int y,int w,hwrcolor c) {
+void def_slab(hwrbitmap dest, s16 x,s16 y,s16 w,hwrcolor c,s16 lgop) {
   /* You could make this create a very thin rectangle, but then if niether
    * were implemented they would be a pair of mutually recursive functions! */
    
   for (;w;w--,x++)
-     (*vid->pixel) (x,y,c);
+     (*vid->pixel) (dest,x,y,c,lgop);
 }
 
-void def_bar(int x,int y,int h,hwrcolor c) {
-  (*vid->rect) (x,y,1,h,c);
+void def_bar(hwrbitmap dest,s16 x,s16 y,s16 h,hwrcolor c,s16 lgop) {
+  (*vid->rect) (dest,x,y,1,h,c,lgop);
 }
 
 /* There are about a million ways to optimize this-
@@ -191,11 +325,11 @@ void def_bar(int x,int y,int h,hwrcolor c) {
    was too driver-specific, so had to revert to the
    generic bresenham's for the default implementation.
 */
-void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
-  int stepx, stepy;
-  int dx = x2-x1;
-  int dy = y2-y1;
-  int fraction;
+void def_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) {
+  s16 stepx, stepy;
+  s16 dx = x2-x1;
+  s16 dy = y2-y1;
+  s16 fraction;
 
   dx = x2-x1;
   dy = y2-y1;
@@ -215,7 +349,7 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
     stepy = 1;
   }
 
-  (*vid->pixel) (x1,y1,c);
+  (*vid->pixel) (dest,x1,y1,c,lgop);
 
   /* Major axis is horizontal */
   if (dx > dy) {
@@ -228,7 +362,7 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       x1 += stepx;
       fraction += dy;
       
-      (*vid->pixel) (x1,y1,c);
+      (*vid->pixel) (dest,x1,y1,c,lgop);
     }
   } 
   
@@ -243,17 +377,17 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
       y1 += stepy;
       fraction += dx;
       
-      (*vid->pixel) (x1,y1,c);
+      (*vid->pixel) (dest,x1,y1,c,lgop);
     }
   }
 }
 
-void def_rect(int x,int y,int w,int h,hwrcolor c) {
-  for (;h;h--,y++) (*vid->slab) (x,y,w,c);
+void def_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
+  for (;h;h--,y++) (*vid->slab) (dest,x,y,w,c,lgop);
 }
 
-void def_gradient(int x,int y,int w,int h,int angle,
-		  pgcolor c1, pgcolor c2,int translucent) {
+void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
+		  pgcolor c1, pgcolor c2, s16 lgop) {
   /*
     The angle is expressed in degrees.
     If translucent is positive it will add the gradient to the existing
@@ -277,10 +411,10 @@ void def_gradient(int x,int y,int w,int h,int angle,
   */
 
   /* Lotsa vars! */
-  long r_vs,g_vs,b_vs,r_sa,g_sa,b_sa,r_ca,g_ca,b_ca,r_ica,g_ica,b_ica;
-  long r_vsc,g_vsc,b_vsc,r_vss,g_vss,b_vss,sc_d;
-  long r_v1,g_v1,b_v1,r_v2,g_v2,b_v2;
-  int i,s,c,x1;
+  s32 r_vs,g_vs,b_vs,r_sa,g_sa,b_sa,r_ca,g_ca,b_ca,r_ica,g_ica,b_ica;
+  s32 r_vsc,g_vsc,b_vsc,r_vss,g_vss,b_vss,sc_d;
+  s32 r_v1,g_v1,b_v1,r_v2,g_v2,b_v2;
+  s16 i,s,c,x1;
 
   /* Look up the sine and cosine */
   angle %= 360;
@@ -339,70 +473,21 @@ void def_gradient(int x,int y,int w,int h,int angle,
 
   /* Finally, the loop! */
 
-  if (translucent==0) {
-    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,y++)
-      for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
-	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
-
-	(*vid->pixel) (x1,y,(*vid->color_pgtohwr)
-		      (mkcolor(
-			       r_v1 + ((r_ca+r_sa) >> 8),
-			       g_v1 + ((g_ca+g_sa) >> 8),
-			       b_v1 + ((b_ca+b_sa) >> 8))));
-      }
-  }
-  else if (translucent>0) {
-    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,y++)
-      for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
-	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
-
-	(*vid->addpixel) (x1,y,mkcolor(
-				      r_v1 + ((r_ca+r_sa) >> 8),
-				      g_v1 + ((g_ca+g_sa) >> 8),
-				      b_v1 + ((b_ca+b_sa) >> 8)));
-      }
-  }
-  else {
-    for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,y++)
-      for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
-	   i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
-
-	(*vid->subpixel) (x1,y,mkcolor(
-				      r_v1 + ((r_ca+r_sa) >> 8),
-				      g_v1 + ((g_ca+g_sa) >> 8),
-				      b_v1 + ((b_ca+b_sa) >> 8)));
-      }
-  }
+   for (;h;h--,r_sa+=r_vss,g_sa+=g_vss,b_sa+=b_vss,y++)
+     for (x1=x,r_ca=r_ica,g_ca=g_ica,b_ca=b_ica,i=w;i;
+	  i--,r_ca+=r_vsc,g_ca+=g_vsc,b_ca+=b_vsc,x1++) {
+	
+	(*vid->pixel) (dest,x1,y,(*vid->color_pgtohwr)
+		       (mkcolor(
+				r_v1 + ((r_ca+r_sa) >> 8),
+				g_v1 + ((g_ca+g_sa) >> 8),
+				b_v1 + ((b_ca+b_sa) >> 8))),lgop);
+     }
 }
 
-void def_dim(int x,int y,int w,int h) {
-  int i,xx;
-
-  /* 'Cute' little checkerboard thingy. Devices with high/true color
-   * or even 256 color should make this do real dimming to avoid
-   * looking stupid  ;-)
-   */
-  for (;h;h--,y++)
-    for (xx=x+(h&1),i=w;i;i--,xx+=2)
-      (*vid->pixel) (xx,y,0);
-}
-
-void def_scrollblit(int src_x,int src_y,
-		    int dest_x,int dest_y,
-		    int w,int h) {
-  
-  /* This shouldn't be _too_ bad in most cases...
-     The pixels within a line are as fast as blit()
-     but this introduces function call overhead between lines
-  */
-
-  for (src_y+=h-1,dest_y+=h-1;h;h--,src_y--,dest_y--)
-    (*vid->blit) (NULL,src_x,src_y,dest_x,dest_y,w,1,PG_LGOP_NONE);
-}
-
-void def_charblit(unsigned char *chardat,int dest_x,
-		      int dest_y,int w,int h,int lines,
-		      hwrcolor c,struct cliprect *clip) {
+void def_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+		    s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		    bool fill, hwrcolor bg, s16 lgop) {
   int bw = w;
   int iw,hc,x;
   int olines = lines;
@@ -446,9 +531,13 @@ void def_charblit(unsigned char *chardat,int dest_x,
       flag=1;
     }
     for (x=dest_x,iw=bw,xpix=0;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++)
-	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
-	  (*vid->pixel) (x,dest_y,c); 
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x++,xpix++) {
+	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	   (*vid->pixel) (dest,x,dest_y,c,lgop);
+	 else
+	   if (fill)
+	     (*vid->pixel) (dest,x,dest_y,bg,lgop);
+      }
     if (flag) {
       xmax++;
       flag=0;
@@ -461,9 +550,9 @@ void def_charblit(unsigned char *chardat,int dest_x,
  * As this code was mostly copied from linear8, it probably has the same
  * subtle "smudging" bug noted in linear8.c
  */
-void def_charblit_v(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,
-		  hwrcolor c,struct cliprect *clip) {
+void def_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+		     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		     bool fill, hwrcolor bg, s16 lgop) {
   int bw = w;
   int iw,hc,y;
   int olines = lines;
@@ -507,9 +596,13 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
       flag=1;
     }
     for (iw=bw,y=dest_y,xpix=0;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++)
-	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
-	  (*vid->pixel) (dest_x,y,c);
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,y--,xpix++) {
+	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	   (*vid->pixel) (dest,dest_x,y,c,lgop);
+	 else
+	   if (fill)
+	     (*vid->pixel) (dest,dest_x,y,bg,lgop);
+      }
     if (flag) {
       xmax++;
       flag=0;
@@ -517,11 +610,9 @@ void def_charblit_v(unsigned char *chardat,int dest_x,
   }
 }
 
-/* Upside-down version of character blit (only needed for rotation) */
-#ifdef CONFIG_ROTATE
-void def_charblit_u(unsigned char *chardat,int dest_x,
-		      int dest_y,int w,int h,int lines,
-		      hwrcolor c,struct cliprect *clip) {
+void def_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+		      s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+		      bool fill, hwrcolor bg, s16 lgop) {
   int bw = w;
   int iw,hc,x;
   int olines = lines;
@@ -565,108 +656,64 @@ void def_charblit_u(unsigned char *chardat,int dest_x,
       flag=1;
     }
     for (x=dest_x,iw=bw,xpix=0;iw;iw--)
-      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x--,xpix++)
-	if (ch&0x80 && xpix>=xmin && xpix<xmax) 
-	  (*vid->pixel) (x,dest_y,c); 
+      for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,x--,xpix++) {
+	 if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	   (*vid->pixel) (dest,x,dest_y,c,lgop); 
+	 else
+	   if (fill)
+	     (*vid->pixel) (dest,x,dest_y,bg,lgop);
+      }
     if (flag) {
       xmax++;
       flag=0;
     }
   }
 }
-#endif /* CONFIG_ROTATE */
+
+
+/* A meta-charblit to select the appropriate function based on angle */
+void def_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  bool fill, hwrcolor bg, s16 lgop) {
+
+   void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+	     bool fill, hwrcolor bg, s16 lgop);
+   
+   switch (angle) {
+    case 0:   p = &def_charblit_0;   break;
+    case 90:  p = &def_charblit_90;  break;
+    case 180: p = &def_charblit_180; break;
+   }
+
+   (*p)(dest,chardat,x,y,w,h,lines,c,clip,fill,bg,lgop);
+}
 
 #ifdef CONFIG_FORMAT_XBM
-g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
-			   unsigned char *data,
-			   int w,int h,
-			   hwrcolor fg,
-			   hwrcolor bg) {
-  int i,bit;
-  unsigned char c;
-  unsigned char *p,*pline;
-  g_error e;
-  int shift;
-
-  e = (*vid->bitmap_new) ((hwrbitmap *) bmp,w,h);
-  errorcheck;
-  p = pline = (*bmp)->bits;
+g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
+			   hwrcolor fg, hwrcolor bg) {
+   s16 i,bit,x,y;
+   unsigned char c;
+   g_error e;
    
-  /* Shift in the pixels! */
-  for (;h;h--,p=pline+=(*bmp)->pitch)
-    for (bit=0,i=w;i>0;i--) {
-      if (!bit) c = *(data++);
-      
-      switch (vid->bpp) {
-
-	/* We don't need to check for byte-rollover here because
-	   it will always occur on an even boundary.
-	   (Unless we add a 3bpp or a 7bpp mode or something
-	   really freaky like that)
-	*/
-
-      case 1:
-      case 2:
-      case 4:
-        *p = 0;
-	for (shift=8-vid->bpp;shift && i;shift-=vid->bpp) {
-	   *p |= ((c&1) ? fg : bg) << shift;
-	   c >>= 1;
-	   bit++;
-	   i--;
-	}
-	if (i)
-	   *(p++) |= ((c&1) ? fg : bg);
-	break;
-
-      case 8:
-	*(p++) = (c&1) ? fg : bg;
-	break;
-
-      case 16:
-	*(((unsigned short *)p)++) = (c&1) ? fg : bg;
-	break;
-
-      case 24:
-	if (c&1) {
-	  *(p++) = (u8) fg;
-	  *(p++) = (u8) (fg >> 8);
-	  *(p++) = (u8) (fg >> 16);
-	}
-	else {
-	  *(p++) = (u8) bg;
-	  *(p++) = (u8) (bg >> 8);
-	  *(p++) = (u8) (bg >> 16);
-	}
-	break;
-
-      case 32:
-	*(((unsigned long *)p)++) = (c&1) ? fg : bg;
-	break;
-
-#if DEBUG_VIDEO
-	/* Probably not worth the error-checking time
-	   in non-debug versions, as it would be caught
-	   earlier (hopefully?)
-	*/
-
-      default:
-	printf("Converting to unsupported BPP\n");
-#endif
-
-      }
-
-      c >>= 1;
-      bit++;
-      bit &= 7;
-    }
-
-  return sucess;
+   e = (*vid->bitmap_new)(bmp,w,h);
+   errorcheck;
+   
+   /* Shift in the pixels! */
+   for (y=0;h;h--,y++)
+     for (x=0,bit=0,i=w;i>0;i--,x++) {
+	if (!bit) c = *(data++);
+	(*vid->pixel)(*bmp,x,y,(c&1) ? fg : bg,PG_LGOP_NONE);
+	c >>= 1;
+	bit++;
+	bit &= 7;
+     }
+   return sucess;
 }
 #endif /* CONFIG_FORMAT_XBM */
 
 /* Try loading a bitmap using each available format */
-g_error def_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
+g_error def_bitmap_load(hwrbitmap *bmp,const u8 *data,u32 datalen) {
    struct bitformat *fmt = bitmap_formats;
    
    while (fmt->name[0]) {   /* Dummy record has empty name */
@@ -678,7 +725,7 @@ g_error def_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
 }
 
 /* 90 degree anticlockwise rotation */
-g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
+g_error def_bitmap_rotate90(hwrbitmap *b) {
    struct stdbitmap *destbit,*srcbit;
    u8 *src,*srcline,*dest;
    int oshift,shift,mask;
@@ -690,7 +737,7 @@ g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
    hwrcolor c;
    
    /* New bitmap with width/height reversed */
-   srcbit = *bmp;
+   srcbit = (struct stdbitmap *) (*b);
    e = (*vid->bitmap_new)(&destbit,srcbit->h,srcbit->w);
    errorcheck;
    
@@ -710,7 +757,7 @@ g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
 	  case 1:
 	  case 2:
 	  case 4:
-	    c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
+	    c = ((*src) >> oshift) & subpixel2;
 	    if (!oshift) {
 	       oshift = shiftset;
 	       src++;
@@ -728,7 +775,8 @@ g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
 	    break;
 	    
 	  case 24:
-	    c = (*(src++)) | ((*(src++))<<8) | ((*(src++))<<16);
+	    c = src[2] | (src[1]<<8) | (src[0]<<16);
+	    src += 3;
 	    break;
 	    
 	  case 32:
@@ -769,14 +817,14 @@ g_error def_bitmap_rotate90(struct stdbitmap **bmp) {
    }
    
    /* Clean up */
-   *bmp = destbit;
+   *b = (hwrbitmap) destbit;
    (*vid->bitmap_free)(srcbit);
    return sucess;
 }
 
-g_error def_bitmap_new(struct stdbitmap **bmp,
-		       int w,int h) {
+g_error def_bitmap_new(hwrbitmap *b, s16 w,s16 h) {
   g_error e;
+  struct stdbitmap **bmp = (struct stdbitmap **) b;
   int lw;
    
   /* The bitmap and the header can be allocated seperately,
@@ -810,38 +858,35 @@ void def_bitmap_free(struct stdbitmap *bmp) {
   g_free(bmp);
 }
 
-g_error def_bitmap_getsize(struct stdbitmap *bmp,int *w,int *h) {
-  *w = bmp->w;
-  *h = bmp->h;
+g_error def_bitmap_getsize(hwrbitmap b,s16 *w,s16 *h) {
+   struct stdbitmap *bmp = (struct stdbitmap *) b;
+   *w = bmp->w;
+   *h = bmp->h;
 }
 
 #ifndef min
 #define min(a,b) (((a)<(b))?(a):(b))
 #endif
 
-void def_tileblit(struct stdbitmap *src,
-		  int src_x,int src_y,int src_w,int src_h,
-		  int dest_x,int dest_y,int dest_w,int dest_h) {
-  int i,j;
+void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		  hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop) {
+  s16 i,j;
 
+  if (!(sw && sh)) return;
+   
   /* Do a tiled blit */
-  for (i=0;i<dest_w;i+=src_w)
-    for (j=0;j<dest_h;j+=src_h)
-      (*vid->blit) (src,src_x,src_y,dest_x+i,dest_y+j,min(dest_w-i,src_w),
-		   min(dest_h-j,src_h),PG_LGOP_NONE);
+  for (i=0;i<w;i+=sw)
+     for (j=0;j<h;j+=sh)
+       (*vid->blit) (dest,x+i,y+j,min(w-i,sw),min(h-j,h),
+		     src,sx,sy,PG_LGOP_NONE);
 }
 
-/* Scary blit... Very bad for normal screens, but then again so is most of this
- * VBL. Could be helpful on odd devices like ncurses or some LCDs */
-void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
-	      int dest_x, int dest_y,
-	      int w, int h, int lgop) {
-   struct stdbitmap screen;
+/* Scary slow blit, but necessary for dealing with unsupported lgop values
+ * or other things that the fast lib can't deal with */
+void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+	      s16 src_x, s16 src_y, s16 lgop) {
    int i;
-   char *src,*srcline;
-   hwrcolor c,s;
-   u8 shiftset = 8-vid->bpp;
-   u8 oshift;
+   struct stdbitmap *srcbit = (struct stdbitmap *) src;
    
    if (srcbit && (w>(srcbit->w-src_x) || h>(srcbit->h-src_y))) {
       int i,j,sx,sy;
@@ -851,129 +896,16 @@ void def_blit(struct stdbitmap *srcbit,int src_x,int src_y,
       /* Do a tiled blit */
       for (i=0,sx=src_x;i<w;i+=srcbit->w-sx,sx=0)
 	for (j=0,sy=src_y;j<h;j+=srcbit->h-sy,sy=0)
-	  def_blit(srcbit,sx,sy,dest_x+i,dest_y+j,
-		   min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),lgop);
-    
+	  (*vid->blit) (dest,x+i,y+j,
+			min(srcbit->w-sx,w-i),min(srcbit->h-sy,h-j),
+			srcbit,sx,sy,lgop);
       return;
    }
    
-   /* Screen-to-screen blit */
-   if (!srcbit) {
-      srcbit = &screen;
-      screen.bits = NULL;
-      screen.w = vid->xres;
-      screen.h = vid->yres;
-   }
-   
-   src = srcline = srcbit->bits + ((src_x*vid->bpp)>>3) + src_y*srcbit->pitch;
-   
-   for (;h;h--,src_y++,dest_y++,src=srcline+=srcbit->pitch)
-     for (oshift=shiftset,i=0;i<w;i++) {
-	if (lgop!=PG_LGOP_NONE)
-	  s = (*vid->getpixel) (dest_x+i,dest_y);
-
-	if (srcbit->bits)
-	  switch (vid->bpp) {
-
-	   case 1:
-	   case 2:
-	   case 4:
-	     c = ((*src) >> oshift) & ((1<<vid->bpp)-1);
-	     if (!oshift) {
-		oshift = shiftset;
-		src++;
-	     }
-	     else
-	       oshift -= vid->bpp;
-	     break; 
-	   
-	   case 8:
-	     c = *(src++);
-	     break;
-	     
-	   case 16:
-	     c = *(((unsigned short *)src)++);
-	     break;
-	     
-	   case 24:
-	     c = (*(src++)) | ((*(src++))<<8) | ((*(src++))<<16);
-	     break;
-	     
-	   case 32:
-	     c = *(((unsigned long *)src)++);
-	     break;     
-	  }
-	else
-	  c = (*vid->getpixel) (src_x+i,src_y);
-
-	switch (lgop) {
-	 case PG_LGOP_NONE:       s  = c;  break;
-	 case PG_LGOP_OR:         s |= c;  break;
-	 case PG_LGOP_AND:        s &= c;  break;
-	 case PG_LGOP_XOR:        s ^= c;  break;
-	 case PG_LGOP_INVERT:     s  = c ^ 0xFFFFFFFF;  break;
-	 case PG_LGOP_INVERT_OR:  s |= c ^ 0xFFFFFFFF;  break;
-	 case PG_LGOP_INVERT_AND: s &= c ^ 0xFFFFFFFF;  break;
-	 case PG_LGOP_INVERT_XOR: s ^= c ^ 0xFFFFFFFF;  break;
-	}
-
-	(*vid->pixel) (dest_x+i,dest_y,s);
-     }
-}
-
-/* Another scary blit for desperate situations */
-void def_unblit(int src_x,int src_y,
-		struct stdbitmap *destbit,int dest_x,int dest_y,
-		int w,int h) {
-   int i;
-   char *dest = destbit->bits;
-   char *destline = dest;
-   hwrcolor c;
-   int shiftset = 8-vid->bpp;
-   int oshift;
-   
-   for (;h;h--,src_y++,dest=destline+=destbit->pitch)
-     for (oshift=shiftset,i=0;i<w;i++) {
-	c = (*vid->getpixel) (src_x+i,src_y);
-
-	switch (vid->bpp) {
-
-	 case 1:
-	 case 2:
-	 case 4:
-	   if (oshift==shiftset)
-	     *dest = c << oshift;
-	   else
-	     *dest |= c << oshift;
-	   if (!oshift) {
-	      oshift = shiftset;
-	      dest++;
-	   }
-	   else
-	     oshift -= vid->bpp;
-	   break;
-
-	 case 8:
-	   *(dest++) = c;
-	   break;
-	   
-	 case 16:
-	   *(((unsigned short *)dest)++) = c;
-	   break;
-	   
-	 case 24:
-	   *(dest++) = (unsigned char) c;
-	   *(dest++) = (unsigned char) (c >> 8);
-	   *(dest++) = (unsigned char) (c >> 16);
-	   break;
-	   	 
-	 case 32:
-	   *(((unsigned long *)dest)++) = c;
-	   break;
-	   
-	}
-      
-   }
+   /* Icky blit loop */
+   for (;h;h--,y++,src_y++)
+     for (i=0;i<w;i++)
+	(*vid->pixel) (dest,x+i,y,(*vid->getpixel)(src,src_x+i,src_y),lgop);
 }
 
 void def_sprite_show(struct sprite *spr) {
@@ -1018,19 +950,19 @@ void def_sprite_show(struct sprite *spr) {
   spr->ox = spr->x; spr->oy = spr->y;
   
   /* Grab a new backbuffer */
-  VID(unblit) (spr->x,spr->y,spr->backbuffer,
-  	       0,0,spr->ow,spr->oh);
+  VID(blit) (spr->backbuffer,0,0,spr->ow,spr->oh,
+	     vid->display,spr->x,spr->y,PG_LGOP_NONE);
 
   /* Display the sprite */
   if (spr->mask && *spr->mask) {
-     VID(blit) (*spr->mask,0,0,
-		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_AND);
-     VID(blit) (*spr->bitmap,0,0,
-		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_OR);
+     VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+		*spr->mask,0,0,PG_LGOP_AND);
+     VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+		*spr->bitmap,0,0,PG_LGOP_OR);
   }
    else
-     VID(blit) (*spr->bitmap,0,0,
-		spr->x,spr->y,spr->ow,spr->oh,PG_LGOP_NONE);
+     VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+		*spr->bitmap,0,0,PG_LGOP_NONE);
    
   add_updarea(spr->x,spr->y,spr->ow,spr->oh);
 
@@ -1074,7 +1006,7 @@ void def_sprite_show(struct sprite *spr) {
    /**** A very similar debuggative cruft to test text clipping ****/
 /*
     {
-      struct cliprect cr;
+      struct quad cr;
       struct fontdesc fd;
 
       memset(&fd,0,sizeof(fd));
@@ -1097,7 +1029,7 @@ void def_sprite_show(struct sprite *spr) {
 }
 
 void def_sprite_hide(struct sprite *spr) {
-  static struct cliprect cr;
+  static struct quad cr;
 
 #ifdef DEBUG_VIDEO
    printf("def_sprite_hide\n");
@@ -1116,8 +1048,8 @@ void def_sprite_hide(struct sprite *spr) {
   def_sprite_protectarea(&cr,spr->next);
    
   /* Put back the old image */
-  VID(blit) (spr->backbuffer,0,0,
-	     spr->ox,spr->oy,spr->ow,spr->oh,PG_LGOP_NONE);
+  VID(blit) (vid->display,spr->ox,spr->oy,spr->ow,spr->oh,
+	     spr->backbuffer,0,0,PG_LGOP_NONE);
   add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
 
   spr->onscreen = 0;
@@ -1160,7 +1092,7 @@ void def_sprite_hideall(void) {
 }
 
 /* Hide necessary sprites in a given area */
-void def_sprite_protectarea(struct cliprect *in,struct sprite *from) {
+void def_sprite_protectarea(struct quad *in,struct sprite *from) {
    /* Base case: from is null */
    if (!from) return;
 
@@ -1281,7 +1213,7 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
    errorcheck;
    
    src = srcline = srcbit->bits;
-   dest = destbit->bits;
+   dest = (u32 *) destbit->bits;
    
    for (h=srcbit->h,x=y=0;h;h--,y++,src=srcline+=srcbit->pitch) {      
       for (oshift=shiftset,i=srcbit->w,x=0;i;i--,x++) {
@@ -1333,21 +1265,12 @@ void setvbl_default(struct vidlib *vid) {
   vid->color_pgtohwr = &def_color_pgtohwr;
   vid->color_hwrtopg = &def_color_hwrtopg;
   vid->font_newdesc = &def_font_newdesc;
-  vid->addpixel = &def_addpixel;
-  vid->subpixel = &def_subpixel;
-  vid->clear = &def_clear;
   vid->slab = &def_slab;
   vid->bar = &def_bar;
   vid->line = &def_line;
   vid->rect = &def_rect;
   vid->gradient = &def_gradient;
-  vid->dim = &def_dim;
-  vid->scrollblit = &def_scrollblit;
   vid->charblit = &def_charblit;
-  vid->charblit_v = &def_charblit_v;
-#ifdef CONFIG_ROTATE
-  vid->charblit_u = &def_charblit_u;
-#endif
   vid->tileblit = &def_tileblit;
 #ifdef CONFIG_FORMAT_XBM
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
@@ -1363,7 +1286,6 @@ void setvbl_default(struct vidlib *vid) {
   vid->sprite_hideall = &def_sprite_hideall;
   vid->sprite_protectarea = &def_sprite_protectarea;
   vid->blit = &def_blit;
-  vid->unblit = &def_unblit;
   vid->coord_logicalize = &def_coord_logicalize;
   vid->bitmap_rotate90 = &def_bitmap_rotate90;
   vid->entermode = &def_enterexitmode;

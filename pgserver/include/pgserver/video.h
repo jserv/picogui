@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.35 2001/04/11 02:28:59 micahjd Exp $
+/* $Id: video.h,v 1.36 2001/04/29 17:28:39 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -32,13 +32,19 @@
 #include <pgserver/g_error.h>
 #include <pgserver/divtree.h>
 
+struct fontdesc;
+struct quad;
+struct rect;
+struct pair;
+struct groprender;
+
 /* Hardware-specific color value */
-typedef unsigned long hwrcolor;
+typedef u32 hwrcolor;
 
 /* PicoGUI color (24-bit RGB)
    Usually converted to a hwrcolor at the first opportunity
 */
-typedef unsigned long pgcolor;
+typedef u32 pgcolor;
 #define getred(pgc)    (((pgc)>>16)&0xFF)
 #define getgreen(pgc)  (((pgc)>>8)&0xFF)
 #define getblue(pgc)   ((pgc)&0xFF)
@@ -66,20 +72,20 @@ struct stdbitmap {
 
 /* A group of functions to deal with one bitmap format */
 struct bitformat {
-  char name[4];     /* fourcc for the format name */
+  u8 name[4];     /* fourcc for the format name */
 
-  int (*detect)(u8 *data, u32 datalen);
-  g_error (*load)(struct stdbitmap **bmp, u8 *data, u32 datalen);
-  g_error (*save)(struct stdbitmap *bmp, u8 **data, u32 *datalen);
+  bool (*detect)(const u8 *data, u32 datalen);
+  g_error (*load)(hwrbitmap *bmp, const u8 *data, u32 datalen);
+  g_error (*save)(hwrbitmap bmp, u8 **data, u32 *datalen);
 };
    
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
   hwrbitmap *bitmap,*mask,backbuffer;
-  int x,y;   /* Current coordinates */
-  int ox,oy; /* Coordinates last time it was drawn */
-  int w,h;   /* Dimensions of all buffers */
-  int ow,oh; /* The blit last time, with clipping */
+  s16 x,y;   /* Current coordinates */
+  s16 ox,oy; /* Coordinates last time it was drawn */
+  s16 w,h;   /* Dimensions of all buffers */
+  s16 ow,oh; /* The blit last time, with clipping */
   struct divnode *clip_to;
   struct sprite *next;
   unsigned int onscreen : 1;   /* Displayed on screen now */
@@ -87,20 +93,6 @@ struct sprite {
 };
 /* List of sprites to overlay */
 extern struct sprite *spritelist;
-
-/* The text clipping is generally more complex than it would be
- * fun to do in grop.c, so a clipping rectangle is passed along for them.
- */
-struct cliprect {
-   signed short int x1,y1,x2,y2;
-};
-
-/* NOTE: font.h must be included here. It relies on structures defined
- * earlier, but font_* below need font.h.
- * 
- * Messy, isn't it...
- */
-#include <pgserver/font.h>
 
 /* This structure contains a pointer to each graphics function
    in use, forming a definition for a driver. Initially, all functions
@@ -128,7 +120,7 @@ struct vidlib {
    *
    * Default implementation: does nothing 
    */
-  g_error (*setmode)(int xres,int yres,int bpp,unsigned long flags);
+  g_error (*setmode)(s16 xres,s16 yres,s16 bpp,u32 flags);
 
   /* Optional
    *   This is called after mode setting is complete, including all wrappers
@@ -158,21 +150,34 @@ struct vidlib {
    * 
    * Default implementation: does nothing
    */
-  void (*coord_logicalize)(int *x,int *y);
+  void (*coord_logicalize)(s16 *x,s16 *y);
+
+  /* Reccomended (without double-buffer, it looks really dumb)
+   *   Update changes to the screen, if device is double-buffered or
+   *   uses page flipping
+   *
+   * Default implementation: does nothing (assumes changes are immediate)
+   */
+  void (*update)(s16 x,s16 y,s16 w,s16 h);
    
   /* Current mode (only used in driver)
    *
    * The default bitmap functions should handle 1,2,4,8,16,24,32 bpp ok
    */
-  int xres,yres,bpp;
-  unsigned long flags;
+  s16 xres,yres,bpp;
+  u32 flags;
 
   /* Logical screen size, read-only outside of driver */
-  int lxres,lyres;
+  s16 lxres,lyres;
    
-  /* Framebuffer information (for framebuffer Video Base Libraries) */
-  unsigned char *fb_mem;
-  unsigned int fb_bpl;   /* Bytes Per Line */
+  /* fb_mem and fb_bpl are no longer here. Use display->bits and
+   * display->pitch, also accessable with the macros FB_MEM and FB_BPL */
+ 
+  /* This bitmap is passed to primitives to indicate rendering to the display.
+   * When possible, it can have an actual pointer to video memory so the
+   * display is no different from any other bitmap. If it must be a special
+   * case, set this to NULL */
+  hwrbitmap display;
    
   /***************** Fonts */
    
@@ -187,7 +192,7 @@ struct vidlib {
    
   /***************** Colors */
 
-  /* Reccomended
+  /* Optional
    *   Convert a color to/from the driver's native format
    *
    * Default implementation:
@@ -204,51 +209,26 @@ struct vidlib {
   /* Required
    *   Draw a pixel to the screen, in the hardware's color format
    */
-  void (*pixel)(int x,int y,hwrcolor c);
+  void (*pixel)(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
 
   /* Required
    *   Get a pixel, in hwrcolor format
    */
-  hwrcolor (*getpixel)(int x,int y);
+  hwrcolor (*getpixel)(hwrbitmap src, s16 x, s16 y);
 
-  /* Reccomended
-   *   Add/subtract the color from the
-   *   existing pixel
-   *
-   * Default implementation: getpixel, modifies it, then putpixel
-   */
-  void (*addpixel)(int x,int y,pgcolor c);
-  void (*subpixel)(int x,int y,pgcolor c);
-
-  /* Optional
-   *   clear screen
-   *   
-   * Default implementation: draws a rectangle of 
-   *   color 0 over the screen
-   */
-  void (*clear)(void);
-
-  /* Reccomended (without double-buffer, it looks really dumb)
-   *   Update changes to the screen, if device is double-buffered or
-   *   uses page flipping
-   *
-   * Default implementation: does nothing (assumes changes are immediate)
-   */
-  void (*update)(int x,int y,int w,int h);
-
-  /* Optional
+  /* Very Recommended
    *   draws a continuous horizontal run of pixels
    *
    * Default implementation: draws a 1 pixel high rectangle
    */
-  void (*slab)(int x,int y,int w,hwrcolor c);
+  void (*slab)(hwrbitmap dest, s16 x, s16 y, s16 w, hwrcolor c, s16 lgop);
 
   /* Optional
    *   draws a vertical bar of pixels (a sideways slab)
    *
    * Default implementation: draws a 1 pixel wide rectangle
    */
-  void (*bar)(int x,int y,int h,hwrcolor c);
+  void (*bar)(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
 
   /* Optional
    *   draws an arbitrary line between 2 points
@@ -256,37 +236,28 @@ struct vidlib {
    * Default implementation: bresenham algrorithm and
    *   many calls to pixel()
    */
-  void (*line)(int x1,int y1,int x2,int y2,hwrcolor c);
+  void (*line)(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,
+	       hwrcolor c, s16 lgop);
 
-  /* Reccomended
+  /* Optional
    *   fills a rectangular area with a color
    *
-   * Default implementation: for loops and many pixel()s
+   * Default implementation: Looped calls to slab()
    */
-  void (*rect)(int x,int y,int w,int h,hwrcolor c);
+  void (*rect)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
 
-  /* Reccomended for high color/true color devices
+  /* Optional
    *   fills a rectangular area with a linear gradient
    *   of an arbitrary angle (in degrees), between two colors.
    *   If angle==0, c1 is at the left and c2 is at the
    *   right.  The gradient rotates clockwise as angle
    *   increases.
-   *   If translucent==0, the gradient overwrites existing
-   *   stuff on the screen. -1, it subtracts, and +1, it 
-   *   adds.
    *
    * Default implementation: interpolation algorithm, pixel()
    */
-  void (*gradient)(int x,int y,int w,int h,int angle,
-		   pgcolor c1, pgcolor c2,int translucent);
+  void (*gradient)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
+		   pgcolor c1, pgcolor c2, s16 lgop);
   
-  /* Optional
-   *   Dims or 'grays out' everything in the rectangle
-   *
-   * Default implementation: color #0 checkerboard pattern
-   */
-  void (*dim)(int x,int y,int w,int h);
-
   /* Very Reccomended
    *   Blits a bitmap to screen, optionally using lgop.
    *   If w and/or h is bigger than the source bitmap, it
@@ -294,81 +265,46 @@ struct vidlib {
    * 
    * Default implementation: pixel!
    */
-  void (*blit)(hwrbitmap src,int src_x,int src_y,
-	       int dest_x,int dest_y,
-	       int w,int h,int lgop);
-
-  /* Very Reccomended
-   *   Blits a chunk of the screen back to a bitmap
-   *
-   * Default implementation: pixel!
-   */
-  void (*unblit)(int src_x,int src_y,
-		 hwrbitmap dest,int dest_x,int dest_y,
-		 int w,int h);
-
-  /* Optional
-   *   Does a bottom-up blit from an area on the screen
-   *   to an area on the screen. Used for scrolling down.
-   *
-   * Default implementation: Calls blit() for every line,
-   *   starting at the bottom
-   */
-  void (*scrollblit)(int src_x,int src_y,
-		     int dest_x,int dest_y,
-		     int w,int h);
+  void (*blit)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+	       s16 src_x, s16 src_y, s16 lgop);
 
   /* Reccomended
    *   Blits a bitmap or a section of a bitmap repeatedly
    *   to cover an area. Used by many bitmap themes.
+   *   The difference between blit and tileblit is that blit restarts tiles
+   *   at the beginning of the bitmap, and tileblit restarts tiles at the
+   *   beginning of the tiled section
    *
    * Default implementation: Many calls to blit()!
    */
-  void (*tileblit)(hwrbitmap src,
-		   int src_x,int src_y,int src_w,int src_h,
-		   int dest_x,int dest_y,int dest_w,int dest_h);
+  void (*tileblit)(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop);
 
   /* Reccomended
    *   Used for character data.  Blits 1bpp data from
    *   chardat to the screen, filling '1' bits with the
    *   color 'col'.  If lines > 0, every 'lines' lines
    *   the image is left-shifted one pixel, to simulate
-   *   italics
+   *   italics.
+   * 
+   *   Although in the future arbitrary rotation may be supported, currently
+   *   'angle' must be a PG_DIR_* constant (measured in degrees)
+   *
+   *   If 'fill' is nonzero, '0' bits in the character are filled in the
+   *   color 'bg'
    *
    * Default implementation: pixel(). Need I say more?
    */
-  void (*charblit)(unsigned char *chardat,int dest_x,
-		   int dest_y,int w,int h,int lines,
-		   hwrcolor c,struct cliprect *clip);
-     
-  /* Optional
-   *   Like charblit, but rotates the character 90 degrees anticlockwise
-   *   for displaying vertical text.
-   *
-   * Default implementation: pixel()...
-   */
-  void (*charblit_v)(unsigned char *chardat,int dest_x,
-		     int dest_y,int w,int h,int lines,
-		     hwrcolor c,struct cliprect *clip);
-
-#ifdef CONFIG_ROTATE
-  /* Optional
-   *   Like charblit, but rotates the character 180 degrees anticlockwise
-   *   for upside-down text. Only used when rotating vertical text so far.
-   * 
-   * Default implementation: pixel()...
-   */
-  void (*charblit_u)(unsigned char *chardat,int dest_x,
-		     int dest_y,int w,int h,int lines,
-		     hwrcolor c,struct cliprect *clip);
-#endif
+  void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		   bool fill, hwrcolor bg, s16 lgop);
    
   /***************** Bitmaps */
 
   /* These functions all use the stdbitmap structure.
      If your driver needs a different bitmap format,
-     implement all these functions.  If not, you should
-     be ok leaving these with the defaults.
+     implement all these functions. (also implement set/get pixel above)
+     If not, you should be ok leaving these with the defaults.
   */
 
   /* Optional
@@ -380,12 +316,12 @@ struct vidlib {
 
 #ifdef CONFIG_FORMAT_XBM
   /* XBM 1-bit data (used internally) */
-  g_error (*bitmap_loadxbm)(hwrbitmap *bmp,u8 *data, s16 w, s16 h,
+  g_error (*bitmap_loadxbm)(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			    hwrcolor fg,hwrcolor bg);
 #endif
    
   /* Load a bitmap, detecting the appropriate format */
-  g_error (*bitmap_load)(hwrbitmap *bmp,u8 *data,u32 datalen);
+  g_error (*bitmap_load)(hwrbitmap *bmp,const u8 *data,u32 datalen);
 
   /* Optional
    *   Rotates a bitmap by 90 degrees anticlockwise
@@ -401,7 +337,7 @@ struct vidlib {
    * Default implementation: g_malloc, of course!
    */
   g_error (*bitmap_new)(hwrbitmap *bmp,
-			int w,int h);
+			s16 w,s16 h);
 
   /* Optional
    *   Frees bitmap memory
@@ -415,7 +351,7 @@ struct vidlib {
    *
    * Default implementation: stdbitmap
    */
-  g_error (*bitmap_getsize)(hwrbitmap bmp,int *w,int *h);
+  g_error (*bitmap_getsize)(hwrbitmap bmp,s16 *w,s16 *h);
 
   /* Optional
    *   This is called for every bitmap when entering a new bpp or loading
@@ -473,7 +409,7 @@ struct vidlib {
    * 
    * Default implementation: Calls sprite_hide for sprites in the area
    */
-  void (*sprite_protectarea)(struct cliprect *in,struct sprite *from);
+  void (*sprite_protectarea)(struct quad *in,struct sprite *from);
    
 };
 
@@ -489,10 +425,6 @@ extern struct vidlib *vidwrap;
 /* Trig (sin*256 from 0 to 90 degrees) */
 extern unsigned char trigtab[];
 
-/* Some helper functions for PNM files */
-void ascskip(unsigned char **dat,unsigned long *datlen);
-int ascread(unsigned char **dat,unsigned long *datlen);
-
 /*
   Unloads previous driver, sets up a new driver and
   initializes it.  This is for changing the driver,
@@ -500,7 +432,7 @@ int ascread(unsigned char **dat,unsigned long *datlen);
   want to change the mode use vid->setmode
 */
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
-		    int xres,int yres,int bpp,unsigned long flags);
+		    s16 xres,s16 yres,s16 bpp,unsigned long flags);
 
 /* List of installed video drivers */
 struct vidinfo {
@@ -516,7 +448,7 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v);
 g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags);
 
 /* Sprite helper functions */
-g_error new_sprite(struct sprite **ps,int w,int h);
+g_error new_sprite(struct sprite **ps,s16 w,s16 h);
 void free_sprite(struct sprite *s);
 
 /* Sprite vars */
@@ -524,65 +456,47 @@ extern struct sprite *spritelist;
 
 /* Helper functions for keeping an update region, used
    for double-buffering by the video drivers */
-extern int upd_x;
-extern int upd_y;
-extern int upd_w;
-extern int upd_h;
-void add_updarea(int x,int y,int w,int h);
+extern s16 upd_x;
+extern s16 upd_y;
+extern s16 upd_w;
+extern s16 upd_h;
+void add_updarea(s16 x,s16 y,s16 w,s16 h);
 void realize_updareas(void);
 
 hwrcolor textcolors[16];   /* Table for converting 16 text colors
 			      to hardware colors */
 
-/** Generic functions from the default VBL that other VBLs might find useful */
+/* Generic functions from the default VBL. Drivers will usually choose to
+ * only process the most commonly used options, to save code space. When
+ * an unsupported LGOP or other parameter is used, the corresponding
+ * defaultvbl function should be called
+ */
 
-g_error def_setmode(int xres,int yres,int bpp,unsigned long flags);
-void def_font_newdesc(struct fontdesc *fd);
 void emulate_dos(void);
-void def_update(int x,int y,int w,int h);
+void def_update(s16 x, s16 y, s16 w, s16 h);
+g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 hwrcolor def_color_pgtohwr(pgcolor c);
 pgcolor def_color_hwrtopg(hwrcolor c);
-void def_addpixel(int x,int y,pgcolor c);
-void def_subpixel(int x,int y,pgcolor c);
-void def_clear(void);
-void def_slab(int x,int y,int w,hwrcolor c);
-void def_bar(int x,int y,int h,hwrcolor c);
-void def_line(int x1,int y1,int x2,int y2,hwrcolor c);
-void def_rect(int x,int y,int w,int h,hwrcolor c);
-void def_gradient(int x,int y,int w,int h,int angle,
-		  pgcolor c1, pgcolor c2,int translucent);
-void def_dim(int x,int y,int w,int h);
-void def_scrollblit(int src_x,int src_y,int dest_x,int dest_y,int w,int h);
-void def_charblit(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,hwrcolor c,
-		  struct cliprect *clip);
-void def_charblit_v(unsigned char *chardat,int dest_x,
-		    int dest_y,int w,int h,int lines,hwrcolor c,
-		    struct cliprect *clip);
-g_error def_bitmap_loadxbm(struct stdbitmap **bmp,unsigned char *data,
-			   int w,int h,hwrcolor fg,hwrcolor bg);
-g_error def_bitmap_loadpnm(struct stdbitmap **bmp,unsigned char *data,
-			   unsigned long datalen);
-g_error def_bitmap_new(struct stdbitmap **bmp,int w,int h);
-void def_bitmap_free(struct stdbitmap *bmp);
-g_error def_bitmap_getsize(struct stdbitmap *bmp,int *w,int *h);
-void def_tileblit(struct stdbitmap *src,
-		  int src_x,int src_y,int src_w,int src_h,
-		  int dest_x,int dest_y,int dest_w,int dest_h);
-void def_sprite_show(struct sprite *spr);
-void def_sprite_hide(struct sprite *spr);
-void def_sprite_update(struct sprite *spr);
-void def_sprite_showall(void);
-void def_sprite_hideall(void);
-void def_sprite_protectarea(struct cliprect *in,struct sprite *from);
-void def_blit(hwrbitmap src,int src_x,int src_y,
-	      int dest_x,int dest_y,
-	      int w,int h,int lgop);
-void def_unblit(int src_x,int src_y,
-		hwrbitmap dest,int dest_x,int dest_y,
-		int w,int h);
-g_error def_bitmap_rotate90(hwrbitmap *bmp);
-
+void def_pixel(hwrbitmap dest, s16 x, s16 y, hwrcolor c, s16 lgop);
+hwrcolor def_getpixel(hwrbitmap src, s16 x, s16 y);
+void def_slab(hwrbitmap dest, s16 x, s16 y, s16 w, hwrcolor c, s16 lgop);
+void def_bar(hwrbitmap dest, s16 x,s16 y,s16 h,hwrcolor c, s16 lgop);
+void def_line(hwrbitmap dest, s16 x1,s16 y1,s16 x2,s16 y2,
+	      hwrcolor c, s16 lgop);
+void def_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop);
+void def_gradient(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,s16 angle,
+		  pgcolor c1, pgcolor c2, s16 lgop);
+void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
+	      s16 src_x, s16 src_y, s16 lgop);
+void def_tileblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
+		  hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 lgop);
+void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  bool fill, hwrcolor bg, s16 lgop);
+void def_sprite_protectarea(struct quad *in,struct sprite *from);
+g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
+			   hwrcolor fg, hwrcolor bg);
+   
 /************* Registration functions for video drivers */
 
 g_error sdlfb_regfunc(struct vidlib *v);
@@ -609,26 +523,19 @@ void vidwrap_rotate90(struct vidlib *vid);
 /************** Bitmap format functions */
 extern struct bitformat bitmap_formats[];
 
-int pnm_detect(u8 *data, u32 datalen);
-g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen);
+bool pnm_detect(const u8 *data, u32 datalen);
+g_error pnm_load(hwrbitmap *bmp, const u8 *data, u32 datalen);
 
 /* Runs the supplied function for all loaded bitmaps
  * (a superset of handle_iterate's results)
  */
-g_error bitmap_iterate(g_error (*iterator)(void **pbit));
+g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit));
 
 /************** Debugging */
-void videotest_run(int number);
+void videotest_run(s16 number);
 void videotest_help(void);
 void videotest_benchmark(void);
 
 #endif /* __H_VIDEO */
 
 /* The End */
-
-
-
-
-
-
-

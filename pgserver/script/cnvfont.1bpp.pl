@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: cnvfont.1bpp.pl,v 1.5 2001/02/17 05:18:41 micahjd Exp $
+# $Id: cnvfont.1bpp.pl,v 1.6 2001/04/29 17:28:39 micahjd Exp $
 #
 # This program generates a file with the fdf font data converted
 # to 1bpp bitmap data, formatted for input by a C compiler.
@@ -133,7 +133,7 @@ for ($i=0;$i<$num;$i++) {
 print "};\n";
 
 print "\nstruct font const $fntname = {\n\t";
-print "${fntname}_bits, $h, $hspace, $vspace, ${fntname}_vw, ${fntname}_tr";
+print "(u8 *) ${fntname}_bits, $h, $hspace, $vspace, (u8 *) ${fntname}_vw, (u32 *) ${fntname}_tr";
 $hdrs = 256*5;
 print "\n};\n";
 

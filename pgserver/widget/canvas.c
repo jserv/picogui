@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.11 2001/04/14 07:47:53 micahjd Exp $
+/* $Id: canvas.c,v 1.12 2001/04/29 17:28:40 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -182,8 +182,20 @@ void canvas_command(struct widget *self, unsigned short command,
       break;
       
     case PGCANVAS_GROP:
-      if (numparams<5) return;
-      addgrop(CTX,params[0],params[1],params[2],params[3],params[4]);
+      if (numparams<1) return;
+      if (PG_GROP_IS_UNPOSITIONED(params[0])) {
+	 if (numparams>(NUMGROPPARAMS+1)) numparams = NUMGROPPARAMS+1;
+	 addgrop(CTX,params[0]);
+	 for (i=1;i<numparams;i++)
+	   CTX->current->param[i-1] = params[i];
+      }
+      else {
+	 if (numparams<5) return;
+	 if (numparams>(NUMGROPPARAMS+5)) numparams = NUMGROPPARAMS+5;
+	 addgropsz(CTX,params[0],params[1],params[2],params[3],params[4]);
+	 for (i=5;i<numparams;i++)
+	   CTX->current->param[i-5] = params[i];
+      }
       break;
       
     case PGCANVAS_EXECFILL:
@@ -212,26 +224,27 @@ void canvas_command(struct widget *self, unsigned short command,
       
     case PGCANVAS_MOVEGROP:
       if (numparams<4 || !CTX->current) return;
-      CTX->current->x = params[0];
-      CTX->current->y = params[1];
-      CTX->current->w = params[2];
-      CTX->current->h = params[3];
+      CTX->current->r.x = params[0];
+      CTX->current->r.y = params[1];
+      CTX->current->r.w = params[2];
+      CTX->current->r.h = params[3];
       break;
       
     case PGCANVAS_MUTATEGROP:
-      
-    case PGCANVAS_COLORCONV:
       if (numparams<1 || !CTX->current) return;
-      for (i=0;i<NUMGROPPARAMS;i++,params[0]>>=1)
-	if (params[0] & 1)
-	  CTX->current->param[i] = VID(color_pgtohwr) (CTX->current->param[i]);
+      CTX->current->type = params[0];
       break;
       
     case PGCANVAS_GROPFLAGS:
       if (numparams<1 || !CTX->current) return;
       CTX->current->flags = params[0];
       break;
-      
+
+    case PGCANVAS_DEFAULTFLAGS:
+      if (numparams<1) return;
+      CTX->defaultgropflags = params[0];
+      break;
+
     case PGCANVAS_REDRAW:
       self->in->div->flags |= DIVNODE_NEED_REDRAW;
       self->dt->flags |= DIVTREE_NEED_REDRAW;

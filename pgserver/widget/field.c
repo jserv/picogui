@@ -1,8 +1,6 @@
-/* $Id: field.c,v 1.23 2001/04/05 03:32:25 micahjd Exp $
+/* $Id: field.c,v 1.24 2001/04/29 17:28:40 micahjd Exp $
  *
- * Single-line no-frills text editing box
- *
- * Todo: add theme support to this widget!
+ * field.c - Single-line no-frills text editing box
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -85,18 +83,21 @@ void build_field(struct gropctxt *c,unsigned short state,struct widget *self) {
   DATA->startctxt = *c;
 
   /* The text itself */
-  addgrop(c,PG_GROP_TEXT,fd->margin,(c->h>>1) - (fd->font->h>>1),1,1);
-  c->current->param[0] = DATA->hbuffer;
-  c->current->param[1] = font;
-  c->current->param[2] = fg = VID(color_pgtohwr) 
+  if (font != defaultfont) {
+     addgrop(c,PG_GROP_SETFONT);
+     c->current->param[0] = font;
+  }
+  addgrop(c,PG_GROP_SETCOLOR);
+  c->current->param[0] = VID(color_pgtohwr) 
      (theme_lookup(state,PGTH_P_FGCOLOR)); 
+  addgropsz(c,PG_GROP_TEXT,fd->margin,(c->h>>1) - (fd->font->h>>1),1,1);
+  c->current->param[0] = DATA->hbuffer;
   DATA->text = c->current;
 
   /* Cursor 
    * FIXME: The cursor doesn't use themes! (much)
    */
-  addgrop(c,PG_GROP_RECT,0,c->y+2,CURSORWIDTH,c->h-4);
-  c->current->param[0] = fg;
+  addgropsz(c,PG_GROP_RECT,0,c->y+2,CURSORWIDTH,c->h-4);
   DATA->cursor = c->current;
    
   fieldstate(self);
@@ -314,7 +315,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
 /* Apply the current visual state */
 void fieldstate(struct widget *self) {
-  int tw,th;
+  s16 tw,th;
   struct fontdesc *fd;
   handle font = DATA->font ? DATA->font : 
    theme_lookup(self->in->div->state,PGTH_P_FONT);
@@ -331,19 +332,19 @@ void fieldstate(struct widget *self) {
      right justify
   */
   if (tw<self->in->div->w) {
-    DATA->text->x = fd->margin;
+    DATA->text->r.x = fd->margin;
     /* Move the cursor to the end of the text */
-    DATA->cursor->x = tw;
+    DATA->cursor->r.x = tw;
   }
   else {
     /* Right justify, cursor at right side of widget */
-    DATA->text->x = (DATA->cursor->x = 
+    DATA->text->r.x = (DATA->cursor->r.x = 
        self->in->div->w - fd->margin - CURSORWIDTH) - tw + fd->margin;    
   }
 
   /* Appear or disappear the cursor depending on focus and cursor
      flashing state */
-  DATA->cursor->type = DATA->flash_on ? PG_GROP_RECT : PG_GROP_NULL; 
+  DATA->cursor->type = DATA->flash_on ? PG_GROP_RECT : PG_GROP_NOP; 
 }
 
 /* If the buffer doesn't have room for one more char, enlarge it */
@@ -357,8 +358,6 @@ g_error bufcheck_grow(struct widget *self) {
 
   e = g_realloc((void *)&DATA->buffer,DATA->bufsize);
   errorcheck;
-
-  /* Possible race condition here? */
 
   return rehandle(DATA->hbuffer,DATA->buffer);
 }

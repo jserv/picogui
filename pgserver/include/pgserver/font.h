@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.6 2001/03/07 04:10:13 micahjd Exp $
+/* $Id: font.h,v 1.7 2001/04/29 17:28:39 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -87,12 +87,12 @@ struct fontstyle_node {
 
 /* An individual bitmapped font */
 struct font {
-  unsigned char *bitmaps;   /* Table of converted bitmaps */
-  int h;
-  int hspace; /* Space between characters */
-  int vspace; /* Space between lines */
-  unsigned char *vwtab; /* table of character widths, indexed by ASCII value */
-  long *trtab;    /* This table translates ASCII values
+  u8 *bitmaps;   /* Table of converted bitmaps */
+  s16 h;
+  s16 hspace; /* Space between characters */
+  s16 vspace; /* Space between lines */
+  u8 *vwtab; /* table of character widths, indexed by ASCII value */
+  u32 *trtab;    /* This table translates ASCII values
 		    to bitmap indices. A negative bitmap index indicates
 		    a blank. To get the data for a char, add it's trtab
 		    value to 'bitmaps' 
@@ -104,17 +104,17 @@ struct font {
 /* Copy a character to the screen, producing any special effects as
  * requested by the fontdesc.
  */
-void outchar(struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,char c,struct cliprect *clip);
+void outchar(hwrbitmap dest, struct fontdesc *fd,
+	     int *x, int *y,hwrcolor col,char c,struct quad *clip,
+	     bool fill, hwrcolor bg, s16 lgop, s16 angle);
 
 /* These functions interpret the '\n' character, but no other control
  * chars
  */
-void outtext(struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt,struct cliprect *clip);
-void outtext_v(struct fontdesc *fd,
-	       int x,int y,hwrcolor col,char *txt,struct cliprect *clip);
-void sizetext(struct fontdesc *fd, int *w, int *h, char *txt);
+void outtext(hwrbitmap dest, struct fontdesc *fd,
+	     int x,int y,hwrcolor col,char *txt,struct quad *clip,
+	     bool fill, hwrcolor bg, s16 lgop, s16 angle);
+void sizetext(struct fontdesc *fd, s16 *w, s16 *h, char *txt);
 
 /* Find a font with specified characteristics, and prepare
  * a fontdesc structure for it.  The closest font will be matched.

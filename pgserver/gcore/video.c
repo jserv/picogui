@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.35 2001/04/06 06:27:03 micahjd Exp $
+/* $Id: video.c,v 1.36 2001/04/29 17:28:39 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -40,12 +40,15 @@ struct vidlib *vid, *vidwrap;
 struct vidlib vidlib_static;
 struct vidlib vidwrap_static;
 struct sprite *spritelist;
-int upd_x;
-int upd_y;
-int upd_w;
-int upd_h;
+s16 upd_x;
+s16 upd_y;
+s16 upd_w;
+s16 upd_h;
 hwrcolor textcolors[16];   /* Table for converting 16 text colors
 			      to hardware colors */
+
+/* Statically allocated memory that the driver can use for vid->display */
+struct stdbitmap static_display;
 
 /* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
 unsigned char trigtab[] = {
@@ -62,7 +65,7 @@ unsigned char trigtab[] = {
 };
 
 /* Sprite helper functions */
-g_error new_sprite(struct sprite **ps,int w,int h) {
+g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
   g_error e;
   
   e = g_malloc((void**)ps,sizeof(struct sprite));
@@ -106,7 +109,7 @@ void free_sprite(struct sprite *s) {
 
 /* Let the driver register itself, and initialize things */
 g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
-		  int xres,int yres,int bpp,unsigned long flags) {
+		    s16 xres,s16 yres,s16 bpp,u32 flags) {
   g_error e;
 
   /* Unload */
@@ -129,6 +132,9 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
   }
 
   inlib_main = NULL;
+
+  /* By default use a static vid->display */
+  vid->display = (hwrbitmap) &static_display; 
 
   /* Load new driver */
   e = VID(init)();
@@ -179,7 +185,7 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       break;
    }
    vid->flags = flags;
-   
+
    /* Might want to tell the driver! */
    e = (*vid->setmode) (xres,yres,bpp,flags);
    errorcheck;
@@ -188,6 +194,13 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
    vid->lxres = vid->xres;
    vid->lyres = vid->yres;
    
+   /* Synchronize vid->display info */
+   if (vid->display) {
+      ((struct stdbitmap *)vid->display)->freebits = 0;
+      ((struct stdbitmap *)vid->display)->w = vid->xres;
+      ((struct stdbitmap *)vid->display)->h = vid->yres;
+   }
+      
    /* Reset wrapper library (before using VID macro) */
    vidwrap_static = vidlib_static;
    vidwrap = &vidwrap_static;
@@ -270,7 +283,7 @@ g_error (*find_videodriver(const char *name))(struct vidlib *v) {
   return NULL;
 }
 
-void add_updarea(int x,int y,int w,int h) {
+void add_updarea(s16 x,s16 y,s16 w,s16 h) {
   if (upd_w) {
     if (x < upd_x) {
       upd_w += upd_x - x;
@@ -328,14 +341,14 @@ void realize_updareas(void) {
    lock = 0;
 }
 
-g_error bitmap_iterate(g_error (*iterator)(void **pbit)) {   
+g_error bitmap_iterate(g_error (*iterator)(hwrbitmap *pbit)) {   
    
    /* Rotate all bitmaps with handles, the default cursor,
     * and all sprite backbuffers */
    struct sprite *spr;
    g_error e;
    
-   e = handle_iterate(PG_TYPE_BITMAP,iterator);
+   e = handle_iterate(PG_TYPE_BITMAP,(g_error(*)(void**)) iterator);
    errorcheck;
    
    if (defaultcursor_bitmap) {           /* If we are rotating by default
