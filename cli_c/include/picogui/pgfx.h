@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.9 2001/05/16 02:48:43 micahjd Exp $
+/* $Id: pgfx.h,v 1.10 2001/05/16 04:22:56 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -38,6 +38,9 @@
  * Usually this file does not need to be included
  * separately, it is included with <tt>\#include <picogui.h></tt>
  */
+
+#ifndef _H_PG_PGFX
+#define _H_PG_PGFX
 
 /************ Data structures */
 
@@ -337,5 +340,7 @@ pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
 pgcontext pgNewCanvasContext(pghandle canvas,short mode);
 //! Delete a PGFX context
 void pgDeleteContext(pgcontext c);
+
+#endif /* _H_PG_PGFX */
 
 /* The End */

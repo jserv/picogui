@@ -50,10 +50,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = src \
-                         include
-FILE_PATTERNS          = *.h \
-                         *.c
+INPUT                  = include
+FILE_PATTERNS          = *.h
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_PATTERNS       = 
