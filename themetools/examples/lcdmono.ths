@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.2 2001/02/08 06:00:31 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.3 2001/03/30 06:28:39 micahjd Exp $
  *
  * Monochrome theme for LCDs
  *
@@ -19,7 +19,7 @@ object default {
    
    // font = Font("Helvetica",8,0);
    font = Font("Lucida",10,0);
-   height = 14;
+   height = 16;
    width = 14;
 }
 
@@ -45,7 +45,8 @@ object button {
       Pixel(x+1,y+h-2,1,1,fgc);
       Pixel(x+w-2,y+h-2,1,1,fgc);
    };
-   spacing = 2;
+   spacing = 3;
+   margin = 4;
 }
 object button.on {
    fgcolor = 0xFFFFFF;
@@ -129,14 +130,30 @@ object panelbar {
    fgcolor = 0xFFFFFF;
 }
 object base.panelbtn {
+   bgfill  = Copy(label.dlgtitle::bgfill);
+   bgcolor = 0x808080;
+   fgcolor = 0xFFFFFF;
    spacing = 0;
    margin = 0;
-   font = Font("Clean",6,PG_FSTYLE_FIXED);
+   side = PG_S_RIGHT;
+   font = Font("Clean",6,PG_FSTYLE_FIXED | PG_FSTYLE_BOLD);
 }
 object closebtn  text = "X";
 object rotatebtn text = "/";
 object zoombtn   text = "-";
 
-object scroll width = 4;
+object scroll width = 8;
+
+/* Check boxes */
+object checkbox {
+   bgfill = fillstyle {
+      Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1,PG_LGOP_NONE,0,0);
+      x = x + 15;
+   };
+   bitmap1 = LoadBitmap("data/lcd_check_unchecked.pnm");
+   align = PG_A_LEFT;
+   margin = 10;
+}
+object checkbox.on bitmap1 = LoadBitmap("data/lcd_check_checked.pnm");
 
 /* The End */
