@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.52 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: font.c,v 1.53 2002/09/15 10:51:47 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -33,6 +33,7 @@
 #include <pgserver/video.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
+#include <pgserver/pgstring.h>
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3
@@ -223,9 +224,10 @@ void outchar_fake(struct fontdesc *fd, s16 *x,int  c) {
  * This function does add the margin as specified by fd->margin.
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     s16 x,s16 y,hwrcolor col, const u8 *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col, const struct pgstring *txt,struct quad *clip,
 	     s16 lgop, s16 angle) {
    int b,ch;
+   struct pgstr_iterator p = PGSTR_I_NULL;
 
    VID(font_outtext_hook)(&dest,&fd,&x,&y,&col,&txt,&clip,&lgop,&angle);
    
@@ -257,7 +259,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
             
    }
       
-   while ((ch = fd->decoder(&txt))) {
+   while ((ch = pgstring_decode(txt,&p))) {
       if (ch=='\n')
 	switch (angle) {
 	 
@@ -301,9 +303,9 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
  * 
  * If txt is NULL, return the size of a typical character.
  */
-void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
+void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt) {
   int o_w=0, ch;
-  const u8 *original_txt = txt;
+  struct pgstr_iterator p = PGSTR_I_NULL;
 
   if (!(fd && w && h)) return;
 
@@ -315,8 +317,8 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
 
     *w = fd->margin << 1;
     *h = (*w) + fd->font->h + fd->interline_space;
-    
-    while ((ch = fd->decoder(&txt))) {
+
+    while ((ch = pgstring_decode(txt,&p))) {
       if (ch=='\n') {
 	*h += fd->font->h + fd->interline_space;
 	if ((*w)>o_w) o_w = *w;
@@ -337,7 +339,7 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
     *w += fd->italicw;
   }    
 
-  VID(font_sizetext_hook)(fd,w,h,original_txt);
+  VID(font_sizetext_hook)(fd,w,h,txt);
 }
 
 /* Find a font and fill in the fontdesc structure */
@@ -363,7 +365,6 @@ g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags) {
    memset(fd,0,sizeof(struct fontdesc));
    fd->hline = -1;
    fd->style = flags;
-   fd->decoder = &decode_ascii;
    
    if (!(flags & PG_FSTYLE_FLUSH)) fd->margin = 2;
    
@@ -419,9 +420,6 @@ g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags) {
 	 fd->skew = DEFAULT_SKEW;
 	 fd->italicw = closest->normal->ascent / fd->skew; 
       }
-
-      if (closest->flags & PG_FSTYLE_ENCODING_UNICODE)
-	fd->decoder = &decode_utf8;
    }
    
    /* Let the video driver transmogrify it if necessary */
@@ -466,77 +464,108 @@ int fontcmp(struct fontstyle_node *fs,const u8 *name, int size, stylet flags) {
   return result;
 }
 
-/* Decode one character from the specified UTF-8 string, 
- * advancing the pointer 
- *
- * For a description of the UTF-8 standard, see:
- * http://www.cl.cam.ac.uk/~mgk25/unicode.html
+
+/* The workhorse of the terminal widget. 3 params:
+ * 1. buffer handle,
+ * 2. buffer width and offset (0xWWWWOOOO)
+ * 3. handle to textcolors array
  */
-int decode_utf8(const u8 **str) {
-  int ch = 0;
-  u8 b;
-  int length,i;
+void textgrid_render(struct groprender *r, struct gropnode *n) {
+  int buffersz,bufferw,bufferh;
+  int celw,celh,charw,charh,offset;
+  int i;
+  unsigned char attr;
+  u32 *textcolors;
+  s16 temp_x;
+  struct gropnode bn;
+  struct groprender br;
+  struct pgstr_iterator stri = PGSTR_I_NULL;
+  struct pgstring *str;
+  struct fontdesc *fd;
 
-
-  /* The first character determines the sequence's length */
-  ch = *((*str)++);
-
-  if (!(ch & 0x80))
-    /* 1-byte code, return it as-is */
-    return ch;
-  else if ((ch & 0xC0) == 0x80)
-    return -1;
-  else if (!(ch & 0x20)) {
-    length = 2;
-    ch &= 0x1F;
+  if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
+		       n->param[0])) || !str)
+    return;
+  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
+		       r->hfont)) || !fd)
+    return;
+    
+  /* Set up background color node (we'll need it later) */
+  memset(&bn,0,sizeof(bn));
+  bn.type = PG_GROP_RECT;
+  bn.flags = PG_GROPF_COLORED;
+  
+  /* Read textcolors parameter */
+  if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
+		       n->param[2])) || !textcolors)
+    return;
+  if (textcolors[0] < 16)    /* Make sure it's big enough */
+    return;
+  textcolors++;              /* Skip length entry */
+  
+  /* Should be fine for fixed width fonts
+   * and pseudo-acceptable for others? */
+  celw      = fd->font->w;  
+  celh      = fd->font->h;
+  
+  /* n->param[1]'s low u16 is the buffer width, the high u16 is
+   * an offset from the beginning of the buffer.
+   */
+  bufferw = n->param[1] >> 16;
+  buffersz = str->num_chars - (n->param[1] & 0xFFFF);
+  pgstring_seek(str,&stri, n->param[1] & 0xFFFF);
+  bufferh = buffersz / bufferw;
+  if (buffersz<=0) return;
+  
+  charw     = n->r.w/celw;
+  charh     = n->r.h/celh;
+  offset    = bufferw - charw;
+  if (offset<0) {
+    offset = 0;
+    charw = bufferw;
   }
-  else if (!(ch & 0x10)) {
-    length = 3;
-    ch &= 0x0F;
-  }
-  else if (!(ch & 0x08)) {
-    length = 4;
-    ch &= 0x07;
-  }
-  else if (!(ch & 0x04)) {
-    length = 5;
-    ch &= 0x03;
-  }
-  else if (!(ch & 0x02)) {
-    length = 6;
-    ch &= 0x01;
-  }
-  else
-    /* Invalid code */
-    return -1;
-
-  /* Decode each byte of the sequence */
-  for (i=1;i<length;i++) {
-    b = *((*str)++);
-    if (!b)
-      return 0;
-    if ((b & 0xC0) != 0x80) {
-      (*str)--;
-      return -1;
+  if (charh>bufferh)
+    charh = bufferh;
+  
+  r->orig.x = n->r.x;
+  for (;charh;charh--,n->r.y+=celh,pgstring_seek(str,&stri,offset)) {
+      
+    /* Skip the entire line if it's clipped out */
+    if (n->r.y > r->clip.y2 ||
+	(n->r.y+celh) < r->clip.y1) {
+      pgstring_seek(str,&stri,bufferw);
+      continue;
     }
-    ch <<= 6;
-    ch |= b & 0x3F;
-  }  
-
-  /* Make sure it is a unique representation */
-  if (ch <= 0x7F && length > 1) return -1;
-  if (ch <= 0x7FF && length > 2) return -1;
-  if (ch <= 0xFFFF && length > 3) return -1;
-  if (ch <= 0x1FFFFF && length > 4) return -1;
-  if (ch <= 0x3FFFFFF && length > 5) return -1;
-
-  return ch;
+    
+    for (n->r.x=r->orig.x,i=charw;i;i--) {
+      void *metadata;
+      u32 ch;
+      
+      /* Decode one character/attribute pair */
+      ch = pgstring_decode_meta(str,&stri,&metadata);
+      attr = (u8)(u32)metadata;
+      
+      /* Background color (clipped rectangle) */
+      if ((attr & 0xF0)!=0) {
+	br = *r;
+	bn.r.x = n->r.x;
+	bn.r.y = n->r.y;
+	bn.r.w = celw;
+	bn.r.h = celh;
+	bn.param[0] = textcolors[attr>>4];
+	gropnode_clip(&br,&bn);
+	gropnode_draw(&br,&bn);
+      }
+      
+      temp_x = n->r.x;
+      n->r.x += celw;
+      outchar(r->output, fd, &temp_x, &n->r.y, 
+	      textcolors[attr & 0x0F],
+	      ch, &r->clip,r->lgop, 0);
+    }
+  }
 }
 
-/* Simple decoder for 8-bit text */
-int decode_ascii(const u8 **str) {
-  return *((*str)++);
-}
 
 /* The End */
 

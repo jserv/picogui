@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.14 2002/08/19 06:09:40 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.15 2002/09/15 10:51:50 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -244,7 +244,7 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   va_start(v,fmt);
   vsnprintf(buf,sizeof(buf),fmt,v);
   va_end(v);
-  sizetext(fd,&w,&h,buf);
+  sizetext(fd,&w,&h,pgstring_tmpwrap(buf));
 
   /* Save the current matrix, set up a pixel coordinates matrix */
   glPushMatrix();
@@ -261,7 +261,7 @@ void gl_osd_printf(int *y, const char *fmt, ...) {
   glVertex2f(5,5+*y+h);
   glEnd();
   
-  outtext(vid->display,fd,5,5+*y,0xFFFF00,buf,NULL,PG_LGOP_NONE,0);
+  outtext(vid->display,fd,5,5+*y,0xFFFF00,pgstring_tmpwrap(buf),NULL,PG_LGOP_NONE,0);
 
   *y += h;
 

@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.9 2002/08/19 11:54:37 micahjd Exp $
+/* $Id: panelbar.c,v 1.10 2002/09/15 10:51:50 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -35,7 +35,7 @@
 #include <pgserver/configfile.h>
 #endif
 
-#define DRAG_DELAY    20   /* Min. # of milliseconds between
+#define DRAG_DELAY    5   /* Min. # of milliseconds between
 			      updates while dragging */
 
 /* The panelbar's thickness */

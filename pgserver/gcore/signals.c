@@ -1,4 +1,4 @@
-/* $Id: signals.c,v 1.10 2002/08/25 09:55:21 micahjd Exp $
+/* $Id: signals.c,v 1.11 2002/09/15 10:51:47 micahjd Exp $
  *
  * signal.c - Handle some fatal and not-so-fatal signals gracefully
  *            The SIGSEGV handling et cetera was inspired by SDL's
@@ -114,31 +114,32 @@ void signals_handler(int sig) {
      */
 
 #ifdef DEBUG_SIGTRACE   /* Print some extra info about the signal before quitting */
-    printf("*** PicoGUI Oops!\n"
-	   "***          si_signo: %d (%p)\n"
-	   "***          si_errno: %d\n"
-	   "***           si_code: %d\n"
-	   "***            si_pid: %d\n"
-	   "***            si_uid: %d\n"
-	   "***         si_status: %d\n"
-	   "***          si_value: %d\n"
-	   "***            si_int: %d\n"
-	   "***            si_ptr: %p\n"
-	   "***           si_addr: %p\n"
-	   "***           si_band: %d\n"
-	   "***             si_fd: %d\n",
-	   siginfo->si_signo,(void*)siginfo->si_signo,
-	   siginfo->si_errno,
-	   siginfo->si_code,
-	   siginfo->si_pid,
-	   siginfo->si_uid,
-	   siginfo->si_status,
-	   siginfo->si_value,
-	   siginfo->si_int,
-	   siginfo->si_ptr,
-	   siginfo->si_addr,
-	   siginfo->si_band,
-	   siginfo->si_fd);
+    if (siginfo)
+      printf("*** PicoGUI Oops!\n"
+	     "***          si_signo: %d (%p)\n"
+	     "***          si_errno: %d\n"
+	     "***           si_code: %d\n"
+	     "***            si_pid: %d\n"
+	     "***            si_uid: %d\n"
+	     "***         si_status: %d\n"
+	     "***          si_value: %d\n"
+	     "***            si_int: %d\n"
+	     "***            si_ptr: %p\n"
+	     "***           si_addr: %p\n"
+	     "***           si_band: %d\n"
+	     "***             si_fd: %d\n",
+	     siginfo->si_signo,(void*)siginfo->si_signo,
+	     siginfo->si_errno,
+	     siginfo->si_code,
+	     siginfo->si_pid,
+	     siginfo->si_uid,
+	     siginfo->si_status,
+	     siginfo->si_value,
+	     siginfo->si_int,
+	     siginfo->si_ptr,
+	     siginfo->si_addr,
+	     siginfo->si_band,
+	     siginfo->si_fd);
 #endif /* DEBUG_SIGTRACE */
 
     /* Prevent infinite recursion */

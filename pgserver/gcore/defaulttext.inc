@@ -49,7 +49,7 @@
 /* 41 */  "Corrupt header in BMP file",
 /* 42 */  "Unsupported format for BMP file",
 /* 43 */  "Error opening mouse device",
-/* 44 */  "Bad font for field",
+/* 44 */  NULL,
 /* 45 */  "Can't duplicate an object of this type",
 /* 46 */  "Error initializing video",
 /* 47 */  "Error setting video mode",

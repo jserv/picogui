@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_magic.c,v 1.3 2002/09/15 10:51:49 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -91,7 +91,7 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
    
    if (data->db_y+45+h>vid->lyres) {
       outtext(vid->display,df,10,vid->lyres-df->font->h*3,VID(color_pgtohwr) (0xFFFF00),
-	      "Too many bitmaps for this screen.\nChange video mode and try again",
+	      pgstring_tmpwrap("Too many bitmaps for this screen.\nChange video mode and try again"),
 	      &screenclip,PG_LGOP_NONE,0);
 
       return success;   /* Lies! :) */
@@ -110,7 +110,7 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
        VID(slab) (vid->display, data->db_x+5, data->db_y+40+i, w,
 		  VID(color_pgtohwr)(i&1 ? 0xFFFFFF : 0xCCCCCC), PG_LGOP_NONE);
      outtext(vid->display,df,data->db_x+5,data->db_y+40,VID(color_pgtohwr)(0x000000),
-	     "Alpha", &screenclip, PG_LGOP_NONE,0);
+	     pgstring_tmpwrap("Alpha"), &screenclip, PG_LGOP_NONE,0);
    }
 
    VID(blit) (vid->display,data->db_x+5,data->db_y+40,w,h,bmp,0,0,
@@ -164,12 +164,12 @@ void r_div_dump(struct divnode *div, const char *label, int level) {
    for (i=0;i<level;i++)
      printf("\t");
    printf("Div %p: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
-	  " calc=(%d,%d,%d,%d) nextline=%p divscroll=%p trans=(%d,%d)\n",
+	  " calc=(%d,%d,%d,%d) divscroll=%p trans=(%d,%d)\n",
 	  div,div->flags,div->split,div->pw,div->ph,
 	  div->cw,div->ch,
 	  div->x,div->y,div->w,div->h,
 	  div->calcx,div->calcy,div->calcw,div->calch,
-	  div->nextline, div->divscroll,
+	  div->divscroll,
 	  div->tx, div->ty);
 
    r_div_dump(div->div," Div:",level+1);
@@ -444,12 +444,14 @@ void magic_button(s16 key) {
   case PGKEY_a:           /* CTRL-ALT-a shows application info */
     {
       struct app_info *a;
-      const char *name;
+      const struct pgstring *name;
 
       for (a=applist;a;a=a->next) {
-	if (iserror(rdhandle((void**)&name,PG_TYPE_STRING,-1,a->name)))
-	  name = "(error reading handle)";
-	printf("app: '%s' type=%d owner=%d\n",name,a->type,a->owner);
+	if (iserror(rdhandle((void**)&name,PG_TYPE_PGSTRING,-1,a->name)))
+	  name = pgstring_tmpwrap("(error reading handle)");
+	printf("app: '");
+	pgstring_print(name);
+	printf("' type=%d owner=%d\n",a->type,a->owner);
       }
     }
     return;

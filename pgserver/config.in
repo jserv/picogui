@@ -30,15 +30,17 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Debugging'
+
+comment 'Unintrusive debugging'
 bool 'Enable text messages'             CONFIG_TEXT
+bool 'Magic debugging keys'             DEBUG_KEYS
+bool 'Video test modes'                 CONFIG_VIDEOTEST
+bool 'Trace location of fatal signals'  DEBUG_SIGTRACE
 if [ "$UCLINUX" != "y" ]; then
     bool 'Debugging symbols in binary'      CONFIG_NOSTRIP
 fi
-bool 'Debugging keys'                   DEBUG_KEYS
-bool 'Video test mode'                  CONFIG_VIDEOTEST
-bool 'Electric Fence malloc debugging'  CONFIG_EFENCE
-bool 'gcov coverage analysis'           CONFIG_GCOV
-bool 'gprof profiling'                  CONFIG_GPROF
+
+comment 'Debuggative spew'
 bool 'Terminal prints unknown escapes'  BOTHERSOME_TERMINAL
 bool 'Widget debugging'                 DEBUG_WIDGET
 bool 'Event debugging'                  DEBUG_EVENT
@@ -53,12 +55,18 @@ bool 'Memory debugging'                 DEBUG_MEMORY
 bool 'Mirror guru() output on stderr'   CONFIG_STDERR_GURU
 bool 'HTML parser debugging'            DEBUG_HTML
 bool 'Disable pixel/getpixel in x11'    CONFIG_X11_NOPIXEL
-bool 'Update the entire surface in sdlfb' CONFIG_SDL_FULLUPDATE
 bool 'PicoGUI error tracing'            CONFIG_ERROR_TRACE
 bool 'Virtual terminal debugging'       DEBUG_VT
 bool 'Video driver debugging'           DEBUG_VIDEODRIVER
+bool 'Trace pgstring memory management' DEBUG_PGSTRING_MEM
+bool 'Textbox widget debugging'         DEBUG_TEXTBOX
+
+comment 'Other options'
+bool 'Electric Fence malloc debugging'  CONFIG_EFENCE
+bool 'gcov coverage analysis'           CONFIG_GCOV
+bool 'gprof profiling'                  CONFIG_GPROF
 bool 'Dont catch fatal signals'         DEBUG_FATALSIGNALS
-bool 'Trace location of fatal signals'  DEBUG_SIGTRACE
+bool 'Update the entire surface in sdlfb' CONFIG_SDL_FULLUPDATE
 endmenu
 
 mainmenu_option next_comment
@@ -238,7 +246,6 @@ comment 'Graphics - libraries'
 bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
 bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
 comment 'Text'
-bool 'TEXTSAVE: Plain text saving'			 CONFIG_FORMAT_TEXTSAVE
 bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML
 endmenu
 

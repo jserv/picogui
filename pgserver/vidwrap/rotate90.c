@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.23 2002/07/03 22:03:32 micahjd Exp $
+/* $Id: rotate90.c,v 1.24 2002/09/15 10:51:50 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -204,7 +204,7 @@ g_error rotate90_exitmode(void) {
    return success;
 }
 
-void rotate90_coord_keyrotate(s16 *k) {
+void rotate90_coord_keyrotate(int *k) {
   switch (*k) {
   case PGKEY_UP:    *k = PGKEY_RIGHT; break;
   case PGKEY_RIGHT: *k = PGKEY_DOWN;  break;

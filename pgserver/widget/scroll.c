@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.56 2002/05/22 10:01:22 micahjd Exp $
+/* $Id: scroll.c,v 1.57 2002/09/15 10:51:50 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -36,12 +36,20 @@
 #endif
 #include <pgserver/debug.h>
 
+/* FIXME: These timing values shouldn't be hardcoded, this should
+ *        adapt to whatever frame rate it can get and try to
+ *        achieve a constant speed
+ */
+
 /* Minimum # of milliseconds between scrolls. This is used to limit the
    scroll bar's frame rate so it doesn't 'lag' behind the mouse */
-#define SCROLL_DELAY 50
+#define SCROLL_DELAY 5
 
 /* # of milliseconds between scrolls when holding down the mouse */
-#define SCROLLSPEED  50
+#define SCROLLSPEED  5
+
+/* Amount of pixels per redraw while holding down the mouse */
+#define SCROLLAMOUNT 10
 
 /* A power of two to divide the scroll bar's height by to get the
    indicator's height */
@@ -283,9 +291,9 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
 	self->in->div->ty;
       
       if (DATA->grab_offset < 0)  
-	DATA->release_delta = -10;
+	DATA->release_delta = -SCROLLAMOUNT;
       else if (DATA->grab_offset > (self->in->div->h>>HEIGHT_DIV))
-	DATA->release_delta = 10;
+	DATA->release_delta = SCROLLAMOUNT;
       else {
 	DATA->on=1;
 	DATA->release_delta = 0;

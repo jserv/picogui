@@ -1,0 +1,7 @@
+Makefile.in
+Makefile
+.deps
+pgserver.conf
+gen-pgserver-conf
+configurator.mk
+configurator

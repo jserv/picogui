@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.65 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: global.c,v 1.66 2002/09/15 10:51:45 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -27,14 +27,13 @@
  * 
  */
 
-#include <string.h>
-
 #include <pgserver/common.h>
-
 #include <pgserver/widget.h>
 #include <pgserver/divtree.h>
 #include <pgserver/font.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/pgstring.h>
+#include <string.h>
 
 /*** Simple arrow cursor in XBM format */
 
@@ -79,6 +78,10 @@ struct widget *wtbboundary;  /* htbboundary, dereferenced. Only used for compari
 				validity of this pointer, dereferencing it could
 				cause a segfault! */
 
+g_error appmgr_load_strings(void);
+
+
+/************************************************ Public Functions ******/
 
 g_error appmgr_init(void) {
   g_error e;
@@ -149,39 +152,11 @@ g_error appmgr_init(void) {
   errorcheck;
 
 #ifdef DEBUG_INIT
-   printf("Init: appmgr: strings\n");
+  printf("Init: appmgr: strings\n");
 #endif
-   
+  
   /* Default strings */
-  e = mkhandle(&res[PGRES_STRING_OK],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,1)));  /* Ok */
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_CANCEL],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,7)));  /* Cancel */
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_YES],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,14)));  /* Yes */
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_NO],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,15)));  /* No */
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_SEGFAULT],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,16)));
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_MATHERR],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,19)));
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_PGUIERR],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,24)));
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_PGUIWARN],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,31)));
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_PGUIERRDLG],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,29)));
-  errorcheck;
-  e = mkhandle(&res[PGRES_STRING_PGUICOMPAT],PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,32)));
+  e = appmgr_load_strings();
   errorcheck;
 
 #ifdef DEBUG_INIT
@@ -338,7 +313,7 @@ struct divnode *appmgr_nontoolbar_area(void) {
   /* Recalculate the root divtree, necessary if we just changed video modes,
    * or if the toolbars have moved since the last update and a popup is being
    * created */
-  while (divnode_recalc(&dts->root->head,NULL));
+  divnode_recalc(&dts->root->head,NULL);
 
   /* Dereference the toolbar boundary */
   if (iserror(rdhandle((void**) &wtbboundary,PG_TYPE_WIDGET,-1,htbboundary)))
@@ -381,6 +356,42 @@ void appmgr_focus(struct app_info **app) {
   *app = ap->next;
   ap->next = applist;
   applist = ap;
+}
+
+/************************************************ Internal utilities ******/
+
+
+/* Load all the client-visible strings into pgstring objects,
+ * and put them in the server resource table.
+ */
+g_error appmgr_load_strings(void) {
+  g_error e;
+  int i;
+
+  /* Table to match resource IDs and IDs from 
+   * our string table (otherwise used for errors) 
+   */
+  const static int strtable[][2] = {
+    { PGRES_STRING_OK,         mkerror(0,1) },
+    { PGRES_STRING_CANCEL,     mkerror(0,7) },
+    { PGRES_STRING_YES,        mkerror(0,14) },
+    { PGRES_STRING_NO,         mkerror(0,15) },
+    { PGRES_STRING_SEGFAULT,   mkerror(0,16) },
+    { PGRES_STRING_MATHERR,    mkerror(0,19) },
+    { PGRES_STRING_PGUIERR,    mkerror(0,24) },
+    { PGRES_STRING_PGUIWARN,   mkerror(0,31) },
+    { PGRES_STRING_PGUIERRDLG, mkerror(0,29) },
+    { PGRES_STRING_PGUICOMPAT, mkerror(0,32) },
+    {0,0}
+  };
+
+  for (i=0;strtable[i][1];i++) {
+    e = pgstring_wrap(&res[strtable[i][0]],PGSTR_ENCODE_ASCII,
+		      errortext(strtable[i][1]));
+    errorcheck;
+  }
+
+  return success;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.8 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: sdlgl_font.c,v 1.9 2002/09/15 10:51:50 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -191,13 +191,14 @@ void sdlgl_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags
 }
 
 void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			     s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			     s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
 			     struct quad **clip, s16 *lgop, s16 *angle) {
   int size = (int) (*fd)->extra;  
   float scale = (float)size / (*fd)->font->h;
   int ch;
   struct fontglyph const *g;
   struct gl_glyph *glg;
+  struct pgstr_iterator i = PGSTR_I_NULL;
 
   //  DBG("outtext: '%s' at scale %f, size %d\n",*txt,scale,size);
 
@@ -220,7 +221,7 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   glRotatef(*angle,0,0,-1);
   glPushMatrix();
 
-  while ((ch = (*fd)->decoder(txt))) {
+  while ((ch = pgstring_decode(*txt,&i))) {
     if (ch=='\n') {
       glPopMatrix();
       glTranslatef(0,(*fd)->font->h + (*fd)->interline_space,0);
@@ -256,11 +257,11 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   gl_lgop(PG_LGOP_NONE);
 
   /* Prevent normal outtext rendering */
-  *txt = "";
+  *txt = pgstring_tmpwrap("");
   *lgop = PG_LGOP_NONE;
 }
  
-void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
+void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt) {
   int size = (int) fd->extra;
 
   /* Most of the sizetext should still be fine for us, but we need to scale

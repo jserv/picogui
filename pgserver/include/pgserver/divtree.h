@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.43 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: divtree.h,v 1.44 2002/09/15 10:51:48 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -86,9 +86,6 @@ struct divnode {
   
   /* This is used by the DIVNODE_DIVSCROLL flag */
   struct divnode *divscroll;
-
-  /* Used by the DIVNODE_AUTOWRAP flag */
-  struct divnode *nextline;
 
   /* When the widget is resized or changes state, this is used to rebuild the
      groplist. It defines the appearance of the widget. */
@@ -198,9 +195,9 @@ struct divnode {
 					  * This flag is given to the actual popup
 					  * widget, the 'div' child of the widget
 					  * given DIVNODE_SPLIT_POPUP */
-#define DIVNODE_NOSQUISH         (1<<22) /* Instead of shrinking the widget
-					  * when the requested space isn't
-					  * available, make it disappear
+#define DIVNODE_RAW_BUILD        (1<<22) /* Don't automatically clear the groplist,
+					  * initialize the grop context, and set
+					  * redraw flags when doing a div_rebuild()
 					  */
 #define DIVNODE_EXTEND_WIDTH     (1<<23) /* Use the calculated width or
 					  * the preferred width, whichever's
@@ -224,19 +221,6 @@ struct divnode {
 					  * of a scrolled node the DIVNODE_SCROLL_ONLY flag
 					  * when the scrolled node gets it 
 					  */
-#define DIVNODE_AUTOWRAP         (1<<27) /* This divnode flag implements word wrapping, or anything
-					  * similar. For example, it may be useful to have toolbar
-					  * buttons automatically flow onto a second toolbar.
-					  * By setting a node's 'nextline' pointer to the container
-					  * representing the line after this one, the layout
-					  * engine will automatically shuffle nodes between lines
-					  * to implement word wrapping.
-					  */
-#define DIVNODE_CONTINUATION_LINE (1<<28) /* This line was automatically added by DIVNODE_AUTOWRAP
-					   * so this should be taken into consideration when
-					   * calculating the preferred size. This also indicates
-					   * that the line can be automatically removed
-					   */
 #define DIVNODE_UNDERCONSTRUCTION (1<<29) /* This flag prevents a divnode from being calculated
                                            * or rendered. The 'next' child inherits this div's
 					   * position, and the 'div' child is not calculated or
@@ -268,10 +252,8 @@ typedef unsigned short int sidet;
  * pointer to this divnode. This is important in case this divnode is moved
  * to another location in the tree. The parent parameter optionally points
  * to this divnode's parent, or NULL.
- *
- * The return value is 1 if the recalc was aborted and should be restarted.
  */
-int divnode_recalc(struct divnode **pn, struct divnode *parent);
+void divnode_recalc(struct divnode **pn, struct divnode *parent);
 
 /* Split a divnode into two rectangles according to its flags */
 void divnode_split(struct divnode *n,struct rect *div,

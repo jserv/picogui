@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.9 2002/07/03 22:03:32 micahjd Exp $
+/* $Id: rotate180.c,v 1.10 2002/09/15 10:51:50 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -190,7 +190,7 @@ g_error rotate180_entermode(void) {
    return bitmap_iterate(vid->bitmap_rotate90);
 }
 
-void rotate180_coord_keyrotate(s16 *k) {
+void rotate180_coord_keyrotate(int *k) {
   switch (*k) {
   case PGKEY_UP:    *k = PGKEY_DOWN;  break;
   case PGKEY_RIGHT: *k = PGKEY_LEFT;  break;

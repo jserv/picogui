@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.15 2002/08/19 06:09:40 micahjd Exp $
+/* $Id: sdlgl.h,v 1.16 2002/09/15 10:51:48 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -253,9 +253,9 @@ g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **p
 g_error gl_load_font(struct gl_fontload *fl,const char *file);
 void sdlgl_font_newdesc(struct fontdesc *fd, const u8 *name, int size, int flags);
 void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			     s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			     s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
 			     struct quad **clip, s16 *lgop, s16 *angle);
-void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
+void sdlgl_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt);
 void gl_fontload_storetexture(struct gl_fontload *fl);
 g_error gl_fontload_init(struct gl_fontload **fl);
 void gl_fontload_finish(struct gl_fontload *fl); 

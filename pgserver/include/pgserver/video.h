@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.89 2002/08/15 09:30:45 micahjd Exp $
+/* $Id: video.h,v 1.90 2002/09/15 10:51:48 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -29,9 +29,9 @@
 #ifndef __H_VIDEO
 #define __H_VIDEO
 
-#include <pgserver/g_error.h>
 #include <pgserver/divtree.h>
 #include <picogui/network.h>   /* For pgshmbitmap */
+#include <pgserver/pgstring.h>
 
 struct fontdesc;
 struct quad;
@@ -196,7 +196,7 @@ struct vidlib {
    *
    * Default implementation: does nothing
    */
-  void (*coord_keyrotate)(s16 *k);
+  void (*coord_keyrotate)(int *k);
 
   /* Reccomended (without double-buffer, it looks really dumb)
    *   Update changes to the screen, if device is double-buffered or
@@ -259,7 +259,7 @@ struct vidlib {
    *
    * Default implementation: none
    */
-  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
+  void (*font_sizetext_hook)(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt);
 
   /* Optional
    *   Called before outtext, giving the driver an opportunity to modify
@@ -268,7 +268,7 @@ struct vidlib {
    * Default implementation: none
    */
   void (*font_outtext_hook)(hwrbitmap *dest, struct fontdesc **fd,
-			    s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			    s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
 			    struct quad **clip, s16 *lgop, s16 *angle);
 
   /* Optional
@@ -689,10 +689,10 @@ g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
 g_error def_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h);
 g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm);
-void def_coord_keyrotate(s16 *k);
-void rotate90_coord_keyrotate(s16 *k);
-void rotate180_coord_keyrotate(s16 *k);
-void rotate270_coord_keyrotate(s16 *k);
+void def_coord_keyrotate(int *k);
+void rotate90_coord_keyrotate(int *k);
+void rotate180_coord_keyrotate(int *k);
+void rotate270_coord_keyrotate(int *k);
 void def_coord_physicalize(int *x, int *y);
 void rotate90_coord_physicalize(int *x, int *y);
 void rotate180_coord_physicalize(int *x, int *y);

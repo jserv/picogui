@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.102 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: dispatch.c,v 1.103 2002/09/15 10:51:49 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -35,6 +35,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
 #include <pgserver/svrwt.h>
+#include <pgserver/pgstring.h>
 
 #include <stdlib.h>	/* alloca */
 #include <string.h>	/* strncmp */
@@ -299,16 +300,26 @@ g_error rqh_mkfont(int owner, struct pgrequest *req,
 
 g_error rqh_mkstring(int owner, struct pgrequest *req,
 		     void *data, u32 *ret, int *fatal) {
-  char *buf;
+  struct pgstring *str;
   handle h;
   g_error e;
+  int encoding;
+  int i;
+  u8 *p;
 
-  e = g_malloc((void **) &buf, req->size+1);
+  /* If there's no characters with the high bit set, we'll use
+   * ASCII encoding for speed. Otherwise use the full UTF-8.
+   */
+  encoding = PGSTR_ENCODE_ASCII;
+  for (i=0,p=(u8*)data;i<req->size;i++,p++)
+    if (*p & 0x80) {
+      encoding = PGSTR_ENCODE_UTF8;
+      break;
+    }
+
+  e = pgstring_new(&str, encoding, req->size, data);
   errorcheck;
-  memcpy(buf,data,req->size);
-  buf[req->size] = 0;  /* Null terminate it if it isn't already */
-
-  e = mkhandle(&h,PG_TYPE_STRING,owner,buf);
+  e = mkhandle(&h,PG_TYPE_PGSTRING,owner,str);
   errorcheck;
 
   *ret = h;
@@ -491,7 +502,7 @@ g_error rqh_mkpopup(int owner, struct pgrequest *req,
 g_error rqh_sizetext(int owner, struct pgrequest *req,
 		     void *data, u32 *ret, int *fatal) {
   struct fontdesc *fd;
-  char *txt;
+  struct pgstring *str;
   s16 w,h;
   g_error e;
   reqarg(sizetext);
@@ -502,10 +513,10 @@ g_error rqh_sizetext(int owner, struct pgrequest *req,
     e = rdhandle((void**) &fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
   errorcheck;
 
-  e = rdhandle((void**) &txt,PG_TYPE_STRING,owner,ntohl(arg->text));
+  e = rdhandle((void**) &str,PG_TYPE_PGSTRING,owner,ntohl(arg->text));
   errorcheck;
 
-  sizetext(fd,&w,&h,txt);
+  sizetext(fd,&w,&h,str);
 
   /* Pack w and h into ret */
   *ret = (((u32)w)<<16) | h;
@@ -702,24 +713,41 @@ g_error rqh_focus(int owner, struct pgrequest *req,
 g_error rqh_getstring(int owner, struct pgrequest *req,
 		      void *data, u32 *ret, int *fatal) {
   struct pgresponse_data rsp;
-  char *string;
+  struct pgstring *str, *tmpstr;
   u32 size;
   g_error e;
   reqarg(handlestruct);
 
-  e = rdhandle((void**) &string,PG_TYPE_STRING,owner,ntohl(arg->h));
+  e = rdhandle((void**) &str,PG_TYPE_PGSTRING,owner,ntohl(arg->h));
   errorcheck;
-  if (!string)
+  if (!str)
     return mkerror(PG_ERRT_HANDLE,93);   /* Null string in getstring */
-
+  
   /* Send a PG_RESPONSE_DATA back */
   rsp.type = htons(PG_RESPONSE_DATA);
   rsp.id = htonl(req->id);
-  size = strlen(string)+1;
-  rsp.size = htonl(size);
-  
+
+  /* If this string is already in plain ASCII or UTF-8 encoding, send it.
+   * Otherwise convert to a temp string in UTF-8 format and send that.
+   */
+  switch (str->flags & PGSTR_ENCODE_MASK) {
+  case PGSTR_ENCODE_ASCII:
+  case PGSTR_ENCODE_UTF8:
+    rsp.size = htonl(str->num_bytes);
+    *fatal |= send_response(owner,&rsp,sizeof(rsp));  
+    *fatal |= send_response(owner,str->buffer,str->num_bytes);  
+    return ERRT_NOREPLY;
+  }
+
+  /* Darn, we have to convert it... 
+   */
+  e = pgstring_convert(&tmpstr, PGSTR_ENCODE_UTF8, str);
+  errorcheck;
+  rsp.size = htonl(tmpstr->num_bytes);
   *fatal |= send_response(owner,&rsp,sizeof(rsp));  
-  *fatal |= send_response(owner,string,size);  
+  *fatal |= send_response(owner,tmpstr->buffer,tmpstr->num_bytes);  
+  pgstring_delete(tmpstr);
+  
   return ERRT_NOREPLY;
 }
 
@@ -1081,7 +1109,7 @@ g_error rqh_findwidget_iterate(const void **p, void *extra) {
   const char *str;
   struct rqh_findwidget_data *data = (struct rqh_findwidget_data *) extra;
 
-  if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,w->name)) || !str)
+  if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,w->name)) || !str)
     return success;
   if (!strncmp(data->string,str,data->len))
     data->result = hlookup(w,NULL);
@@ -1186,7 +1214,7 @@ g_error rqh_findthobj(int owner, struct pgrequest *req,
 		      void *data, u32 *ret, int *fatal) {
   s16 id;
 
-  if (find_named_thobj(data, &id))
+  if (find_named_thobj(pgstring_tmpwrap(data), &id))
     *ret = id;
   else
     *ret = 0;

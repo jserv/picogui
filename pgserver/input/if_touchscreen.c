@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.3 2002/08/07 06:00:56 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.4 2002/09/15 10:51:49 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -151,13 +151,16 @@ void touchscreen_cal_load(struct ts_calibration *tsc, const char *file) {
 /* Set the calibration from a string
  */
 void touchscreen_cal_set(struct ts_calibration *tsc, handle cal_string, int save_to_file) {
-  char *str;
+  struct pgstring *str;
 
   tsc->valid = 0;
-  if(iserror(rdhandle((void**)&str, PG_TYPE_STRING, -1,
+  if(iserror(rdhandle((void**)&str, PG_TYPE_PGSTRING, -1,
 		      cal_string)) || !str) 
     return;
-  if(sscanf(str, "COEFFv1 %d %d %d %d %d %d %d",
+  if (iserror(pgstring_convert(&str, PGSTR_ENCODE_UTF8, str)))
+    return;
+
+  if(sscanf(str->buffer, "COEFFv1 %d %d %d %d %d %d %d",
 	    &tsc->a, &tsc->b, &tsc->c, &tsc->d, &tsc->e,
 	    &tsc->f, &tsc->s)==7) {
     FILE *fp=NULL;
@@ -182,6 +185,8 @@ void touchscreen_cal_set(struct ts_calibration *tsc, handle cal_string, int save
     
     tsc->valid = 1;
   }  
+
+  pgstring_delete(str);
 }
 
 /* Transform from pen to screen coordinates using the given calibration 

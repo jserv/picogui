@@ -1,4 +1,4 @@
-/* $Id: sdlgl_primitives.c,v 1.11 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: sdlgl_primitives.c,v 1.12 2002/09/15 10:51:50 micahjd Exp $
  *
  * sdlgl_primitives.c - OpenGL driver for picogui, using SDL for portability.
  *                      Implement standard picogui primitives using OpenGL
@@ -404,8 +404,9 @@ int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
 
     /* Override textgrid to provide a more efficient implementation.
      */
+#if 0   /* FIXME: update for pgstrings */
   case PG_GROP_TEXTGRID:
-    if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
+    if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
 			 node->param[0])) || !str) break;
     if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			 rend->hfont)) || !fd) break;
@@ -499,6 +500,7 @@ int sdlgl_grop_render_node_hook(struct divnode **div, struct gropnode ***listp,
       }
     }
     break;      
+#endif
     
   default:
     return 1;    /* Use normal code */

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.67 2002/07/03 22:03:31 micahjd Exp $
+/* $Id: memtheme.c,v 1.68 2002/09/15 10:51:50 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -32,6 +32,7 @@
 #include <pgserver/svrtheme.h>
 #include <pgserver/divtree.h>
 #include <pgserver/pgnet.h>
+#include <pgserver/pgstring.h>
 #include <picogui/theme.h>
 
 #include <stdio.h>  /* for NULL */
@@ -110,7 +111,7 @@ u16 thobj_ancestry[PGTH_ONUM] = {
   /* 54 PGTH_O_RADIOBUTTON_HILIGHT   */ PGTH_O_CHECKBOX_HILIGHT,
   /* 55 PGTH_O_RADIOBUTTON_ON        */ PGTH_O_CHECKBOX_ON,
   /* 56 PGTH_O_RADIOBUTTON_ON_NOHILIGHT */ PGTH_O_CHECKBOX_ON_NOHILIGHT,
-  /* 57 PGTH_O_TEXTBOX               */ PGTH_O_DEFAULT,
+  /* 57 PGTH_O_TEXTBOX               */ PGTH_O_BASE_DISPLAY,
   /* 58 PGTH_O_TERMINAL              */ PGTH_O_BASE_DISPLAY,
   /* 59 PGTH_O_LIST                  */ PGTH_O_BASE_INTERACTIVE,
   /* 60 PGTH_O_MENUBUTTON            */ PGTH_O_BUTTON,
@@ -258,6 +259,7 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_TICKS:            return getticks();
   case PGTH_P_CURSORBITMAP:     return res[PGRES_DEFAULT_CURSORBITMAP];
   case PGTH_P_CURSORBITMASK:    return res[PGRES_DEFAULT_CURSORBITMASK];
+  case PGTH_P_CURSOR_WIDTH:     return 2;
 
   default:
     return 0;       /* Couldn't hurt? */
@@ -276,15 +278,14 @@ void div_rebuild(struct divnode *d) {
    if (d->build) {
 
      /* Unless it's a raw build, clear the groplist. */
-     if (!(d->owner && d->owner->rawbuild)) {
+     if (!(d->flags & DIVNODE_RAW_BUILD))
        grop_free(&d->grop);
-       gropctxt_init(&c,d);
-     }
-     
+
+     gropctxt_init(&c,d);     
      (*d->build)(&c,d->state,d->owner);
      
      /* Unless this is a raw build, set redraw flags */
-     if (!(d->owner && d->owner->rawbuild)) {
+     if (!(d->flags & DIVNODE_RAW_BUILD)) {
        d->flags |= DIVNODE_NEED_REDRAW;
        if (d->owner)
 	 d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
@@ -365,7 +366,7 @@ void build_bgfill_only(struct gropctxt *c, u16 state, struct widget *self) {
 
 /***************** Custos theme objects */
 
-u16 custom_thobj_id(char *name) {
+u16 custom_thobj_id(struct pgstring *name) {
   static u16 next_id = 0;
   u16 x;
 
@@ -401,18 +402,18 @@ int thobj_id_available(s16 id) {
  * matching the given string. If it's found, this puts its id in "*id"
  * and returns nonzero.
  */
-int find_named_thobj(const u8 *name, s16 *id) {
+int find_named_thobj(const struct pgstring *name, s16 *id) {
   struct pgmemtheme *ptheme;
   struct pgmemtheme_thobj *pobj;
   struct pgmemtheme_prop *pprop;
-  char *thisname;
+  struct pgstring *thisname;
   int i;
 
   for (ptheme=memtheme;ptheme;ptheme=ptheme->next)
     for (pobj=theme_thobjlist(ptheme),i=0;i<ptheme->num_thobj;pobj++,i++)
       if ((pprop = find_prop(pobj,PGTH_P_NAME)))
-	if (!iserror(rdhandle((void**)&thisname,PG_TYPE_STRING,-1,pprop->data)))
-	  if (thisname && !strcmp(thisname,name)) {
+	if (!iserror(rdhandle((void**)&thisname,PG_TYPE_PGSTRING,-1,pprop->data)))
+	  if (thisname && !pgstring_cmp(thisname,name)) {
 	    *id = pobj->id;
 	    return 1;
 	  }
@@ -459,7 +460,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
   struct pgtheme_prop *propp;
   struct pgmemtheme_prop *mpropp;
   struct pgmemtheme *th;
-  char *objname;
+  struct pgstring *objname;
 
   /* Get the header */
   if (themefile_remaining < sizeof(struct pgtheme_header))
@@ -658,7 +659,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
       /* If that was the 'name' property, save it for below... */
       if (mpropp->id == PGTH_P_NAME)
-	rdhandle((void**)&objname,PG_TYPE_STRING,owner,mpropp->data);
+	rdhandle((void**)&objname,PG_TYPE_PGSTRING,owner,mpropp->data);
     }
     
     /* If this was a custom theme object, give it an ID now */
@@ -696,7 +697,7 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
 	{
 	  s16 id;
-	  if (find_named_thobj(themefile_start + mpropp->data, &id))
+	  if (find_named_thobj(pgstring_tmpwrap(themefile_start + mpropp->data), &id))
 	    mpropp->data = id;
 	  else
 	    mpropp->data = 0;

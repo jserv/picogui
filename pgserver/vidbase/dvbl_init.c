@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.3 2002/07/26 11:11:37 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.4 2002/09/15 10:51:50 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -59,14 +59,14 @@ void def_update(s16 x,s16 y,s16 w,s16 h) {
 void def_coord_logicalize(int *x,int *y) {
 }
 
-void def_coord_keyrotate(s16 *k) {
+void def_coord_keyrotate(int *k) {
 }
 
-void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt) {
+void def_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt) {
 }
 
 void def_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			   s16 *x,s16 *y,hwrcolor *col,const u8 **txt,
+			   s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
 			   struct quad **clip, s16 *lgop, s16 *angle) {
 }
 

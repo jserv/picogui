@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.86 2002/07/03 22:03:28 micahjd Exp $
+/* $Id: div.c,v 1.87 2002/09/15 10:51:47 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -63,17 +63,6 @@ void divnode_divscroll(struct divnode *n) {
       n->div->divscroll = n->divscroll;
     }
   }
-}
-
-/* Small helper function- set the 'nextline' for n and all its
- * children to the value 'nl'.
- */
-void r_set_nextline(struct divnode *n, struct divnode *nl) {
-  if (!n)
-    return;
-  n->nextline = nl;
-  r_set_nextline(n->div,nl);
-  r_set_nextline(n->next,nl);
 }
 
 /* Split a divnode into two rectangles, according to the
@@ -231,16 +220,10 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	split = container->in->div->h * (split >> 8) / (split & 0xFF);
     }
     
-    /* Not enough space. Normally we shrink the divnode to fit in the 
-     * available space. If the NOSQUISH flag is on, make the offending
-     * divnode disappear instead.
+    /* Not enough space. Shrink the divnode to fit in the available space. 
      */
-    if (split>n->h) {
-      if (n->flags & DIVNODE_NOSQUISH)
-	split = 0;
-      else
+    if (split>n->h)
 	split = n->h;
-    }       
     
     divrect->x = n->calcx;
     divrect->w = n->w;
@@ -274,16 +257,11 @@ void divnode_split(struct divnode *n, struct rect *divrect,
 	split = container->in->div->w * (split >> 8) / (split & 0xFF);
     }
     
-    /* Not enough space. Normally we shrink the divnode to fit in the 
-     * available space. If the NOSQUISH flag is on, make the offending
-     * divnode disappear instead.
+
+    /* Not enough space. Shrink the divnode to fit in the available space. 
      */
-    if (split>n->w) {
-      if (n->flags & DIVNODE_NOSQUISH)
-	split = 0;
-      else
+    if (split>n->w)
 	split = n->w;
-    }       
     
     divrect->y = n->calcy;
     divrect->h = n->h;
@@ -389,13 +367,13 @@ void divnode_split(struct divnode *n, struct rect *divrect,
  * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
  */
-int divnode_recalc(struct divnode **pn, struct divnode *parent) {
+void divnode_recalc(struct divnode **pn, struct divnode *parent) {
    struct divnode *n = *pn;
    struct rect divrect, nextrect;
    struct rect old_divrect, old_nextrect;
 
    if (!n)
-     return 0;
+     return;
 
    if (n->flags & DIVNODE_NEED_REBUILD)
      div_rebuild(n);
@@ -417,166 +395,6 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 
      /* Split the rectangle */
      divnode_split(n,&divrect,&nextrect);
-     
-     /* Handle autowrapping */
-     if ((n->flags & DIVNODE_AUTOWRAP) && !(n->flags & DIVNODE_UNDERCONSTRUCTION) ) {
-
-       /* If we're mushed, move this node to the next line. Normally
-	* it isn't a great idea to rearrange the divtree while it's
-	* recalculating...
-	*
-	* This condition also prevents wrapping if this is the first node
-	* on the line. If we allow lines with no nodes on them, in some
-	* cases we could end up with an infinite number of lines! (if there
-	* is a node wider than the line)
-	*
-	* If this node gets relocated to a part of the tree that hasn't
-	* been traversed yet, it will probably be safe to continue.
-	* But, consider that it is relocated to somewhere we've already
-	* visited. It's safest to just redo the whole recalc. If we keep the
-	* flags straight, the recalc will reset itself and traverse again.
-	*/
-       if (n->div && ((n->div->w < max(n->div->pw,n->div->cw) &&
-		       (n->flags & (PG_S_LEFT | PG_S_RIGHT))) || 
-		      (n->div->h < max(n->div->ph,n->div->ch) &&
-		       (n->flags & (PG_S_TOP | PG_S_BOTTOM)))) && 
-	   ((!parent) || parent->div!=n)) {
-	 struct divnode *p;
-	 /* Send to the next line */
-
-	 /* Need to create a line? */
-	 if (!n->nextline) {
-	   g_error e;
-	   struct divnode *thisline, *newline;
-
-	   /* First, find the current line's divnode. */
-	   thisline = divnode_findbranch(n->owner->in, n);
-	   if (!thisline)
-	     return 0;
-
-	   /* Construct a new node */
-	   e = newdiv(&newline, n->owner);
-	   if (iserror(e)) {
-	     /* No great way to handle errors- just abort the calculations */
-	     n->nextline = NULL;
-	     return 0;
-	   }
-
-	   /* Same flags & size as the current line */
-	   newline->flags = thisline->flags | DIVNODE_CONTINUATION_LINE;
-	   newline->split = thisline->split;
-
-	   /* Insert after this line */
-	   newline->next = thisline->next;
-	   thisline->next = newline;
-	   thisline->nextline = newline;
-	   r_set_nextline(thisline->div,newline);
-
-	   /* Inserted a blank line, set flags to recalc it properly */
-	   thisline->flags |= DIVNODE_NEED_RECALC;
-	 }
-  
-	 /* Find the end of our subtree */
-	 p = n;
-	 while (p->next)
-	   p = p->next;
-	 
-	 /* Insert it at the beginning of the next line */
-	 p->next = n->nextline->div;
-	 n->nextline->div = n;
-	 
-	 /* Unlink from current position */
-	 *pn = NULL;            
-	 
-	 /* Recalculate preferred sizes. This is more processing than
-	  * I would prefer to do here, but a change here could possibly
-	  * change the sizing for an entire application. The autosplit
-	  * code is smart enough to set flags properly.
-	  *
-	  * Normally we schedule a resize using DIVTREE_NEED_RESIZE, but
-	  * in this case it must be done immediately.
-	  */
-	 divresize_recursive(n->owner->dt->head);
-	 
-	 /* Update the nextline pointer for this node and all children */
-	 r_set_nextline(n,n->nextline->nextline);
-	 
-	 return 1;   /* Abort! */
-       }
-       
-       /* Otherwise, check whether there's extra room */
-       else if (n->nextline && n->nextline->div && (!n->next)) {
-	 struct divnode **p;
-	 s16 avw,avh;       /* Available width/height */
-	 
-	 avw = nextrect.w;
-	 avh = nextrect.h;
-	 
-	 /* See how many divnodes from the next line will fit here */
-	 p = &n->nextline->div;
-	 while (*p) {
-	   if ((*p)->div) {
-	     if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
-	       avw -= max((*p)->div->cw,(*p)->div->pw);
-	     if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
-	       avh -= max((*p)->div->ch,(*p)->div->ph);
-	     if (avw<0 || avh<0)
-	       break;
-	   }
-	   p = &(*p)->next;
-	 }
-	 
-	 /* After this loop, *p points to the first node that can't be
-	  * moved to the current line. Munge the pointers a little to
-	  * move all that we can. Insert the subtree, and fix up
-	  * the nextline pointers.
-	  */
-	 
-	 if (*p != n->nextline->div) {
-	   n->next = n->nextline->div;
-	   n->nextline->div = *p;
-	   *p = NULL;
-	   r_set_nextline(n->next,n->nextline);
-	   
-	   /* If we just emptied the next line, delete it */
-	   if ((!n->nextline->div) && (n->nextline->flags & DIVNODE_CONTINUATION_LINE)) {
-	     struct divnode *blankline = n->nextline;
-	     struct divnode **pp, *p;
-
-	     /* Link the divtree and nextline pointers around this node */
-	     p = divnode_findbranch(n->owner->in,n);
-	     if (p) {
-	       /* FIXME: This flags line may not work if p->nextline != p->next
-		*/
-	       p->flags |= DIVNODE_NEED_RECALC;
-
-	       p->nextline = blankline->nextline;
-	       r_set_nextline(p->div,blankline->nextline);
-	     }
-	     pp = divnode_findpointer(n->owner->in,blankline);
-	     if (pp)
-	       *pp = blankline->next;
-	     blankline->nextline = NULL;
-	     blankline->next = NULL;
-
-	     /* Delete the blank line */
-	     r_divnode_free(blankline);
-	   }
-	   
-	   /* Recalculate preferred sizes. This is more processing than
-	    * I would prefer to do here, but a change here could possibly
-	    * change the sizing for an entire application. The autosplit
-	    * code is smart enough to set flags properly.
-	    *
-	    * Normally we schedule a resize using DIVTREE_NEED_RESIZE, but
-	    * in this case it must be done immediately.
-	    */
-	   divresize_recursive(n->owner->dt->head);
-	   
-	   return 1;  /* Abort! */
-	 }
-       }
-     }
      
      /* Recalc completed.  Propagate the changes to child nodes if their
       * dimensions have changed.
@@ -607,12 +425,8 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
        n->flags &= ~DIVNODE_NEED_RECALC;
    }
    
-   /* A child node might need a recalc even if we aren't forcing one */
-   if (divnode_recalc(&n->div,n))
-     return 1;                      /* Allow child nodes to abort */
-   if (divnode_recalc(&n->next,n))
-     return 1;
-   return 0;
+   divnode_recalc(&n->div,n);
+   divnode_recalc(&n->next,n);
 }
 
 /* Redraw the divnodes if they need it.
@@ -630,14 +444,21 @@ void divnode_redraw(struct divnode *n,int all) {
 	!(n->flags & DIVNODE_UNDERCONSTRUCTION) ) { 
 
      if (n->w && n->h)
-       grop_render(n);
+       grop_render(n,NULL);
 
      if (n->next && (n->flags & DIVNODE_PROPAGATE_REDRAW))
 	 n->next->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
+
      if (n->div && (n->flags & DIVNODE_NEED_REDRAW))
        n->div->flags |= DIVNODE_NEED_REDRAW | DIVNODE_PROPAGATE_REDRAW;
-     if (n->next && (n->flags & DIVNODE_PROPAGATE_SCROLL))
-       n->next->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
+
+     if (n->flags & DIVNODE_PROPAGATE_SCROLL) {
+       if (n->next)
+	 n->next->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
+       if (n->div)
+	 n->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
+     }
+
      if (n->div && (n->flags & DIVNODE_SCROLL_ONLY))
        n->div->flags |= DIVNODE_SCROLL_ONLY | DIVNODE_PROPAGATE_SCROLL;
 
@@ -727,7 +548,7 @@ void update(struct divnode *subtree,int show) {
 	return;
     }
 
-    while (divnode_recalc(&subtree,NULL));
+    divnode_recalc(&subtree,NULL);
     divnode_redraw(subtree,0);
   }
   else 
@@ -748,16 +569,26 @@ void update(struct divnode *subtree,int show) {
 
 void divtree_size_and_calc(struct divtree *dt) {
   /* Perform a divresize_recursive if it has been requested */
-  if (dt->flags & DIVTREE_NEED_RESIZE)
+  if (dt->flags & DIVTREE_NEED_RESIZE) {
     divresize_recursive(dt->head);
+    dt->flags &= ~DIVTREE_NEED_RESIZE;
+  }
   
   if (dt->flags & DIVTREE_NEED_RECALC) {
 #ifdef DEBUG_VIDEO
     printf("divnode_recalc(%p)\n",dt->head);
 #endif
 
-    /* Recalc, repeat if aborted */
-    while (divnode_recalc(&dt->head,NULL));
+    divnode_recalc(&dt->head,NULL);
+    
+    /* If we need yet another resize, try again. This accounts for iterative
+     * sizing of things that change preferred size depending on what actual size they get.
+     * FIXME: There's probably a cleaner way to do this
+     */
+    if (dt->flags & DIVTREE_NEED_RESIZE) {
+      divtree_size_and_calc(dt);
+      return;
+    }
 
     /* If we recalc, at least one divnode will need redraw */
     dt->flags |= DIVTREE_NEED_REDRAW;
@@ -1019,34 +850,14 @@ void divresize_recursive(struct divnode *div) {
       
     case PG_S_TOP:
     case PG_S_BOTTOM:
-      /* If we're adding continuation lines, stack them in the
-       * opposite orientation. This way we get the size it would
-       * be if the continuation lines were not present.
-       */
-      if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
-	div->cw = dw + nw;
-	div->ch = dh + nh;
-      }
-      else {
-	div->ch = dh + nh;
-	div->cw = max(dw,nw);
-      }
+      div->ch = dh + nh;
+      div->cw = max(dw,nw);
       break;
       
     case PG_S_LEFT:
     case PG_S_RIGHT:
-      /* If we're adding continuation lines, stack them in the
-       * opposite orientation. This way we get the size it would
-       * be if the continuation lines were not present.
-       */
-      if (div->next && (div->next->flags & DIVNODE_CONTINUATION_LINE)) {
-	div->ch = dh + nh;
-	div->cw = dw + nw;
-      }
-      else {
-	div->cw = dw + nw;
-	div->ch = max(dh,nh);
-      }
+      div->cw = dw + nw;
+      div->ch = max(dh,nh);
       break;
       
     case PG_S_ALL:
@@ -1058,6 +869,11 @@ void divresize_recursive(struct divnode *div) {
     case DIVNODE_SPLIT_BORDER:
       div->cw = dw + (div->split<<1);
       div->ch = dh + (div->split<<1);
+      break;
+
+    default:
+      div->cw = max(dw,nw);
+      div->ch = max(dh,nh);
       break;
 
     }

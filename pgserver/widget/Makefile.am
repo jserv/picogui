@@ -11,15 +11,15 @@ libwidget_a_SOURCES = \
     button.c \
     popup.c \
     box.c \
-    field.c \
     background.c \
     menuitem.c \
     checkbox.c \
     flatbutton.c \
     listitem.c \
     radiobutton.c \
-    textbox_main.c \
+    textbox_frontend.c \
     textbox_document.c \
+    textbox_paragraph.c \
     panelbar.c \
     simplemenu.c \
     $(WIDGET)

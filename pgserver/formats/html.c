@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2 -*-
- * $Id: html.c,v 1.17 2002/02/09 05:57:16 sdeerwester Exp $
+ * $Id: html.c,v 1.18 2002/09/15 10:51:46 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -93,6 +93,8 @@
 #ifdef DEBUG_HTML
 #include <unistd.h>
 #endif
+
+#if 0 /**** BROKE ****/
 
 /*************************************** Font/color options */
 
@@ -959,5 +961,7 @@ pgcolor html_findcolor(const u8 *colorname, int namelen) {
 
   return p->c;
 }
+
+#endif
 
 /* The End */

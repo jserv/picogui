@@ -1,0 +1,8 @@
+object default name = "Alpha blended gold arrow cursor (I-beam)";
+
+object textbox {
+  cursorbitmap = LoadBitmap("data/ibeam_gold.png");
+  cursorbitmask = 0;
+  crsrhotspot.x = 8;
+  crsrhotspot.y = 14;
+}

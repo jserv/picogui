@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.13 2002/02/20 20:27:30 lonetech Exp $
+/* $Id: textbox.h,v 1.14 2002/09/15 10:51:48 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -32,119 +32,88 @@
 
 #include <pgserver/divtree.h>
 #include <pgserver/render.h>
+#include <pgserver/paragraph.h>
 
-/************************* Data structures */
-
-/* Formatting is stored on a stack. Each node records format _changes_ */
-struct formatnode {
-  handle fontdef;            /* Font definition for this formatting */
-  int font_refcnt;           /* Number of divnodes using the font */
-  hwrcolor color;            /* Text foreground color */
-  struct formatnode *next;
+struct textbox_document {
+  struct paragraph *par_list;     /* Doubly-linked list of paragraphs */
+  struct divnode *container_div;  /* Divnode containing everything */
+  struct paragraph_cursor *crsr;  /* Current cursor (and therefore current paragraph) */
 };
 
-/* A description of the cursor position and formatting */
-struct textbox_cursor {
-  struct widget *widget;     /* Widget owning this text */
-  struct divnode *head;      /* First line in the document */
-  struct divnode *c_line;    /* Line the cursor is in */
-  struct divnode *c_div;     /* Divnode the cursor is in */
-  struct gropctxt c_gctx;    /* Gropnode context the cursor is in */
-  struct formatnode *f_top;  /* Top of formatting stack */
-  struct formatnode *f_used; /* Formats not on stack with refcnt != 0 */
-  struct gropnode **caret;   /* Gropnode for the caret, if it is on */
-  struct divnode *caret_div; /* Divnode containing the caret */
-  s16 c_gx;		     /* Cursor location within gropnode */
-  s16 *c_cw, *c_cn;	     /* character width and index of next char */
-  s16 c_char, c_len;	     /* current character and string length */
-};
+/* Constants for document_seek, same meaning as in fseek
+*/
+#define PGSEEK_SET   0   /* Seek from beginning */
+#define PGSEEK_CUR   1   /* Seek from cursor    */
+#define PGSEEK_END   2   /* Seek from the end   */
 
-/************************* Formatting */
+/******************************************************** Public Methods **/
 
-/* Add a format node to the stack */
-g_error text_format_add(struct textbox_cursor *c, struct formatnode *f);
-/* Add a node to change the text color */
-g_error text_format_color(struct textbox_cursor *c, pgcolor color);
-/* Add a node to change the font completely */
-g_error text_format_font(struct textbox_cursor *c, handle font);
-/* Add a node to change font flag(s) */
-g_error text_format_modifyfont(struct textbox_cursor *c,
-			       u32 flags_on, u32 flags_off,s16 size_delta);
-/* Remove the topmost layer of formatting */
-void text_unformat_top(struct textbox_cursor *c);
-/* Remove all formatting */
-void text_unformat_all(struct textbox_cursor *c);
-
-/************************* Text */
-
-/* Calculates character widths from c_div and c_gx */
-g_error textbox_cursor_indexwidth(struct textbox_cursor *c);
-/* Inserts a breaking space between words at the cursor */
-g_error text_insert_wordbreak(struct textbox_cursor *c);
-/* Begin a new paragraph at the cursor */
-g_error text_insert_linebreak(struct textbox_cursor *c);
-/* Insert text with the current formatting at the cursor. This will not
- * generate breaking spaces. 
- *
- * hflag is or'ed with the handle flags on the string, so if it is a constant
- * string hflag needs to be HFLAG_NFREE
- */
-g_error text_insert_string(struct textbox_cursor *c, const u8 *str,
-			   u32 hflag);
-
-/* Inserts the specified divnode as a line or as a word */
-g_error text_insert_line_div(struct textbox_cursor *c, struct divnode *div);
-g_error text_insert_word_div(struct textbox_cursor *c, struct divnode *div);
+g_error document_new(struct textbox_document **doc, struct divnode *container_div);
+void document_delete(struct textbox_document *doc);
 
 /************************* Editing */
 
-/* Delete the character or other object after the cursor */
-void text_delete_next(struct textbox_cursor *c);
-/* Delete the character or other object before the cursor */
-void text_delete_prev(struct textbox_cursor *c);
-/* Combine gropnodes when possible to reduce memory consumption */
-g_error text_compact(struct textbox_cursor *c);
-/* Show the caret at the current cursor position */
-g_error text_caret_on(struct textbox_cursor *c);
-/* Hide the caret at the current cursor position */
-g_error text_caret_off(struct textbox_cursor *c);
+/* Note that textbox_frontend provides all interactive editing. These functions
+ * don't bother doing anything with the cursor or user interaction. This interface
+ * is used under textbox_frontend, and in the format loaders.
+ *
+ * Note that it's fine for textbox_frontend to muck with the paragraph object directly
+ * because it must manage visual things like cursor blink, mouse interaction, and that
+ * can easily be done independent of the entire document's structure. However,
+ * format loaders should only use this interface.
+ */
+
+/* Insert a character/string at the current cursor location.
+ * Metadata if any is copied (the document will not reference
+ * metadata nodes in the original string). The cursor location
+ * afterward will be after the inserted string.
+ */
+g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadata);
+g_error document_insert_string(struct textbox_document *doc, struct pgstring *str);
+
+/* Seek in the document, same interface as fseek.
+ * If this seeks past the end of the stream, document_eof will return true
+ */
+void document_seek(struct textbox_document *doc, s32 offset, int whence);
+
+/* Seek up/down in the document, snapping the cursor to the nearest character */
+void document_lineseek(struct textbox_document *doc, s32 offset);
+
+/* Return true if the current cursor location is not valid */
+int document_eof(struct textbox_document *doc);
+
+/* Delete the character after the cursor. If there's no cursor to delete,
+ * document_eof() should be true
+ */
+void document_delete_char(struct textbox_document *doc);
+
+/* Retrieve the paragraph associated with a divnode */
+struct paragraph *document_get_div_par(struct divnode *div);
 
 /************************* Text format loaders */
 
 struct txtformat {
-  u8 name[4];     /* fourcc for the format name */
-
-  g_error (*load)(struct textbox_cursor *c, const u8 *data, u32 datalen);
-  g_error (*save)(struct textbox_cursor *c, u8 **data, u32 *datalen);
+  const char *name;
+  g_error (*load)(struct textbox_document *doc, struct pgstring *str);
+  g_error (*save)(struct textbox_document *doc, struct pgstring **str);
 };
 
-/* Load text of the specified format
- *
- * Note: the fmt_code is a 4-character format name. Anything past 4
- *       characters is ignored
- */
-g_error text_load(struct textbox_cursor *c, const char *fmt_code,
-		  const u8 *data, u32 datalen);
-g_error text_save(struct textbox_cursor *c, const char *fmt_code,
-		  u8 **data, u32 *datalen);
+/* Load text of the specified format. */
+g_error document_load(struct textbox_document *doc, const struct pgstring *format,
+		      struct pgstring *str);
+g_error document_save(struct textbox_document *doc, const struct pgstring *format,
+		      struct pgstring **str);
 
 /* Clear out the existing data and reset the cursor */
-g_error text_nuke(struct textbox_cursor *c);
-
-/* Internal function for cleaning up the formatting stack in text_nuke() */
-void textbox_delete_formatstack(struct widget *self, 
-				struct formatnode *list);
+g_error document_nuke(struct textbox_document *doc);
 
 extern struct txtformat text_formats[];
 
 /* Format loader functions */
-g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
-g_error plaintext_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
-
-/* Format saver functions */
-#ifdef CONFIG_FORMAT_TEXTSAVE
-g_error plaintext_save(struct textbox_cursor *c, u8 **data, u32 *datalen);
-#endif
+g_error plaintext_load(struct textbox_document *doc, struct pgstring *str);
+g_error plaintext_save(struct textbox_document *doc, struct pgstring **str);
+g_error html_load(struct textbox_document *doc, struct pgstring *str);
+g_error html_save(struct textbox_document *doc, struct pgstring **str);
 
 #endif /* __H_TEXTBOX */   
 

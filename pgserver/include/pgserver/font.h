@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.23 2002/03/06 11:38:46 micahjd Exp $
+/* $Id: font.h,v 1.24 2002/09/15 10:51:48 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -35,8 +35,10 @@ struct font;
 extern struct fontstyle_node *fontstyles;   /* Head of a linked list
 					       of font styles */
 
+#include <pgserver/pgstring.h>
 #include <pgserver/handle.h>
 #include <pgserver/video.h>
+#include <pgserver/render.h>
 
 typedef long stylet;
 
@@ -64,7 +66,6 @@ struct fontdesc {
   int italicw;  /* Extra width added by the italic */
   int passwdc;  /* Password char. If null or positive, define the returned
 		   character to display text in a 'password way'. */
-  int (*decoder)(const u8 **str);   /* Text decoder (for Unicode, etc) */
   void *extra;  /* Extra driver-specific data */
 };
 
@@ -123,12 +124,12 @@ void outchar_fake(struct fontdesc *fd, s16 *x, int c);
  * chars
  */
 void outtext(hwrbitmap dest, struct fontdesc *fd,
-	     s16 x,s16 y,hwrcolor col, const u8 *txt,struct quad *clip,
+	     s16 x,s16 y,hwrcolor col, const struct pgstring *txt,struct quad *clip,
 	     s16 lgop, s16 angle);
 
 /* If txt is NULL, return the size of a typical character.
  */
-void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
+void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const struct pgstring *txt);
 
 /* Find a font with specified characteristics, and prepare
  * a fontdesc structure for it.  The closest font will be matched.
@@ -136,18 +137,12 @@ void sizetext(struct fontdesc *fd, s16 *w, s16 *h, const u8 *txt);
  * is required. */
 g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags);
 
-/* Decode one character from the specified UTF-8 string, 
- * advancing the pointer.
- * If it decodes an invalid character, it returns -1
- */
-int decode_utf8(const u8 **str);
-
-/* Very simple decoder for ASCII and ISO Latin-1 */
-int decode_ascii(const u8 **str);
-
 /* Utility to do a binary search for a font glyph */
 const struct fontglyph *font_findglyph(const struct fontglyph *start, 
 				 const struct fontglyph *end, s32 key);
+
+/* Render a textgrid gropnode, called from render.c */
+void textgrid_render(struct groprender *r, struct gropnode *n);
 
 #endif /* __H_FONT */
 

@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.12 2002/06/12 14:34:05 micahjd Exp $
+/* $Id: svrtheme.h,v 1.13 2002/09/15 10:51:48 micahjd Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -31,6 +31,7 @@
 
 #include <pgserver/g_error.h>
 #include <pgserver/divtree.h>
+#include <pgserver/pgstring.h>
 
 /**** Structures describing a theme in memory */
 
@@ -117,7 +118,7 @@ void build_bgfill_only(struct gropctxt *c,unsigned short state,struct widget *se
 /* Custom theme objects are assigned unused IDs automatically.
  * Objects with the same name get the same ID 
  */
-u16 custom_thobj_id(char *name);
+u16 custom_thobj_id(struct pgstring *name);
 
 /* Reports whether the given theme object ID has not yet been taken
  * in any of the loaded themes.
@@ -127,7 +128,7 @@ int thobj_id_available(s16 id);
 /* Find a theme's id given its name. Returns nonzero if the object
  * was found sucessfully, and loads 'id' with its id.
  */
-int find_named_thobj(const u8 *name, s16 *id);
+int find_named_thobj(const struct pgstring *name, s16 *id);
 
 /* Given a theme object, returns the theme object parent's ID 
  */

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.149 2002/07/28 17:06:49 micahjd Exp $
+/* $Id: constants.h,v 1.150 2002/09/15 10:51:48 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -243,7 +243,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_BITMAP     1    //!< Created by pgNewBitmap()
 #define PG_TYPE_WIDGET     2    //!< Created by pgNewWidget(), pgNewPopup(), pgNewPopupAt(), or pgRegisterApp()
 #define PG_TYPE_FONTDESC   3    //!< Created by pgNewFont()
-#define PG_TYPE_STRING     4    //!< Created by pgNewString()
+#define PG_TYPE_PGSTRING   4    //!< Created by pgNewString()
 #define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
 #define PG_TYPE_ARRAY      7    //!< Created by pgNewArray()
@@ -252,6 +252,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_WT         11   //!< Created by pgLoadWidgetTemplate
 #define PG_TYPE_INFILTER   12   //!< One filter in the input filter chain
 #define PG_TYPE_CURSOR     13   //!< Cursor object, used with input filters
+#define PG_TYPE_PARAGRAPH  14   //!< A paragraph (wrapped text) 
 
 /* Also add new handle types to the debug code in handle.c, r_handle_dump() */
 
@@ -464,6 +465,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_TICKS         38  //!< The time in millisecond ticks (use with caution)
 #define PGTH_P_CRSRHOTSPOT_X 39  //!< Hotspot X position on the mouse cursor
 #define PGTH_P_CRSRHOTSPOT_Y 40  //!< Hotspot Y position on the mouse cursor
+#define PGTH_P_CURSOR_WIDTH  41  //!< Width of the text editing cursor 
 
 #define PGTH_P_ICON_OK            1000   //!< Icon property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_ICON_OK_MASK       1001   //!< Icon property (usually in PGTH_O_DEFAULT)
@@ -632,32 +634,34 @@ typedef unsigned long pghandle;
  * \{
  */
 
-#define PG_GROP_RECT	      0x00   
-#define PG_GROP_FRAME      0x10   
-#define PG_GROP_SLAB       0x20   
-#define PG_GROP_BAR        0x30   
-#define PG_GROP_PIXEL      0x40
-#define PG_GROP_LINE   	   0x50
-#define PG_GROP_ELLIPSE    0x60 
-#define PG_GROP_FELLIPSE   0x70
-#define PG_GROP_TEXT       0x04   //!< Param: string 
-#define PG_GROP_BITMAP     0x14   //!< Param: bitmap 
-#define PG_GROP_TILEBITMAP 0x24   //!< Param: bitmap 
-#define PG_GROP_FPOLYGON   0x34   //!< Param: array
-#define PG_GROP_BLUR       0x44   //!< Param: radius
-#define PG_GROP_GRADIENT   0x0C   //!< Param: angle, c1, c2 
-#define PG_GROP_TEXTGRID   0x1C   //!< Param: string, bufferw, offset
-#define PG_GROP_NOP        0x03
-#define PG_GROP_RESETCLIP  0x13   //!< Reset clip to whole divnode
-#define PG_GROP_SETOFFSET  0x01   //!< this grop's rect sets offset
-#define PG_GROP_SETCLIP    0x11   //!< this grop's rect sets clipping
-#define PG_GROP_SETSRC     0x21   //!< this grop's rect sets src_*
-#define PG_GROP_SETMAPPING 0x05   //!< Param: PG_MAP_* const
-#define PG_GROP_SETCOLOR   0x07   //!< Param: pgcolor
-#define PG_GROP_SETFONT    0x17   //!< Param: font
-#define PG_GROP_SETLGOP    0x27   //!< Param: lgop
-#define PG_GROP_SETANGLE   0x37   //!< Param: angle in degrees
-#define PG_GROP_VIDUPDATE 0x800   //!< Forces a video update
+#define PG_GROP_RECT          0x00   
+#define PG_GROP_FRAME         0x10   
+#define PG_GROP_SLAB          0x20   
+#define PG_GROP_BAR           0x30   
+#define PG_GROP_PIXEL         0x40
+#define PG_GROP_LINE   	      0x50
+#define PG_GROP_ELLIPSE       0x60 
+#define PG_GROP_FELLIPSE      0x70
+#define PG_GROP_TEXT          0x04   //!< Param: string 
+#define PG_GROP_BITMAP        0x14   //!< Param: bitmap 
+#define PG_GROP_TILEBITMAP    0x24   //!< Param: bitmap 
+#define PG_GROP_FPOLYGON      0x34   //!< Param: array
+#define PG_GROP_BLUR          0x44   //!< Param: radius
+#define PG_GROP_PARAGRAPH     0x54   //!< Param: paragraph handle
+#define PG_GROP_PARAGRAPH_INC 0x64   //!< Param: paragraph handle
+#define PG_GROP_GRADIENT      0x0C   //!< Param: angle, c1, c2 
+#define PG_GROP_TEXTGRID      0x1C   //!< Param: string, bufferw, offset
+#define PG_GROP_NOP           0x03
+#define PG_GROP_RESETCLIP     0x13   //!< Reset clip to whole divnode
+#define PG_GROP_SETOFFSET     0x01   //!< this grop's rect sets offset
+#define PG_GROP_SETCLIP       0x11   //!< this grop's rect sets clipping
+#define PG_GROP_SETSRC        0x21   //!< this grop's rect sets src_*
+#define PG_GROP_SETMAPPING    0x05   //!< Param: PG_MAP_* const
+#define PG_GROP_SETCOLOR      0x07   //!< Param: pgcolor
+#define PG_GROP_SETFONT       0x17   //!< Param: font
+#define PG_GROP_SETLGOP       0x27   //!< Param: lgop
+#define PG_GROP_SETANGLE      0x37   //!< Param: angle in degrees
+#define PG_GROP_VIDUPDATE    0x800   //!< Forces a video update
 
 //! Video-driver-defined grops are or'ed with this
 #define PG_GROP_USER     0x1000
@@ -901,7 +905,7 @@ typedef unsigned long pghandle;
 #define PG_WP_DISABLED    28    /* For buttons, grays out text and prevents clicking */
 #define PG_WP_MARGIN      29    /* For boxes, overrides the default margin */
 #define PG_WP_TEXTFORMAT  30    /* For the textbox, defines a format for 
-				 * PG_WP_TEXT. fourCC format, with optional
+				 * PG_WP_TEXT. Format name, with optional
 				 * preceeding '+' to prevent erasing existing
 				 * data, just append at the cursor position
 				 */
@@ -1016,7 +1020,6 @@ typedef unsigned long pghandle;
  */
 #define PG_TRIGGER_TIMER         (1<<0)  /* Timer event from install_timer */
 #define PG_TRIGGER_PNTR_RELATIVE (1<<1)  /* Specify relative mouse motion and the current button status */
-#define PG_TRIGGER_DIRECT        (1<<2)  /* A trigger sent explicitely */
 #define PG_TRIGGER_ACTIVATE      (1<<3)  /* Sent when it receives focus */
 #define PG_TRIGGER_DEACTIVATE    (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP         (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/

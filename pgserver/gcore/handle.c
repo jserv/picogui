@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.58 2002/07/03 22:03:28 micahjd Exp $
+/* $Id: handle.c,v 1.59 2002/09/15 10:51:47 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -36,6 +36,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>	/* unload_inlib */
 #include <pgserver/svrwt.h>
+#include <pgserver/paragraph.h>
 
 #define NIL ((struct handlenode *)(&sentinel))
 struct handlenode const sentinel = {0,0,0,0,0,0,NULL,NIL,NIL,NIL};
@@ -384,6 +385,12 @@ void object_free(struct handlenode *n) {
     case PG_TYPE_CURSOR:
       cursor_delete((struct cursor *)n->obj);
       break;
+    case PG_TYPE_PGSTRING:
+      pgstring_delete((struct pgstring *)n->obj);
+      break;
+    case PG_TYPE_PARAGRAPH:
+      paragraph_delete(((struct paragraph *)n->obj));
+      break;
     default:
       g_free(n->obj);
     }
@@ -414,8 +421,11 @@ void r_handle_dump(struct handlenode *n,int level) {
    printf("0x%04X : node %p obj %p grp 0x%04X pld 0x%08lX own %d ctx %d red %d type %s",
 	  n->id,n,n->obj,n->group,(unsigned long)n->payload,n->owner,n->context,
 	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1]);
-   if ((n->type & PG_TYPEMASK) == PG_TYPE_STRING)
-     printf(" = \"%s\"\n",(char*)n->obj);
+   if ((n->type & PG_TYPEMASK) == PG_TYPE_PGSTRING) {
+     printf(" = \"");
+     pgstring_print((struct pgstring *)n->obj);
+     printf("\"\n");
+   }
    else if ((n->type & PG_TYPEMASK) == PG_TYPE_WIDGET)
      printf(" numcursors %d\n", ((struct widget *)n->obj)->numcursors);
    else
@@ -434,9 +444,11 @@ void r_string_dump(struct handlenode *n) {
    if (!n) return;
    if (n==NIL) return;
    r_string_dump(n->left);
-	if ((n->type & PG_TYPEMASK)==PG_TYPE_STRING)
-					 printf("0x%04X : %s\n",
-							  n->id,(char*)n->obj);
+   if ((n->type & PG_TYPEMASK)==PG_TYPE_PGSTRING) {
+     printf("0x%04X : ",n->id);
+     pgstring_print((struct pgstring *)n->obj);
+     printf("\n");
+   }
    r_string_dump(n->right);
 }
 void string_dump(void) {
@@ -726,11 +738,9 @@ g_error handle_dup(handle *dest, int owner, handle src) {
   /* Check the type */
   switch (n->type & PG_TYPEMASK) {
 
-  case PG_TYPE_STRING:
-    sz = strlen(n->obj) + 1;
-    e = g_malloc(&newobj,sz);
+  case PG_TYPE_PGSTRING:
+    e = pgstring_dup((struct pgstring **)&newobj, (struct pgstring *) n->obj);
     errorcheck;
-    memcpy(newobj,n->obj,sz);
     e = mkhandle(dest,n->type & PG_TYPEMASK,owner,newobj);
     errorcheck;
     break;

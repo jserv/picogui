@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.32 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: render.c,v 1.33 2002/09/15 10:51:47 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -35,6 +35,8 @@
 
 #include <pgserver/render.h>
 #include <pgserver/appmgr.h>    /* for res[PGRES_DEFAULT_FONT] */
+#include <pgserver/pgstring.h>
+#include <pgserver/paragraph.h>
 
 int display_owner;
 int disable_output;   /* can be used by the video driver to disable rendering,
@@ -49,7 +51,7 @@ int disable_output;   /* can be used by the video driver to disable rendering,
  * performs pre-render housekeeping, processes flags, and renders each node
  */
 
-void grop_render(struct divnode *div) {
+void grop_render(struct divnode *div, struct quad *clip) {
    struct gropnode **listp = &div->grop;
    struct gropnode node;
    u8 incflag;
@@ -82,10 +84,15 @@ void grop_render(struct divnode *div) {
      } 
      
      /* Transfer over some numbers from the divnode */   
-     rend.clip.x1 = div->x;
-     rend.clip.x2 = div->x+div->w-1;
-     rend.clip.y1 = div->y;
-     rend.clip.y2 = div->y+div->h-1;
+     if (clip) {
+       rend.clip = *clip;
+     }
+     else {
+       rend.clip.x1 = div->x;
+       rend.clip.x2 = div->x+div->w-1;
+       rend.clip.y1 = div->y;
+       rend.clip.y2 = div->y+div->h-1;
+     }
      rend.translation.x = div->tx;
      rend.translation.y = div->ty;
      rend.scroll.x = dtx - div->otx;
@@ -561,8 +568,10 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
       }
       break;
 
-      /* Similar deal with textgrid, easier to handle clipping later */
-    case PG_GROP_TEXTGRID:
+      /* Similar deal with textgrid and paragraph, easier to handle clipping later */
+   case PG_GROP_TEXTGRID:
+   case PG_GROP_PARAGRAPH:
+   case PG_GROP_PARAGRAPH_INC:
       if (n->r.x>r->clip.x2 || n->r.y>r->clip.y2)
 	goto skip_this_node;
       break;
@@ -713,7 +722,7 @@ void gropnode_clip(struct groprender *r, struct gropnode *n) {
 /****************************************************** gropnode_draw */
 
 void gropnode_draw(struct groprender *r, struct gropnode *n) {
-   char *str;
+   struct pgstring *str;
    u32 *arr;
    hwrbitmap bit;
    s16 bw,bh;
@@ -791,7 +800,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
       break;
       
     case PG_GROP_TEXT:
-      if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
+      if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
 			   n->param[0])) || !str) break;
       if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
 			   r->hfont)) || !fd) break;
@@ -799,103 +808,27 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	      r->lgop,r->angle);
       break;
 
-      /* The workhorse of the terminal widget. 3 params:
-       * 1. buffer handle,
-       * 2. buffer width and offset (0xWWWWOOOO)
-       * 3. handle to textcolors array
-       */
-    case PG_GROP_TEXTGRID:
-      if (iserror(rdhandle((void**)&str,PG_TYPE_STRING,-1,
-			    n->param[0])) || !str) break;
-      if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-			   r->hfont)) || !fd) break;
-	{
-	   int buffersz,bufferw,bufferh;
-	   int celw,celh,charw,charh,offset;
-	   int i;
-	   unsigned char attr;
-	   u32 *textcolors;
-	   s16 temp_x;
-	   struct gropnode bn;
-	   struct groprender br;
-	   
-	   /* Set up background color node (we'll need it later) */
-	   memset(&bn,0,sizeof(bn));
-	   bn.type = PG_GROP_RECT;
-	   bn.flags = PG_GROPF_COLORED;
+   case PG_GROP_TEXTGRID:
+     textgrid_render(r,n);
+     break;      
 
-	   /* Read textcolors parameter */
-	   if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
-				n->param[2])) || !textcolors) break;
-	   if (textcolors[0] < 16)    /* Make sure it's big enough */
-	     break;
-	   textcolors++;              /* Skip length entry */
-	   
-	   /* Should be fine for fixed width fonts
-	    * and pseudo-acceptable for others? */
-	   celw      = fd->font->w;  
-	   celh      = fd->font->h;
-	   
-	   bufferw   = n->param[1] >> 16;
-	   buffersz  = strlen(str) - (n->param[1] & 0xFFFF);
-	   str      += n->param[1] & 0xFFFF;
-	   bufferh   = (buffersz / bufferw) >> 1;
-	   if (buffersz<=0) return;
-	   
-	   charw     = n->r.w/celw;
-	   charh     = n->r.h/celh;
-	   offset    = (bufferw-charw)<<1;
-	   if (offset<0) {
-	      offset = 0;
-	      charw = bufferw;
-	   }
-	   if (charh>bufferh)
-	     charh = bufferh;
-	   
-	   r->orig.x = n->r.x;
-	   for (;charh;charh--,n->r.y+=celh,str+=offset) {
+   case PG_GROP_PARAGRAPH:
+     paragraph_render(r,n);
+     break;
 
-	     /* Skip the entire line if it's clipped out */
-	     if (n->r.y > r->clip.y2 ||
-		 (n->r.y+celh) < r->clip.y1) {
-	       str += charw << 1;
-	       continue;
-	     }
+   case PG_GROP_PARAGRAPH_INC:
+     paragraph_render_inc(r,n);
+     break;
 
-	     for (n->r.x=r->orig.x,i=charw;i;i--,str++) {
-		attr = *(str++);
-
-		/* Background color (clipped rectangle) */
-		if ((attr & 0xF0)!=0) {
-		  br = *r;
-		  bn.r.x = n->r.x;
-		  bn.r.y = n->r.y;
-		  bn.r.w = celw;
-		  bn.r.h = celh;
-		  bn.param[0] = textcolors[attr>>4];
-		  gropnode_clip(&br,&bn);
-		  gropnode_draw(&br,&bn);
-		}
-
-		temp_x = n->r.x;
-		n->r.x += celw;
-		outchar(r->output, fd, &temp_x, &n->r.y, 
-			textcolors[attr & 0x0F],
-			*str, &r->clip,r->lgop, 0);
-	     }
-	   }
-	}
-      break;      
-      
-    case PG_GROP_BITMAP:
-      if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
-			   n->param[0])) || !bit) break;
-      VID(bitmap_getsize) (bit,&bw,&bh);
-      VID(blit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
-		 (r->src.x+r->csrc.x)%bw,
-		 (r->src.y+r->csrc.y)%bh,r->lgop);
-		 
-      break;
+   case PG_GROP_BITMAP:
+     if (iserror(rdhandle((void**)&bit,PG_TYPE_BITMAP,-1,
+			  n->param[0])) || !bit) break;
+     VID(bitmap_getsize) (bit,&bw,&bh);
+     VID(blit) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,bit,
+		(r->src.x+r->csrc.x)%bw,
+		(r->src.y+r->csrc.y)%bh,r->lgop);
+     
+     break;
    
     case PG_GROP_BLUR:
       VID(blur) (r->output,n->r.x,n->r.y,n->r.w,n->r.h,n->param[0]);

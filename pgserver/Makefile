@@ -1,5 +1,5 @@
 # Generated automatically from Makefile.in by configure.
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -40,9 +40,9 @@ pkgincludedir = $(includedir)/picogui-server
 
 top_builddir = .
 
-ACLOCAL = aclocal -I macros
+ACLOCAL = aclocal-1.4 -I macros
 AUTOCONF = autoconf
-AUTOMAKE = automake
+AUTOMAKE = automake-1.4
 AUTOHEADER = autoheader
 
 INSTALL = /usr/bin/install -c
@@ -66,8 +66,8 @@ CONFIG_FILE = /home/micah/sf/pgui/pgserver/profile.user
 CPP = gcc -E
 DEBUGGING =  videotest.c
 DRIVER =  sdlfb.c null.c nullfb.c fbdev.c scrshot.c
-DRIVER_CFLAGS =  -I/usr/include/SDL -D_REENTRANT
-DRIVER_LIBS =  -L/usr/lib -lSDL -lpthread -lm -lz -lpng
+DRIVER_CFLAGS =  -I/usr/local/include -I/usr/local/include/SDL -D_REENTRANT
+DRIVER_LIBS =  -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL -lpgui -lpthread -lm -lz -lpng
 FORMATS =  pnm.c jpeg.c bmp.c html.c png.c gif.c
 INPUT =  sdlinput.c ttykb.c serialmouse.c ps2mouse.c ps2mouse.c rawttykb.c if_client_adaptor.c
 LIB_OS = 
@@ -83,9 +83,9 @@ RM_LIBS =
 RPM_CONFIGURE = ./configure 
 RPM_PLATFORM = i686-pc-linux-gnu
 RPM_PREFIX = /usr/local
-SDL_CFLAGS = -I/usr/include/SDL -D_REENTRANT
-SDL_CONFIG = /usr/bin/sdl-config
-SDL_LIBS = -L/usr/lib -lSDL -lpthread
+SDL_CFLAGS = -I/usr/local/include -I/usr/local/include/SDL -D_REENTRANT
+SDL_CONFIG = /usr/local/bin/sdl-config
+SDL_LIBS = -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL -lpgui -lpthread
 VERSION = 0.0
 VIDBASE =  linear1.c linear2.c linear4.c linear8.c linear16.c linear24.c linear32.c slowvbl.c dvbl_dither.c visibone2.c dvbl_primitives.c
 VIDWRAP =  rotate90.c rotate180.c rotate270.c

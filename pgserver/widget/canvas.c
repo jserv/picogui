@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.44 2002/07/27 09:09:56 micahjd Exp $
+/* $Id: canvas.c,v 1.45 2002/09/15 10:51:50 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -114,7 +114,7 @@ g_error canvas_install(struct widget *self) {
 
    /* Init grop context */
    gropctxt_init(CTX,self->in->div);
-   self->rawbuild = 1;
+   self->in->div->flags |= DIVNODE_RAW_BUILD;
 
    /* By default accept only stream commands and mouse clicks. The app can use
     * PG_WP_TRIGGERMASK to turn on mouse movement and keyboard events
@@ -412,9 +412,9 @@ void canvas_command(struct widget *self, u16 command,
 	  */
 	 if (params[0] == PG_GROP_TEXT) {
 	   struct fontdesc *fd = NULL;
-	   char *str = NULL;
+	   struct pgstring *str = NULL;
 	   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,DATA->lastfont);
-	   rdhandle((void **) &str,PG_TYPE_STRING,-1,params[5]);
+	   rdhandle((void **) &str,PG_TYPE_PGSTRING,-1,params[5]);
 	   if (fd && str)
 	     sizetext(fd,&CTX->current->r.w,&CTX->current->r.h,str);
 	 }

@@ -1,4 +1,4 @@
-/* $Id: if_hotspot.c,v 1.2 2002/07/03 22:03:30 micahjd Exp $
+/* $Id: if_hotspot.c,v 1.3 2002/09/15 10:51:49 micahjd Exp $
  *
  * if_hotspot.c - Use arrow keys to navigate around the screen.
  *                Besides the actual input filter, this has utilities to build the
@@ -347,6 +347,14 @@ void scroll_to_divnode(struct divnode *div) {
   struct widget *w;
 
   if (!ds)
+    return;
+
+  /* If the divnode is larger or equal size to the scrolled
+   * container, no need to scroll it in.
+   * This fixes some confusing scroll behavior when focusing the textbox widget.
+   */
+  if ( (div->x <= ds->calcx && (div->x + div->w) > (ds->calcx + ds->calcw)) ||
+       (div->y <= ds->calcy && (div->y + div->h) > (ds->calcy + ds->calch)) )
     return;
 
   /* Figure out how much to scroll, if any. */

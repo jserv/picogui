@@ -1,4 +1,4 @@
-/* $Id: render.h,v 1.13 2002/03/03 19:23:30 micahjd Exp $
+/* $Id: render.h,v 1.14 2002/09/15 10:51:48 micahjd Exp $
  *
  * render.h - data structures and functions for rendering and manipulating
  *            gropnodes (Graphics Operation nodes)
@@ -143,8 +143,10 @@ void align(struct gropctxt *d,alignt align,s16 *w,s16 *h,s16 *x,s16 *y);
  *
  * Sets up a groprender structure based on the divnode's information,
  * performs pre-render housekeeping, processes flags, and renders each node
+ *
+ * If 'clip' is non-NULL, override the usual clipping rectangle with this one.
  */
-void grop_render(struct divnode *div);
+void grop_render(struct divnode *div, struct quad *clip);
 
 /* The below functions are steps used within the rendering process. Not
  * really useful by themselves, but this should help divide the monstrosity

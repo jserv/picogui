@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.113 2002/07/03 22:03:32 micahjd Exp $
+/* $Id: button.c,v 1.114 2002/09/15 10:51:50 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -234,7 +234,7 @@ g_error button_install(struct widget *self) {
   self->in->div->flags |= DIVNODE_HOTSPOT | DIVNODE_SPLIT_BORDER;
 
   self->trigger_mask = PG_TRIGGER_ENTER | PG_TRIGGER_LEAVE | PG_TRIGGER_CHAR |
-    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE | PG_TRIGGER_DIRECT |
+    PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_RELEASE |
     PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_DEACTIVATE | PG_TRIGGER_ACTIVATE |
     PG_TRIGGER_KEY_START;
 
@@ -288,7 +288,7 @@ g_error button_set(struct widget *self,int property, glob data) {
     break;
 
   case PG_WP_TEXT:
-    if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,self->owner,data))) 
+    if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,self->owner,data))) 
        return mkerror(PG_ERRT_HANDLE,13);
     DATA->text = (handle) data;
     resizewidget(self);
@@ -810,7 +810,7 @@ void button_resize(struct widget *self) {
 void position_button(struct widget *self,struct btnposition *bp) {
   hwrbitmap bit = NULL,bitmask = NULL;
   struct fontdesc *fd = NULL;
-  char *text = NULL;
+  struct pgstring *text = NULL;
 
   bp->font = DATA->font ? DATA->font : 
     theme_lookup(self->in->div->state,PGTH_P_FONT);
@@ -825,7 +825,7 @@ void position_button(struct widget *self,struct btnposition *bp) {
     DATA->bitmask = 0;
     bitmask = NULL;
   }
-  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text))) {
+  if (iserror(rdhandle((void **) &text,PG_TYPE_PGSTRING,-1,DATA->text))) {
     DATA->text = 0;
     text = NULL;
   }

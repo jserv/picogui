@@ -17,13 +17,15 @@ noinst_HEADERS = \
 	svrtheme.h 	\
 	timer.h 	\
 	video.h 	\
-	widget.h \
-	configfile.h \
-	hotspot.h \
-	textbox.h \
-	sdlgl.h \
-	fbkeys.h \
-	svrwt.h
+	widget.h	\
+	configfile.h	\
+	hotspot.h	\
+	textbox.h	\
+	sdlgl.h		\
+	fbkeys.h	\
+	svrwt.h		\
+	pgstring.h	\
+	paragraph.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

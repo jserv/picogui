@@ -771,6 +771,10 @@ server returned data : string
 	<xref linkend="pgreqdhandlestruct"> for
 	<structname>pgreqd_handlestruct</> format.
    </para>
+   <para>
+        The string is returned in Unicode UTF-8 encoding, which is compatible with 7-bit
+	ASCII. The string is returned without zero-termination.
+   </para>
   </sect2>
 
   <sect2 id="pgreq-infiltersend">
@@ -1095,8 +1099,9 @@ server returned data : <structfield>pgresponse_ret.data</>
 	in <structfield>pgresponse_ret.data</>
    </para>
    <para>
-	The string may be of variable length.  If the string is not
-	0-terminated the server will terminate it at the end of the packet.
+        The string is submitted in Unicode UTF-8 encoding, which is
+	compatible with 7-bit ASCII. A zero-termination on the end of the
+	string is optional.
    </para>
   </sect2>
 

@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.55 2002/09/08 08:24:30 viking667 Exp $
+/* $Id: terminal.c,v 1.56 2002/09/15 10:51:50 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -51,8 +51,8 @@ struct termdata {
 
   /* Text buffer */
   handle hbuffer;
-  u8 *buffer;
-  int bufferw,bufferh,buffersize;
+  struct pgstring *buffer;
+  int bufferw,bufferh;
   int crsrx,crsry;
   int savcrsrx, savcrsry;
   u8 attr_under_crsr;
@@ -142,7 +142,8 @@ void term_ecma48sgr(struct widget *self);
 void term_othercsi(struct widget *self,u8 c);
 
 /* Copy a rectangle between two text buffers */
-void textblit(u8 *src,u8 *dest,int src_x,int src_y,int src_w,
+void textblit(struct pgstring *src,struct pgstring *dest,
+	      int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h);
 
 /********************************************** Widget functions */
@@ -218,28 +219,26 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 
     /* Resize the buffer if necessary */
     if (neww != DATA->bufferw || newh != DATA->bufferh) {
-      u8 *newbuffer,*p;
+      struct pgstring *newbuffer;
+      struct pgstr_iterator p = PGSTR_I_NULL;
       s32 newbuffer_size,i;
       /* Blit parameters */
       int src_y,dest_y,w,h;
       
       /* Allocate */
-      newbuffer_size = (neww*newh) << 1;
-      if (iserror(g_malloc((void **) &newbuffer,newbuffer_size+1)))
+      newbuffer_size = neww * newh * pgstring_encoded_length(DATA->buffer,' ');
+      if (iserror(pgstring_new(&newbuffer,DATA->buffer->flags,newbuffer_size,NULL)))
 	return;
-      newbuffer[newbuffer_size] = 0;  /* Null past the buffer itself */
       
       /* Clear the new buffer */
-      for (p=newbuffer,i=newbuffer_size;i;i-=2) {
-	*(p++) = DATA->attr;
-	*(p++) = ' ';
-      }
+      do {
+	pgstring_encode_meta(newbuffer, &p, ' ', (void*)(u32) DATA->attr);
+      } while (!p.invalid);
 
       /* Cursor off */
       term_setcursor(self,0);
       
       /* Start off assuming the new buffer is smaller, then perform clipping */
-
       dest_y = 0;
       w = neww;
       h = newh;
@@ -268,13 +267,12 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 	       DATA->bufferw,0,dest_y,neww,w,h);
       
       /* Free the old buffer and update the handle */
-      g_free(DATA->buffer);
-      rehandle(DATA->hbuffer,DATA->buffer = newbuffer,PG_TYPE_STRING);
+      pgstring_delete(DATA->buffer);
+      rehandle(DATA->hbuffer,DATA->buffer = newbuffer,PG_TYPE_PGSTRING);
       
       /* Update the rest of our data */
       DATA->bufferw = neww;
       DATA->bufferh = newh;
-      DATA->buffersize = newbuffer_size;
     }
   }
 
@@ -358,13 +356,11 @@ g_error terminal_install(struct widget *self) {
   DATA->pref_lines = 25;
 
   /* Allocate buffer */
-  DATA->buffersize = (DATA->bufferw*DATA->bufferh) << 1;
-  e = g_malloc((void **) &DATA->buffer,DATA->buffersize+1);
+  e = pgstring_new(&DATA->buffer, PGSTR_ENCODE_TERM16, 2*DATA->bufferw*DATA->bufferh, NULL);
   errorcheck;
-  DATA->buffer[DATA->buffersize] = 0;  /* Null past the end */
   term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
 
-  e = mkhandle(&DATA->hbuffer,PG_TYPE_STRING,-1,DATA->buffer);
+  e = mkhandle(&DATA->hbuffer,PG_TYPE_PGSTRING,-1,DATA->buffer);
   errorcheck;
      
   /* Default terminal font */
@@ -645,7 +641,7 @@ void term_realize(struct widget *self) {
      DATA->inc->param[1] = DATA->updw << 16;
       
    /* Set the buffer offset */
-   DATA->inc->param[1] |= (DATA->updx + DATA->updy * DATA->bufferw) << 1;
+   DATA->inc->param[1] |= DATA->updx + DATA->updy * DATA->bufferw;
    
 /*
    guru("Incremental terminal update:\nx = %d\ny = %d\nw = %d\nh = %d"
@@ -692,24 +688,27 @@ void term_updrect(struct widget *self,int x,int y,int w,int h) {
 
 /* Plot a character at an x,y position */
 void term_plot(struct widget *self,int x,int y,u8 c) {
-   u8 *p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
-
-   p[0] = DATA->attr;
-   p[1] = c;
-
-   term_updrect(self,x,y,1,1);
+  struct pgstr_iterator p = PGSTR_I_NULL;
+  pgstring_seek(DATA->buffer, &p, x + y * DATA->bufferw);
+  pgstring_encode_meta(DATA->buffer, &p, c, (void*)(u32) DATA->attr);
+  term_updrect(self,x,y,1,1);
 }
 
 /* Change attribute at an x,y position */
 u8 term_chattr(struct widget *self,int x,int y,u8 c) {
-   u8 old;
-   u8 *p;
-    
-   p = DATA->buffer + ((x + y*DATA->bufferw)<<1);
-   old = *p;
-   *p = c;
-   term_updrect(self,x,y,1,1);
-   return old;
+  struct pgstr_iterator i = PGSTR_I_NULL,j;
+  u32 ch;
+  void *metadata;
+  pgstring_seek(DATA->buffer, &i, x + y * DATA->bufferw);
+
+  j = i;
+  ch = pgstring_decode_meta(DATA->buffer, &j, &metadata);
+
+  pgstring_encode_meta(DATA->buffer, &i, ch, (void*)(u32) c);
+  term_updrect(self,x,y,1,1);
+
+  term_updrect(self,x,y,1,1);
+  return (u8)(u32)metadata;
 }
 
 /* Format and/or draw one incoming character. 
@@ -855,8 +854,9 @@ void term_char(struct widget *self,u8 c) {
         DATA->crsry++;
 	if (DATA->crsry >= DATA->bufferh) {  /* Scroll vertically */
           DATA->crsry = DATA->bufferh-1;
-          memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
-	         DATA->buffersize-(DATA->bufferw<<1));
+
+	  pgstring_chrcpy(DATA->buffer, 0, DATA->bufferw, 
+			  DATA->buffer->num_chars - DATA->bufferw);
           term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
 
           /* Two methods here - just redraw the screen or try a scroll blit */
@@ -881,8 +881,8 @@ void term_char(struct widget *self,u8 c) {
     DATA->crsry = 0;
   else if (DATA->crsry >= DATA->bufferh) {  /* Scroll vertically */
     DATA->crsry = DATA->bufferh-1;
-    memcpy(DATA->buffer,DATA->buffer + (DATA->bufferw<<1),
-	   DATA->buffersize-(DATA->bufferw<<1));
+    pgstring_chrcpy(DATA->buffer, 0, DATA->bufferw, 
+		    DATA->buffer->num_chars - DATA->bufferw);
     term_clearbuf(self,0,DATA->bufferh-1,DATA->bufferw);
 
     /* Two methods here - just redraw the screen or try a scroll blit */
@@ -927,23 +927,19 @@ void term_rectprepare(struct widget *self) {
 
 /* Clear a chunk of buffer */
 void term_clearbuf(struct widget *self,int fromx,int fromy,int chars) {
-   u8 *p;
-   int i;
-   int size = chars<<1;
-   s32 offset = (fromx + fromy * DATA->bufferw)<<1;
-   
-   /* Clear the buffer: set attribute bytes to ATTR_DEFAULT
-    * and character bytes to blanks */
-   for (p=DATA->buffer+offset,i=size;i;i-=2) {
-     *(p++) = DATA->attr;
-     *(p++) = ' ';
-   }
+  struct pgstr_iterator p = PGSTR_I_NULL;
+  int i;
 
-   /* Add update rectangle for the effected lines */
-   i = (chars+fromx) / DATA->bufferh;
-   if ((chars+fromx) % DATA->bufferh)
-     i++;
-   term_updrect(self,0,fromy,DATA->bufferw,i);
+  pgstring_seek(DATA->buffer, &p, fromx + fromy * DATA->bufferw);
+
+  while (!p.invalid && chars--)
+    pgstring_encode_meta(DATA->buffer, &p, ' ', (void*)(u32) DATA->attr);
+
+  /* Add update rectangle for the effected lines */
+  i = (chars+fromx) / DATA->bufferh;
+  if ((chars+fromx) % DATA->bufferh)
+    i++;
+  term_updrect(self,0,fromy,DATA->bufferw,i);
 }
 
 /* Handle a parsed ECMA-48 CSI sequence */
@@ -1170,17 +1166,21 @@ void term_othercsi(struct widget *self,u8 c) {
 }
 
 /* Copy a rectangle between two text buffers */
-void textblit(u8 *src,u8 *dest,int src_x,int src_y,int src_w,
+void textblit(struct pgstring *src,struct pgstring *dest,int src_x,int src_y,int src_w,
 	      int dest_x,int dest_y,int dest_w,int w,int h) {
-  int srcoffset  = src_w << 1;
-  int destoffset = dest_w << 1;
+  int srcoffset  = src_w;
+  int destoffset = dest_w;
 
+  /* FIXME: Update this for pgstrings */
+
+  /*
   src  += (src_x + src_y * src_w) << 1;
   dest += (dest_x + dest_y * dest_w) << 1;
   w <<= 1;
 
   for (;h;h--,src+=srcoffset,dest+=destoffset)
     memcpy(dest,src,w);
+  */
 }
 
 /* The End */

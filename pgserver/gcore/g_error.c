@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.33 2002/05/22 09:26:32 micahjd Exp $
+/* $Id: g_error.c,v 1.34 2002/09/15 10:51:47 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -131,7 +131,7 @@ void guru(const char *fmt, ...) {
 #endif
     
     outtext(vid->display,df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),
-	    msgbuf, &screenclip,PG_LGOP_NONE,0);
+	    pgstring_tmpwrap(msgbuf), &screenclip,PG_LGOP_NONE,0);
     VID(update) (0,0,vid->lxres,vid->lyres);    
   }
   

@@ -1,6 +1,6 @@
-/* $Id: plaintext.c,v 1.8 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: plaintext.c,v 1.9 2002/09/15 10:51:46 micahjd Exp $
  *
- * plaintext.c - Load plain text into the textbox widget
+ * plaintext.c - Load and save plain unformatted text into the textbox widget
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,125 +27,35 @@
 
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
-#ifdef CONFIG_FORMAT_TEXTSAVE
-#include <pgserver/divtree.h>
-#include <pgserver/widget.h>
-#endif
 
-#include <ctype.h>
-#include <string.h>
-
-g_error plaintext_word(struct textbox_cursor *c, const u8 *start,
-		       const u8 *end);
-
-#ifdef CONFIG_FORMAT_TEXTSAVE
-g_error plaintext_save(struct textbox_cursor *c, u8 **data, u32 *datalen)
- {
-  g_error e;
-  const u8 *str;
-  struct divnode *line, *word;
-  struct gropctxt gctx;
-  int wordlen;
-
-  *datalen=0;
-  e = g_malloc((void**)data, 1);
-  errorcheck;
-  (*data)[0]=0;
-  line=c->head;
-  while(line)
-   {
-    word=line->div;
-    while(word)
-     {
-      gropctxt_init(&gctx, word->div);
-      if(gctx.current && gctx.current->type==PG_GROP_TEXT)
-       {
-	e = rdhandle((void**)&str, PG_TYPE_STRING, c->widget->owner,
-	    gctx.current->param[0]);
-	errorcheck;
-	wordlen=strlen(str);
-	e = g_realloc((void**)data, *datalen+wordlen+2);
-	errorcheck;
-	memcpy(*data+*datalen, str, wordlen);
-	*datalen+=wordlen;
-	(*data)[(*datalen)++]=' ';
-	(*data)[*datalen]=0;
-       }
-      word=word->next;
-     }
-    e = g_realloc((void**)data, *datalen+2);
-    errorcheck;
-    (*data)[(*datalen)++]='\n';
-    (*data)[*datalen]=0;
-    line=line->next;
-   }
-  return success;
- }
-#endif
-
-g_error plaintext_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
-  const u8 *start = data;
-  const u8 *end = data+datalen-1;
-  const u8 *fragment;
-  g_error e;
-
-  for (fragment = NULL;start <= end;start++) {
-    if (fragment) {
-      /* Look for the end */
-
-      if (isspace(*start)) {
-	e = plaintext_word(c,fragment,start-1);
-	errorcheck;
-	fragment = NULL;
-
-	if (*start == '\n')
-	  e = text_insert_linebreak(c);
-	else
-	  e = text_insert_wordbreak(c);
-	errorcheck;
-      }
-    }
-    else {
-      /* Look for the beginning */
-
-      if (isspace(*start)) {
-	if (*start == '\n')
-	  e = text_insert_linebreak(c);
-	else
-	  e = text_insert_wordbreak(c);
-	errorcheck;
-      }
-      else
-	fragment = start;
-    }
-  }
-  if (fragment) {
-    e = plaintext_word(c,fragment,start-1);
-    errorcheck;
-  }
-
-  return success;
+/* Trivial to add a plaintext string to the document... 
+ * FIXME: it shouldn't be possible to add strings with metadata, this could be
+ *        a security hole if there was a way to put metadata in strings
+ *        coming from the client side.
+ */
+g_error plaintext_load(struct textbox_document *doc, struct pgstring *str) {
+  return document_insert_string(doc,str);
 }
 
-g_error plaintext_word(struct textbox_cursor *c, const u8 *start,
-		       const u8 *end) {
-  int length;
-  char *str;
+/* Create a new pgstring, and traverse the list of paragraphs adding each one */
+g_error plaintext_save(struct textbox_document *doc, struct pgstring **str) {
+  struct paragraph *p;
   g_error e;
-
-  /* Allocate a new string */
-  length = end-start+1;
-  if (!length)
-    return success;
-  e = g_malloc((void**)&str, length+1);
-  errorcheck;
-  str[length] = 0;  
-
-  strncpy(str,start,length);
+  struct pgstr_iterator i = PGSTR_I_NULL;
   
-  /* Send it to the textbox */
-  return text_insert_string(c,str,0);
+  e = pgstring_new(str, PGSTR_ENCODE_UTF8, 0, NULL);
+  errorcheck;
+
+  for (p=doc->par_list;p;p=p->next) {
+    e = pgstring_insert_string(*str,&i,p->content);
+    errorcheck;
+    e = pgstring_insert_char(*str,&i,'\n',NULL);
+    errorcheck;
+  }
+
+  return success;
 }
+
 
 /* The End */
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.186 2002/08/22 10:31:41 micahjd Exp $
+/* $Id: widget.c,v 1.187 2002/09/15 10:51:50 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -60,7 +60,7 @@ DEF_WIDGET_TABLE(button)
 DEF_STATICWIDGET_TABLE(panel)
 DEF_WIDGET_TABLE(popup)
 DEF_STATICWIDGET_TABLE(box)
-DEF_WIDGET_TABLE(field)
+DEF_WIDGET_TABLE(textbox)               /* More binary compatibility, replacing field widget with textbox */
 DEF_WIDGET_TABLE(background)
 DEF_HYBRIDWIDGET_TABLE(menuitem,button)
 
@@ -494,7 +494,7 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
       break;
 
     case PG_WP_NAME:
-      if (iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,data))) 
+      if (iserror(rdhandle((void **)&str,PG_TYPE_PGSTRING,-1,data))) 
 	return mkerror(PG_ERRT_HANDLE,18);
       w->name = data;
       break;
