@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.22 2001/12/18 19:47:24 lonetech Exp $
+/* $Id: ncurses.c,v 1.23 2001/12/19 21:30:56 lonetech Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -109,12 +109,11 @@ g_error ncurses_init(void) {
    vid->xres = COLS;
    vid->yres = LINES;
    vid->bpp  = sizeof(chtype)*8;    /* Our pixel is a curses chtype */
+   vid->display = NULL;
    
    /* Allocate our buffer */
    e = g_malloc((void**) &ncurses_screen,vid->xres * vid->yres * sizeof(chtype));
    errorcheck;
-   vid->display->bits = ncurses_screen;
-   vid->display->pitch = vid->xres * sizeof(chtype);
    for (p=ncurses_screen,size=vid->xres*vid->yres;size;size--,p++)
      *p = ' ';
    

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.63 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.64 2001/12/19 21:30:56 lonetech Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1404,6 +1404,9 @@ void def_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
    int i;
    s16 bw,bh;
    
+   if(!src)
+	   return;
+
    (*vid->bitmap_getsize)(src,&bw,&bh);
 
    if (w>(bw-src_x) || h>(bh-src_y)) {
