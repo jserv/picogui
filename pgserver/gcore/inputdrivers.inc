@@ -37,6 +37,10 @@
   DRV("ttykb",&ttykb_regfunc)
 #endif
 
+#ifdef DRIVER_REMORAKB
+  DRV("remorakb",&remorakb_regfunc)
+#endif
+
 #ifdef DRIVER_SERIALMOUSE
   DRV("serialmouse",&serialmouse_regfunc)
 #endif
