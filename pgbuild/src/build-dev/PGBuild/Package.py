@@ -82,8 +82,9 @@ class PackageVersion(object):
        # If we're updating a bootstrap package we have to do a little dance
        # so that our build system doesn't get hosed if the update fails.
        if str(self) in self.package.list.getBootstrapPackages():
-           tempPathNew = "temp_new_" + localPath
-           tempPathOld = "temp_old_" + localPath
+           splitLocalPath = os.path.split(localPath)
+           tempPathNew = os.path.join(splitLocalPath[0], "temp_new_" + splitLocalPath[1])
+           tempPathOld = os.path.join(splitLocalPath[0], "temp_old_" + splitLocalPath[1])
 
            # Since updating a bootstrap package is a big deal, check for updates first
            if repo.isUpdateAvailable(localPath):
