@@ -301,3 +301,13 @@ CONFIG_SDLSKIN
       handheld device emulator running on a PC. This also has
       the practical application of supporting backlights and
       hardware buttons on PCs.
+
+CONFIG_SDLSDC
+      The secondary display channel is a way to display extra
+      text data on a skin, to simulate a printer or text
+      LCD. Characters are sent with the PGDM_SDC_CHAR driver
+      message, and displayed according to configuration
+      file options.
+
+
+

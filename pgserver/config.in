@@ -73,6 +73,7 @@ fi
 bool 'SDL framebuffer driver'              DRIVER_SDLFB
 if [ "$DRIVER_SDLFB" = "y" ]; then
    bool '  Skin support'          CONFIG_SDLSKIN
+   bool '  Secondary display channel'      CONFIG_SDLSDC
    choice '  SDL framebuffer low-bpp emulation' \
    	"None                   CONFIG_SDLEMU_NONE \
 	 Blit	       		CONFIG_SDLEMU_BLIT \

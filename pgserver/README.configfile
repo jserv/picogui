@@ -154,6 +154,21 @@ quoted appropriately. For example:
   depth. Does not affect the actual framebuffer depth or the background
   or tint color.
 
+- sdc_fg, sdc_bg
+  (requires 'secondary display channel' config option)
+  Sets the foreground and background colors for SDC output.
+  Each of these should be a 6-digit hex number
+
+- sdc_x, sdc_y, sdc_w, sdc_h
+  (requires 'secondary display channel' config option)
+  Position and size (skin-relative coordinates) to display SDC output.
+
+- sdc_font_name, sdc_font_size, sdc_font_style
+  (requires 'secondary display channel' config option)
+  Font specification for the SDC output. The style parameter must be the
+  decimal equivalent of the PG_FSTYLE flags. Any or all of these parameters
+  are optional.
+
 [video-scrshot]
 
 - file

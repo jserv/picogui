@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.24 2001/08/13 06:16:05 micahjd Exp $
+/* $Id: sdlfb.c,v 1.25 2001/09/09 18:17:24 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -29,15 +29,16 @@
  * 
  */
 
-#include <pgserver/common.h>
+#include <pgserver/common.h>      /* Needed for any pgserver file */
 
-#include <pgserver/video.h>
-#include <pgserver/input.h>
+#include <pgserver/video.h>       /* Always needed for a video driver! */
+#include <pgserver/render.h>      /* For data types like 'quad' */
+#include <pgserver/input.h>       /* For loading our corresponding input lib */
 
-#include <SDL.h>
+#include <SDL.h>                  /* This is the SDL video driver */
 
 #ifdef CONFIG_SDLSKIN
-#include <stdio.h>        /* File I/O for loading skin bitmap */
+#include <stdio.h>                /* File I/O for loading skin bitmap */
 #endif
 
 SDL_Surface *sdl_vidsurf;
@@ -45,12 +46,26 @@ SDL_Surface *sdl_vidsurf;
 int sdlfb_emucolors;
 #endif
 
+/* config data for skins */
 #ifdef CONFIG_SDLSKIN
 pgcolor sdlfb_tint;
 s16 sdlfb_display_x;
 s16 sdlfb_display_y;
 u16 sdlfb_simbits;
 u16 sdlfb_scale;
+#endif
+
+#ifdef CONFIG_SDLSDC
+/* config data for secondary display channel */
+pgcolor sdlsdc_fg,sdlsdc_bg;
+handle sdlsdc_font;
+s16 sdlsdc_x,sdlsdc_y;
+s16 sdlsdc_w,sdlsdc_h;
+/* variables */
+hwrcolor sdlsdc_hfg,sdlsdc_hbg;
+s16 sdlsdc_cx,sdlsdc_cy;
+struct stdbitmap sdlsdc_bits;
+
 #endif
 
 #if defined(CONFIG_SDLEMU_BLIT) || defined(CONFIG_SDLSKIN)
@@ -72,6 +87,7 @@ hwrcolor sdlfb_tint_pgtohwr(pgcolor c);
 pgcolor sdlfb_color_tint(pgcolor c);
 hwrcolor sdlfb_tint_hwrtopg(pgcolor c);
 pgcolor sdlfb_color_untint(pgcolor c);
+g_error sdlfb_sdc_char(char c);
 
 g_error sdlfb_init(void) {
   /* Avoid freeing a nonexistant backbuffer in close() */
@@ -122,12 +138,24 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   }
   sdlfb_simbits = get_param_int("video-sdlfb","simbits",0);
   sdlfb_scale = get_param_int("video-sdlfb","scale",1);
+  sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
+#endif
+#ifdef CONFIG_SDLSDC
+  sdlsdc_fg = strtol(get_param_str("video-sdlfb","sdc_fg","000000"),NULL,16);
+  sdlsdc_bg = strtol(get_param_str("video-sdlfb","sdc_bg","FFFFFF"),NULL,16);
+  sdlsdc_x  = get_param_int("video-sdlfb","sdc_x",0);
+  sdlsdc_y  = get_param_int("video-sdlfb","sdc_y",0);
+  sdlsdc_w  = get_param_int("video-sdlfb","sdc_w",0);
+  sdlsdc_h  = get_param_int("video-sdlfb","sdc_h",0);
+  /* We can't load the font yet because functions findfont() rely on
+   * haven't been initialized yet. Save that for later.
+   */
+#endif
 
 #ifdef CONFIG_SDLEMU_BLIT
    /* Make screen divisible by a byte */
   if (bpp && bpp<8)
      fbw &= ~((8/bpp)-1);
-#endif
 #endif
 
 #ifdef CONFIG_SDLEMU_BLIT
@@ -278,6 +306,15 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 	  vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
 
+#ifdef CONFIG_SDLSDC
+  /* Fabricate a bitmap specifying the sdc area */
+  memcpy(&sdlsdc_bits,vid->display,sizeof(struct stdbitmap));
+  sdlsdc_bits.freebits = 0;
+  sdlsdc_bits.bits += bpp * sdlsdc_x / 8 + FB_BPL * sdlsdc_y;
+  sdlsdc_bits.w = sdlsdc_w;
+  sdlsdc_bits.h = sdlsdc_h;
+#endif
+
 #ifdef CONFIG_SDLSKIN
   /* Install the skin background */
   if (s = get_param_str("video-sdlfb","background",NULL)) {
@@ -311,11 +348,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Offset vid->display to the specified position */
   sdlfb_display_x = get_param_int("video-sdlfb","display_x",0);
   sdlfb_display_y = get_param_int("video-sdlfb","display_y",0);
-  FB_MEM += bpp * sdlfb_display_x / 8;
-  FB_MEM += FB_BPL * sdlfb_display_y;
-
-  /* Load initial tint */
-  sdlfb_tint = strtol(get_param_str("video-sdlfb","tint","FFFFFF"),NULL,16);
+  FB_MEM += bpp * sdlfb_display_x / 8 + FB_BPL * sdlfb_display_y;
 
   /* tint and grayscale conversion */
   if (!sdlfb_emucolors) {
@@ -545,8 +578,95 @@ void sdlfb_message(u32 message, u32 param) {
     break;
 #endif
 
+#ifdef CONFIG_SDLSDC
+  case PGDM_SDC_CHAR:
+    sdlfb_sdc_char( (char) param );
+    break;
+#endif
+
   }
 }
+
+#ifdef CONFIG_SDLSDC
+g_error sdlfb_sdc_char(char c) {
+  g_error e;
+  struct fontdesc *fd;
+
+  /* Don't bother if the SDC hasn't been configured */
+  if (!(sdlsdc_w && sdlsdc_h))
+    return sucess;
+
+  /* If the font hasn't yet been allocated, set things up now */
+  if (!sdlsdc_font) {
+    e = findfont(&sdlsdc_font,-1,
+		 get_param_str("video-sdlfb","sdc_font_name",""),
+		 get_param_int("video-sdlfb","sdc_font_size",0),
+		 get_param_int("video-sdlfb","sdc_font_style",0));
+    errorcheck;
+
+    /* Convert colors to hwrcolor (ignore tint, simulated grays) */
+    sdlsdc_hfg = def_color_pgtohwr(sdlsdc_fg);
+    sdlsdc_hbg = def_color_pgtohwr(sdlsdc_bg);
+
+    /* Clear the background */
+    VID(rect) (&sdlsdc_bits, 0,0,sdlsdc_w,sdlsdc_h, sdlsdc_hbg, PG_LGOP_NONE);
+    SDL_UpdateRect(sdl_vidsurf,sdlsdc_x,sdlsdc_y,sdlsdc_w,sdlsdc_h);
+    
+    /* Look up the font */
+    e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, sdlsdc_font);
+    errorcheck;
+    
+    /* Set the initial cursor position */
+    sdlsdc_cx = 0;
+    sdlsdc_cy = sdlsdc_h - fd->font->ascent - fd->font->descent;
+  }
+  
+  /* Look up the font */
+  e = rdhandle((void**) &fd, PG_TYPE_FONTDESC, -1, sdlsdc_font);
+  errorcheck;
+
+  /* If we got an explicit newline or the line is full,
+   * scroll the display
+   */
+  if (c=='\n' || sdlsdc_cx+fd->font->w >= sdlsdc_w) {
+
+    /* Reset cursor */
+    sdlsdc_cx = 0;
+
+    /* Scroll */
+    VID(blit) (&sdlsdc_bits,0,0,sdlsdc_w,sdlsdc_h-fd->font->h,
+	       &sdlsdc_bits,0,fd->font->h,PG_LGOP_NONE);
+    VID(rect) (&sdlsdc_bits,0,sdlsdc_h-fd->font->h,
+	       sdlsdc_w,fd->font->h, sdlsdc_hbg, PG_LGOP_NONE);
+
+    /* Update the whole thing */
+    SDL_UpdateRect(sdl_vidsurf,sdlsdc_x,sdlsdc_y,sdlsdc_w,sdlsdc_h);
+  }
+  
+  /* Handle backspace for overstriking- this will only look right for
+   * fixed-width fonts */
+  if (c == '\b') {
+    sdlsdc_cx -= fd->font->w;
+    if (sdlsdc_cx < 0)
+      sdlsdc_cx = 0;
+  }
+
+  /* Plot a character */
+  if (c!='\n' && c!='\r' && c!='\b') {
+    outchar(&sdlsdc_bits,fd,&sdlsdc_cx,&sdlsdc_cy,sdlsdc_hfg,c,NULL,
+	    0,0,PG_LGOP_NONE,0);
+    
+    /* Update the screen */
+    SDL_UpdateRect(sdl_vidsurf,
+		   sdlsdc_x+sdlsdc_cx-fd->font->w,
+		   sdlsdc_y+sdlsdc_cy,
+		   fd->font->w,
+		   fd->font->ascent + fd->font->descent);
+  }
+
+  return sucess;
+}
+#endif
 
 g_error sdlfb_regfunc(struct vidlib *v) {
   v->init = &sdlfb_init;
@@ -558,6 +678,10 @@ g_error sdlfb_regfunc(struct vidlib *v) {
 }
 
 /* The End */
+
+
+
+
 
 
 
