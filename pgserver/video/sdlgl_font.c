@@ -1,4 +1,4 @@
-/* $Id: sdlgl_font.c,v 1.2 2002/03/03 07:35:03 micahjd Exp $
+/* $Id: sdlgl_font.c,v 1.3 2002/03/03 08:03:01 micahjd Exp $
  *
  * sdlgl_font.c - OpenGL driver for picogui, using SDL for portability.
  *                Replace PicoGUI's normal font rendering with TrueType
@@ -214,10 +214,14 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   glTranslatef(*x,*y,0);
   glScalef(scale,scale,scale);
   glRotatef(*angle,0,0,1);
+  glPushMatrix();
 
   while ((ch = (*fd)->decoder(txt))) {
-    if (ch=='\n')
+    if (ch=='\n') {
+      glPopMatrix();
       glTranslatef(0,(*fd)->font->h + (*fd)->interline_space,0);
+      glPushMatrix();
+    }
     else if (ch!='\r') {
       if ((*fd)->passwdc > 0)
 	ch = (*fd)->passwdc;
@@ -243,6 +247,7 @@ void sdlgl_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
   }
 
   /* Clean up */
+  glPopMatrix();
   glPopMatrix();
   glDisable(GL_TEXTURE_2D);
   gl_lgop(PG_LGOP_NONE);

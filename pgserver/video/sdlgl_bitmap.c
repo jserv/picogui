@@ -1,4 +1,4 @@
-/* $Id: sdlgl_bitmap.c,v 1.1 2002/03/03 05:42:26 micahjd Exp $
+/* $Id: sdlgl_bitmap.c,v 1.2 2002/03/03 08:03:01 micahjd Exp $
  *
  * sdlgl_bitmap.c - OpenGL driver for picogui, using SDL for portability
  *                  Functions to replace PicoGUI's normal bitmap data type
@@ -36,10 +36,10 @@
 
 g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   struct glbitmap *glb = (struct glbitmap *) bmp;
-  
+  g_error e;
+    
   /* Special case for the display */
   if (!bmp) {
-    g_error e;
 
     if (gl_global.display_rend) {
       *rend = gl_global.display_rend;
@@ -57,11 +57,16 @@ g_error sdlgl_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
     gl_global.display_rend->orig_clip = gl_global.display_rend->clip;
     gl_global.display_rend->output_rect.w = vid->lxres;
     gl_global.display_rend->output_rect.h = vid->lyres;
-
-    return success;
+    *rend = gl_global.display_rend;
+  }
+  else {
+    e = def_bitmap_get_groprender(glb->sb,rend);
+    errorcheck;
   }
 
-  return def_bitmap_get_groprender(glb->sb,rend);
+  (*rend)->output = bmp;
+
+  return success;
 }
 
 g_error sdlgl_bitmap_getsize(hwrbitmap bmp,s16 *w,s16 *h) {
