@@ -11,6 +11,17 @@
 case ${CONFIG_PGSERVER_CONF} in
 
     # ------------------------------
+    ppc-linux-*)
+    # ------------------------------
+
+cat<<EOF
+# configuration for a PPC device
+[pgserver]
+@INPUTDRIVERS@
+EOF
+;;
+
+    # ------------------------------
     m68k-pic-coff-zukero)
     # ------------------------------
 

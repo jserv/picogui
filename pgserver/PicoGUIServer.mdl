@@ -95,6 +95,16 @@ announce = 1
 blocked  = 1
     ''')
 
+    elif platform.platform == 'ppc-linux':
+        fd.write ('''
+name = picogui-server
+argv = pgserver
+
+restart  = 1
+announce = 1
+blocked  = 1
+    ''')
+
     elif platform.platform == 'native-linux':
         fd.write ('''
 name = picogui-server
@@ -150,6 +160,16 @@ then
   fi
 fi
 
+# start pgserver
+rm_task unblock picogui-server
+''')
+
+    elif platform.platform == 'ppc-linux':
+        fd.write ('''#!/bin/sh
+# Set the framebuffer device in 16bpp (YUV)
+echo "setting framebuffer device to 16bpp YUV ..."
+fbset -n -g 640 480 640 480 16
+    
 # start pgserver
 rm_task unblock picogui-server
 ''')
