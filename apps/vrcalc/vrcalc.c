@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
   display=pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("0"),
+	      PG_WP_TRANSPARENT,0,
 	      0);
   //Container for the buttons
   box=pgNewWidget(PG_WIDGET_BOX,0,0);
