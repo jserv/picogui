@@ -58,7 +58,7 @@
 	principles.
   </para>
   <para>
-	Unless otherwise stated, every value is stored in little-endian
+	Unless otherwise stated, every value is stored in network
 	byte order.
   </para>
   <para>
@@ -259,7 +259,7 @@ struct pgrequest {
   <sect2 id="pgreq-appmsg">
    <title>PGREQ_APPMSG - Send PG_WE_APPMSG to any widget</>
    <programlisting>
-type                 : PGREQ_APPMSG
+type                 : PGREQ_APPMSG (45)
 client lib equivalent: pgAppMessage()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
                        data
@@ -278,7 +278,7 @@ server returned data : none
   <sect2 id="pgreq-attachwidget">
    <title>PGREQ_ATTACHWIDGET - Attach widget</>
    <programlisting>
-type                 : PGREQ_ATTACHWIDGET
+type                 : PGREQ_ATTACHWIDGET (47)
 client lib equivalent: pgAttachWidget()
 additional data      : <link linkend="pgreqdattachwidget">struct pgreqd_attachwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -312,7 +312,7 @@ struct pgreqd_attachwidget {
   <sect2 id="pgreq-batch">
    <title>PGREQ_BATCH - Batch multiple requests</title> 
    <programlisting>
-type                 : PGREQ_BATCH
+type                 : PGREQ_BATCH (18)
 client lib equivalent: none
 additional data      : requests
 server response type : set to response type of the last request
@@ -333,7 +333,7 @@ server returned data : set to returned data of the last request
   <sect2 id="pgreq-chcontext">
    <title>PGREQ_CHCONTEXT - Change a handle's context </>
    <programlisting>
-type                 : PGREQ_CHCONTEXT
+type                 : PGREQ_CHCONTEXT (30)
 client lib equivalent: pgChangeContext()
 additional data      : <link linkend="pgreqdchcontext">struct pgreqd_chcontext</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -365,7 +365,7 @@ struct pgreqd_chcontext {
   <sect2 id="pgreq-checkevent">
    <title>PGREQ_CHECKEVENT - Return number of queued events</>
    <programlisting>
-type                 : PGREQ_CHECKEVENT
+type                 : PGREQ_CHECKEVENT (43)
 client lib equivalent: pgCheckEvent()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -395,7 +395,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-createwidget">
    <title>PGREQ_CREATEWIDGET - Create a widget</title> 
    <programlisting>
-type                 : PGREQ_CREATEWIDGET
+type                 : PGREQ_CREATEWIDGET (46)
 client lib equivalent: pgCreateWidget()
 additional data      : <link linkend="pgreqdcreatewidget">struct pgreqd_createwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -427,7 +427,7 @@ struct pgreqd_createwidget {
   <sect2 id="pgreq-drivermsg">
    <title>PGREQ_DRIVERMSG - Send a message to all drivers</>
    <programlisting>
-type                 : PGREQ_DRIVERMSG
+type                 : PGREQ_DRIVERMSG (39)
 client lib equivalent: pgDriverMessage()
 additional data      : <link linkend="pgreqddrivermsg">struct pgreqd_drivermsg</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -455,7 +455,7 @@ struct pgreqd_drivermsg {
   <sect2 id="pgreq-dup">
    <title>PGREQ_DUP - Duplicate an object</>
    <programlisting>
-type                 : PGREQ_DUP
+type                 : PGREQ_DUP (27)
 client lib equivalent: pgDup()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -476,7 +476,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-findthobj">
    <title>PGREQ_FINDTHOBJ - Find theme object by name</>
    <programlisting>
-type                 : PGREQ_FINDTHOBJ
+type                 : PGREQ_FINDTHOBJ (48)
 client lib equivalent: pgFindThemeObject()
 additional data      : data (name)
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -498,7 +498,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-findwidget">
    <title>PGREQ_FINDWIDGET - Get widget handle by name</>
    <programlisting>
-type                 : PGREQ_FINDWIDGET
+type                 : PGREQ_FINDWIDGET (42)
 client lib equivalent: pgFindWidget()
 additional data      : data (name)
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -519,7 +519,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-focus">
    <title>PGREQ_FOCUS - Forces focus to a specified widget</>
    <programlisting>
-type                 : PGREQ_FOCUS
+type                 : PGREQ_FOCUS (25)
 client lib equivalent: pgFocus()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -537,7 +537,7 @@ server returned data : none
   <sect2 id="pgreq-free">
    <title>PGREQ_FREE - Free a handle</title> 
    <programlisting>
-type                 : PGREQ_FREE
+type                 : PGREQ_FREE (6)
 client lib equivalent: pgDelete()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -559,7 +559,7 @@ struct pgreqd_handlestruct {
   <sect2 id="pgreq-get">
    <title>PGREQ_GET - Get a widget's property</title> 
    <programlisting>
-type                 : PGREQ_GET
+type                 : PGREQ_GET (8)
 client lib equivalent: pgGetWidget()
 additional data      : <link linkend="pgreqdget">struct pgreqd_get</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -589,7 +589,7 @@ struct pgreqd_get {
   <sect2 id="pgreq-getfstyle">
    <title>PGREQ_GETFSTYLE - Get information on a font</>
    <programlisting>
-type                 : PGREQ_GETFSTYLE
+type                 : PGREQ_GETFSTYLE (41)
 client lib equivalent: pgGetFontStyle()
 additional data      : <link linkend="pgreqdgetfstyle">struct pgreqd_getfstyle</>
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
@@ -642,7 +642,7 @@ struct pgdata_getfstyle {
   <sect2 id="pgreq-getinactive">
    <title>PGREQ_GETINACTIVE - Get miliseconds of inactivity</>
    <programlisting>
-type                 : PGREQ_GETINACTIVE
+type                 : PGREQ_GETINACTIVE (37)
 client lib equivalent: pgGetInactivity()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -657,7 +657,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-getmode">
    <title>PGREQ_GETMODE - Get video mode information</>
    <programlisting>
-type                 : PGREQ_GETMODE
+type                 : PGREQ_GETMODE (22)
 client lib equivalent: pgGetVideoMode()
 additional data      : none
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
@@ -702,7 +702,7 @@ struct pgmodeinfo {
   <sect2 id="pgreq-getpayload">
    <title>PGREQ_GETPAYLOAD - Get the payload of an object </>
    <programlisting>
-type                 : PGREQ_GETPAYLOAD
+type                 : PGREQ_GETPAYLOAD (29)
 client lib equivalent: pgGetPayload()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -718,7 +718,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-getstring">
    <title>PGREQ_GETSTRING - Return a string data</>
    <programlisting>
-type                 : PGREQ_GETSTRING
+type                 : PGREQ_GETSTRING (26)
 client lib equivalent: pgGetString()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponsedata">PG_RESPONSE_DATA</>
@@ -734,7 +734,7 @@ server returned data : string
   <sect2 id="pgreq-in-key">
    <title>PGREQ_IN_KEY - Dispatch keyboard input</title> 
    <programlisting>
-type                 : PGREQ_IN_KEY
+type                 : PGREQ_IN_KEY (10)
 client lib equivalent: pgDispatchEvent()
 additional data      : <link linkend="pgreqdinkey">struct pgreqd_in_key</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -781,7 +781,7 @@ struct pgreqd_in_key {
   <sect2 id="pgreq-in-point">
    <title>PGREQ_IN_POINT - Dispatch a pointing device input</title> 
    <programlisting>
-type                 : PGREQ_IN_POINT
+type                 : PGREQ_IN_POINT (11)
 client lib equivalent: pgDispatchEvent()
 additional data      : <link linkend="pgreqdinpoint">struct pgreqd_in_point</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -815,7 +815,7 @@ struct pgreqd_in_point {
   <sect2 id="pgreq-loaddriver">
    <title>PGREQ_LOADDRIVER - Load input/misc driver</>
    <programlisting>
-type                 : PGREQ_LOADDRIVER
+type                 : PGREQ_LOADDRIVER (40)
 client lib equivalent: pgLoadDriver()
 additional data      : data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -831,7 +831,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-mkarray">
    <title>PGREQ_MKARRAY - Make an array</>
    <programlisting>
-type                 : PGREQ_MKARRAY
+type                 : PGREQ_MKARRAY (33)
 client lib equivalent: pgNewArray()
 additional data      : data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -851,7 +851,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-mkbitmap">
    <title>PGREQ_MKBITMAP - Create a bitmap</title> 
    <programlisting>
-type                 : PGREQ_MKBITMAP
+type                 : PGREQ_MKBITMAP (3)
 client lib equivalent: pgCreateBitmap
 additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -876,7 +876,7 @@ struct pgreqd_newbitmap {
   <sect2 id="pgreq-mkcontext">
    <title>PGREQ_MKCONTEXT - Enter a new context</>
    <programlisting>
-type                 : PGREQ_MKCONTEXT
+type                 : PGREQ_MKCONTEXT (23)
 client lib equivalent: pgEnterContext()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -916,7 +916,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-mkfont">
    <title>PGREQ_MKFONT - Make a font descriptor</title> 
    <programlisting>
-type                 : PGREQ_MKFONT
+type                 : PGREQ_MKFONT (4)
 client lib equivalent: pgNewFont()
 additional data      : <link linkend="pgreqdmkfont">struct pgreqd_mkfont</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -954,7 +954,7 @@ struct pgreqd_mkfont {
   <sect2 id="pgreq-mkpopup">
    <title>PGREQ_MKPOPUP - Create a Popup root widget</title>
    <programlisting>
-type                 : PGREQ_MKPOPUP
+type                 : PGREQ_MKPOPUP (16)
 client lib equivalent: pgNewPopup() and pgNewPopupAt()
 additional data      : <link linkend="pgreqdmkpopup">struct pgreqd_mkpopup</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1001,7 +1001,7 @@ struct pgreqd_mkpopup {
   <sect2 id="pgreq-mkstring">
    <title>PGREQ_MKSTRING - Create a string</title>
    <programlisting>
-type                 : PGREQ_MKSTRING
+type                 : PGREQ_MKSTRING (5)
 client lib equivalent: pgNewString()
 additional data      : string
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1020,7 +1020,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-mktheme">
    <title>PGREQ_MKTHEME - Load a compiled theme</title>
    <programlisting>
-type                 : PGREQ_MKTHEME
+type                 : PGREQ_MKTHEME (9)
 client lib equivalent: pgLoadTheme()
 additional data      : compiled theme data
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1035,7 +1035,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-mkwidget">
    <title>PGREQ_MKWIDGET - Make a new widget</title> 
    <programlisting>
-type                 : PGREQ_MKWIDGET
+type                 : PGREQ_MKWIDGET (2)
 client lib equivalent: pgNewWidget()
 additional data      : <link linkend="pgreqdmkwidget">struct pgreqd_mkwidget</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1070,7 +1070,7 @@ struct pgreqd_mkwidget {
   <sect2 id="pgreq-newbitmap">
    <title>PGREQ_NEWBITMAP - Create a blank bitmap</>
    <programlisting>
-type                 : PGREQ_NEWBITMAP
+type                 : PGREQ_NEWBITMAP (35)
 client lib equivalent: pgNewbitmap()
 additional data      : <link linkend="pgreqdnewbitmap">struct pgreqd_newbitmap</>
                        image data
@@ -1097,7 +1097,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-ping">
    <title>PGREQ_PING - Ping request</title>
    <programlisting>
-type                 : PGREQ_PING
+type                 : PGREQ_PING (0)
 client lib equivalent: none
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1111,7 +1111,7 @@ server returned data : none
   <sect2 id="pgreq-register">
    <title>PGREQ_REGISTER - Register an application</title> 
    <programlisting>
-type                 : PGREQ_REGISTER
+type                 : PGREQ_REGISTER (15)
 client lib equivalent: pgRegisterApp()
 additional data      : <link linkend="pgreqdregister">struct pgreqd_register</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1153,7 +1153,7 @@ struct pgreqd_register {
   <sect2 id="pgreq-regowner">
    <title>PGREQ_REGOWNER - Get exclusive privileges </>
    <programlisting>
-type                 : PGREQ_REGOWNER
+type                 : PGREQ_REGOWNER (19)
 client lib equivalent: pgRegisterOwner()
 additional data      : <link linkend="pgreqdregowner">struct pgreqd_regowner</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1191,7 +1191,7 @@ struct pgreqd_regowner {
   <sect2 id="pgreq-render">
    <title>PGREQ_RENDER - Render a gropnode to a bitmap</>
    <programlisting>
-type                 : PGREQ_RENDER
+type                 : PGREQ_RENDER (34)
 client lib equivalent: pgRender()
 additional data      : <link linkend="pgreqdrender">struct pgreqd_render</>
                        gropnode data
@@ -1225,7 +1225,7 @@ struct pgreqd_render {
   <sect2 id="pgreq-rmcontext">
    <title>PGREQ_RMCONTEXT - Clean up and kill a context </>
    <programlisting>
-type                 : PGREQ_RMCONTEXT
+type                 : PGREQ_RMCONTEXT (24)
 client lib equivalent: pgLeaveContext()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1240,9 +1240,9 @@ server returned data : none
   </sect2>
 
   <sect2 id="pgreq-set">
-   <title>PGREQ_SET - Set a widget's properties</title> 
+   <title>PGREQ_SET - Set a widget's properties</title>
    <programlisting>
-type                 : PGREQ_SET
+type                 : PGREQ_SET (7)
 client lib equivalent: pgSetWidget()
 additional data      : <link linkend="pgreqdset">struct pgreqd_set</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1275,7 +1275,7 @@ struct pgreqd_set {
   <sect2 id="pgreq-setinactive">
    <title>PGREQ_SETINACTIVE - Set miliseconds of inactivity</>
    <programlisting>
-type                 : PGREQ_SETINACTIVE
+type                 : PGREQ_SETINACTIVE (38)
 client lib equivalent: pgSetInactivity()
 additional data      : <link linkend="pgreqdsetinactive">struct pgreqd_setinactive</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1298,7 +1298,7 @@ struct pgreqd_setinactive {
   <sect2 id="pgreq-setmode">
    <title>PGREQ_SETMODE - Set video mode/depth/rotation</>
    <programlisting>
-type                 : PGREQ_SETMODE
+type                 : PGREQ_SETMODE (21)
 client lib equivalent: pgSetVideoMode()
 additional data      : <link linkend="pgreqdsetmode">struct pgreqd_setmode</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1376,7 +1376,7 @@ struct pgreqd_setmode {
   <sect2 id="pgreq-setpayload">
    <title>PGREQ_SETPAYLOAD - Set an object's payload</>
    <programlisting>
-type                 : PGREQ_SETPAYLOAD
+type                 : PGREQ_SETPAYLOAD (28)
 client lib equivalent: pgSetPayload()
 additional data      : <link linkend="pgreqdsetpayload">struct pgreqd_setpayload</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1420,7 +1420,7 @@ struct pgreqd_setpayload {
   <sect2 id="pgreq-sizebitmap">
    <title>PGREQ_SIZEBITMAP - Find the size of a bitmap</>
    <programlisting>
-type                 : PGREQ_SIZEBITMAP
+type                 : PGREQ_SIZEBITMAP (44)
 client lib equivalent: pgSizeBitmap()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1444,7 +1444,7 @@ server returned data : <structfield>pgresponse_ret.data</>
   <sect2 id="pgreq-sizetext">
    <title>PGREQ_SIZETEXT - Find the size of text</title> 
    <programlisting>
-type                 : PGREQ_SIZETEXT
+type                 : PGREQ_SIZETEXT (17)
 client lib equivalent: pgSizeText()
 additional data      : <link linkend="pgreqdsizetext">struct pgreqd_sizetext</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1471,7 +1471,7 @@ struct pgreqd_sizetext {
   <sect2 id="pgreq-thlookup">
    <title>PGREQ_THLOOKUP - Perform a theme lookup</>
    <programlisting>
-type                 : PGREQ_THLOOKUP
+type                 : PGREQ_THLOOKUP (36)
 client lib equivalent: pgThemeLookup()
 additional data      : <link linkend="pgreqdthlookup">struct pgreqd_thlookup</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1501,7 +1501,7 @@ truct pgreqd_thlookup {
   <sect2 id="pgreq-traversewgt">
    <title>PGREQ_TRAVERSEWGT - Find widgets after this one</>
    <programlisting>
-type                 : PGREQ_TRAVERSEWGT
+type                 : PGREQ_TRAVERSEWGT (49)
 client lib equivalent: pgTraverseWidget()
 additional data      : <link linkend="pgreqdtraversewgt">struct pgreqd_traversewgt</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1548,7 +1548,7 @@ struct pgreqd_traversewgt {
   <sect2 id="pgreq-unregowner">
    <title>PGREQ_UNREGOWNER - Give up exclusive privileges</>
    <programlisting>
-type                 : PGREQ_UNREGOWNER
+type                 : PGREQ_UNREGOWNER (20)
 client lib equivalent: pgUnregisterOwner()
 additional data      : <link linkend="pgreqdregowner">struct pgreqd_regowner</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1567,7 +1567,7 @@ server returned data : none
   <sect2 id="pgreq-update">
    <title>PGREQ_UPDATE - Update the screen</title> 
    <programlisting>
-type                 : PGREQ_UPDATE
+type                 : PGREQ_UPDATE (1)
 client lib equivalent: pgUpdate()
 additional data      : none
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1583,7 +1583,7 @@ server returned data : none
   <sect2 id="pgreq-updatepart">
    <title>PGREQ_UPDATEPART - Update a subtree of widgets</>
    <programlisting>
-type                 : PGREQ_UPDATEPART
+type                 : PGREQ_UPDATEPART (32)
 client lib equivalent: pgSubUpdate()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
 server response type : <link linkend="pgresponseret">PG_RESPONSE_RET</>
@@ -1603,7 +1603,7 @@ server returned data : none
   <sect2 id="pgreq-wait">
    <title>PGREQ_WAIT - Wait for an event</title> 
    <programlisting>
-type                 : PGREQ_WAIT
+type                 : PGREQ_WAIT (13)
 client lib equivalent: pgEvent()
 additional data      : none
 server response type : <link linkend="pgresponseevent">PG_RESPONSE_EVENT</>
@@ -1632,7 +1632,7 @@ server returned data : depends of the event type
   <sect2 id="pgreq-writeto">
    <title>PGREQ_WRITETO - Write data to a widget </>
    <programlisting>
-type                 : PGREQ_WRITETO
+type                 : PGREQ_WRITETO (31)
 client lib equivalent: pgWriteData()
 additional data      : <link linkend="pgreqdhandlestruct">struct pgreqd_handlestruct</>
                        data
@@ -1978,8 +1978,72 @@ chbtn = (<structfield>pgresponse_event.param</> &gt;&gt; 28) &amp; 0xF;
 
  <appendix id="propertytypes"><title>Property Types</title>
   <para>
-	(soon)
+  (why should I write here?)
   </para>
+  <para>
+	Latest values may be found in
+	<filename class=headerfile>picogui/constants.h</filename> or on cvs in
+	<filename class=headerfile>pgserver/include/picogui/constants.h</filename>
+  </para>
+  <table frame=none pgwide=1><title>PGREQ values</title>
+  <tgroup cols=3 align=left>
+  <colspec colwidth="45*">
+  <colspec colwidth="10*">
+  <colspec colwidth="45*">
+  <tbody>
+  <row><entry>PG_WP_SIZE</><entry>1</><entry></></>
+  <row><entry>PG_WP_SIDE</><entry>2</><entry></></>
+  <row><entry>PG_WP_ALIGN</><entry>3</><entry></></>
+  <row><entry>PG_WP_BGCOLOR</><entry>4</><entry></></>
+  <row><entry>PG_WP_COLOR</><entry>5</><entry></></>
+  <row><entry>PG_WP_SIZEMODE</><entry>6</><entry></></>
+  <row><entry>PG_WP_TEXT</><entry>7</><entry></></>
+  <row><entry>PG_WP_FONT</><entry>8</><entry></></>
+  <row><entry>PG_WP_TRANSPARENT</><entry>9</><entry></></>
+  <row><entry>PG_WP_BORDERCOLOR</><entry>10</><entry></></>
+  <row><entry>PG_WP_BITMAP</><entry>12</><entry></></>
+  <row><entry>PG_WP_LGOP</><entry>13</><entry></></>
+  <row><entry>PG_WP_VALUE</><entry>14</><entry></></>
+  <row><entry>PG_WP_BITMASK</><entry>15</><entry></></>
+  <row><entry>PG_WP_BIND</><entry>16</><entry></></>
+  <row><entry>PG_WP_SCROLL_X</><entry>17</><entry>Horizontal and vertical scrolling amount</></>
+  <row><entry>PG_WP_SCROLL_Y</><entry>18</><entry></></>
+  <row><entry>PG_WP_HOTKEY</><entry>19</><entry></></>
+  <row><entry>PG_WP_EXTDEVENTS</><entry>20</><entry>For buttons, a mask of extra events to send</></>
+  <row><entry>PG_WP_DIRECTION</><entry>21</><entry></></>
+  <row><entry>PG_WP_ABSOLUTEX</><entry>22</><entry>read-only, relative to screen</></>
+  <row><entry>PG_WP_ABSOLUTEY</><entry>23</><entry></></>
+  <row><entry>PG_WP_ON</><entry>24</><entry>on-off state of button/checkbox/etc</></>
+  <row><entry>PG_WP_STATE</><entry>25</><entry>Deprecated! Use PG_WP_THOBJ instead</></>
+  <row><entry>PG_WP_THOBJ</><entry>25</><entry>Set a widget's theme object</></>
+  <row><entry>PG_WP_NAME</><entry>26</><entry>A widget's name (for named containers, etc)</></>
+  <row><entry>PG_WP_PUBLICBOX</><entry>27</><entry>Set to 1 to allow other apps to make widgets in this container</></>
+  <row><entry>PG_WP_DISABLED</><entry>28</><entry>For buttons, grays out text and prevents clicking</></>
+  <row><entry>PG_WP_MARGIN</><entry>29</><entry>For boxes, overrides the default margin</></>
+  <row><entry>PG_WP_TEXTFORMAT</><entry>30</><entry>For the textbox, defines a format for  PG_WP_TEXT. fourCC format, with optional preceeding '+' to prevent erasing existing data, just append at the cursor position</></>
+  <row><entry>PG_WP_TRIGGERMASK</><entry>31</><entry>Mask of extra triggers accepted (self->trigger_mask)</></>
+  <row><entry>PG_WP_HILIGHTED</><entry>32</><entry>Widget property to hilight a widget and all it's children</></>
+  <row><entry>PG_WP_SELECTED</><entry>33</><entry>List property to select a row.</></>
+  <row><entry>PG_WP_SELECTED_HANDLE</><entry>34</><entry>List property to return a handle to the selected row</></>
+  <row><entry>PG_WP_AUTOSCROLL</><entry>35</><entry>For the textbox or terminal, scroll to any new text that's inserted</></>
+  <row><entry>PG_WP_LINES</><entry>36</><entry>Height, in lines</></>
+  <row><entry>PG_WP_PREFERRED_W</><entry>37</><entry>Read only (for now) properties to get any widget's preferred size</></>
+  <row><entry>PG_WP_PREFERRED_H</><entry>38</><entry></></>
+  <row><entry>PG_WP_PANELBAR</><entry>39</><entry>Read-only property for panels returns a handle to its embedded panelbar widget</></>
+  <row><entry>PG_WP_AUTO_ORIENTATION</><entry>40</><entry>Automatically reorient child widgets when PG_WP_SIDE changes</></>
+  <row><entry>PG_WP_THOBJ_BUTTON</><entry>41</><entry>These four theme properties set the theme objects used for the</></>
+  <row><entry>PG_WP_THOBJ_BUTTON_HILIGHT</><entry>42</><entry>three possible states of the button widget.</></>
+  <row><entry>PG_WP_THOBJ_BUTTON_ON</><entry>43</><entry></></>
+  <row><entry>PG_WP_THOBJ_BUTTON_ON_NOHILIGHT</><entry>44</><entry></></>
+  <row><entry>PG_WP_PANELBAR_LABEL</><entry>45</><entry>More read-only panelbar properties to get the built-in panelbar widgets</></>
+  <row><entry>PG_WP_PANELBAR_CLOSE</><entry>46</><entry></></>
+  <row><entry>PG_WP_PANELBAR_ROTATE</><entry>47</><entry></></>
+  <row><entry>PG_WP_PANELBAR_ZOOM</><entry>48</><entry></></>
+  <row><entry>PG_WP_BITMAPSIDE</><entry>49</><entry></></>
+  <row><entry>PG_WP_PASSWORD</><entry>50</><entry></></>
+  <row><entry>PG_WP_HOTKEY_FLAGS</><entry>51</><entry>Keyboard event flags for the hotkey (PG_KF_*)</></>
+  <row><entry>PG_WP_HOTKEY_CONSUME</><entry>52</><entry>Flag indicating whether to consume the key event when a hotkey comes in</></>
+  </tbody></tgroup></table>
  </appendix>
 
  <appendix id="requesttypes">
