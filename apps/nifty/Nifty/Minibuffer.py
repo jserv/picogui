@@ -44,7 +44,11 @@ class Minibuffer(object):
         self._field.text = ''
         self._frame.focus_textbox()
         self._saved_text = None
-        self.bind(buffer = self._frame.current.buffer)
+        try:
+            self.bind(buffer = self._frame.current.buffer)
+        except AttributeError:
+            # no buffers open
+            self.bind(buffer = None)
         try:
             exec self._history[-1] in self._globals, self._locals
         except SystemExit:

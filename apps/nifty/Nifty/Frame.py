@@ -32,6 +32,8 @@ class Frame(object):
                 return page.textbox
 
     def set_current(self, textbox):
+        if not self._pages:
+            return
         if type(textbox) in (int, long, float):
             page = self._pages[textbox]
         else:
@@ -58,8 +60,26 @@ class Frame(object):
         t.tabpage.text = buffer.name
         buffer.add_observer(t)
 
-    def save(self):
-        box = self.current
+    def close(self, box=None):
+        if box is None:
+            box = self.current
+            is_current = 1
+        else:
+            is_current = box is self.current
+        self._pages.remove(box.tabpage)
+        box.buffer.del_observer(box)
+        self._app.delWidget(box)
+        self._app.delWidget(box.tabpage)
+        # for the sake of the garbage collector
+        box.tabpage.textbox = None
+        box.tabpage = None
+        box.buffer = None
+        if is_current:
+            self.current = 0
+
+    def save(self, box=None):
+        if box is None:
+            box = self.current
         buffer = box.buffer
         buffer.text = box.text
         buffer.save()
@@ -74,6 +94,8 @@ class Frame(object):
         return self._app.addWidget(*args)
 
     def focus_textbox(self):
+        if not self._pages:
+            return
         self._app.server.focus(self.current)
 
     def run(self):
