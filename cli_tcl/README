@@ -1,29 +1,5 @@
-picogui functions implemented:
-
-pgCheckEvent
-pgConnect ?servername? ?displaynumber?
-pgDialog ?title?
-pgEnterContext
-pgFromFile ?filename?
-pgGetResponse
-pgGetString ?textresourceid?
-pgGetVideoMode
-pgLeaveContext ?id?
-pgLoadBitmap ?filename|imagedata?
-pgNewBitmap ?image?
-pgNewButton ?text?
-pgNewFont ?name? ?style? ?size?
-pgNewLabel ?text?
-pgNewPopup ?width? ?height?
-pgNewPopupAt ?x? ?y? ?width? ?height?
-pgNewString ?text?
-pgNewWidget ?type? ?rship? ?parent?
-pgRegisterApp ?name? ?type?
-pgSetBitmap ?bitmap? ?image?
-pgSetFont ?widget? ?font?
-pgSetSide ?widget? ?side?
-pgSetText ?widget? ?text?
-pgSetWidget ?widget? ?property? ?glob?
-pgThemeLookup ?object? ?property?
-pgUpdate
-pgWaitEvent
+pgui connect ?-server servername? ?-display displaynum?
+pgui entercontext
+pgui update
+pgui createbitmap -name filename|-data filedata
+pgui createbitmap -width width -height height

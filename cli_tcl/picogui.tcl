@@ -9,8 +9,7 @@ set connection 0
 set defaultparent 0
 set defaultrship inside
 
-set envnames [array names env]
-if {[lsearch $envnames PGSERVER] !=-1} {
+if {[info exists env(PGSERVER)]} {
 	set display [split $env(PGSERVER) ":"]
 } else {
 	set display {"" ""}
@@ -72,12 +71,6 @@ proc pgGetVideoMode {} {
 	binary scan $data(data) "ISSSSSS" res(flags) res(xres) res(yres) \
 		res(lxres) res(lyres) res(bbp) res(dummy)
 	return [array get res]
-}
-proc pgUpdate {} {
-	global pg_request
-	send_packet [pack_pgrequest 1 0 $pg_request(update)]
-	array set ret [pgGetResponse]
-	return $ret(data)
 }
 proc pgNewPopup {{width 0} {height 0}} {
 	global defaultparent pg_wp
@@ -284,7 +277,7 @@ proc pgBind {itemid eventid script} {
 }
 proc pgEventLoop {} {
 	global binds
-	pgUpdate
+	pgui update
 	while {1} {
 		array set event [pgWaitEvent]
 		parray event
@@ -309,12 +302,6 @@ proc pgDialog { title } {
 	set defaultparent $dlg
 	return $dlg
 }
-proc pgCreateImage {w h} {
-	send_packet [pack_pgrequest 1 4 $pg_request(mkwidget)]
-	send_packet [binary format "SS" $w $h]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgAttach {widget rship parent} {
 	global pg_request pg_derive
 	send_packet [pack_pgrequest 1 12 $pg_request(attachwidget)]
@@ -327,10 +314,10 @@ proc pgui {command args} {
 	global display server
 	array set aa $args
 	if {$command == "connect"} {
-		if {[lsearch $args -display]==-1} {
+		if {[info exists  aa(-display)]==0} {
 			set aa(-display) $display
 		}
-		if {[lsearch $args -server]==-1} {
+		if {[info exists aa(-server)]==0} {
 			set aa(-server) $server
 		}
 		set port [expr 30450 + $aa(-display)] 
@@ -344,7 +331,9 @@ proc pgui {command args} {
 	} elseif {$command =="entercontext"} {
 		send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
 		array set ret [pgGetResponse]
-		return $ret(data)
+	} elseif {$command =="update"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(update)]
+		array set ret [pgGetResponse]
 	} elseif {$command =="createbitmap"} {
 		if {[info exists aa(-name)] == 1} {
 			set aa(-data) [pgFromFile $aa(-name)]
@@ -354,23 +343,24 @@ proc pgui {command args} {
 				$aa(-data)] $pg_request(mkbitmap)]
 			send_packet $aa(-data)
 			array set ret [pgGetResponse]
-			return $ret(data)
 		} elseif {[expr [info exists aa(-width)] && [info exists aa(-height)]]} {
 			send_packet [pack_pgrequest 1 4 $pg_request(newbitmap)]
 			send_packet [binary format "SS" $aa(-width) $aa(-height)]
 			array set ret [pgGetResponse]
-			parray ret
-			return $ret(data)
 		} elseif {[expr [info exists aa(-width)] || [info exists aa(-height)]]} {
 			puts "wrong # args: should be pgui $command -width width -height height"
 		} else {
 			puts "unknown arguments for pgui createbitmap"
 		}
-	} 
+	}
+	if {[info exists ret(data)]} {
+		return $ret(data)
+	}
 }
 # A list of implemented procedures to be moved into the readme file
 #pgui connect ?-server servername? ?-display displaynum?
 #pgui entercontext
+#pgui update
 #pgui createbitmap -name filename|-data filedata
 #pgui createbitmap -width width -height height
 # -- in progress -- 

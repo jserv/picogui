@@ -33,7 +33,7 @@ set i 0
 set d 1
 while { 1 } {
 	pgSetBitmap $bmp $img($i)
-	pgUpdate
+	pgui update
 	if { [pgCheckEvent] >0 } {
 		array set event [pgWaitEvent]
 		if { $event(from) == $ok } {
