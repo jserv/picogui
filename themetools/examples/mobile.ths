@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.7 2001/09/03 00:45:52 micahjd Exp $
+/* $Id: mobile.ths,v 1.8 2001/09/03 05:49:47 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -65,6 +65,12 @@ object default {
   hotkey.up       = PGKEY_F3;
   hotkey.down     = PGKEY_F4;
   hotkey.activate = PGKEY_RETURN;
+
+  /* Message dialog icons */
+  icon.error      = LoadBitmap("data/icon_mono_32_error.pgm");
+  icon.message    = LoadBitmap("data/icon_mono_32_message.pgm");
+  icon.warning    = LoadBitmap("data/icon_mono_32_warning.pgm");
+  icon.question   = LoadBitmap("data/icon_mono_32_question.pgm");
 }
 
 /* Spiffy input fields */
