@@ -1,4 +1,4 @@
-/* $Id: gl_util.c,v 1.3 2002/11/25 06:49:39 micahjd Exp $
+/* $Id: gl_util.c,v 1.4 2002/11/25 13:14:55 micahjd Exp $
  *
  * gl_util.c - OpenGL driver for picogui
  *             This file has utilities shared by multiple components of the driver.
@@ -184,6 +184,7 @@ void gl_frame(void) {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
   glDisable(GL_SMOOTH);
+  glDisable(GL_TEXTURE_2D);
 
 
   /***************** Background grid */
