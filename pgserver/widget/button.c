@@ -113,13 +113,13 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_ENTER:
     self->in->div->grop->next->next->param.c = btn_over;
-    self->in->flags |= DIVNODE_NEED_REDRAW;
+    self->in->div->flags |= DIVNODE_NEED_REDRAW;
     self->dt->flags |= DIVTREE_NEED_REDRAW;   
     break;
 
   case TRIGGER_LEAVE:
     self->in->div->grop->next->next->param.c = btn_off;
-    self->in->flags |= DIVNODE_NEED_REDRAW;
+    self->in->div->flags |= DIVNODE_NEED_REDRAW;
     self->dt->flags |= DIVTREE_NEED_REDRAW;    
     break;
 

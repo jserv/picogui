@@ -184,8 +184,9 @@ void divnode_recalc(struct divnode *n) {
 void divnode_redraw(struct divnode *n,int all) {
    if (!n) return;
 
-   if (all || (n->flags & DIVNODE_NEED_REDRAW))
+   if (all || (n->flags & DIVNODE_NEED_REDRAW)) {
      grop_render(n);
+   }
    n->flags &= ~DIVNODE_NEED_REDRAW;
 
    divnode_redraw(n->next,all);
@@ -238,6 +239,9 @@ void r_divnode_free(struct divnode *n) {
 /* Master update function, does everything necessary to redraw the screen */
 void update(struct dtstack *s) {
   r_dtupdate(s->top);
+
+  /* NOW we update the hardware */
+  hwr_update();
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */
@@ -255,15 +259,12 @@ void r_dtupdate(struct divtree *dt) {
     /* If we recalc, at least one divnode will need redraw */
     dt->flags |= DIVTREE_NEED_REDRAW;
   }
-  if (dt->flags & DIVTREE_NEED_REDRAW) {
+  if (dt->flags &(DIVTREE_NEED_REDRAW|DIVTREE_ALL_REDRAW)) {
 #ifdef DEBUG
     printf("divnode_redraw(0x%X, %d)\n",dt->head,dt->flags & DIVTREE_ALL_REDRAW);
 #endif
     divnode_redraw(dt->head,dt->flags & DIVTREE_ALL_REDRAW);
   }
-
-  /* NOW we update the hardware */
-  hwr_update();
 
   /* All clean now, clear flags. */
   dt->flags &= ~(DIVTREE_ALL_REDRAW | DIVTREE_NEED_REDRAW | 
