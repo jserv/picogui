@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.16 2000/10/31 01:48:09 micahjd Exp $
+/* $Id: constants.h,v 1.17 2000/11/04 05:56:04 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -166,38 +166,44 @@ typedef unsigned long pghandle;
  * in the theme compiler.
  */
 
-#define PGTH_O_DEFAULT             0    /* Every theme object inherits this */
-#define PGTH_O_BASE_INTERACTIVE    1    /* Base for interactive widgets */
-#define PGTH_O_BASE_CONTAINER      2    /* Base for containers like toolbars */
-#define PGTH_O_BUTTON              3    /* The button widget */
-#define PGTH_O_BUTTON_HILIGHT      4    /* Button, hilighted when mouse is over */
-#define PGTH_O_BUTTON_ON           5    /* Button, mouse is pressed */
-#define PGTH_O_TOOLBAR             6    /* The toolbar widget */
-#define PGTH_O_SCROLL              7    /* The scrollbar widget */
-#define PGTH_O_SCROLL_HILIGHT      8    /* Scroll, when mouse is over it */
-#define PGTH_O_INDICATOR           9    /* The indicator widget */
-#define PGTH_O_PANEL               10   /* The background portion of a panel */
-#define PGTH_O_PANELBAR            11   /* The draggable titlebar of a panel */
-#define PGTH_O_POPUP               12   /* Popup window */
-#define PGTH_O_BACKGROUND          13   /* Background widget bitmap */
-#define PGTH_O_BASE_DISPLAY        14   /* Base for widgets that mostly display stuff */
-#define PGTH_O_BASE_TLCONTAINER    15   /* Top-level containers like popups, panels */ 
-#define PGTH_O_THEMEINFO           16   /* Information about the theme that should be
+#define PGTH_O_DEFAULT               0    /* Every theme object inherits this */
+#define PGTH_O_BASE_INTERACTIVE      1    /* Base for interactive widgets */
+#define PGTH_O_BASE_CONTAINER        2    /* Base for containers like toolbars */
+#define PGTH_O_BUTTON                3    /* The button widget */
+#define PGTH_O_BUTTON_HILIGHT        4    /* Button, hilighted when mouse is over */
+#define PGTH_O_BUTTON_ON             5    /* Button, mouse is pressed */
+#define PGTH_O_TOOLBAR               6    /* The toolbar widget */
+#define PGTH_O_SCROLL                7    /* The scrollbar widget */
+#define PGTH_O_SCROLL_HILIGHT        8    /* Scroll, when mouse is over it */
+#define PGTH_O_INDICATOR             9    /* The indicator widget */
+#define PGTH_O_PANEL                 10   /* The background portion of a panel */
+#define PGTH_O_PANELBAR              11   /* The draggable titlebar of a panel */
+#define PGTH_O_POPUP                 12   /* Popup window */
+#define PGTH_O_BACKGROUND            13   /* Background widget bitmap */
+#define PGTH_O_BASE_DISPLAY          14   /* Base for widgets that mostly display stuff */
+#define PGTH_O_BASE_TLCONTAINER      15   /* Top-level containers like popups, panels */ 
+#define PGTH_O_THEMEINFO             16   /* Information about the theme that should be
 					   loaded into memory, like the name */
-#define PGTH_O_LABEL               17   /* The label widget */
-#define PGTH_O_FIELD               18   /* The field widget */
-#define PGTH_O_BITMAP              19   /* The bitmap widget */
-#define PGTH_O_SCROLL_ON           20   /* Scroll, when mouse is down */
-#define PGTH_O_LABEL_SCROLL        21   /* A label, when bound to a scrollbar */
-#define PGTH_O_PANELBAR_HILIGHT    22   /* A panelbar, when mouse is inside it */
-#define PGTH_O_PANELBAR_ON         23   /* A panelbar, when mouse is down */
-#define PGTH_O_BOX                 24   /* The box widget */
-#define PGTH_O_LABEL_DLGTITLE      25   /* A label, used for a dialog box title */
-#define PGTH_O_LABEL_DLGTEXT       26   /* A label, used for the body of a dialog */
+#define PGTH_O_LABEL                 17   /* The label widget */
+#define PGTH_O_FIELD                 18   /* The field widget */
+#define PGTH_O_BITMAP                19   /* The bitmap widget */
+#define PGTH_O_SCROLL_ON             20   /* Scroll, when mouse is down */
+#define PGTH_O_LABEL_SCROLL          21   /* A label, when bound to a scrollbar */
+#define PGTH_O_PANELBAR_HILIGHT      22   /* A panelbar, when mouse is inside it */
+#define PGTH_O_PANELBAR_ON           23   /* A panelbar, when mouse is down */
+#define PGTH_O_BOX                   24   /* The box widget */
+#define PGTH_O_LABEL_DLGTITLE        25   /* A label, used for a dialog box title */
+#define PGTH_O_LABEL_DLGTEXT         26   /* A label, used for the body of a dialog */
+#define PGTH_O_CLOSEBTN              27   /* A panelbar close button */
+#define PGTH_O_CLOSEBTN_ON           28   /* A panelbar close button, mouse down */
+#define PGTH_O_CLOSEBTN_HILIGHT      29   /* A panelbar close button, mouse over */
+#define PGTH_O_BASE_PANELBTN         30   /* Base for a panelbar button */
+#define PGTH_O_BASE_PANELBTN_ON      31   /* Base for a panelbar button, mouse down */
+#define PGTH_O_BASE_PANELBTN_HILIGHT 32   /* Base for a panelbar button, mouse over */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  27
+#define PGTH_ONUM                  33
 
 /*** Loaders */
 
@@ -242,6 +248,7 @@ typedef unsigned long pghandle;
 #define PGTH_P_BITMAP3    18  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_BITMAP4    19  /* H bitmap      Generic bitmap property for theme use */
 #define PGTH_P_SPACING    20  /*   int         Distance between similar widgets */
+#define PGTH_P_TEXT       21  /* H string      Text caption for something like a button */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -337,6 +344,7 @@ typedef unsigned long pghandle;
 #define PG_GROP_BITMAP     0x0040
 #define PG_GROP_GRADIENT   0x0041
 #define PG_GROP_TILEBITMAP 0x0050
+#define PG_GROP_TEXTV      0x0031
 
 #define PG_GROPPARAMS(x)   (((x)>>4)&0x0F)
 
