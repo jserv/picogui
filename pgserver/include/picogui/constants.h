@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.152 2002/09/27 02:59:27 micahjd Exp $
+/* $Id: constants.h,v 1.153 2002/09/27 23:10:21 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -360,9 +360,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_BOX_HILIGHT           64   //!< Box hilight or select - See PG_WP_HILIGHTED
 #define PGTH_O_INDICATOR_H           65   //!< Horizontal indicator
 #define PGTH_O_INDICATOR_V           66   //!< Vertical indicator
+#define PGTH_O_SCROLL_H              67   //!< Horizontal scrollbar
+#define PGTH_O_SCROLL_V              68   //!< Vertical scrollbar
+
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    67
+#define PGTH_ONUM                    69
 
 //! Using a theme object named "custom" makes the server automatically allocate a free theme object at load time
 #define PGTH_O_CUSTOM                0x7FFF
