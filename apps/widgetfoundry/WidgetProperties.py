@@ -7,44 +7,22 @@ class PropertyList:
         self.widget = widget
         self.container = container
         self.list = []
-        self.add('font')
-        self.add('side')
-        self.add('size')
-        self.add('text')
-        self.add('name')
-        self.add('sizemode')
-        self.add('align')
-        self.add('bitmap')
-        self.add('bitmask')
-        self.add('bitmapside')
-        self.add('margin')
-        self.add('extdevents')
-        self.add('on')
-        self.add('disabled')
-        self.add('thobj')
-        self.add('thobj button')
-        self.add('thobj button hilight')
-        self.add('thobj button on')
-        self.add('thobj button on nohilight')
-        self.add('hotkey')
-        self.add('hotkey flags')
-        self.add('hotkey consume')
-        self.add('transparent')
-        self.add('color')
-        self.add('direction')
-        self.add('lgop')
-        self.add('spacing')
-        self.add('scroll x')
-        self.add('scroll y')
-        self.add('publicbox')
-        self.add('bind')
-        self.add('triggermask')
-        self.add('hilighted')
-        self.add('auto orientation')
+
+	widget.properties = ('text','font','side','thobj','transparent')
+
+	# Take the widget's current state as default if
+	# we haven't already saved other defaults.
+	if not hasattr(widget,'defaults'):
+		widget.defaults = {}
+		for i in widget.properties:
+			widget.defaults[i] = getattr(widget,i)
+
+	for i in widget.properties:
+		widget.defaults
+	        self.add(i)
 
     def add(self, property):
         self.list.append(PropertyEdit(self,property))
-
 
 class PropertyEdit:
     def __init__(self, propertyList, property):
@@ -66,12 +44,16 @@ class PropertyEdit:
         self.checkbox.side = 'all'
         self.app.link(self._show_hide, self.checkbox, 'activate')
 
+        self.value = getattr(self.widget, self.property)
+	if self.value != self.widget.defaults[self.property]:
+		self.checkbox.on = 1
+		self.show()
+
     def show(self):
         self.settingsBox = self.box.addWidget('box','inside')
         self.settingsBox.side = 'bottom'
         self.settingsBox.transparent = 1
 
-        self.value = getattr(self.widget, self.property)
         self.editWidget = self.settingsBox.addWidget('field','inside')
         self.editWidget.side = 'top'
         self.editWidget.text = str(self.value)
@@ -82,6 +64,8 @@ class PropertyEdit:
         self.app.delWidget(self.editWidget)
         if hasattr(self,'errorLabel'):
             self.app.delWidget(self.errorLabel)
+	self.value = self.widget.defaults[self.property]
+	setattr(self.widget, self.property, self.value)
 
     def _show_hide(self, ev, widget):
         if widget.on:

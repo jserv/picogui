@@ -5,9 +5,6 @@ import WidgetProperties
 app = PicoGUI.Application('Widget Foundry')
 
 w = app.addWidget('label')
-w.text = "Hello World"
-w.side = 'all'
-w.font = ':20:bold'
 
 toolbox = app.addWidget('box')
 toolbox.side = 'left'
