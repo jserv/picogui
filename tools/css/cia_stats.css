@@ -8,6 +8,14 @@ body {
   padding: 0;
 }
 
+dateBox {
+  float: right;
+  padding: 0.5em;
+  margin: 1em;
+  background: #DEECE7;
+  border: 1px solid #8CBBAC;
+}  
+
 a {
   background: White;
   border-style: dotted;
