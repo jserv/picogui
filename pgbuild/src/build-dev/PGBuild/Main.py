@@ -1,6 +1,8 @@
-""" PGBuild
+""" PGBuild.Main
 
-The main package for the PGBuild configuration and build utility
+Frontend for PGBuild- provides command line processing and functions for
+carrying out high-level tasks. This module's main() is invoked by build.py
+as soon as it creates a Bootstrap object with vital path and package names.
 """
 # 
 # PicoGUI Build System
@@ -21,11 +23,22 @@ The main package for the PGBuild configuration and build utility
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-name = "PGBuild"
-url = "http://picogui.org"
-version = "svn-dev"
+from optik import OptionParser
+import PGBuild
+import PGBuild.Config
 
-about = "%s (%s)\nVersion %s" % (name, url, version)
+def loadBootstrap(bootstrap):
+    """Load the provided bootstrap object's settings into the config tree"""
+    
+
+def main(bootstrap, argv):
+    """The entry point called by build.py"""
+
+    # Process the command line using Optik
+    parser = OptionParser(version=PGBuild.version)
+    parser.parse_args(argv)
+
+    loadBootstrap(bootstrap)
 
 ### The End ###
         

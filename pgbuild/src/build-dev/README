@@ -8,11 +8,21 @@ using PGBuild. It is comprised of sources from multiple locations:
     layered on top of. See http://scons.sourceforge.net/
 
   - dmutil, PyBison
-    v0.1
+    v0.1 - modified
 
     These modules are for the PyXPath parser. The XML XPath
     language is used extensively in PGBuild's configuration system.
     See http://www.handshake.de/~dieter/pyprojects/pyxpath.html
+
+    This package has been hacked up a bit to work correctly with
+    the minidom instead of a full DOM implementation.
+
+  - optik
+    v1.4.1
+
+    The command line frontend for PGBuild uses Optik as its command
+    line parser. Note that SCons already includes a copy of Optik,
+    but it's been modified.
 
   - PGBuild
     dev

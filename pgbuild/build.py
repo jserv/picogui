@@ -48,10 +48,11 @@ class Bootstrap:
     buildPackagePath = os.path.join(packagePath, buildPackage)
     confPackagePath  = os.path.join(packagePath, confPackage)
 
-# Use the Bootstrap class to locate our build package and call its Main
-boot = Bootstrap()
-sys.path.append(boot.buildPackagePath)
-import PGBuild.Main
-PGBuild.Main.main(boot, sys.argv)
+if __name__ == '__main__':
+    # Use the Bootstrap class to locate our build package and call its Main
+    boot = Bootstrap()
+    sys.path.insert(0, boot.buildPackagePath)
+    import PGBuild.Main
+    PGBuild.Main.main(boot, sys.argv)
 
 ### The End ###
