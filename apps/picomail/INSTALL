@@ -1,0 +1,12 @@
+To build PicoMail, type:
+make
+
+You now have the picomail binary.
+
+Further install:
+
+cp picomail.conf ~/.picomail.conf
+chmod 600 ~/.picomail.conf
+
+And edit ~/.picomail.conf
+

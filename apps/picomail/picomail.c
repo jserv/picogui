@@ -22,9 +22,16 @@ int getList(struct pgEvent *evt) {
 
 int main(int argc, char *argv[])
 {
+   char *home, *conffile;
+   char conffilename[] = "/.picomail.conf";
+
    pghandle wToolbar, wScroll, wItem;
 
-   if(configfile_parse("./picomail.conf")){
+   home = getenv("HOME");
+   strcpy( conffile, home );
+   strcat( conffile, conffilename );
+
+   if(configfile_parse(conffile)){
 
    }
    else
