@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.10 2001/11/21 06:52:01 micahjd Exp $
+/* $Id: x11.c,v 1.11 2001/11/21 09:03:16 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -66,6 +66,9 @@ GC x11_gctab[PG_LGOPMAX+1];
 
 /* Hook for handling expose events from the input driver */
 void (*x11_expose)(int x, int y, int w, int h);
+
+/* Saved config options */
+int x11_sound;
 
 /******************************************** Implementations */
 
@@ -380,6 +383,17 @@ void x11_buffered_sprite_update(struct sprite *spr) {
   vid->display = (hwrbitmap) &x11_display;
 }
 
+void x11_message(u32 message, u32 param, u32 *ret) {
+  switch (message) {
+
+  case PGDM_SOUNDFX:
+    /* XFree86 ignores the volume, it seems */
+    if (x11_sound)
+      XBell(xdisplay,50);
+    break;
+  }
+}
+
 /* Connect to the default X server */
 g_error x11_init(void) {
   xdisplay = XOpenDisplay(NULL);
@@ -515,6 +529,9 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
 	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
   XAutoRepeatOn(xdisplay);
 
+  /* Save other settings */
+  x11_sound = get_param_int("video-x11","sound",1);
+
   XFlush(xdisplay);
   return sucess;
 }
@@ -548,6 +565,7 @@ g_error x11_regfunc(struct vidlib *v) {
   v->slab = &x11_slab;
   v->bar = &x11_bar;
   v->line = &x11_line;
+  v->message = &x11_message;
 
   if (!get_param_int("video-x11","defaultellipse",0)) {
     v->ellipse = &x11_ellipse;

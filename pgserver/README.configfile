@@ -142,6 +142,10 @@ quoted appropriately. For example:
   environments.
   The default is zero.
 
+- sound
+  Use XBell to handle PGDM_SOUNDFX events.
+  This is on my default
+
 [input-x11]
 
 - autowarp
