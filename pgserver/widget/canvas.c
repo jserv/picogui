@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.26 2001/10/13 20:50:47 micahjd Exp $
+/* $Id: canvas.c,v 1.27 2001/10/14 01:30:06 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -119,6 +119,7 @@ glob canvas_get(struct widget *self,int property) {
 
 void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    int evt;
+   s16 mx,my;
    
    if (type == TRIGGER_STREAM) {
       /* Accept a command from the client */
@@ -180,11 +181,11 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
    if (evt) {
 
      /* Make coordinates relative to divnode */
-     param->mouse.x -= self->in->div->x;
-     param->mouse.y -= self->in->div->y;
+     mx = param->mouse.x - self->in->div->x;
+     my = param->mouse.y - self->in->div->y;
      
      /* Apply mapping */
-     canvas_inputmap(self,&param->mouse.x,&param->mouse.y);
+     canvas_inputmap(self,&mx,&my);
      
      /* Same mouse event packing used for pointer grabbing in widget.c:  
       *
@@ -201,8 +202,8 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
      post_event(evt,self,
 		(param->mouse.btn << 28) |
 		(param->mouse.chbtn << 24) |
-		(param->mouse.y << 12) |
-		param->mouse.x,
+		(my << 12) |
+		mx,
 		0,NULL);
 
      return;
