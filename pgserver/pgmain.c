@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.38 2002/08/25 09:55:21 micahjd Exp $
+/* $Id: pgmain.c,v 1.39 2002/09/26 14:29:39 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -103,6 +103,41 @@ int run_config_process(const char *name) {
 #endif
 }
 
+void commandline_help(void) {
+#ifndef CONFIG_TEXT
+  puts("Commandline error");
+#else
+  puts("\n"
+       "PicoGUI server (http://picogui.org)\n"
+       "\n"
+#ifdef DEBUG_ANY
+       "DEBUG MODE ON\n"
+       "\n"
+#endif
+       "usage: pgserver [-hln] [-c configfile] [-v driver] [-m WxHxD]\n"
+       "                [--section.key=value] [--key=value] [--key]\n"
+       "                [-i driver] [-t theme] [-s \"session manager\"]\n"
+       "\n"
+       "  h : This help message\n"
+       "  l : List installed drivers and fonts\n"
+       "  n : Ignore existing configuration data\n"
+       "\n"
+       "  c conf    : Load a configuration file\n"
+       "  v driver  : Set the video driver (see -l)\n"
+       "  m WxHxD   : Set the video mode resolution and color depth\n"
+       "  i driver  : Load an input driver, can use more than one (see -l)\n"
+       "  t theme   : Load a compiled theme file, can use more than one\n"
+       "\n"
+       "  Configuration options may be specified with section, key, and value.\n"
+       "  If the section is omitted, 'pgserver' is assumed. If the value is\n"
+       "  missing, '1' is used.\n"
+       "\n"
+       "  If specified, a session manager process will be run after server\n"
+       "  initialization is done, and the server will quit after the last\n"
+       "  client disconencts.\n");
+#endif
+  exit(1);
+}
 
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
@@ -151,10 +186,10 @@ int main(int argc, char **argv) {
       g_free(s);
     }
   }   
-
+  
   {  /* Restrict the scope of these vars so they go away after
 	initialization is done with them */
-
+    
     int c,fd;
 #ifndef WINDOWS
     struct stat st;
@@ -168,7 +203,7 @@ int main(int argc, char **argv) {
 #ifndef WINDOWS    /* Command line processing is broke in windoze */
 
     while (1) {
-
+      
       c = getopt(argc,argv,"hlnv:m:i:t:c:-:s:");
       if (c==-1)
 	break;
@@ -182,6 +217,10 @@ int main(int argc, char **argv) {
       case '-':        /* config option */
 	{
 	  char *section, *key, *value;
+
+	  /* Treat --help as an exception */
+	  if (!strcmp(optarg,"help"))
+	    commandline_help();
 
 	  if ((key = strchr(optarg,'.'))) {
 	    *key = 0;
@@ -318,47 +357,21 @@ int main(int argc, char **argv) {
 	  themefiles = tail = p;
 	tail = p;
 	break;
-
+	
       default:        /* Need help */
-#ifndef CONFIG_TEXT
-	puts("Commandline error");
-#else
-	puts("PicoGUI server (http://picogui.org)\n\n"
-#ifdef DEBUG_ANY
-	     "DEBUG MODE ON\n\n"
-#endif
-	     "usage: pgserver [-hln] [-c configfile] [-v driver] [-m WxHxD]\n"
-	     "                [--section.key=value] [--key=value] [--key]\n"
-	     "                [-i driver] [-t theme] [-s \"session manager\"]\n\n"
-	     "  h : This help message\n"
-	     "  l : List installed drivers and fonts\n"
-	     "  n : Ignore existing configuration data\n"
-	     "\n"
-	     "  c conf    : Load a configuration file\n"
-	     "  v driver  : Set the video driver (see -l)\n"
-	     "  m WxHxD   : Set the video mode resolution and color depth\n"
-	     "  i driver  : Load an input driver, can use more than one (see -l)\n"
-	     "  t theme   : Load a compiled theme file, can use more than one\n"
-	     "\n"
-	     "  Configuration options may be specified with section, key, and value.\n"
-	     "  If the section is omitted, 'pgserver' is assumed. If the value is\n"
-	     "  missing, '1' is used.\n"
-	     "\n"
-	     "  If specified, a session manager process will be run after server\n"
-	     "  initialization is done, and the server will quit after the last\n"
-	     "  client disconencts.");
-#endif
-	exit(1);
+	commandline_help();
       }
-      
     }
+    
+    if (optind < argc)  /* extra options */
+      commandline_help();
+    
+#endif /* WINDOWS */
+
 
 #ifdef DEBUG_INIT
-     printf("Init: loading video drivers\n");
-#endif
-
-     
-#endif /* WINDOWS */
+    printf("Init: loading video drivers\n");
+#endif     
 
      /* Load alternate messages into the error table */
      if (iserror(prerror(errorload(get_param_str("pgserver",
