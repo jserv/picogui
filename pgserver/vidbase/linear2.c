@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.1 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: linear2.c,v 1.2 2001/02/28 00:19:07 micahjd Exp $
  *
  * Video Base Library:
  * linear2.c - For 1-bit packed pixel devices (most black and white displays)
@@ -61,11 +61,11 @@ pgcolor linear2_color_hwrtopg(hwrcolor c) {
 
 void linear2_pixel(int x,int y,hwrcolor c) {
    char *p = PIXELBYTE(x,y);
-   *p &= notmask2[x&2];
-   *p |= c << ((3-(x&2))<<1);
+   *p &= notmask2[x&3];
+   *p |= c << ((3-(x&3))<<1);
 }
 hwrcolor linear2_getpixel(int x,int y) {
-   return ((*PIXELBYTE(x,y)) >> ((3-(x&2))<<1)) & 0x03;
+   return ((*PIXELBYTE(x,y)) >> ((3-(x&3))<<1)) & 0x03;
 }
    
 /*********************************************** Accelerated (?) primitives */

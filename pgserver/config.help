@@ -193,12 +193,16 @@ CONFIG_VIDEOTEST
       This adds command line options to invoke a video driver test
       mode, including a test pattern and a stress test.
 
-CONFIG_SVGAFB_LOWBPP
-      This allows testing of linear VBLs less than 8bpp using the
-      svgalib framebuffer driver by forcing double-buffering and
-      converting to 8bpp in the update function. 
-    
 
+CONFIG_SDLEMU_NONE
+      None: SDL driver doesn't work with < 8bpp
+
+      Blit: Use the low-bpp VBLs (linear1, linear2, linear4) and convert to
+            8bpp in update()
+	     
+      Color: Simulate low bit depths in color conversion
+     
+     
 CONFIG_TEXT
       This enables text error messages and verbose command line
       messages. If it is off you will get cryptic messages, usually

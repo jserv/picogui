@@ -9,7 +9,6 @@ LINUX=y
 # UCLINUX is not set
 # WINDOWS is not set
 ASM_INTEL=y
-# ASM_68000 is not set
 
 #
 # Debugging
@@ -49,7 +48,10 @@ FONT_CLEAN12=y
 #
 # DRIVER_FBDEV is not set
 DRIVER_SDLFB=y
-DRIVER_SDL=y
+CONFIG_SDLEMU_NONE=y
+# CONFIG_SDLEMU_BLIT is not set
+# CONFIG_SDLEMU_COLOR is not set
+# DRIVER_SDL is not set
 # DRIVER_SVGAFB is not set
 # DRIVER_SVGAGL is not set
 # DRIVER_EZ328 is not set
@@ -62,6 +64,7 @@ DRIVER_SDL=y
 DRIVER_SDLINPUT=y
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
+# DRIVER_TSINPUT is not set
 
 #
 # Video Base Libraries

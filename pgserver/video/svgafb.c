@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.8 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: svgafb.c,v 1.9 2001/02/28 00:19:07 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -46,7 +46,6 @@
 
 #define SVGAFB_DOUBLEBUFFER   (1<<0)    /* Use doublebuffering */
 #define SVGAFB_PAGEDBLITS     (1<<1)    /* Blit to nonlinear memory */
-#define SVGAFB_CONVERTBLIT    (1<<2)    /* Convert bpp on blit */
 
 unsigned char svgafb_flags;
 unsigned long svgafb_fbsize;
@@ -56,7 +55,6 @@ int svgafb_closest_mode(int xres,int yres,int bpp);
 g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags);
 void svgafb_close(void);
 void svgafb_update_linear(int x,int y,int w,int h);
-void svgafb_update_convert(int x,int y,int w,int h);
 void svgafb_update_paged(int x,int y,int w,int h);
 g_error svgafb_regfunc(struct vidlib *v);
 
@@ -141,51 +139,8 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    vid->yres = mi->height;
    vid->bpp  = mi->bytesperpixel << 3;
 
-#ifdef CONFIG_SVGAFB_LOWBPP
-   /* Low-bpp support needs the double-buffering on */
-   if (bpp && bpp<8) {
-      vid->bpp = bpp;
-//      svgafb_flags |= SVGAFB_CONVERTBLIT | SVGAFB_DOUBLEBUFFER;
-   }
-#endif
-
    /* Select a VBL and do other bpp-specific things */
    switch (vid->bpp) {   
-      
-#ifdef CONFIG_SVGAFB_LOWBPP
-    /* Select a bit depth and create a grayscale palette, ignore bits outside
-     * of the selected bit depth */
-    
-#ifdef CONFIG_VBL_LINEAR1
-    case 1:
-      setvbl_linear1(vid);
-      for (i=0;i<256;i++) {
-	 c = i&1 ? 63 : 0;
-	 vga_setpalette(i,c,c,c);
-      }
-      break;
-#endif
-      
-#ifdef CONFIG_VBL_LINEAR2
-    case 2:
-      setvbl_linear2(vid);
-      for (i=0;i<256;i++) {
-	 c = ((i&0x03) * 63) / 0x03;
-	 vga_setpalette(i,c,c,c);
-      }
-      break;
-#endif
-     
-#ifdef CONFIG_VBL_LINEAR4
-    case 4:
-      setvbl_linear4(vid);
-      for (i=0;i<256;i++) {
-	 c = ((i&0x0F) * 63) / 0x0F;
-	 vga_setpalette(i,c,c,c);
-      }
-      break;
-#endif
-#endif /* CONFIG_SVGAFB_LOWBPP */
       
 #ifdef CONFIG_VBL_LINEAR8
     case 8:
@@ -244,10 +199,6 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    if (svgafb_flags & SVGAFB_DOUBLEBUFFER) {
       if (svgafb_flags & SVGAFB_PAGEDBLITS)
 	vid->update = &svgafb_update_paged;
-#ifdef CONFIG_SVGAFB_LOWBPP
-      else if (svgafb_flags & SVGAFB_CONVERTBLIT)
-	vid->update = &svgafb_update_convert;
-#endif
       else
 	vid->update = &svgafb_update_linear;
    }
@@ -283,36 +234,6 @@ void svgafb_update_linear(int x,int y,int w,int h) {
    for (;h;h--,src+=vid->fb_bpl,dest+=vid->fb_bpl)
      __memcpy(dest,src,w);
 }
-
-#ifdef CONFIG_SVGAFB_LOWBPP
-/* Convert from a low bpp to 8bpp. Used only for debuggative purposes,
- * so it needs to work but can be slow if necessary
- */
-void svgafb_update_convert(int x,int y,int w,int h) {
-   unsigned char *src,*dest;
-   int i,bit,pixelsperbyte;
-   char c;
-   
-   return;
-   
-   /* Blit calculations */
-   dest = y*vid->xres + x + graph_mem;
-   src  = y*vid->fb_bpl + ((x*vid->bpp) >> 3) + vid->fb_mem;
-   w    = (w*vid->bpp) >> 3;
-   pixelsperbyte = 8/vid->bpp;
-
-   w=1;
-   
-   /* Might prevent tearing? */
-   vga_waitretrace();
-   
-   /* Slow but compact blit loop */
-   for (;h;h--)
-     for (i=w;i;i--)
-       for (c=*(src++),bit=pixelsperbyte;bit;bit-=vid->bpp) 
-	 *(dest++) = c>>bit;
-}
-#endif
 
 /* Like svgafb_update_linear, but set our 64K page using vga_setpage 
  * This must be able to handle a page change anywhere, including within

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.20 2001/02/23 04:44:47 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.21 2001/02/28 00:19:07 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -202,10 +202,10 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 }
 
 void def_rect(int x,int y,int w,int h,hwrcolor c) {
-  int i,j,x1;
+  int i,x1;
 
-  for (i=0;i<h;i++,y++)
-    for (x1=x,j=0;j<w;j++,x1++)
+  for (;h;h--,y++)
+    for (x1=x,i=w;i;i--,x1++)
       (*vid->pixel)(x1,y,c);
 }
 
@@ -1169,7 +1169,6 @@ void setvbl_default(struct vidlib *vid) {
   vid->addpixel = &def_addpixel;
   vid->subpixel = &def_subpixel;
   vid->clear = &def_clear;
-  vid->update = &def_update;
   vid->slab = &def_slab;
   vid->bar = &def_bar;
   vid->line = &def_line;

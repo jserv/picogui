@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.7 2001/02/23 17:46:42 pney Exp $
+/* $Id: ez328.c,v 1.8 2001/02/28 00:19:07 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -39,6 +39,10 @@
 #define REGS_START   ((void*)LSSA_ADDR)
 unsigned char *ez328_saveregs[REGS_LEN];
 
+g_error ez328_init(int xres,int yres,int bpp,unsigned long flags);
+void ez328_close(void);
+g_error ez328_regfunc(struct vidlib *v);
+
 g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
    g_error e;
    
@@ -58,11 +62,49 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
 
    /* Save existing register settings */
    memcpy(ez328_saveregs,REGS_START,REGS_LEN);
-   
+
+   if (!bpp) bpp = 1;        /* Default to black and white */
+
+   /* bpp-specific setup. Load the appropriate VBL and set the controller's
+    * LVPW and LPICF registers to reflect the bpp */
+   switch (bpp) {
+      
+#ifdef CONFIG_VBL_LINEAR1
+    case 1:
+      setvbl_linear1(vid);
+      LVPW = LXMAX / 16;
+      LPICF &= 0xFC;
+      break;
+#endif
+      
+#ifdef CONFIG_VBL_LINEAR2
+    case 2:
+      setvbl_linear2(vid);
+      LVPW = LXMAX / 8;
+      LPICF &= 0xFC;
+      LPICF |= 1;
+      LGPMR = 0xC4;        /* Set a default pallete */
+      break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR4
+    case 4:
+      setvbl_linear4(vid);
+      LVPW = LXMAX / 4;
+      LPICF &= 0xFC;
+      LPICF |= 2;
+      break;
+#endif
+
+    default:
+      ez328_close();
+      return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
+   };
+      
    vid->xres   = LXMAX;
    vid->yres   = LYMAX+1;
-   vid->bpp    = 4;
-   vid->fb_bpl = (vid->xres * vid->bpp) >> 3;
+   vid->bpp    = bpp;
+   vid->fb_bpl = LVPW << 1;
    
    /* Allocate video memory */
    e = g_malloc((void **) &vid->fb_mem, vid->yres * vid->fb_bpl);
@@ -80,11 +122,15 @@ g_error ez328_init(int xres,int yres,int bpp,unsigned long flags) {
 void ez328_close(void) {
    /* Restore register settings, free video memory */
    memcpy(REGS_START,ez328_saveregs,REGS_LEN);   
+
+#ifdef CONFIG_CHIPSLICE
+   unload_inlib(inlib_main);   /* Chipslice loaded an input driver */
+#endif
+
    g_free(vid->fb_mem);
 }
 
 g_error ez328_regfunc(struct vidlib *v) {
-   setvbl_linear4(v);
    v->init = &ez328_init;
    v->close = &ez328_close;
    return sucess;

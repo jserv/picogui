@@ -1,3 +1,37 @@
+---- Tuesday, February 27
+
+Added emulation of low bit depths to sdlfb via color palette munging.
+Preparing to add support for low color depths via linear1, linear2, and
+linear4.
+Yay for new options in config menu!
+
+Except for a couple little byte alignment issues, the SDL emulation for low
+bit depths works fine. Ah, the joys of ElectricFence, reminding me that even
+a simple GUI is a complex system.
+
+---- Monday, February 26
+
+Wow, it has been a busy weekend. The hinge on Trinity was getting so bad
+that my parents got me a new laptop on Friday (early graduation present!)
+It's a super-nifty Celeron 700 with Debian Woody on it. It should accelerate
+development quite a bit, and I'll remove some of the crufty bits I used for
+debugging on Trinity with SVGAlib. 
+By the way, it's named Erwin (after the AI :)
+We didn't win, but Science Bowl on Saturday was loads of fun
+
+Made the Chipslice config option only appear when uClinux is selected, fixed
+strip in uClinux.
+
+Adding bpp selection to ez328.c
+Chipslice config doesn't remove it's input driver, fixed it.
+
+Fixed a stupid bug, now the linear1 and linear2 stubs work (but very slowly)
+Still something wrong with bitmaps... all xbm's seem to have their bytes
+reversed. This is a problem in the defaultvbl. I fix, i fix!
+
+Removing the now unnecessary low-bpp emulation from the svgafb driver, it's
+now unnecessary. (it never worked anyway)
+
 ---- Thursday, February 23
 
 Verified optional-widget code
@@ -8,9 +42,6 @@ Added config options for error messages
 Added more config options, this time some security options to turn off the
 more powerful^H^H^H^H^H^H^H^Hdangerous client-side functions.
 Also added a menu for quota options, but haven't implemented this yet.
-
-
-
 
 ---- Wednesday, February 22
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.60 2001/02/23 17:51:40 pney Exp $
+# $Id: Makefile,v 1.61 2001/02/28 00:19:05 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,10 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.61  2001/02/28 00:19:05  micahjd
+# Added low bit depth emulation to the SDL driver, removed the broken cruft from
+# svgafb, and updated the menus
+#
 # Revision 1.60  2001/02/23 17:51:40  pney
 # Add option for touch screen input driver support.
 #
@@ -204,7 +208,7 @@ endif
 
 # Extra compiler flags needed by drivers
 
-ifneq ($(DRIVER_SDL),)
+ifneq ($(DRIVER_SDL)$(DRIVER_SDLFB),)
         # Use sdl-config
 	SDLCONFIG := sdl-config
 	ifneq ($(WINDOWS),)
@@ -255,8 +259,10 @@ clean:
 
 $(BINNAME): $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
+ifeq ($(UCLINUX),)
 ifeq ($(CONFIG_NOSTRIP),)
-	$(STRIP) $(BINNAME)
+  	$(STRIP) $(BINNAME)
+endif
 endif
 
 # Oodles of scripts to convert the .fdf and .fi files into
