@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.36 2002/04/03 16:56:49 micahjd Exp $
+/* $Id: fbdev.c,v 1.37 2002/04/04 23:02:51 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -120,11 +120,19 @@ void fbdev_close(void);
 /* Our own conversion routines for true color
  */
 pgcolor fbdev_color_hwrtopg(hwrcolor c) {
+  u8 r,g,b;
   if (c & PGCF_MASK) return def_color_hwrtopg(c);
 
-  return mkcolor( (u8)((c >> varinfo.red.offset  ) << (8 - varinfo.red.length  )),
-		  (u8)((c >> varinfo.green.offset) << (8 - varinfo.green.length)),
-		  (u8)((c >> varinfo.blue.offset ) << (8 - varinfo.blue.length )) );
+  r = (c >> varinfo.red.offset)   << (8 - varinfo.red.length  );
+  g = (c >> varinfo.green.offset) << (8 - varinfo.green.length);
+  b = (c >> varinfo.blue.offset)  << (8 - varinfo.blue.length );
+   
+  /* Duplicate each color field, shifted into the area that would usually have 0's,
+   * as an easy way to accurately interpolate the colors.
+   */
+  return mkcolor( r | (r >> varinfo.red.length),
+		  g | (g >> varinfo.green.length),
+		  b | (b >> varinfo.blue.length) );
 
 }
 hwrcolor fbdev_color_pgtohwr(pgcolor c) {
