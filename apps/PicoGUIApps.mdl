@@ -58,5 +58,9 @@ def prepare (module, platform, project):
               project.modules ['picoguiclient'].install_path (platform, project)
 
     message ("running: %s" % command)
-    sequence (command)
+
+    sequence ("rm -f config.status",
+              "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
+              command)
+ 
     return
