@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.16 2000/11/05 03:13:28 micahjd Exp $
+/* $Id: constants.h,v 1.17 2000/11/05 05:22:08 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -206,10 +206,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_ZOOMBTN_HILIGHT       36   /* A panelbar zoom button, mouse over */
 #define PGTH_O_POPUP_MENU            37   /* A popup menu */
 #define PGTH_O_POPUP_MESSAGEDLG      38   /* A message dialog */
+#define PGTH_O_MENUITEM              39   /* Item in a popup menu (customized button) */
+#define PGTH_O_MENUITEM_HILIGHT      40   /* menuitem with the mouse over it */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                    39
+#define PGTH_ONUM                    41
 
 /*** Loaders */
 
@@ -403,7 +405,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_BOX        8
 #define PG_WIDGET_FIELD      9
 #define PG_WIDGET_BACKGROUND 10    /* Internal use only! */
-#define PG_WIDGETMAX         10    /* For error checking */
+#define PG_WIDGET_MENUITEM   11    /* A variation on button */
+#define PG_WIDGETMAX         11    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1

@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.20 2000/11/05 02:09:39 micahjd Exp $
+/* $Id: picogui_client.c,v 1.21 2000/11/05 05:22:09 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -581,10 +581,11 @@ void pgEventLoop(void) {
 
   _pgeventloop_on = 1;
 
-  /* Good place for an update...  (probably the first update) */
-  pgUpdate();
-
   while (_pgeventloop_on) {
+    /* Good practice to update before waiting on the user
+       (and, unless doing animation of some sort, nowhere else) */
+    pgUpdate();
+
     /* Wait for a new event */
     _pg_add_request(PGREQ_WAIT,NULL,0);
     pgFlushRequests();
@@ -1019,7 +1020,6 @@ int pgMessageDialog(const char *title,const char *text,unsigned long flags) {
 
   /* Go away now */
   pgLeaveContext();
-  pgUpdate();
 
   return ret;
 }

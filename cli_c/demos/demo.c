@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.14 2000/11/04 22:38:15 micahjd Exp $
+/* $Id: demo.c,v 1.15 2000/11/05 05:22:08 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -39,7 +39,6 @@ int btnHello(short event,pghandle from,long param) {
 
   pgReplaceTextFmt(wLabel,"Hello World\n#%d",++i);
   pgSetWidget(wIndicator,PG_WP_VALUE,i,0);
-  pgUpdate();
 
   return 0;
 }

@@ -7,28 +7,21 @@ int btnMenu(short event,pghandle from,long param) {
 
   pgNewPopupAt(PG_POPUP_ATCURSOR,0,50,150);
 
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Perl"),
-	      PG_WP_SIDE,PG_S_TOP,0);
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Python"),
-	      PG_WP_SIDE,PG_S_TOP,0);
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C"),
-	      PG_WP_SIDE,PG_S_TOP,0);
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C++"),
-	      PG_WP_SIDE,PG_S_TOP,0);
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("PHP"),
-	      PG_WP_SIDE,PG_S_TOP,0);
-  pgNewWidget(PG_WIDGET_BUTTON,0,0);
-  pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("FORTRAN"),
-	      PG_WP_SIDE,PG_S_TOP,0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Perl"),0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Python"),0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C"),0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C++"),0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("PHP"),0);
+  pgNewWidget(PG_WIDGET_MENUITEM,0,0);
+    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("FORTRAN"),0);
 
   pgGetEvent(NULL,NULL);
   pgLeaveContext();
-  pgUpdate();
 
   return 0;
 }
@@ -41,7 +34,7 @@ int main(int argc, char *argv[])
 {
   pgInit(argc,argv);
 
-  pgRegisterApp(PG_APP_TOOLBAR,"msgdialog demo",PG_APPSPEC_SIDE,PG_S_BOTTOM,0);
+  pgRegisterApp(PG_APP_TOOLBAR,"msgdialog demo",0);
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Run"),

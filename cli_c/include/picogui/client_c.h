@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.18 2000/11/05 02:09:36 micahjd Exp $
+/* $Id: client_c.h,v 1.19 2000/11/05 05:22:08 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -103,9 +103,13 @@ void pgSetnonblocking(long state);
  */
 void pgFlushRequests(void);
 
-/* Update the screen. Call this once after setting up a new
- * popup box, app panel, or making a change that needs to
- * become visible. Use this sparingly. Only things that have
+/* Update the screen. 
+ *
+ * If your application is pgEventLoop (or pgGetEvent) based,
+ * this is handled automatically. Normally this is only used
+ * for animation of some sort.
+ *
+ * Use it sparingly: only things that have
  * been changed get recalculated, but drawing unfinished 
  * popups or applications to the screen is a Bad Thing (tm)
  */
