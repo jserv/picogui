@@ -1,8 +1,0 @@
-VERBOSE=on
-PMDIR=$HOME/.procmail
-LOGFILE=$PMDIR/log
-
-# send kde commits to 'filter'
-:0
-* ^To: kde-cvs@kde.org
-| /home/kde_commits/filter.py

@@ -1,8 +1,0 @@
-VERBOSE=on
-PMDIR=$HOME/.procmail
-LOGFILE=$PMDIR/log
-
-# send perl5 commits to 'filter'
-:0
-* ^Mailing-List: contact perl5-changes-help@perl.org
-| /home/perl5_commits/filter.py

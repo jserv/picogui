@@ -1,0 +1,44 @@
+VERBOSE=on
+PMDIR=$HOME/.procmail
+LOGFILE=$PMDIR/log
+
+###### Filters for mailing list commit messages
+
+:0
+* ^To: kde-cvs@kde.org
+| /home/commits/tools/irc/filters/kde/filter.py
+
+:0
+* ^Subject:.*\[mythtv-commits\]
+| /home/commits/tools/irc/filters/mythtv/filter.py
+
+:0
+* ^Mailing-List: contact perl5-changes-help@perl.org
+| /home/commits/tools/irc/filters/perl5/filter.py
+
+:0
+* ^To: plone-cvs@lists.sourceforge.net
+| /home/commits/tools/irc/filters/plone/filter.py
+
+:0
+* ^Subject: \[Python-checkins\]
+| /home/commits/tools/irc/filters/python/filter.py
+
+###### Pass on allowed CIA messages to the email bot client
+
+:0
+* ^Subject: Announce
+| /home/commits/tools/irc/emailBotClient.py
+
+:0
+* ^Subject: SendToChannels
+| /home/commits/tools/irc/emailBotClient.py
+
+:0
+* ^Subject: JoinChannel
+| /home/commits/tools/irc/emailBotClient.py
+
+:0
+* ^Subject: PartChannel
+| /home/commits/tools/irc/emailBotClient.py
+
