@@ -1,0 +1,7 @@
+VERBOSE=on
+PMDIR=$HOME/.procmail
+LOGFILE=$PMDIR/log
+
+:0
+* ^Subject: picogui
+| /home/snapshots/tools/svn/svn_snapshot_local.sh /home/snapshots/picogui picogui- /var/www/snapshots > /dev/null 2> /dev/null
