@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.139 2002/01/14 07:52:39 micahjd Exp $
+/* $Id: widget.c,v 1.140 2002/01/14 08:52:38 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -485,15 +485,15 @@ g_error inline widget_set(struct widget *w, int property, glob data) {
      
    case PG_WP_HILIGHTED:
     {
-      struct divnode *sub;
-
+      struct widget *p;
+      
       //
       // Pass the message onto the other sub widgets
       //
-      if ( w->sub ) {
-         for (sub = *w->sub; sub != NULL; sub = sub->next ) {
-            widget_set(sub->owner, PG_WP_HILIGHTED, data);
-         }
+      p = widget_traverse(w, PG_TRAVERSE_CHILDREN, 0);
+      while (p) {
+	widget_set(p, PG_WP_HILIGHTED, data);
+	p = widget_traverse(p, PG_TRAVERSE_FORWARD,1);
       }
     }
     break;

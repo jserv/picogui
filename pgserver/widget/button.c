@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.84 2002/01/08 12:07:10 micahjd Exp $
+/* $Id: button.c,v 1.85 2002/01/14 08:52:38 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -183,7 +183,7 @@ g_error button_install(struct widget *self) {
   errorcheck;
   self->in->div->build = &build_button;
   self->in->div->state = DATA->state;
-  self->in->div->flags |= DIVNODE_HOTSPOT;
+  self->in->div->flags |= DIVNODE_HOTSPOT | DIVNODE_SPLIT_BORDER;
 
   self->trigger_mask = TRIGGER_ENTER | TRIGGER_LEAVE | TRIGGER_HOTKEY |
     TRIGGER_UP | TRIGGER_DOWN | TRIGGER_RELEASE | TRIGGER_DIRECT |
@@ -308,6 +308,7 @@ glob button_get(struct widget *self,int property) {
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
   int event=-1;
+  struct widget *w;
 
   /* If it's disabled, don't allow anything except
    * hilighting and global keys
@@ -445,7 +446,12 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     }
   }
 
-  /* Update, THEN send the event. */
+  /* Update subwidgets, update this widget, then send an event */
+  w = widget_traverse(self, PG_TRAVERSE_CHILDREN, 0);
+  while (w) {
+    widget_set(w, PG_WP_HILIGHTED, DATA->over);
+    w = widget_traverse(w, PG_TRAVERSE_FORWARD,1);
+  }
 
   if (DATA->on && DATA->over)
     div_setstate(self->in->div,DATA->state_on,0);

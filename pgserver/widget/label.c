@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.45 2002/01/06 09:23:00 micahjd Exp $
+/* $Id: label.c,v 1.46 2002/01/14 08:52:38 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -187,35 +187,24 @@ g_error label_set(struct widget *self,int property, glob data) {
      break;
      
   case PG_WP_HILIGHTED:
-    {
-      struct divnode *sub;
-
-      if ( data ) {
-
-         //
-         //
-         // Hilight this widget
-         //
-         widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL_HILIGHT);
-      }
-      else {
-
-         // 
-         // Un hilight this widget
-         //
-         widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL);
-      }
-
+    if ( data ) {
+      
       //
-      // Pass the message onto the other sub widgets
       //
-      if ( self->sub ) {
-         for (sub = *self->sub; sub != NULL; sub = sub->next ) {
-            widget_set(sub->owner, PG_WP_HILIGHTED, data);
-         }
-      }
+      // Hilight this widget
+      //
+      widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL_HILIGHT);
     }
-    break;
+    else {
+      
+      // 
+      // Un hilight this widget
+      //
+      widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL);
+    }
+    
+    /* Let the default handler pass it on */
+    return mkerror(ERRT_PASS,0);
      
   case PG_WP_COLOR:
     DATA->colorset = 1;
