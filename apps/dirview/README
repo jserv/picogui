@@ -1,0 +1,37 @@
+The dirview library
+===================
+
+History of the project
+======================
+
+Authors
+=======
+Pascal Bauermeister <bauermeister@users.sourceforge.net>
+
+Contributors
+============
+Does the TODO list inspire you ?  don't hesitate to contribute !
+
+Copyrights
+==========
+dirview:
+ Copyright (C) 2002 by Pascal Bauermeister <bauermeister@users.sourceforge.net>
+
+PicoGUI:
+ Copyright (C) 2000,2002 by Micah Dowty <micahjd@users.sourceforge.net>
+
+License
+=======
+The core library is distributed under the terms of the GNU General Public
+License (GPL), as well as the protocol, displet and controls libraries.
+
+The bundled libraries are under the terms of the GNU Lesser General Public
+License (LGPL) towards applications using them.
+
+See COPYING in PicoGUI's apps folder.
+
+History
+=======
+See ChangeLog
+
+[end]

@@ -1,0 +1,18 @@
+BASIC FUNCTIONS
+- implement the effective file: protocol code
+- implement the basic displet (for std properties)
+- tailor everything into multiple libs
+- get rid of static vars, put them in instance structs
+- link to the apps/ in ../configure.in and ../Makefile.am
+- write the first version of 'the Mollusk'
+
+ADVANCED FUNCTIONS
+- implement a few external viewers for chosen mime types,
+  at least gif and jpeg
+- implement the basic controls library (fields, buttons and menu)
+
+EXTENDED FUNCTIONS
+- more protocols
+- maybe async interface to some protocol handlers ?
+- more displets
+- implement streaming inteface to viewers
