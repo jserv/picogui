@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.19 2000/08/07 12:18:58 micahjd Exp $
+/* $Id: panel.c,v 1.20 2000/08/07 12:39:54 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -38,6 +38,13 @@
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
 
+#define MINDRAGLEN    4    /* Min. # of pixels movement for a click to be
+			      interpreted as a drag */
+
+#define MAXROLLUP     10   /* If the user resizes the panel to this
+			      or smaller, it will be interpreted
+			      as a panel roll-up */
+
 /* A shortcut... */
 #define PANELBAR_DIV self->in->next->div
 
@@ -50,6 +57,14 @@ struct paneldata {
   unsigned long wait_tick;    /* To limit the frame rate */
 
   struct bitmap *bar,*behindbar;
+
+  /* Saved split value before a drag, used to
+     calculate whether it should be interpreted as
+     a click */
+  int osplit;
+
+  /* The split value while the panel is unrolled */
+  int unrolled;
 
   /* Location and previous location for the bar */
   int x,y,ox,oy;
@@ -194,6 +209,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Ignore if it's not in the panelbar */
     if (DATA->grab_offset<0) return;
 
+    DATA->osplit = self->in->split;
     DATA->on = 1;
 
     /* Update the screen now, so we have an up-to-date picture
@@ -251,7 +267,30 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
       break;
     }
     if (self->in->split < 0) self->in->split = 0;
-    
+
+    if (abs(self->in->split - DATA->osplit) < MINDRAGLEN) {
+      /* This was a click, not a drag */
+
+      if (DATA->osplit > 0) {
+	/* Roll up the panel */
+	self->in->split = 0;
+      }
+      else {
+	/* Unroll the panel */
+	self->in->split = DATA->unrolled;
+      }
+      
+    }
+    else {
+      
+      /* Save this as the new unrolled split,
+       * Unless the user manually rolled up the panel */
+      if (self->in->split > MAXROLLUP) 
+	DATA->unrolled = self->in->split;
+      else
+	self->in->split = 0;
+    }
+
     /* Do a recalc, because we just changed everything's size */
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
