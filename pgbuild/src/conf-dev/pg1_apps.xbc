@@ -146,7 +146,7 @@
 		<versiongroup name="picogui-versions" path="pg1/apps/test/omnibar"/>
 	</package>
 
-	<package name="pg1/apps/test/omnibar-helio">
+	<package name="pg1/apps/test/omnibar_helio">
 		<description><summary>A version of omnibar with a battery meter for the VTech Helio</summary></description>
 		<versiongroup name="picogui-versions" path="pg1/apps/test/omnibar-helio"/>
 	</package>
@@ -226,7 +226,7 @@
 		<versiongroup name="picogui-versions" path="pg1/apps/working/connectfour"/>
 	</package>
 
-	<package name="pg1/apps/working/ghost-launcher">
+	<package name="pg1/apps/working/ghost_launcher">
 		<description><summary>Launcher utilizing the VR3's silkscreened buttons</summary></description>
 		<versiongroup name="picogui-versions" path="pg1/apps/working/ghost-launcher"/>
 	</package>
