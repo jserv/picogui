@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.36 2001/07/11 01:10:04 micahjd Exp $
+/* $Id: network.h,v 1.37 2001/07/11 07:48:01 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -133,8 +133,9 @@ struct pghello {
 #define PGREQ_THLOOKUP     36  /* Perform a theme lookup         |  struct */
 #define PGREQ_GETINACTIVE  37  /* get milliseconds of inactivity |    none */
 #define PGREQ_SETINACTIVE  38  /* set milliseconds of inactivity |  struct */
+#define PGREQ_DRIVERMSG    39  /* Send a message to all drivers  |  struct */
 
-#define PGREQ_UNDEF        39  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        40  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 
@@ -261,6 +262,10 @@ struct pgreqd_thlookup {
 };
 struct pgreqd_setinactive {
   u32 time;
+};
+struct pgreqd_drivermsg {
+  u32 message;
+  u32 param;
 };
 
 /* A structure for encapsulating commands, for example in canvas, within

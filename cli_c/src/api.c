@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.15 2001/07/11 01:10:04 micahjd Exp $
+/* $Id: api.c,v 1.16 2001/07/11 07:48:01 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -575,6 +575,14 @@ struct pgmodeinfo *pgGetVideoMode(void) {
    
   return mi;
 }
+
+void pgDriverMessage(unsigned long message, unsigned long param) {
+  struct pgreqd_drivermsg arg;
+  arg.message = htonl(message);
+  arg.param = htonl(param);
+  _pg_add_request(PGREQ_DRIVERMSG,&arg,sizeof(arg));
+}
+
 
 /* Get and delete the previous text, and set the
    text to a new string made with the given text */

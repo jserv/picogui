@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.51 2001/07/11 01:10:04 micahjd Exp $
+/* $Id: client_c.h,v 1.52 2001/07/11 07:48:01 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -449,6 +449,17 @@ mi = *pgGetVideoMode();
  * \sa pgSetVideoMode, pgmodeinfo
  */
 struct pgmodeinfo *pgGetVideoMode(void);
+
+/*!
+ * \brief Send a message to the drivers
+ *
+ * \param message A PGDM_* driver message constant
+ * \param param Defined by the type of message sent
+ *
+ * This command can send 'extra' commands that may be hardware-specific,
+ * like beeps, cursor blanking, and backlight control.
+ */
+void pgDriverMessage(unsigned long message, unsigned long param);
 
 /******************** Objects */
 

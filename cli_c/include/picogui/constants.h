@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.54 2001/07/11 01:10:04 micahjd Exp $
+/* $Id: constants.h,v 1.55 2001/07/11 07:48:01 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -662,8 +662,30 @@ typedef unsigned long pghandle;
 
 //! \}
 
-/******************** Widgets */
+/*!
+ * \defgroup drvmsgs Driver messages
+ * 
+ * These flags specify hardware-specific commands that can be
+ * sent from driver to driver or from applciation to driver.
+ *
+ * \{
+ */
 
+#define PGDM_CURSORVISIBLE    1   //!< Turn the cursor on/off 
+#define PGDM_BACKLIGHT        2   //!< Turn the backlight on/off
+#define PGDM_SOUNDFX          3   //!< Parameter is a PG_SND_* constant
+#define PGDM_POWER            4   //!< Enter the power mode, PG_POWER_*
+
+#define PG_SND_KEYCLICK       1   //!< Short click
+#define PG_SND_BEEP           2   //!< Terminal beep
+
+#define PG_POWER_OFF          0   //!< Turn completely off
+#define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
+#define PG_POWER_FULL       100   //!< Full speed
+
+//! \}
+
+/******************** Widgets */
 
 
 /* Constants used for rship, the relationship between 
