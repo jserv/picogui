@@ -940,7 +940,8 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	      0,
 	      n->param[0],
 	      n->param[1],
-	      c, 
+	      r->angle,
+	      c,
 	      r->lgop 
 	      ); 
     break; 
