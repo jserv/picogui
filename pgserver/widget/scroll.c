@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.70 2002/10/17 01:58:37 micahjd Exp $
+/* $Id: scroll.c,v 1.71 2002/10/30 05:08:07 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -55,6 +55,9 @@
    indicator's height */
 #define HEIGHT_DIV 2
 
+/* Minimum thumb size */
+#define MIN_THUMB 10
+
 /* This widget has extra data we can't store in the divnodes themselves */
 struct scrolldata {
   int horizontal;
@@ -66,8 +69,13 @@ struct scrolldata {
   int value,old_value;
   u32 wait_tick;
   int thumbscale;
+  int thumbsize;
 };
 #define DATA WIDGET_DATA(0,scrolldata)
+
+#ifndef MAX
+#define MAX(a, b)  (a > b ? a : b)
+#endif /* max */
 
 void scrollevent(struct widget *self);
 
@@ -98,15 +106,25 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
   /* Size ourselves to fit the widget we are bound to
    */
 
+  /* The scrollbar thumb size */
+  if(DATA->horizontal)
+      DATA->thumbsize = c->r.w>>HEIGHT_DIV;
+  else 
+      DATA->thumbsize = c->r.h>>HEIGHT_DIV;
+  
   oldres = DATA->res;
   if (!iserror(rdhandle((void **)&wgt,PG_TYPE_WIDGET,-1,
 			self->scrollbind)) && wgt && wgt->in->div) {
     
-    if (DATA->horizontal)
-      DATA->res = wgt->in->child.w - wgt->in->r.w;
-    else
-      DATA->res = wgt->in->child.h - wgt->in->r.h;
-
+      if (DATA->horizontal) {
+          DATA->res = wgt->in->child.w - wgt->in->r.w;
+          if (wgt->in->child.w)
+              DATA->thumbsize = (c->r.w * c->r.w) / wgt->in->child.w;
+      } else {
+          DATA->res = wgt->in->child.h - wgt->in->r.h;
+          if (wgt->in->child.h)
+              DATA->thumbsize = (c->r.h * c->r.h) / wgt->in->child.h;
+      }
     /* Bounds/sanity checking.. */
     if (DATA->res < 0)
       DATA->res = 0;
@@ -156,18 +174,17 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
 
   /* Background for the bar */
   exec_fillstyle(c,state,PGTH_P_BGFILL);
-
-  /* The scrollbar thumb */
-  if(DATA->horizontal){
-    DATA->thumbscale = (c->r.w-(c->r.w>>HEIGHT_DIV));
-    c->r.w = c->r.w>>HEIGHT_DIV;
-    c->defaultgropflags = PG_GROPF_TRANSLATE;
+  
+  /* Finish scrollbar thumb */
+  DATA->thumbsize = MAX(DATA->thumbsize, MIN_THUMB);
+  if(DATA->horizontal) {
+      DATA->thumbscale = c->r.w - DATA->thumbsize;
+      c->r.w = DATA->thumbsize;
+  } else {
+      DATA->thumbscale = c->r.h - DATA->thumbsize;
+      c->r.h = DATA->thumbsize;
   }
-  else {
-    DATA->thumbscale = (c->r.h-(c->r.h>>HEIGHT_DIV));
-    c->r.h = c->r.h>>HEIGHT_DIV;
-    c->defaultgropflags = PG_GROPF_TRANSLATE;
-  }
+  c->defaultgropflags = PG_GROPF_TRANSLATE;
   exec_fillstyle(c,state,PGTH_P_OVERLAY);
 
   /* Update the scroll position */
@@ -355,7 +372,7 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
       
       if (DATA->grab_offset < 0)  
 	DATA->release_delta = -SCROLLAMOUNT;
-      else if (DATA->grab_offset > ( ((DATA->horizontal)?self->in->div->r.w:self->in->div->r.h)>>HEIGHT_DIV))
+      else if (DATA->grab_offset > ( ((DATA->horizontal)?self->in->div->r.w:DATA->thumbsize)))
 	DATA->release_delta = SCROLLAMOUNT;
       else {
 	DATA->on=1;
@@ -406,12 +423,12 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
     if (DATA->horizontal) {
       DATA->value = (param->mouse.x - self->in->div->r.x -
 		     DATA->grab_offset) * DATA->res /
-	(self->in->div->r.w - (self->in->div->r.w>>HEIGHT_DIV));
+	(self->in->div->r.w - DATA->thumbsize);
     }
     else {
       DATA->value = (param->mouse.y - self->in->div->r.y -
 		     DATA->grab_offset) * DATA->res /
-	(self->in->div->r.h - (self->in->div->r.h>>HEIGHT_DIV));
+          (self->in->div->r.h - DATA->thumbsize);
     }
 
     if (DATA->value > DATA->res) DATA->value = DATA->res;
