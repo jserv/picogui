@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.21 2003/03/26 10:25:43 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.22 2003/03/26 10:28:25 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -160,7 +160,7 @@ int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
     return 1;
 
   case 'j' | 0x80:   /* Bottom-right corner */
-    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
+    VID(slab)(dest, x, y+(h>>1), 1+(w>>1), color, lgop);
     VID(bar)(dest, x+(w>>1), y, h>>1, color, lgop);
     return 1;
 
@@ -206,12 +206,12 @@ int term_linedraw(hwrbitmap dest, int x, int y, int w, int h,
 
   case 't' | 0x80:   /* Right tee */
     VID(bar)(dest, x+(w>>1), y, h, color, lgop);
-    VID(slab)(dest, x+(w>>1), y+(h>>1), w, color, lgop);
+    VID(slab)(dest, x+(w>>1), y+(h>>1), w>>1, color, lgop);
     return 1;
 
   case 'u' | 0x80:   /* Left tee */
     VID(bar)(dest, x+(w>>1), y, h, color, lgop);
-    VID(slab)(dest, x, y+(h>>1), w, color, lgop);
+    VID(slab)(dest, x, y+(h>>1), w>>1, color, lgop);
     return 1;
 
   case 'v' | 0x80:   /* Top tee */
