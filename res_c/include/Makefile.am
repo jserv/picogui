@@ -4,6 +4,7 @@ includedir = @includedir@/res_c
 
 include_HEADERS = \
 	confparse.h \
+	picogui_support.h \
 	res_c.h 
 
 install-data-hook:

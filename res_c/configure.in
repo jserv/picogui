@@ -41,17 +41,22 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(socket strtol)
 
+AC_SUBST(INTERFACES)
+
 dnl Check for PicoGUI support.
-picogui_support_enabled="no"
+picogui_support_enabled="yes"
 AC_ARG_ENABLE(picogui-support,
-	[ --enable-picogui-support	enable PicoGUI support (default: disabled)],
+	[ --enable-picogui-support	enable PicoGUI support (default: enabled)],
 	if test "$enable_picogui_support" = "yes"; then
-		picogui_support_enabled="yes"
+		CONFIG_PICOGUI_SUPPORT=y
 	fi
 )
 if test "$enable_picogui_support" = "yes" ; then
 	CFLAGS="$CFLAGS -DCONFIG_PICOGUI_SUPPORT"
 fi
+
+dnl Use the configuration file to determine the requested files
+eval `. select.in`
 
 AC_OUTPUT(
 	Makefile

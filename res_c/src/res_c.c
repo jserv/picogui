@@ -25,6 +25,13 @@
  * 
  */
 
+/* 	$Id: res_c.c,v 1.6 2002/10/13 12:36:43 carpman Exp $	 */
+
+#ifndef lint
+static char vcid[] = "$Id: res_c.c,v 1.6 2002/10/13 12:36:43 carpman Exp $";
+#endif /* lint */
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,7 +46,7 @@
 #include "confparse.h"
 
 //-------Launcher related code----------------------------------------
-const char *resMakeAbsPath(const char *rootPath, const char *subdir, int appConf){
+char *resMakeAbsPath(const char *rootPath, const char *subdir, int appConf){
   char *appPath = NULL;
 
   if(!appConf){
@@ -76,7 +83,7 @@ int resGetAppCount(const char *path){
   return appCount;
 }
    
-const char **resGetAppPaths(const char *rootPath){
+char **resGetAppPaths(const char *rootPath){
   DIR *directory = opendir(rootPath);
   struct dirent *dinfo = NULL;
   char *appPath = NULL;
@@ -121,13 +128,13 @@ resResource *resLoadResource(const char *path){
   return newResource;
 }
 
-const char *resGetProperty(resResource *resource, const char *section, const char *property, const char *dparam){
+char *resGetProperty(resResource *resource, const char *section, const char *property, char *dparam){
   switch(resource->resourceType){
   case RES_ELF:
     //Do some interesting stuff here.
     break;
   case RES_APPCONF:
-    return (char *)resGetACProperty(resource, section, property, dparam);
+    return resGetACProperty(resource, section, property, dparam);
     break;
   default:
     break;
@@ -178,12 +185,12 @@ void *resGetResource(resResource *resource, const char *section, const char *pro
     resource->resourceTable[resource->resourceCount] = malloc(sizeof(resElement));
     resource->resourceTable[resource->resourceCount]->data = propertyData;
     resource->resourceTable[resource->resourceCount]->size = *size;
-    printf("New resource %x\n", resource->resourceTable[resource->resourceCount]->data);
+    //printf("New resource %x\n", resource->resourceTable[resource->resourceCount]->data);
   }
   return propertyData;
 }
 
-const char **resListResources(resResource *resource, const char *section, int *count){
+char **resListResources(resResource *resource, const char *section, int *count){
   
  switch(resource->resourceType){
  case RES_ELF:
@@ -201,7 +208,7 @@ const char **resListResources(resResource *resource, const char *section, int *c
 void resUnloadResource(resResource *resource){
   if(resource){
     for(;resource->resourceCount > 0; resource->resourceCount--){
-      printf("Freeing resource %x\n", resource->resourceTable[resource->resourceCount-1]->data);
+      //printf("Freeing resource %x\n", resource->resourceTable[resource->resourceCount-1]->data);
       munmap(resource->resourceTable[resource->resourceCount-1]->data, 
 	     resource->resourceTable[resource->resourceCount-1]->size);
     }
@@ -214,18 +221,17 @@ void resUnloadResource(resResource *resource){
 
 
 //-------Config related code-----------------------------------------
-const char *getConfigProperty(resResource *resource, const char *section, const char *property, const char *dparam){
+const char *getConfigProperty(resResource *resource, const char *section, const char *property, char *dparam){
   char *configPath;
-  char *property;
+  char *propertyData = dparam;
   resResource confResource;
   
   if(configPath = resGetProperty(resource, "Config", "path", NULL)){
     confResource.workingDir = configPath;
-    property = resGetACProperty(&confResource, section, property, dparam);
+    propertyData = resGetACProperty(&confResource, section, property, dparam);
     free(configPath);
-    return property;
   }
-  return dparam;
+  return propertyData;
 }
 
 void setConfigProperty(resResource *resource, const char *section, const char *property, const char *data){

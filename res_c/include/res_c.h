@@ -46,21 +46,21 @@ typedef struct{
 
 
 //-------Launcher related code----------------------------------------
-const char *resMakeAbsPath(const char *rootPath, const char *subdir, int appConf);
+char *resMakeAbsPath(const char *rootPath, const char *subdir, int appConf);
 int resGetAppCount(const char *path);
-const char **resGetAppPaths(const char *rootPath);
+char **resGetAppPaths(const char *rootPath);
 
 //-------Resource related code----------------------------------------
 resResource *resLoadResource(const char *path);
 void resUnloadResource(resResource *resource);
 
-const char *resGetProperty(resResource *resource, const char *section, const char *property, const char *dparam);
+char *resGetProperty(resResource *resource, const char *section, const char *property, char *dparam);
 void resSetProperty(resResource *resource, const char *section, const char *property, const char *data);
 
 void *resGetResouce(resResource *resource, const char *section, const char *property, int *size);
-const char **resListResources(resResource *resource, const char *section, int *count);
+char **resListResources(resResource *resource, const char *section, int *count);
 
 //-------Config related code------------------------------------------
-const char *getConfigProperty(resResource *resource, const char *section, const char *property, const char *dparam);
+const char *getConfigProperty(resResource *resource, const char *section, const char *property, char *dparam);
 void setConfigProperty(resResource *resource, const char *section, const char *property, const char *data);
 
