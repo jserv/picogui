@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.11 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: picogui_client.c,v 1.12 2000/10/18 17:57:13 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -789,6 +789,36 @@ pghandle pgNewFont(const char *name,short size,unsigned long style) {
 pghandle pgNewPopup(int width,int height) {
   /* Tell the server to center it */
   return pgNewPopupAt(-1,-1,width,height);
+}
+
+pghandle pgNewBitmap(const char* image,int width,int height) {
+  struct pgmemdata im;
+  struct pgreqd_mkbitmap arg;
+  void *p;
+
+  arg.w = 0;        /* Debug: passing .pnm image as default */
+  arg.h = 0;
+  arg.fg = 0;
+  arg.bg = 0;
+  
+  im = pgFromFile(image);
+  
+  p = malloc((long)sizeof(arg) + im.size);
+  memcpy(p,&arg,sizeof(arg));
+  memcpy(p+sizeof(arg),im.pointer,im.size);
+
+
+  _pg_add_request(PGREQ_MKBITMAP,&p,(long)sizeof(arg) + im.size);
+
+  /* Because we need a result now, flush the buffer */
+  pgFlushRequests();
+  
+  /* Free allocations */
+  _pg_free_memdata(im);
+  free(p);
+
+  /* Return the new handle */
+  return _pg_return.e.retdata;
 }
 
 pghandle pgNewString(const char* str) {
