@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.25 2003/03/27 10:47:46 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.26 2003/03/27 10:50:32 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -260,8 +260,12 @@ void term_realize(struct widget *self) {
   
   /**** Set up an incremental update for the update rectangle */
   
-  DATA->inc->param[1] = DATA->bufferw << 16;
-      
+  /* If this is more than one line, load the buffer width */  
+  if (DATA->updh > 1)  
+    DATA->inc->param[1] = DATA->bufferw << 16;
+  else  
+    DATA->inc->param[1] = DATA->updw << 16;  
+ 
   /* Set the buffer offset */
   DATA->inc->param[1] |= DATA->updx + DATA->updy * DATA->bufferw;
    
