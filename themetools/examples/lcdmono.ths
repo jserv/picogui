@@ -1,4 +1,4 @@
-/* $Id: lcdmono.ths,v 1.7 2001/04/18 01:10:21 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.8 2001/04/18 01:59:07 micahjd Exp $
  *
  * Monochrome theme for LCDs
  *
@@ -77,13 +77,12 @@ object background {
       var f,b;
       f = ColorConv(0x000000);
       b = ColorConv(0xFFFFFF);
-      Bitmap(x,y,30,h,bitmap1,PG_LGOP_NONE,0,0);
+      Rect(x,y,33,h,b);
       Bitmap(x+34,y,w-34,h,bitmap2,PG_LGOP_NONE,0,0);
       Bar(x+30,y,1,h,f);
-      Bar(x+31,y,1,h,b);
       Bar(x+32,y,1,h,f);
       Bar(x+33,y,1,h,f);
-      Textv(x+3,y+h-4,1,1,text,font,ColorConv(0xFFFFFF));
+      Textv(x+3,y+h-4,1,1,text,font,f);
    };
 }
 
