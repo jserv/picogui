@@ -185,13 +185,42 @@ void drawpiece(int x, int y, int type)
 void win(int x, int y, int direction)
 {
   pgReplaceTextFmt(info,"Game Over...  You Won");
+  victoryline(x,y,direction);
   pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
 }
 
 void lose(int x, int y, int direction)
 {
   pgReplaceTextFmt(info,"Game Over... You Lose");
+  victoryline(x,y,direction);
   pgBind(canvas,PG_WE_PNTR_DOWN,&dummy,NULL);
+}
+
+void victoryline(int x, int y, int direction)
+{
+  switch(direction)
+  {
+  case 1:/*horizontal*/
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+6),40,0);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+5),40,0);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+7),40,0);
+    break;
+  case 2:/*vertical*/
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+6,62-(y*10+1),0,-40);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+5,62-(y*10+1),0,-40);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+7,62-(y*10+1),0,-40);
+    break;
+  case 3:/*slope up*/
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+1),40,-40);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+2),39,-39);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+2,62-(y*10+1),39,-39);
+    break;
+  case 4:/*slope down*/
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+11),40,40);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+1,62-(y*10+10),39,39);
+    pgWriteCmd(canvas,PGCANVAS_GROP,5,PG_GROP_LINE,x*10+2,62-(y*10+11),39,39);
+    break;
+  }
 }
 
 int dummy(struct pgEvent *evt)
