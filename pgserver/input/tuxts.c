@@ -31,7 +31,6 @@ static const char *PG_TS_ENV_NAME = "PG_TS_CALIBRATION";
 
 /* file descriptor for touch panel */
 static int fd = -1;
-static int tty = -1;
 static int PEN_DOWN = 0;
 static int BACKLIGHT_ON = 1;
 static int CURSOR_SHOWN = 0;
@@ -93,16 +92,6 @@ void tuxts_close(void)
 	if (fd >= 0)
 		close(fd);
 	fd = -1;
-
-        tty = open ("/dev/tty0", O_RDWR);
-        if(tty < 0) {
-		printf("Error can't open /dev/tty0: %m\n");
-		return;
-	}
-	if(ioctl (tty, KDSETMODE, KD_GRAPHICS) == -1) {
-		printf("Error setting text mode: %m\n");
-	}
-	close(tty);
 }
 
 void tuxts_poll(void)

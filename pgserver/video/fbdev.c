@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.10 2001/10/05 19:40:04 micahjd Exp $
+/* $Id: fbdev.c,v 1.11 2001/10/05 19:43:23 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -211,6 +211,17 @@ g_error fbdev_init(void) {
 void fbdev_close(void) {
    munmap(FB_MEM,fbdev_mapsize);
    close(fbdev_fd);
+   
+   /* Back to text mode */
+#ifndef CONFIG_FB_NOGRAPHICS
+   {
+      int xx = open("/dev/tty1", O_RDWR);
+      if (xx >= 0) {
+	 ioctl(xx, KDSETMODE, KD_TEXT);
+	 close(xx);
+      }
+   }
+#endif
 }
 
 g_error fbdev_regfunc(struct vidlib *v) {
