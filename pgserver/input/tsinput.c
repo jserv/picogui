@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.16 2001/06/04 16:52:23 bauermeister Exp $
+/* $Id: tsinput.c,v 1.17 2001/06/04 17:25:23 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -184,7 +184,7 @@ g_error tsinput_init(void) {
 
     ts_params.version_req    = MC68328DIGI_VERSION;
     ts_params.event_queue_on = 1;
-    ts_params.deglitch_ms    = 0;
+    ts_params.deglitch_ms    = 20;
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
     ts_params.mv_thrs        = 5;
