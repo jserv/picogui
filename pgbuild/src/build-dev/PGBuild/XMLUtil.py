@@ -98,12 +98,15 @@ class Document(minidom.Document):
 
        1. A class with a get_contents() method, such as an SCons file node
        2. A string, (or string-like object) treated as a file name
+       3. A DOM document
 
        This class also provides a few convenience functions, and makes
        it easier to subclass an XML document.
        """
     def __init__(self, input):
-        if hasattr(input, 'get_contents'):
+        if isinstance(input, minidom.Document):
+            dom = input
+        elif hasattr(input, 'get_contents'):
             dom = minidom.parseString(input.get_contents())
         else:
             dom = minidom.parse(input)

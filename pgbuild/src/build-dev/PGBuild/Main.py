@@ -36,7 +36,7 @@ if sys.hexversion < 0x020200F0:
 import optik
 import PGBuild
 import os, re
-import StringIO
+import xml.dom.minidom
 
 
 class OptionParser(optik.OptionParser):
@@ -117,75 +117,96 @@ class Option(optik.Option):
             optik.Option.take_action(self, action, dest, opt, value, values, parser)
 
     
-class OptionsXML(object):
+class OptionsXML(xml.dom.minidom.Document):
     """Convert options from the supplied hash into XML, suitable
        for mounting into the configuration tree.
        """
     def __init__(self, parseResults):
         (self.options, self.args) = parseResults
-        self.xml = StringIO.StringIO()
-        self.xml.write('<pgbuild title="Command Line Options" root="invocation">')
+        xml.dom.minidom.Document.__init__(self)
+        
+        pgbuild = self.createElement("pgbuild")
+        pgbuild.setAttribute("title", "Command Line Options")
+        pgbuild.setAttribute("root", "invocation")
+        self.appendChild(pgbuild)
+
         for option in self.options.__dict__:
             value = getattr(self.options, option)
             if value != None:
-                self.xml.write('<option name="%s">' % option)
-                self.marshall(value)
-                self.xml.write('</option>')
-        for arg in self.args:
-            self.xml.write('<target name="%s">%s</target>' % (arg, arg))
-        self.xml.write('</pgbuild>')
+                node = self.createElement("option")
+                node.setAttribute("name", option)
+                for child in self.marshall(value):
+                    node.appendChild(child)
+                pgbuild.appendChild(node)
+
+        for i in xrange(len(self.args)):
+            node = self.createElement("target")
+            node.setAttribute("index", i)
+            node.appendChild(self.createTextNode(self.args[i]))
+            pgbuild.appendChild(node)
 
     def marshall(self, value):
-        """Marshall an option value, writing the resulting XML to self.xml.
+        """Marshall an option value, return a list of DOM nodes.
            Initially I tried to use XML-RPC marshalling for this, but besides
            being far too verbose for this, it didn't fit in with PGBuild.Config's
            requirements for tag distinctness.
            """
+        nodes = []
         if type(value) == list or type(value) == tuple:
             for i in xrange(len(value)):
-                self.xml.write('<item index="%s">' % i)
-                self.marshall(value[i])
-                self.xml.write('</item>')
+                node = self.createElement("item")
+                node.setAttribute("index", i)
+                for child in self.marshall(value[i]):
+                    node.appendChild(child)
+                nodes.append(node)
         else:
-            self.xml.write(str(value))
-
-    def get_contents(self):        
-        return self.xml.getvalue()
+            nodes.append(self.createTextNode(str(value)))
+        return nodes
 
 
-class BootstrapXML:
+class BootstrapXML(xml.dom.minidom.Document):
     """An object that wraps a Bootstrap object, providing an XML document that
        can be mounted into the configuration tree.
        """
     def __init__(self, bootstrap):
-        self.xml = StringIO.StringIO()
-        self.xml.write('<pgbuild title="Bootstrap Configuration" root="bootstrap">')
+        xml.dom.minidom.Document.__init__(self)
+        pgbuild = self.createElement("pgbuild")
+        pgbuild.setAttribute("title", "Bootstrap Configuration")
+        pgbuild.setAttribute("root", "bootstrap")
+        self.appendChild(pgbuild)
+        
         for path in bootstrap.paths:
-            self.xml.write('<path name="%s">%s</path>' % (path, bootstrap.paths[path]))
+            node = self.createElement("path")
+            node.setAttribute("name", path)
+            node.appendChild(self.createTextNode(bootstrap.paths[path]))
+            pgbuild.appendChild(node)
+
         for package in bootstrap.packages:
-            self.xml.write('<package name="%s">%s</package>' % (package, bootstrap.packages[package]))
-        self.xml.write('</pgbuild>')
+            node = self.createElement("package")
+            node.setAttribute("name", package)
+            node.appendChild(self.createTextNode(bootstrap.packages[package]))
+            pgbuild.appendChild(node)
 
-    def get_contents(self):
-        return self.xml.getvalue()
 
-
-class PackageXML:
+class PackageXML(xml.dom.minidom.Document):
     """An object that wraps a python package, providing an XML document that
        can be mounted into the configuration tree, representing all of its
        public string attributes.
        """
     def __init__(self, package, root):
-        self.xml = StringIO.StringIO()
-        self.xml.write('<pgbuild title="%s package attributes" root="%s">' % (package.__name__, root))
+        xml.dom.minidom.Document.__init__(self)
+        pgbuild = self.createElement("pgbuild")
+        pgbuild.setAttribute("title", "%s package attributes" % package.__name__)
+        pgbuild.setAttribute("root", root)
+        self.appendChild(pgbuild)
+        
         for attr in dir(package):
             if attr[0] != '_' and type(getattr(package,attr)) == str:
-                self.xml.write('\t<attr name="%s">%s</attr>' % (attr, getattr(package,attr)))
-        self.xml.write('</pgbuild>')
+                node = self.createElement("attr")
+                node.setAttribute("name", attr)
+                node.appendChild(self.createTextNode(getattr(package, attr)))
+                pgbuild.appendChild(node)
 
-    def get_contents(self):
-        return self.xml.getvalue()
-        
 
 def boot(bootstrap, argv):
     """Performs initial setup of PGBuild's configuration tree"""

@@ -105,7 +105,7 @@ class System(object):
             nodes = []
     
         if nodes:
-            progress.message("Building targets:" + " ".join(map(lambda x:(" " + str(x)), nodes)))
+            progress.message("Building targets: " + ", ".join(map(str, nodes)))
         else:
             import PGBuild.Errors
             raise PGBuild.Errors.ExternalError("No targets to build")
