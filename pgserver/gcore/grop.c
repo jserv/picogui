@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.33 2001/01/12 04:49:01 micahjd Exp $
+/* $Id: grop.c,v 1.34 2001/01/20 09:51:58 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -143,8 +143,11 @@ void grop_render(struct divnode *div) {
   while (list) {
      
     /* Handle incremental updates */
-    if ((list->flags & PG_GROPF_INCREMENTAL) != incflag)
+    if (((list->flags & PG_GROPF_INCREMENTAL) != incflag) &&
+	(!(list->flags & PG_GROPF_PSEUDOINCREMENTAL)))
        goto skip_this_node;
+     
+    list->flags &= ~PG_GROPF_PSEUDOINCREMENTAL;
      
     x = list->x+div->x;
     y = list->y+div->y;
@@ -540,11 +543,8 @@ void grop_free(struct gropnode **headpp) {
 
 /* Set up a grop context for rendering to a divnode */
 void gropctxt_init(struct gropctxt *ctx, struct divnode *div) {
+  memset(ctx,0,sizeof(struct gropctxt));
   ctx->headpp = &div->grop;
-  ctx->current = div->grop;
-  ctx->n = 0;
-  ctx->x = 0;
-  ctx->y = 0;
   ctx->w = div->w;
   ctx->h = div->h;
 }

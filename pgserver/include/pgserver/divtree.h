@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.8 2000/12/31 16:52:32 micahjd Exp $
+/* $Id: divtree.h,v 1.9 2001/01/20 09:52:00 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -162,6 +162,7 @@ struct gropctxt {
   struct gropnode *current;   /* Current position */
   unsigned short n;           /* Numerical position in gropnode list */
   int x,y,w,h;                /* Current coordinates */
+  unsigned int delayrend : 1; /* Set to delay rendering for div_rebuild() */
 };
 
 /* Set up a grop context for rendering to a divnode */

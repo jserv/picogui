@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.15 2001/01/05 03:18:52 micahjd Exp $
+/* $Id: svgainput.c,v 1.16 2001/01/20 09:52:00 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -208,6 +208,7 @@ void svgainput_kbdhandler(int scancode,int press) {
   /******* Handle mouse keys */
   if (kbdmouse) {
      static char n=0,e=0,s=0,w=0,b=0;
+     int scale = (svgainput_mod & PGMOD_SHIFT) ? 0 : 2;
 
           if (scancode == SCANCODE_CURSORBLOCKUP)    n = press;
      else if (scancode == SCANCODE_CURSORBLOCKRIGHT) e = press;
@@ -231,8 +232,8 @@ void svgainput_kbdhandler(int scancode,int press) {
        goto nomousekey;
 
      dispatch_pointing(TRIGGER_MOVE,
-		       pointer->x+((e-w)<<1),
-		       pointer->y+((s-n)<<1),b);
+		       pointer->x+((e-w)<<scale),
+		       pointer->y+((s-n)<<scale),b);
      mouse_setposition(pointer->x,pointer->y);
      return;
   }

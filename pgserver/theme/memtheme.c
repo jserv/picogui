@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.16 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: memtheme.c,v 1.17 2001/01/20 09:52:00 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -190,9 +190,11 @@ void div_rebuild(struct divnode *d) {
   grop_free(&d->grop);
   gropctxt_init(&c,d);
   (*d->build)(&c,d->state,d->owner);
-  d->flags |= DIVNODE_NEED_REDRAW;
-  if (d->owner)
-    d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+  if (!c.delayrend) {
+     d->flags |= DIVNODE_NEED_REDRAW;
+     if (d->owner)
+       d->owner->dt->flags |= DIVTREE_NEED_REDRAW;
+  }
 }
 
 /* Change a divnode's state, and update the necessary things. */
