@@ -127,6 +127,8 @@ class Infilter(object):
         accept = _make_trigger_mask(accept)
         absorb = _make_trigger_mask(absorb)
         self.handle = app.server.mkinfilter(after, accept, absorb)
+        self.app = app
+        self.send = app.server.infiltersend
 
 # limit "from infilter import *"
 __all__ = 'Trigger mouse kbd unknown Infilter'.split()
