@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.32 2002/02/21 14:46:31 pney Exp $
+/* $Id: textbox_document.c,v 1.33 2002/02/26 06:42:16 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -473,6 +473,10 @@ g_error text_caret_on(struct textbox_cursor *c) {
 
   e = text_caret_off(c);
   errorcheck;
+
+  /* No cursor? */
+  if (!c->c_div)
+    return success;
 
   /* is the caret not at the right place? */
   if (c->caret != &c->c_div->grop) {

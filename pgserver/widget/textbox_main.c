@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.33 2002/02/20 20:27:30 lonetech Exp $
+/* $Id: textbox_main.c,v 1.34 2002/02/26 06:42:16 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -209,9 +209,14 @@ glob textbox_get(struct widget *self,int property) {
 
 /* Move the cursor to the mouse location */
 void textbox_move_cursor(struct widget *self, union trigparam *param) {
-  DATA->c.c_div = divnode_findparent(self->dt->head, deepest_div_under_crsr);
+  struct divnode *word = deepest_div_under_crsr;
+  
+  /* If the user didn't click a word, find the closest word */
+
+  /* Put the cursor in 'word' */
+  DATA->c.c_div = divnode_findparent(self->dt->head, word);
   DATA->c.c_line = divnode_findbranch(self->dt->head, DATA->c.c_div);
-  DATA->c.c_gx = param->mouse.x - deepest_div_under_crsr->x;
+  DATA->c.c_gx = param->mouse.x - word->x;
   DATA->c.c_gctx.current = NULL;
   textbox_cursor_indexwidth(&DATA->c);
   text_caret_on(&DATA->c);
