@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.57 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: button.c,v 1.58 2001/04/08 01:01:42 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -55,10 +55,6 @@ void customize_button(struct widget *self,int state,int state_on,int state_hilig
   DATA->state_hilight = state_hilight;
   DATA->extra = extra;
   DATA->event = event;
-
-  button_set(self,PG_WP_TEXT,theme_lookup(state,PGTH_P_TEXT));
-  button_set(self,PG_WP_BITMAP,theme_lookup(state,PGTH_P_WIDGETBITMAP));
-  button_set(self,PG_WP_BITMASK,theme_lookup(state,PGTH_P_WIDGETBITMASK));
 
   resize_button(self);
 }
@@ -352,7 +348,24 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 void resize_button(struct widget *self) {
   struct btnposition bp;
   int w,h,m;
+  u32 t;
+  static u8 lock = 0;
 
+  /* Must prevent reentrancy to avoid an infinite
+   * recursion when widget_set() is called */
+  if (lock) return;
+  lock = 1;
+
+  /* Do theme updates */
+  t = theme_lookup(DATA->state,PGTH_P_TEXT);
+  if (t) widget_set(self,PG_WP_TEXT,t);
+  t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMAP);
+  if (t) widget_set(self,PG_WP_BITMAP,t);
+  t = theme_lookup(DATA->state,PGTH_P_WIDGETBITMASK);
+  if (t) widget_set(self,PG_WP_BITMASK,t);
+   
+  lock = 0;
+   
   /* With PG_S_ALL we'll get ignored anyway... */
   if (self->in->flags & PG_S_ALL) return;
 
@@ -398,10 +411,15 @@ void position_button(struct widget *self,struct btnposition *bp) {
   struct fontdesc *fd = NULL;
   char *text = NULL;
 
-  /* Dereference */
-  rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap);
-  rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask);
-  rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text);
+  /* Dereference - if one of these fails we're probably busy unloading
+   * a theme, so it's safe to ignore
+   */
+  if (iserror(rdhandle((void **) &bit,PG_TYPE_BITMAP,-1,DATA->bitmap)))
+     return;
+  if (iserror(rdhandle((void **) &bitmask,PG_TYPE_BITMAP,-1,DATA->bitmask)))
+     return;
+  if (iserror(rdhandle((void **) &text,PG_TYPE_STRING,-1,DATA->text)))
+     return;
   bp->font = DATA->font ? DATA->font : theme_lookup(self->in->div->state,PGTH_P_FONT);
   rdhandle((void **) &fd,PG_TYPE_FONTDESC,-1,bp->font);
 

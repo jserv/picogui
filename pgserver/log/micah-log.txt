@@ -16,6 +16,14 @@ are set, the widget needs to leave the widget's sizing alone.
       
       * Added support for sizelock to all resize functions where applicable
       
+      * widget/button.c: "Fixed" position_button() ignoring rdhandle errors,
+        which causes a crash on theme unload
+	
+      * gcore/handle.c: Fixed an error-handling goofup in rdhandle that
+        would cause a crash on any rdhandle failure... sometimes. Gotta
+	love pointers!
+	
+      
       
       
 2001-04-05    Micah Dowty <micahjd@users.sourceforge.net>

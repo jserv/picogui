@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.33 2001/04/07 22:41:44 micahjd Exp $
+/* $Id: handle.c,v 1.34 2001/04/08 01:01:42 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -404,11 +404,12 @@ g_error rdhandle(void **p,unsigned char reqtype,int owner,handle h) {
   void **x;
   g_error e;
   e = rdhandlep(&x,reqtype,owner,h);
+  errorcheck;
   if (x)
      *p = *x;
    else
      *p = NULL;
-   return e;
+  return sucess;
 }
    
 /* Reads the handle, returns NULL if handle is invalid or if it
