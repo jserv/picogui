@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.80 2002/11/27 01:05:09 micahjd Exp $
+/* $Id: widget.h,v 1.81 2002/11/30 20:27:30 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -105,7 +105,7 @@ struct widget {
   /* When this widget's orientation (horizontal/vertical), set the
    * orientation of all children to the opposite. Useful for toolbars
    */
-  unsigned int auto_orientation : 1;
+  unsigned int auto_orientation;
 
   /* Defines the type of widget */
   u8 type;

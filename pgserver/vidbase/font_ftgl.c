@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.5 2002/11/28 12:57:55 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.6 2002/11/30 20:27:30 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -47,7 +47,7 @@
 /* There must be sufficient spacing between characters so that even in the mipmapped  
  * font textures, there is no bleeding of colors between characters. This should be 
  * one greater than the power of two used in GL_FONT_TEX_SIZE */ 
-#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)/2+1)   
+#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)/2+1)
 
 /* This driver doesn't support Unicode! This is the number of glyphs from each font to load */
 #define NUM_GLYPHS 128
@@ -132,6 +132,8 @@ void ftgl_engine_shutdown(void) {
 void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
   struct ftgl_glyph *g;
+  int advance;
+
   if (ch > NUM_GLYPHS)
     return;
   g = &DATA->font->glyphs[ch];
@@ -162,7 +164,22 @@ void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *p
   glVertex2f(0,g->h);
   glEnd();
 
-  position->x += g->advance * DATA->scale + 0.5;
+  
+  advance = g->advance * DATA->scale + 0.5;
+  switch (angle) {
+  case 0:
+    position->x += advance;
+    break;
+  case 90:
+    position->y -= advance;
+    break;
+  case 180:
+    position->x -= advance;
+    break;
+  case 270:
+    position->y += advance;
+    break;
+  }
       
   /* Clean up */
   glPopMatrix();
@@ -172,9 +189,26 @@ void ftgl_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *p
 
 void ftgl_measure_char(struct font_descriptor *self, struct pair *position,
 		      int ch, s16 angle) {
+  int advance;
+
   if (ch >= NUM_GLYPHS)
     return;
-  position->x += DATA->font->glyphs[ch].advance * DATA->scale + 0.5;
+
+  advance = DATA->font->glyphs[ch].advance * DATA->scale + 0.5;
+  switch (angle) {
+  case 0:
+    position->x += advance;
+    break;
+  case 90:
+    position->y -= advance;
+    break;
+  case 180:
+    position->x -= advance;
+    break;
+  case 270:
+    position->y += advance;
+    break;
+  }
 }
 
 g_error ftgl_create(struct font_descriptor *self, const struct font_style *fs) {

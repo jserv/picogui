@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.23 2002/11/01 02:29:08 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.24 2002/11/30 20:27:30 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -201,6 +201,10 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
   while (line) {
     line->wrap_need_render = 0;
 
+    /* FIXME: workaround for opengl clipping bug! */
+#ifdef CONFIG_OPENGL
+    if (0) {}
+#else
     /* Skip lines completely off the top of our clipping rectangle */
     if (line->height + xy.y < r->clip.y1) {
       xy.y += line->height;
@@ -215,6 +219,7 @@ void paragraph_render(struct groprender *r, struct gropnode *n) {
     else if (xy.y > r->clip.y2) {
       return;
     }
+#endif
 
     /* Render the characters and/or metadata in this line */
     else {
