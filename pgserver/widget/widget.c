@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.144 2002/01/16 23:04:27 micahjd Exp $
+/* $Id: widget.c,v 1.145 2002/01/19 00:34:39 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1421,7 +1421,7 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 #ifdef DEBUG_INPUT
      printf(__FUNCTION__": type == TRIGGER_KEYDOWN\n");
 #endif
-    if (!mods) {
+    if (!(mods & ~(PGMOD_CAPS|PGMOD_NUM))) {
       /* Key down, no modifiers */
 
       if (key == hotkey_next)
@@ -1465,7 +1465,7 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 
     }
     
-    else if (mods & PGMOD_SHIFT) {
+    else if (!(mods & ~(PGMOD_CAPS|PGMOD_NUM|PGMOD_SHIFT))) {
       /* Key down with shift */
 
       if (key == hotkey_next)
