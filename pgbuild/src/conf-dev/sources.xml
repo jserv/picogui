@@ -1,43 +1,47 @@
-<!-- Define the sites and packages for the PicoGUI repository -->
+<!-- 
+  Defines the sites and packages for the PicoGUI repository.
+
+  This is a PGBuild config file: XML, with an additional twist-
+  any tags with the same parent, name, and attributes are merged
+  into one tag, with child nodes of both concatenated and
+  recursively merged. This makes PGBuild's concept of configuration
+  'mount points' useful.
+-->
 
 <sources>
 
   <!-- 
     pgbuild uses the concept of 'sites' to keep all the URIs in
     one place, and to make mirroring as easy as possible.
-       
-    Site names can not contain slashes, since the slash is used
-    to separate site names from a suffix in <sitepath>
   -->
   <sites>
 
     <!-- Subversion repository, hosted on navi -->
     <site name="picogui-svn">
-      <uri>http://navi.picogui.org/picogui/svn</uri>
+      <a href="http://navi.picogui.org/picogui/svn" />
     </site>
 
     <!-- Sourceforge download mirrors -->
     <site name="sourceforge-download">
       <!-- Multiple URIs can be used to specify mirror sites -->
-      <uri>http://umn.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://twtelecom.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://cesnet.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://heanet.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://flow.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://easynews.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://aleron.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://switch.dl.sourceforge.net/sourceforge</uri>
-      <uri>http://unc.dl.sourceforge.net/sourceforge</uri>
+      <a href="http://umn.dl.sourceforge.net/sourceforge" />
+      <a href="http://twtelecom.dl.sourceforge.net/sourceforge" />
+      <a href="http://cesnet.dl.sourceforge.net/sourceforge" />
+      <a href="http://heanet.dl.sourceforge.net/sourceforge" />
+      <a href="http://flow.dl.sourceforge.net/sourceforge" />
+      <a href="http://easynews.dl.sourceforge.net/sourceforge" />
+      <a href="http://aleron.dl.sourceforge.net/sourceforge" />
+      <a href="http://switch.dl.sourceforge.net/sourceforge" />
+      <a href="http://unc.dl.sourceforge.net/sourceforge" />
     </site>
 
     <!-- Releases, hosted by sourceforge -->
     <site name="picogui-releases">
       <!--
-        Anywhere that <uri> can be used, we can also use <sitepath>.
-        A site path is syntactically equivalent to a UNIX relative path,
-        but the first 'directory' in that path is a site name. 
+        A site tag can be specified inside an <a> tag to make that
+	URI relative to the specified site.
       -->
-      <sitepath>sourceforge-download/pgui</sitepath>
+      <a href="pgui"><site name="sourceforge-download" /></a>
     </site>
 
   </sites>
@@ -62,8 +66,7 @@
     -->
     <package name="build">
       <version name="dev">
-         <!-- A <uri> tag is allowed here, but <sitepath> is recommended -->
-         <sitepath>picogui-svn/trunk/pgbuild/src/build-dev</sitepath>
+         <a href="trunk/pgbuild/src/build-dev" ><site name="picogui-svn" /></a>
       </version>
 
       <!--
@@ -89,8 +92,7 @@
     -->
     <package name="conf">
       <version name="dev">
-         <!-- A <uri> tag is allowed here, but <sitepath> is recommended -->
-         <sitepath>picogui-svn/trunk/pgbuild/src/conf-dev</sitepath>
+         <a href="trunk/pgbuild/src/conf-dev" ><site name="picogui-svn" /></a>
       </version>
 
       <!--

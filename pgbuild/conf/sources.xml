@@ -1,0 +1,11 @@
+<!-- 
+  This file holds local modifications to the sources.xml in the
+  conf package. It will be automatically modified to save cached
+  mirror information, for example.
+
+  Note that if this file is automatically modified, all comments
+  and formatting will be lost.
+-->
+
+<sources>
+</sources>
