@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.35 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: indicator.c,v 1.36 2002/10/11 12:01:34 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -36,9 +36,9 @@ struct indicatordata {
 void build_indicator(struct gropctxt *c,u16 state,struct widget *self) {
   /* Set orientation */
   if (c->r.w > c->r.h)
-    self->in->div->state = PGTH_O_INDICATOR_H;
+    state = c->owner->state = PGTH_O_INDICATOR_H;
   else
-    self->in->div->state = PGTH_O_INDICATOR_V;
+    state = c->owner->state = PGTH_O_INDICATOR_V;
 
   exec_fillstyle(c,state,PGTH_P_BGFILL);
 
