@@ -9,7 +9,21 @@ system("mv themeshot1.ppm defaulttheme.ppm");
 
 system("rm -f web/*");
 
-open HTML, ">web/index.html";
+open HTML, ">web/index.php";
+
+# HTML header
+print HTML <<EOF;
+<?php require "../lib.php"; beginpage("Theme Index"); 
+box("PicoGUI Themes");
+?>
+
+This is a catalog of PicoGUI themes, listing some information about each
+theme along with a sample picture. You can download the compiled theme here.
+Theme source code is in CVS. The indexing system is still rather primitive, so
+the sample pictures may not accurately reflect the theme.
+<p>
+
+EOF
 
 foreach $themefile (@ARGV) {
 	$themefile =~ /([^\/]*)$/;
@@ -47,3 +61,12 @@ foreach $themefile (@ARGV) {
 EOF
 
 }
+
+# End the file
+print HTML <<EOF;
+<?php
+endbox();
+endpage(); ?>
+EOF
+
+### The End ###
