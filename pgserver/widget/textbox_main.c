@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.13 2001/10/18 05:35:11 micahjd Exp $
+/* $Id: textbox_main.c,v 1.14 2001/10/18 07:03:50 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -75,7 +75,8 @@ g_error textbox_install(struct widget *self) {
    { 
      const char *t = "
 Hello, <b>World</b>!<br>
-This is a demonstration of PicoGUI's HTML parsing capabilities:
+This is a              demonstration 
+              of PicoGUI's HTML parsing capabilities:
 <p>
 Normal text<br>
 <b>Bold</b>, <i>italic</i>, and <u>underlined</u> text<br>
@@ -86,21 +87,21 @@ Changing<b>formats</b>within<b>one</b>word<br>
 Nonbreaking spaces: --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--<Br>
 ISO Latin-1 international characters: N&iacute;ft&egrave;&eacute; <BR>
 Other formats: <tt>teletype mode</tt>, <strike>strikeout</strike>
-<p>
-Preformatted text: (should be <b>1</b> blank line following, and the 4'th line of the poem should be blank)
-<PRE>
-       Higher still and higher
-         From the earth thou springest
-       Like a cloud of fire;
 
-         The blue deep thou wingest,
-And singing still dost soar, and soaring ever singest.
-</PRE>
+<pre>
+  __              __  
+ / /_ __  _ __ ___\\ \\ 
+/ /| '_ \\| '__/ _ \\\\ \\ 
+\\ \\| |_) | | |  __// /
+ \\_\\ .__/|_|  \\___/_/ 
+   |_|                
+</pre>
+
 The End!
 ";
      handle f;
 
-     e = findfont(&f,self->owner,"Helvetica",10,PG_FSTYLE_FLUSH);
+     e = findfont(&f,self->owner,"Lucida",10,PG_FSTYLE_FLUSH);
      errorcheck;
      e = text_format_font(&DATA->c,f);
      errorcheck;
