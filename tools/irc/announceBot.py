@@ -42,8 +42,8 @@ f = open(channelFile)
 channelList = {}
 for line in f.readlines():
     line = line.strip()
-    print line
-    channelList[line] = 1
+    if line:
+        channelList[line] = 1
 f.close()
 
 print channelList.keys();
