@@ -1,3 +1,12 @@
+2002-04-23  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
+
+	* config.in configure.in video/x11.c x11logo/pglogo-big.bmp
+	x11logo/pglogo-border.xpm x11logo/pglogo-dblborder.xpm
+	x11logo/pglogo-noborder.xpm x11logo/pglogo.bmp: Added icon
+	associated to pgserver's X11 window
+	
+	* config.help: updated for some symbols
+
 2002-04-12  Pascal Bauermeister  <pascal.bauermeister@smartdata.ch>
 
 	* include/picogui/constants.h net/dispatch.c: the base rotation is
