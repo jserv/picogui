@@ -1,4 +1,4 @@
-/* $Id: pgboard.h,v 1.2 2001/10/24 01:32:51 micahjd Exp $
+/* $Id: pgboard.h,v 1.3 2001/10/26 17:21:42 cgrigis Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
@@ -32,12 +32,23 @@
 
 /* Constants for keyboard messages */
 
-#define PG_KEYBOARD_SHOW 1              /* Make the keyboard app visible */
-#define PG_KEYBOARD_HIDE 2              /* Make the keyboard app's size 0 */
-#define PG_KEYBOARD_TOGGLE 3            /* Toggle between SHOW and HIDE */
-#define PG_KEYBOARD_ENABLE 4            /* Enable the keyboard app */
-#define PG_KEYBOARD_DISABLE 5           /* Disable the keyboard app (clear its widget) */
-#define PG_KEYBOARD_TOGGLE_DISPLAY 6    /* Toggle between ENABLE and DISABLE */
+#define PG_KEYBOARD_SHOW            1  /* Make the keyboard app visible */
+#define PG_KEYBOARD_HIDE            2  /* Make the keyboard app's size 0 */
+#define PG_KEYBOARD_TOGGLE          3  /* Toggle between SHOW and HIDE */
+#define PG_KEYBOARD_ENABLE          4  /* Enable the keyboard app */
+#define PG_KEYBOARD_DISABLE         5  /* Disable the keyboard app */
+#define PG_KEYBOARD_TOGGLE_DISPLAY  6  /* Toggle between ENABLE and DISABLE */
+#define PG_KEYBOARD_SELECT_PATTERN  7  /* Select a different pattern */
+
+
+/* Constants for keyboard patterns */
+
+#define PG_KBPATTERN_NORMAL     1
+#define PG_KBPATTERN_SHIFT      2
+#define PG_KBPATTERN_CAPSLOCK   3
+#define PG_KBPATTERN_CONTROL    4
+#define PG_KBPATTERN_NUMERIC    5
+#define PG_KBPATTERN_SYMBOLS    6
 
 
 /* Data structure for a keyboard command */
@@ -45,4 +56,10 @@
 struct keyboard_command
 {
   unsigned short type;    /* Network byte order, 16-bits */
+
+  /* Command-dependent data */
+  union
+  {
+    unsigned short pattern;
+  } data;
 };
