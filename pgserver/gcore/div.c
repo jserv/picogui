@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.76 2002/02/06 06:51:57 micahjd Exp $
+/* $Id: div.c,v 1.77 2002/02/06 07:35:06 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -550,12 +550,20 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
        n->div->flags |= DIVNODE_NEED_RECALC | 
 	 (n->flags & DIVNODE_PROPAGATE_RECALC);
        divnode_divscroll(n->div);
-       div_rebuild(n->div);
+
+       /* Only rebuild if the size has changed */
+       if (n->div->ox != n->div->x || n->div->oy != n->div->y ||
+	   n->div->ow != n->div->w || n->div->oh != n->div->h)
+	 div_rebuild(n->div);
      }     
      if ((n->flags & DIVNODE_PROPAGATE_RECALC) && n->next) {
        n->next->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
        divnode_divscroll(n->next);
-       div_rebuild(n->next);
+
+       /* Only rebuild if the size has changed */
+       if (n->next->ox != n->next->x || n->next->oy != n->next->y ||
+	   n->next->ow != n->next->w || n->next->oh != n->next->h)
+	 div_rebuild(n->next);
      }
      
      /* We're done */
@@ -585,6 +593,12 @@ void divnode_redraw(struct divnode *n,int all) {
 			     DIVNODE_INCREMENTAL) )) &&
 	!(n->flags & DIVNODE_UNDERCONSTRUCTION) ) { 
      
+     /* Update onscreen position */
+     n->ox = n->x;
+     n->oy = n->y;
+     n->ow = n->w;
+     n->oh = n->h;
+
      if (n->w && n->h)
        grop_render(n);
 
