@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.4 2001/03/23 01:31:30 bauermeister Exp $
+/* $Id: tsinput.c,v 1.5 2001/04/04 18:05:53 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -110,8 +110,8 @@ g_error tsinput_init(void) {
     ts_params.event_queue_on = 0;
     ts_params.deglitch_on    = 0;
     ts_params.sample_ms      = 10;
-    ts_params.follow_thrs    = 0;
-    ts_params.mv_thrs        = 2;
+    ts_params.follow_thrs    = 2;
+    ts_params.mv_thrs        = 5;
     ts_params.xy_swap        = 0;
 
 #ifdef CONFIG_XCOPILOT
@@ -142,7 +142,15 @@ g_error tsinput_init(void) {
     mx2 = 188; ux2 = 159;
     my2 = 188; uy2 = 160*2-1;
 #elif defined(CONFIG_CHIPSLICE)
-# error TODO: set _min, _max, and m1, m2, u1,u2 for CHIPSLICE
+    ts_params.y_max          = 320-1;
+    ts_params.y_min          = 0;
+    ts_params.x_max          = 240-1;
+    ts_params.x_min          = 0;
+
+    mx1 = 567;  ux1 =   0;
+    my1 = 202;  uy1 =   0;
+    mx2 = 3485; ux2 = 320;
+    my2 = 3766; uy2 = 240;
 #endif
     ts_params.x_ratio_num    = ux1 - ux2;
     ts_params.x_ratio_den    = mx1 - mx2;
