@@ -184,7 +184,7 @@ g_error ncurses_bitmap_load(hwrbitmap *bmp, const u8 *data, u32 datalen) {
 	e = vid->bitmap_new(bmp, datalen-2, 1, 8);
 	errorcheck;
 	(*bmp)->bpp = 0;
-	if (data[2] == 0)
+	if (data[2] < 32)
 	  /* color-coded */
 	  (*bmp)->w = (datalen-3) / 2;
 	memcpy ((*bmp)->bits, data + 2, datalen-2);
@@ -214,7 +214,7 @@ void ncurses_blit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrbitmap src,
   }
 
   fprintf(stderr, "ncurses: blitting ascii art\n");
-  if (src->bits[0])
+  if (src->bits[0] >= 32)
     {
       /* just characters (actually slower as we have to get current attributes at the pixels) */
       for (i=0; i < src->w; i++)
@@ -233,6 +233,28 @@ void ncurses_blit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrbitmap src,
 	    c = 0x40000F00;   /* white on black */
 	  }
 	  c |= src->bits[i];
+	  ncurses_pixel (dest, x+i, y, c, lgop);
+	}
+    }
+  else if (src->bits[0] == 1)
+    {
+      /* color-coded pairs, but we're supposed to use the bg color of the "old" pixel */
+      for (i=0, p=src->bits+1; i < src->w; i++, p+=2)
+	{
+	  c = ncurses_getpixel (dest, x+i, y);
+	  if (c & (PGCF_TEXT_ASCII | PGCF_TEXT_ACS)) {
+	    /* yay! simplest case */
+	    if (c & PGCF_TEXT_ACS) {
+	      c &= ~PGCF_TEXT_ACS;
+	      c |= PGCF_TEXT_ASCII;
+	    }
+	    c &= ~0xffff;  /* forget the old character and foreground */
+	  }
+	  else {
+	    /* FIXME - I don't know how to convert an RGB color into the color code ncurses_pixel wants :-( */
+	    c = 0x40000000;   /* black background */
+	  }
+	  c |= p[1] | ((p[0] & 0xff) <<  8);
 	  ncurses_pixel (dest, x+i, y, c, lgop);
 	}
     }
