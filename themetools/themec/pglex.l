@@ -1,5 +1,5 @@
 %{
-/* $Id: pglex.l,v 1.4 2002/01/04 04:49:52 lonetech Exp $
+/* $Id: pglex.l,v 1.5 2002/01/05 16:51:46 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -46,6 +46,7 @@ int yywrap(void) {
    /* reserved words */
 
 obj(ect)?       { return OBJ; }
+prop(erty)?     { return PROP; }
 fillstyle       { return FILLSTYLE; }
 var             { return VAR; }
 ColorAdd        { return COLORADD; }

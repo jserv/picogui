@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.16 2001/12/31 08:12:26 micahjd Exp $
+/* $Id: main.c,v 1.17 2002/01/05 16:51:46 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -45,6 +45,7 @@ unsigned long datasz_tags;
 char *filename = "stdin";
 char *fsvartab[FS_MAX_LOCALS];
 int fsvartab_pos;
+struct symnode *symtab_head = symboltab;
 
 int main(int argc, char **argv) {
   int quiet = 0, testrun = 0;
@@ -178,14 +179,14 @@ int main(int argc, char **argv) {
 /* Symbol table lookup, optionally putting the symbol's
    value in *value.  The symbol's type is returned. */
 int symlookup(const char *sym,unsigned long *value) {
-  struct symnode *n = symboltab;
+  struct symnode *n = symtab_head;
 
-  while (n->name) {
+  while (n) {
     if (!strcmp(sym,n->name)) {
       if (value) *value = n->value;
       return n->type;
     }
-    n++;
+    n = n->next;
   }
   if (value) *value = (unsigned long) strdup(sym);
   return UNKNOWNSYM;

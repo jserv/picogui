@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.38 2002/01/05 15:27:08 micahjd Exp $
+/* $Id: pgtheme.y,v 1.39 2002/01/05 16:51:46 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -77,6 +77,9 @@
 %type <prop>     stmt_list
 %type <prop>     compound_stmt
 %type <obj>      objectdef
+%type <obj>      property_stmt
+%type <obj>      propdef
+%type <obj>      propdef_list
 %type <obj>      unit
 %type <obj>      unitlist
 %type <propval>  fillstyle
@@ -95,7 +98,7 @@
 %type <constn>   constnode_list
 
    /* Reserved words */
-%token OBJ FILLSTYLE VAR SHIFTR SHIFTL COLORADD COLORSUB COLORDIV COLORMULT
+%token OBJ PROP FILLSTYLE VAR SHIFTR SHIFTL COLORADD COLORSUB COLORDIV COLORMULT
 %token CLASS EQUAL NOT LTEQ GTEQ
 
 %right '?' ':'
@@ -122,9 +125,35 @@ unitlist: unit
    /* This is a list of the structures that can appear
       unenclosed in the file */
 unit: objectdef
+    | property_stmt
     | ';' {$$=0;}  /* No real purpose but to satisfy people that
 		      insist on ending object definitions with a ';' */
     ;
+
+property_stmt: PROP propdef_list {$$=$2}
+             ;
+
+propdef_list: propdef
+            | propdef_list ',' propdef
+            ;
+
+propdef: UNKNOWNSYM { 
+  /* Add a new node to the symbol table */
+
+  struct symnode *n;
+  static int next_property = PGTH_P_THEMEAUTO;
+
+  n = malloc(sizeof(struct symnode));
+  if (n) {
+    n->type = PROPERTY;
+    n->name = $1;
+    n->value = next_property++;
+    n->next = symtab_head;
+    symtab_head = n;
+  }
+  else
+    yyerror("memory allocation error");  
+}
 
 objectdef:  OBJ thobj compound_stmt      { 
   /* Add to the list of objects */

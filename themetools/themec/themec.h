@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.11 2001/10/10 01:52:31 micahjd Exp $
+/* $Id: themec.h,v 1.12 2002/01/05 16:51:46 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -49,9 +49,14 @@ struct symnode {
   int type;
   const char *name;
   unsigned long value;
+  struct symnode *next;
 };
 
+/* Static symbol table */
 extern struct symnode symboltab[];
+
+/* Head pointer for symbol table */
+extern struct symnode *symtab_head;
 
 /* Because the interpreter itself places strict
    limitations on the stack space, doesn't make

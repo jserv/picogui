@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.9 2001/08/03 16:54:40 gobry Exp $
+# $Id: mksymtab.pl,v 1.10 2002/01/05 16:51:46 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -51,20 +51,23 @@ while (<>) {
     next if ($n =~ /\(/);
 
     # All values can be used as-is as a numerical constant
-    print "\t{NUMBER,\"$n\",$n},\n";
+    $index++;
+    print "\t{NUMBER,\"$n\",$n,\&symboltab[$index]},\n";
 
     # If this is a thobj, put it in with dotted lowercase notation
     if ($n =~ /^PGTH_O_(.*)/) {
 	$_ = $1;
 	tr/A-Z_/a-z./;
-	print "\t{THOBJ,\"$_\",$n},\n";
+	$index++;
+	print "\t{THOBJ,\"$_\",$n,\&symboltab[$index]},\n";
     }
 
     # Same thing for properties
     if ($n =~ /^PGTH_P_(.*)/) {
 	$_ = $1;
 	tr/A-Z_/a-z./;
-	print "\t{PROPERTY,\"$_\",$n},\n";
+	$index++;
+	print "\t{PROPERTY,\"$_\",$n,\&symboltab[$index]},\n";
     }
 
     # Translate gropnodes to fillstyle functions
@@ -73,11 +76,12 @@ while (<>) {
 	tr/A-Z/a-z/;
 	s/(set)(.)/$1.uc($2)/e;
 	s/^(.)/uc($1)/e;
-	print "\t{FSFUNC,\"$_\",$n},\n";
+	$index++;
+	print "\t{FSFUNC,\"$_\",$n,\&symboltab[$index]},\n";
     }
 }
 
-print "\t{0,NULL,0}\n};\n\n/* The End */\n";
+print "\t{NUMBER,\"NULL\",0,NULL}\n};\n\n/* The End */\n";
 
 ### The End ###
 
