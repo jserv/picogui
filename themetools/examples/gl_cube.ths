@@ -37,11 +37,11 @@ object background {
     Bitmap(x,y,w,h,tWater);
 
     /* Use s as a temporary variable to compute the offset of the interlacing.
-     * Scale it to slow it down, then keep it under 6 (height of our texture)
+     * Scale it to slow it down, then keep it under 8 (height of our texture)
      * to avoid the whole texture disappearing later when things overflow.
      */
     s = t>>5;
-    s = s-(s/6*6);
+    s = s&7;
     SetLgop(PG_LGOP_MULTIPLY);
     Bitmap(x,y-s,w,h+s+s,tInterlace);
     
