@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.2 2002/11/21 15:39:47 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.3 2002/11/21 15:43:39 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -30,6 +30,7 @@
 #include <pgserver/common.h>
 #include <pgserver/font.h>
 #include <pgserver/sdlgl.h>
+#include <stdlib.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -447,7 +448,7 @@ void ftgl_load_callback(const char *file, int pathlen) {
 
   /* Also load it at the sizes specified in the list here */
   while (*sizes)
-    ftgl_load_font(ftgl_load, file, strtol(sizes,&sizes,10));
+    ftgl_load_font(ftgl_load, file, strtol(sizes,(char**)&sizes,10));
 }
 
 
