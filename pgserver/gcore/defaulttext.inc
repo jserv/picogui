@@ -37,7 +37,7 @@
 /* 29 */  "An error of type %s occurred in %s:\n\n%s\n\nTerminate the application?",
 /* 30 */  "The application type you need does not exist.",
 /* 31 */  "PicoGUI Warning",
-/* 32 */  "This PicoGUI application uses a newer protocol than the server.\nYou may experience compatibility problems.",
+/* 32 */  "This PicoGUI application uses a newer protocol than the server.You may experience compatibility problems.",
 /* 33 */  "The bitmap you specify for a button can not be found",
 /* 34 */  "Button bitmask is missing!",
 /* 35 */  "Button font can't be found",

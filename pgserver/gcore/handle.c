@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.46 2001/11/06 06:14:06 micahjd Exp $
+/* $Id: handle.c,v 1.47 2001/11/07 07:35:56 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -389,9 +389,13 @@ void r_handle_dump(struct handlenode *n,int level) {
    r_handle_dump(n->left,level+1);
    for (i=0;i<level;i++)
      printf(" ");
-   printf("0x%04X : node 0x%08X obj 0x%08X grp 0x%04X pld 0x%08X own %d ctx %d red %d type %s: '%s'\n",
+   printf("0x%04X : node 0x%08X obj 0x%08X grp 0x%04X pld 0x%08X own %d ctx %d red %d type %s",
 	  n->id,n,n->obj,n->group,n->payload,n->owner,n->context,
-	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1],n->obj);
+	  n->type & PG_TYPEMASK,typenames[(n->type & PG_TYPEMASK)-1]);
+   if ((n->type & PG_TYPEMASK) == PG_TYPE_STRING)
+     printf(" = \"%s\"\n",n->obj);
+   else
+     printf("\n");
    r_handle_dump(n->right,level+1);
 }
 void handle_dump(void) {

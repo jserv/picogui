@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.59 2001/09/25 17:51:19 micahjd Exp $
+/* $Id: div.c,v 1.60 2001/11/07 07:35:56 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -392,6 +392,9 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	   thisline->next = newline;
 	   thisline->nextline = newline;
 	   r_set_nextline(thisline->div,newline);
+
+	   /* Inserted a blank line, set flags to recalc it properly */
+	   thisline->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
 	 }
   
 	 /* Find the end of our subtree */
@@ -462,6 +465,10 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
 	     /* Link the divtree and nextline pointers around this node */
 	     p = divnode_findbranch(n->owner->in,n);
 	     if (p) {
+	       /* FIXME: This flags line may not work if p->nextline != p->next
+		*/
+	       p->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+
 	       p->nextline = blankline->nextline;
 	       r_set_nextline(p->div,blankline->nextline);
 	     }
@@ -1013,9 +1020,7 @@ struct divnode **divnode_findpointer(struct divnode *tree,
     return p;
     
   return NULL;
-}
-
-
+} 
 
 /* The End */
 
