@@ -1,4 +1,4 @@
-/* $Id: phonecall.c,v 1.1 2001/10/25 06:49:17 micahjd Exp $
+/* $Id: phonecall.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
  *
  * phonecall.c - GUI and data structures to represent information about one
  *               phone call
@@ -26,6 +26,7 @@
 #include <string.h>
 #include <malloc.h>
 #include "phonecall.h"
+#include "phoneui.h"
 
 /****************************************** Globals */
 
@@ -46,6 +47,8 @@ struct phonecall *current_call;
 /* Previous value for connection time */
 time_t old_connect_time;
 
+/* Completed calls are stored here */
+
 /****************************************** Public functions */
 
 /* Show and hide the call info bar */
@@ -62,6 +65,27 @@ void show_call_info(struct phonecall *call) {
 			     0);
 
     /* Create widgets within the toolbar */
+
+    pgNewWidget(PG_WIDGET_BUTTON,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE,PG_S_LEFT,
+		PG_WP_TEXT,pgNewString("Redial"),
+		0);
+    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnRedial,NULL);
+
+    pgNewWidget(PG_WIDGET_BUTTON,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE,PG_S_LEFT,
+		PG_WP_TEXT,pgNewString("History"),
+		0);
+    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnHistory,NULL);
+
+    pgNewWidget(PG_WIDGET_BUTTON,0,0);
+    pgSetWidget(PGDEFAULT,
+		PG_WP_SIDE,PG_S_LEFT,
+		PG_WP_TEXT,pgNewString("Keypad"),
+		0);
+    pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnKeypad,NULL);
 
     wPhoneNumber = pgNewWidget(PG_WIDGET_LABEL,0,0);
     pgSetWidget(PGDEFAULT,

@@ -1,6 +1,6 @@
-/* $Id: tuxclient.h,v 1.2 2001/10/30 01:32:28 micahjd Exp $
+/* $Id: phoneui.h,v 1.1 2001/10/30 01:32:28 micahjd Exp $
  *
- * tuxclient.h - Network interface to tuxphone
+ * phoneui.h - UI functions other than the basic phonecall info bar
  *
  * Copyright (C) 2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
@@ -20,24 +20,15 @@
  * 
  */
 
-#ifndef __H_TUXCLIENT
-#define __H_TUXCLIENT
+#ifndef _H_PG_PHONEUI
+#define _H_PG_PHONEUI
 
-#include "tuxphone.h"
+#include <picogui.h>
 
-extern int phone_fd;
+int btnRedial(struct pgEvent *evt);
+int btnHistory(struct pgEvent *evt);
+int btnKeypad(struct pgEvent *evt);
 
-int phone_open(void);
-void phone_register_events(int fd, long mask);
-void phone_get_event(int fd);
-void phone_dial(int fd, const char *number);
-
-/* If it has been more than some amount of time after a ring, the
- * call will be considered completed but unanswered
- */
-void phone_check_ring_timeout(void);
-
-#endif /* __H_TUXCLIENT */
+#endif /* _H_PG_PHONEUI */
 
 /* The End */
-

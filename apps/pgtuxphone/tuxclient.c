@@ -1,4 +1,4 @@
-/* $Id: tuxclient.c,v 1.1 2001/10/25 06:49:17 micahjd Exp $
+/* $Id: tuxclient.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
  *
  * tuxclient.c - Network interface to tuxphone
  *
@@ -36,6 +36,8 @@
 #include "tuxphone.h"
 #include "tuxclient.h"
 
+int phone_fd;
+
 /* Keep track of the time the phone last ringed */
 time_t last_ring;
 
@@ -68,11 +70,18 @@ int phone_open(void) {
   return fd;
 }
 
-int phone_register_events(int fd, long mask) {
+void phone_register_events(int fd, long mask) {
   CLIENT_PACKET pkt;
   pkt.header.opcode = htons(OPCODE_REGISTER_EVENTS);
   pkt.reg.mode = htons(MODE_REGISTER_EVENT);
   pkt.reg.events = htonl(mask);
+  write(fd,&pkt,sizeof(pkt));
+}
+
+void phone_dial(int fd, const char *number) {
+  CLIENT_PACKET pkt;
+  pkt.header.opcode = htons(OPCODE_DIAL);
+  strncpy(pkt.dial.digits,number,32);
   write(fd,&pkt,sizeof(pkt));
 }
 

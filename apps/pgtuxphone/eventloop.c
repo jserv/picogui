@@ -1,4 +1,4 @@
-/* $Id: eventloop.c,v 1.1 2001/10/25 06:49:17 micahjd Exp $
+/* $Id: eventloop.c,v 1.2 2001/10/30 01:32:28 micahjd Exp $
  *
  * eventloop.c - Event loop for graphical tuxphone
  *
@@ -26,8 +26,6 @@
 
 #include "phonecall.h"
 #include "tuxclient.h"
-
-int phone_fd;
 
 /* Custom select handler to process tuxphone events */
 int mySelect(int n, fd_set *readfds, fd_set *writefds,
