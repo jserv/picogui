@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.1 2002/01/17 18:19:53 abergmann Exp $
+/* $Id: vgaplan4.c,v 1.2 2002/10/02 20:46:57 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -982,11 +982,13 @@ local void vgaplan4_scrollblit(hwrbitmap dest,
 			 hwrbitmap sbit,s16 src_x,s16 src_y,
 			 s16 lgop)
 {
-   if ((FB_VGAMEM != FB_MEM) 
-	|| (FB_VGAMEM != FB_SMEM)
-	|| (lgop != PG_LGOP_NONE)) {
-	def_scrollblit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
-   }
+  /* This version only handles cases where dst_y > src_y */
+  if ((FB_VGAMEM != FB_MEM) 
+      || (FB_VGAMEM != FB_SMEM)
+      || (lgop != PG_LGOP_NONE)
+      || (dst_y < src_y)) {
+    def_scrollblit(dest,dst_x,dst_y,w,h,sbit,src_x,src_y,lgop);
+  }
 
    /* can't copy directly, needs to shift */
    if ((dst_x & 7) != (src_x & 7)) {

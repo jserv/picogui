@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.90 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: video.h,v 1.91 2002/10/02 20:46:57 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -391,6 +391,8 @@ struct vidlib {
    *   Blits a bitmap to screen, optionally using lgop.
    *   If w and/or h is bigger than the source bitmap, it
    *   should tile.
+   *   If the source and destination rectangles overlap, the result
+   *   may be undefined.
    * 
    * Default implementation: pixel!
    */
@@ -398,10 +400,11 @@ struct vidlib {
 	       s16 src_x, s16 src_y, s16 lgop);
 
   /* Optional
-   *   A version of blit() that blits bottom-up rather than top-down.
-   *   This is needed for scrolling a region downwards.
+   *   A version of blit() with the restriction on overlapping source
+   *   and destination rectangles removed
    *
-   * Default implementation: A call to blit() for each line
+   * Default implementation: Multiple calls to blit()
+   *                        (can be very slow in some directions)
    */
   void (*scrollblit)(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
 		     s16 src_x, s16 src_y, s16 lgop);
