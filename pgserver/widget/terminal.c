@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.25 2001/05/12 21:04:55 micahjd Exp $
+/* $Id: terminal.c,v 1.26 2001/05/13 17:28:26 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -949,6 +949,11 @@ void term_othercsi(struct widget *self,char c) {
     /* G - Set column */
   case 'G':
     DATA->crsrx = DATA->csiargs[0] - 1;
+    break;
+
+    /* d - Set row */
+  case 'd':
+    DATA->crsry = DATA->csiargs[0] - 1;
     break;
 
     /* H - Set row,column */
