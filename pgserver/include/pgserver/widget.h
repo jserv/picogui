@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.58 2002/03/26 07:30:44 instinc Exp $
+/* $Id: widget.h,v 1.59 2002/03/26 17:07:06 instinc Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -51,7 +51,7 @@ struct widget;
 /******* Structures */
 
 /* A data type to represent anything */
-typedef s32 glob;
+typedef long glob;
 
 /* Constants for a trigger type. One of these constants is used to identify
    a trigger when it happens, and they are combined to form a trigger mask */
