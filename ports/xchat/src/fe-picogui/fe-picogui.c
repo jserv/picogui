@@ -641,6 +641,7 @@ fe_userlist_insert (struct session *sess, struct User *newuser, int row)
 			sess->gui->uhmap[i]=sess->gui->uhmap[i-1];
 	label=pgNewWidget(PG_WIDGET_LABEL, row?PG_DERIVE_AFTER:PG_DERIVE_INSIDE,
 			row?sess->gui->uhmap[row-1].handle:sess->gui->userlist);
+	pgSetWidget(PGDEFAULT, PG_WP_ALIGN, PG_A_LEFT, 0);
 	pgReplaceTextFmt(PGDEFAULT, "%c%s", newuser->prefix, newuser->nick);
 	sess->gui->uhmap[row].user=newuser;
 	sess->gui->uhmap[row].handle=label;
@@ -653,11 +654,17 @@ fe_userlist_remove (struct session *sess, struct User *user)
 	for(i=0;i<sess->gui->users;i++)
 		if(sess->gui->uhmap[i].user==user)
 		{
+			pgDelete(pgGetWidget(sess->gui->uhmap[i].handle,
+						PG_WP_TEXT));
 			pgDelete(sess->gui->uhmap[i].handle);
-			while(i<--sess->gui->users)
+			--sess->gui->users;
+			while(i<sess->gui->users)
+			{
 				sess->gui->uhmap[i]=sess->gui->uhmap[i+1];
-			sess->gui->uhmap=realloc(sess->gui->uhmap, sess->gui->users *
-					sizeof(struct uhmapping));
+				i++;
+			}
+			sess->gui->uhmap=realloc(sess->gui->uhmap,
+				sess->gui->users*sizeof(struct uhmapping));
 			break;
 		}
 }
@@ -672,9 +679,13 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 	for(i=0;i<sess->gui->users;i++)
 		if(sess->gui->uhmap[i].user==user)
 		{
+			printf("Moving %s from row %d to row %d\n",
+					user->nick, i, new_row);
 			tmp=sess->gui->uhmap[i];
 			break;
 		}
+	if(i==sess->gui->users)
+		return;		/* should never happen */
 	while(i<new_row)
 	{
 		sess->gui->uhmap[i]=sess->gui->uhmap[i+1];
@@ -687,9 +698,10 @@ fe_userlist_move (struct session *sess, struct User *user, int new_row)
 	}
 	sess->gui->uhmap[new_row]=tmp;
 	pgReplaceTextFmt(tmp.handle, "%c%s", tmp.user->prefix, tmp.user->nick);
-	pgAttachWidget(new_row?sess->gui->uhmap[new_row-1].handle:sess->gui->userlist,
-			new_row?PG_DERIVE_AFTER:PG_DERIVE_INSIDE, tmp.handle);
-	pgSubUpdate(sess->gui->userlist);
+	pgAttachWidget(new_row?sess->gui->uhmap[new_row-1].handle:
+			sess->gui->userlist, new_row?PG_DERIVE_AFTER:
+			PG_DERIVE_INSIDE, tmp.handle);
+	/*pgSubUpdate(sess->gui->userlist);*/
 }
 void
 fe_userlist_numbers (struct session *sess)
@@ -702,6 +714,8 @@ fe_userlist_clear (struct session *sess)
 {
 	int i;
 
+	if(!sess->gui->uhmap)
+		return;
 	for(i=0;i<sess->gui->users;i++)
 	{
 		pgListRemove(sess->gui->userlist, sess->gui->uhmap[i].handle);
@@ -808,6 +822,7 @@ fe_set_nonchannel (struct session *sess, int state)
 void
 fe_set_nick (struct server *serv, char *newnick)
 {
+	strcpy (serv->nick, newnick);
 }
 void
 fe_change_nick (struct server *serv, char *nick, char *newnick)
