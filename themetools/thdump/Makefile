@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2000/10/07 19:03:48 micahjd Exp $                                                $
+# $Id: Makefile,v 1.2 2000/10/07 19:34:52 micahjd Exp $                                                $
 #
 # Theme dump Makefile
 #
@@ -39,7 +39,7 @@ CFLAGS := -I../include
 ######## Flags and Tools
 
 CFLAGS := $(CFLAGS) -O3 -g -c
-LDFLAGS := -lfl
+LDFLAGS :=
 
 GCC := gcc
 MKSYMTAB := perl mksymtab.pl
@@ -52,7 +52,7 @@ OBJ := $(SRC:.c=.o)
 all: $(BINNAME)
 
 clean:
-	rm -f $(OBJ) $(BINNAME) lex.yy.c y.tab.c y.tab.h symtab.c
+	rm -f $(OBJ) $(BINNAME) symtab.c
 
 $(BINNAME) : $(OBJ) $(HDR)
 	$(GCC) -o $(BINNAME) $(OBJ) $(LDFLAGS)
