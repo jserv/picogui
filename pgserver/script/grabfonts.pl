@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: grabfonts.pl,v 1.3 2000/08/06 03:35:10 micahjd Exp $
+# $Id: grabfonts.pl,v 1.4 2000/10/10 00:33:37 micahjd Exp $
 #
 # This script uses fstobdf to grab fonts from a font server,
 # and munge them into fdf files
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

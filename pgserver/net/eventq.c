@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.3 2000/09/08 23:56:26 micahjd Exp $
+/* $Id: eventq.c,v 1.4 2000/10/10 00:33:37 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -8,7 +8,7 @@
  *                wait for events
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

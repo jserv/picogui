@@ -1,11 +1,11 @@
-/* $Id: pgmain.c,v 1.10 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: pgmain.c,v 1.11 2000/10/10 00:33:37 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
  *            main loop.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: constants.h,v 1.7 2000/09/23 00:26:38 micahjd Exp $
+/* $Id: constants.h,v 1.8 2000/10/10 00:33:37 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

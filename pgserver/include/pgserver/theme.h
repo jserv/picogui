@@ -1,11 +1,11 @@
-/* $Id: theme.h,v 1.2 2000/09/09 01:46:15 micahjd Exp $
+/* $Id: theme.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
  * at runtime.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

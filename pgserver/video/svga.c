@@ -1,9 +1,9 @@
-/* $Id: svga.c,v 1.9 2000/09/09 01:46:16 micahjd Exp $
+/* $Id: svga.c,v 1.10 2000/10/10 00:33:37 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
