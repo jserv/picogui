@@ -32,5 +32,5 @@ obj terminal {
    * a background color of 0 allows the bitmap to show through.
    */
   attr.default = 0x0F;
-  attr.cursor = 0x9E;
+  attr.cursor = 0xC0;
 }
