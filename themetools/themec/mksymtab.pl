@@ -1,4 +1,4 @@
-# $Id: mksymtab.pl,v 1.15 2002/12/03 04:11:35 micahjd Exp $
+# $Id: mksymtab.pl,v 1.16 2002/12/03 14:32:43 micahjd Exp $
 #
 # mksymtab.pl - convert the constant definitions in constants.h
 #               into a symbol table to compile into the theme
@@ -54,6 +54,8 @@ while (<>) {
     $index++;
     print "#ifdef $n\n";
     print "\t{NUMBER,\"$n\",$n,\&symboltab[$index]},\n";
+    print "#else\n";
+    print "\t{NUMBER,\"$n\",0,\&symboltab[$index]},\n";
     print "#endif\n";
 
     # If this is a thobj, put it in with dotted lowercase notation
