@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.13 2001/06/26 11:34:38 micahjd Exp $
+/* $Id: pgfx.h,v 1.14 2001/07/31 02:45:24 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -42,7 +42,37 @@
 #ifndef _H_PG_PGFX
 #define _H_PG_PGFX
 
+/*!
+ * \file pgfx.h
+ * \brief PGFX Graphics Interface
+ *
+ * The PGFX graphics library provides a single set of primitives that can
+ * render to multiple output devices. A function is called to create a context
+ * from a given output device, then any primitive may render to that context.
+ */
+
+/*!
+ * \defgroup pgfx PGFX Graphics Interface
+ *
+ * The PGFX graphics library provides a single set of primitives that can
+ * render to multiple output devices. A function is called to create a context
+ * from a given output device, then any primitive may render to that context.
+ *
+ * \{
+ */
+
 /************ Data structures */
+
+/*!
+ * \defgroup pgfxdata Data Structures
+ *
+ * A few of the PGFX defined data structures, like pgcolor and pgu, will be
+ * useful to any client that uses PGFX. Most of these however should be
+ * for internal use only.
+ *
+ * \{
+ */
+
 
 //! Unit for coordinates in PGFX 
 typedef int pgu;
@@ -81,6 +111,8 @@ typedef unsigned long pgcolor;
  * 
  * Currently this functionality is unimplemented in PGFX. To manipulate
  * primitives in the canvas widget the pgWriteCmd interface must be used.
+ *
+ * \sa pgWriteCmd
  */
 typedef int pgprim;
 
@@ -169,9 +201,18 @@ struct pgfx_lib {
     * also update documentation when this is done. */
 };
 
+//! \}
+
 /************ Primitives */
 
-/* These functions are simple glue between the client and the pgfx_lib structure */
+/*!
+ * \defgroup pgfxprim PGFX Primitives
+ *
+ * These functions all render their respective graphics primitive to
+ * the supplied pgcontext.
+ *
+ * \{
+ */
 
 //! Plot a single pixel in the current color
 inline pgprim pgPixel(pgcontext c,pgu x,pgu y);
@@ -313,7 +354,22 @@ void    pgMoveTo(pgcontext c, pgu x, pgu y);
 //! Draws a line from the position last set with pgMoveTo or pgLineTo
 pgprim  pgLineTo(pgcontext c, pgu x, pgu y);
 
+//! \}
+
 /************ Constants */
+
+/*!
+ * \defgroup pgfxctx Rendering Context Management
+ *
+ * This section contains functions and constants to create and delete
+ * PGFX rendering contexts. Note that rendering contexts themselves are
+ * client-side objects (as are all objects without handles) and they are not
+ * automatically cleaned up with handle contexts. You must explicitely use
+ * pgDeleteContext().
+ *
+ * \{
+ */
+
 
 /*!
  * \brief PGFX canvas immediate mode
@@ -365,6 +421,9 @@ pgcontext pgNewBitmapContext(pghandle bitmap);
 
 //! Delete a PGFX context
 void pgDeleteContext(pgcontext c);
+
+\\! \}
+\\! \}
 
 #endif /* _H_PG_PGFX */
 
