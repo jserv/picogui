@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.29 2000/08/07 21:03:58 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.30 2000/08/09 07:00:00 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -26,6 +26,7 @@
 #
 package PicoGUI;
 use Carp;
+use Socket;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString RestoreTheme
 		NewFont NewBitmap delete SetBackground RestoreBackground
@@ -405,7 +406,7 @@ sub _init {
 	    gethostbyname($options{'server'});
     }
     $remote = pack("S n a4 x8", 2, $options{'port'}, $addrs[0]);
-    socket(S, 2, 1, join("", getprotobyname('tcp')))
+    socket(S, PF_INET, SOCK_STREAM, join("", getprotobyname('tcp')))
 	or croak "PicoGUI - socket(): $!\n";
     connect(S, $remote) 
 	or croak "PicoGUI - connect(): $!\n";
