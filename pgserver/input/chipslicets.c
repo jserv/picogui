@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.9 2001/11/29 10:44:14 pney Exp $
+/* $Id: chipslicets.c,v 1.10 2001/11/29 18:10:06 pney Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -41,10 +41,6 @@
 #include <pgserver/configfile.h>
 
 #include <linux/mc68328digi.h>
-
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
-# include <rm_client.h>
-#endif
 
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
@@ -283,11 +279,6 @@ g_error chipslicets_init(void)
       goto error_close;
     }
 
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
-    /* init the Ressources Manager */
-    rm_init();
-#endif
-
     return sucess;
 
   error_close:
@@ -307,11 +298,6 @@ void chipslicets_close(void)
   TRACEF(">>> chipslicets_close\n");
 
   uninit_device();
-
-#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
-  /* Disconnects the client from the Resource Manager */
-  rm_exit ();
-#endif
 }
 
 /* ------------------------------------------------------------------------- */
