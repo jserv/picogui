@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.4 2001/01/20 22:52:11 micahjd Exp $
+/* $Id: canvas.c,v 1.5 2001/01/24 00:34:11 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -67,7 +67,7 @@ g_error canvas_install(struct widget *self) {
    gropctxt_init(CTX,self->in->div);
    self->rawbuild = 1;
    
-   self->trigger_mask = TRIGGER_STREAM;
+   self->trigger_mask = TRIGGER_STREAM | TRIGGER_UP | TRIGGER_DOWN;
    
    return sucess;
 }
@@ -103,47 +103,74 @@ glob canvas_get(struct widget *self,int property) {
 }
 
 void canvas_trigger(struct widget *self,long type,union trigparam *param) {
-   switch (type) {
-      
-    case TRIGGER_STREAM: {
-       /* Accept a command from the client */
-       
-       struct pgcommand *cmd;
-       char *buffer = param->stream.data;
-       unsigned long remaining = param->stream.size;
-       int i;
-       signed long *params;
-       
-       while (remaining) {
-       
-	  /* Out of space? */
-	  if (remaining < sizeof(struct pgcommand))
-	    return;
-	  cmd = (struct pgcommand *) buffer;
-	  cmd->command = ntohs(cmd->command);
-	  cmd->numparams = ntohs(cmd->numparams);
-
-	  params = (signed long *) (buffer + sizeof(struct pgcommand));
-
-	  buffer += sizeof(struct pgcommand) + 
-	    cmd->numparams * sizeof(signed long);
-	  remaining -= sizeof(struct pgcommand) + 
-	    cmd->numparams * sizeof(signed long);
-	  if (remaining < 0)
-	    return;
-
-	  /* Convert parameters */
-	  for (i=0;i<cmd->numparams;i++)
-	    params[i] = ntohl(params[i]);
-	  
-	  canvas_command(self,cmd->command,cmd->numparams,params);
-	  
-       }
-    }
-      break;
+   int evt;
    
+   if (type == TRIGGER_STREAM) {
+      /* Accept a command from the client */
       
+      struct pgcommand *cmd;
+      char *buffer = param->stream.data;
+      unsigned long remaining = param->stream.size;
+      int i;
+      signed long *params;
+      
+      while (remaining) {
+	 
+	 /* Out of space? */
+	 if (remaining < sizeof(struct pgcommand))
+	   return;
+	 cmd = (struct pgcommand *) buffer;
+	 cmd->command = ntohs(cmd->command);
+	 cmd->numparams = ntohs(cmd->numparams);
+	 
+	 params = (signed long *) (buffer + sizeof(struct pgcommand));
+	 
+	 buffer += sizeof(struct pgcommand) + 
+	   cmd->numparams * sizeof(signed long);
+	 remaining -= sizeof(struct pgcommand) + 
+	   cmd->numparams * sizeof(signed long);
+	 if (remaining < 0)
+	   return;
+	 
+	 /* Convert parameters */
+	 for (i=0;i<cmd->numparams;i++)
+	   params[i] = ntohl(params[i]);
+	 
+	 canvas_command(self,cmd->command,cmd->numparams,params);
+	 
+      }
+      return;
    }
+
+   /* Nope, it was some sort of event to pass on to the app */
+   
+   switch (type) {
+    case TRIGGER_UP:
+      evt = PG_WE_PNTR_UP;
+      break;
+    case TRIGGER_DOWN:
+      evt = PG_WE_PNTR_DOWN;
+      break;
+   }
+
+   /* Same mouse event packing used for pointer grabbing in widget.c:  
+    *
+    * Squeeze all the mouse params into a long, as follows.
+    * Note that if PicoGUI is to support screens bigger than
+    * 4096x4096 this won't work!
+    * 
+    * Bits 31-28:  buttons
+    * Bits 27-24:  changed buttons
+    * Bits 23-12:  Y
+    * Bits 11-0 :  X
+    */
+      
+   post_event(evt,self,
+	      (param->mouse.btn << 28) |
+	      (param->mouse.chbtn << 24) |
+	      ((param->mouse.y-self->in->div->y) << 12) |
+	      param->mouse.x - self->in->div->x,
+	      0,NULL);
 }
 
 /*********************************** Commands */
