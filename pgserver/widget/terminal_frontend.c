@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.18 2003/03/23 11:32:55 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.19 2003/03/25 20:13:54 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -63,8 +63,8 @@ g_error terminal_install(struct widget *self) {
   DATA->current.attr = DATA->attr_default;
    
   DATA->bufferw = 80;
-  DATA->bufferh = 25;
-  DATA->pref_lines = 25;
+  DATA->bufferh = 24;
+  DATA->pref_lines = 24;
 
   /* Allocate buffer */
   e = pgstring_new(&DATA->buffer, PGSTR_ENCODE_TERM16, 2*DATA->bufferw*DATA->bufferh, NULL);
@@ -159,7 +159,7 @@ glob terminal_get(struct widget *self,int property) {
   }
 }
 
-/* Preferred size, 80*25 characters */
+/* Preferred size, 80*24 characters by default */
 void terminal_resize(struct widget *self) {
   self->in->div->preferred.w = DATA->celw * 80;
   self->in->div->preferred.h = DATA->celh * DATA->pref_lines;
