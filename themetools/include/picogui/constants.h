@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.57 2002/01/22 13:04:01 micahjd Exp $
+/* $Id: constants.h,v 1.58 2002/01/22 23:08:22 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -904,6 +904,7 @@ typedef unsigned long pghandle;
 #define PG_WP_BITMAPSIDE      49
 #define PG_WP_PASSWORD        50
 #define PG_WP_HOTKEY_FLAGS    51  /* Keyboard event flags for the hotkey (PG_KF_*) */
+#define PG_WP_HOTKEY_CONSUME  52  /* Flag indicating whether to consume the key event when a hotkey comes in */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

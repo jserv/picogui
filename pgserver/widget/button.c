@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.91 2002/01/22 13:00:01 micahjd Exp $
+/* $Id: button.c,v 1.92 2002/01/22 23:08:22 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -53,6 +53,7 @@ struct btndata {
 
   int hotkey;
   int hotkey_flags;
+  int hotkey_consume;
 
   /* Mask of extended (other than ACTIVATE) events to send
    * and other flags*/
@@ -158,6 +159,7 @@ g_error button_install(struct widget *self) {
   DATA->theme_side = 1;
   DATA->bitmap_side = -1;
   DATA->hotkey_flags = PG_KF_ALWAYS;
+  DATA->hotkey_consume = 1;
 
   /* Default states */
   DATA->state = PGTH_O_BUTTON;
@@ -293,6 +295,10 @@ g_error button_set(struct widget *self,int property, glob data) {
     DATA->hotkey_flags = data;
     break;
 
+  case PG_WP_HOTKEY_CONSUME:
+    DATA->hotkey_consume = data;
+    break;
+
   case PG_WP_HOTKEY:
     /* Process PGTH_P_HIDEHOTKEYS if it is set */
     switch (theme_lookup(widget_get(self,PG_WP_STATE),PGTH_P_HIDEHOTKEYS)) {
@@ -357,6 +363,9 @@ glob button_get(struct widget *self,int property) {
   case PG_WP_HOTKEY_FLAGS:
     return (glob) DATA->hotkey_flags;
 
+  case PG_WP_HOTKEY_CONSUME:
+    return (glob) DATA->hotkey_consume;
+
   default:
     return 0;
   }
@@ -388,14 +397,14 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_CHAR:
     if (param->kbd.key == hotkey_activate && (param->kbd.flags & PG_KF_FOCUSED))
       param->kbd.consume++;
-    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags))
+    if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags))
       param->kbd.consume++;
     return;
     
   case TRIGGER_KEYDOWN:
     /* We want to consume the hotkey's KEYDOWN, but only act on KEYUP
      */
-    if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
+    if (DATA->hotkey_consume && param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
       param->kbd.consume++;
       return;
     }
@@ -462,7 +471,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     /* Hotkey was pressed, simulate a keypress
      */
     if (param->kbd.key == DATA->hotkey && (param->kbd.flags & DATA->hotkey_flags)) {
-      param->kbd.consume++;
+      if (DATA->hotkey_consume)
+	param->kbd.consume++;
       
       /* If it's a toggle button, go ahead and make it change state. Otherwise
        * send the event and get out of here without redrawing anything
