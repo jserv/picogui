@@ -121,6 +121,9 @@ def mkinfilter(insert_after, accept_trigs, absorb_trigs, id=None):
 def mkstring(s, id=None):
 	return request(5, s + '\x00', id=id)
 
+def mktemplate(wt, id=None):
+	return request(50, wt, id=id)
+
 def mktheme(data, id=None):
 	return request(9, data + '\x00', id=id)
 	
