@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.71 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: popup.c,v 1.72 2002/11/06 09:28:39 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.

@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.4 2002/11/04 10:40:14 micahjd Exp $
+/* $Id: managed_rootless.c,v 1.5 2002/11/06 09:28:39 micahjd Exp $
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI
@@ -63,13 +63,24 @@ g_error appmgr_managed_rootless_reg(struct app_info *i) {
   return success;
 }
 
+int appmgr_managed_rootless_widget_map(int w) {
+  switch (w) {
+    
+    /* Convert popups into managed windows */
+  case PG_WIDGET_POPUP:
+    return PG_WIDGET_MANAGEDWINDOW;
+    
+  }
+  return w;
+}
 
 /**************************************** Registration */
 
 struct appmgr appmgr_managed_rootless = {
-   name:  "managed_rootless",
-   init:  appmgr_managed_rootless_init,
-    reg:  appmgr_managed_rootless_reg,
+       name:  "managed_rootless",
+       init:  appmgr_managed_rootless_init,
+        reg:  appmgr_managed_rootless_reg,
+ widget_map:  appmgr_managed_rootless_widget_map,
 };
 
 /* The End */

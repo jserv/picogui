@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.7 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: managedwindow.c,v 1.8 2002/11/06 09:28:39 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *

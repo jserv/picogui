@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.3 2002/11/06 01:19:59 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.4 2002/11/06 09:28:39 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -128,7 +128,7 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
     return;
   }
   XSetForeground(x11_display,g,c);
-  XFillArc(x11_display,XB(dest)->d,g,x,y,w,h,0,360*64);
+  XFillArc(x11_display,XB(dest)->d,g,x,y,w-1,h-1,0,360*64);
 }
 
 void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
