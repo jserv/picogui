@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.71 2001/12/30 22:11:09 micahjd Exp $
+/* $Id: dispatch.c,v 1.72 2002/01/05 18:05:07 lonetech Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -820,8 +820,8 @@ g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
   handle h;
   g_error e;
 
-  /* FIXME: This should perform some sanity checks on the fillstyle,
-     at least stack underflow/overflow and invalid opcodes. */
+  e = check_fillstyle(data, req->size);
+  errorcheck;
 
   e = g_malloc((void **) &buf,req->size+sizeof(unsigned long));
   errorcheck;

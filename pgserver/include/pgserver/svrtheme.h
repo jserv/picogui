@@ -1,4 +1,4 @@
-/* $Id: svrtheme.h,v 1.6 2001/12/31 04:03:09 micahjd Exp $
+/* $Id: svrtheme.h,v 1.7 2002/01/05 18:05:07 lonetech Exp $
  * 
  * svrtheme.h - functions and data structures for themes, used
  *              only in the server
@@ -88,6 +88,9 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
 /* Remove a theme from memory */
 void theme_remove(struct pgmemtheme *th);
+
+/* Fillstyle checker- verifies that a fillstyle looks valid */
+g_error check_fillstyle(const unsigned char *fs, unsigned long fssize);
 
 /* Fillstyle interpreter- generates/refreshes a gropnode list */
 g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,

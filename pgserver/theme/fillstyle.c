@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.16 2002/01/05 15:34:38 micahjd Exp $
+/* $Id: fillstyle.c,v 1.17 2002/01/05 18:05:07 lonetech Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -55,6 +55,117 @@ g_error fspopargs(void);
 
 /* Arguments for binary operators */
 unsigned long fsa,fsb;
+
+g_error check_fillstyle(const unsigned char *fs, unsigned long fssize)
+ {
+  const unsigned char *p=fs, *plimit=fs+fssize;
+  unsigned char op, reg;
+  unsigned short grop;
+
+  /* Initialize stack; 4 positions loaded for x y w h */
+  fsstkpos = 4;
+  while(p<plimit)
+   {
+    op = *p++;
+#ifdef DEBUG_THEME
+    printf("check_fillstyle --- Op: 0x%02X stack in: %d ", op, fsstkpos);
+#endif
+    if (op & PGTH_OPSIMPLE_GROP) {
+      /* 1-byte grop */
+      grop=op&(PGTH_OPSIMPLE_GROP-1);
+      /* TODO: ought to check that it's a supported grop too */
+      fsstkpos-=PG_GROPPARAMS(grop);
+      if(!PG_GROP_IS_UNPOSITIONED(grop))
+	fsstkpos-=4;
+    } else if(op & PGTH_OPSIMPLE_LITERAL) {
+      fsstkpos++;
+    } else if(op & PGTH_OPSIMPLE_CMDCODE) {
+      switch (op) {
+	case PGTH_OPCMD_LONGLITERAL:
+	case PGTH_OPCMD_PROPERTY:
+	  /* grabs 4 bytes and pushes 1 value */
+	  p+=2;
+	  /* fall through */
+	case PGTH_OPCMD_LOCALPROP:
+	  /* reads 2 bytes, pushes 1 value */
+	  p+=2;
+	  fsstkpos++;
+	  break;
+	case PGTH_OPCMD_LONGGROP:
+	  /* executes a grop which may be >=PGTH_OPSIMPLE_GROP */
+	  grop=NEXTSHORT;
+	  p+=2;
+	  fsstkpos-=PG_GROPPARAMS(grop);
+	  if(!PG_GROP_IS_UNPOSITIONED(grop))
+	    fsstkpos-=4;
+	  break;
+	case PGTH_OPCMD_LONGGET:
+	  /* loads a stack value */
+	  if(p==plimit)
+	    return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
+	  reg=*(p++);
+	  if(reg>=FSSTACKSIZE)
+	    return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
+	  fsstkpos++;
+	  break;
+	case PGTH_OPCMD_LONGSET:
+	  /* changes a stack value */
+	  if(p==plimit)
+	    return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
+	  reg=*(p++);
+	  if(reg>=FSSTACKSIZE)
+	    return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
+	  fsstkpos--;
+	  break;
+	case PGTH_OPCMD_QUESTIONCOLON:
+	  fsstkpos--;
+	  /* fall through; 3 arguments, 1 result */
+	case PGTH_OPCMD_PLUS:
+	case PGTH_OPCMD_MINUS:
+	case PGTH_OPCMD_MULTIPLY:
+	case PGTH_OPCMD_SHIFTL:
+	case PGTH_OPCMD_SHIFTR:
+	case PGTH_OPCMD_OR:
+	case PGTH_OPCMD_AND:
+	case PGTH_OPCMD_EQ:
+	case PGTH_OPCMD_LT:
+	case PGTH_OPCMD_GT:
+	case PGTH_OPCMD_LOGICAL_OR:
+	case PGTH_OPCMD_LOGICAL_AND:
+	case PGTH_OPCMD_LOGICAL_NOT:
+	case PGTH_OPCMD_DIVIDE:
+	case PGTH_OPCMD_COLORADD:
+	case PGTH_OPCMD_COLORSUB:
+	case PGTH_OPCMD_COLORDIV:
+	case PGTH_OPCMD_COLORMULT:
+	  /* 2 arguments, 1 result */
+	  if(!--fsstkpos)
+	    return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+	  break;
+	default:
+	  return mkerror(PG_ERRT_BADPARAM,67);  /* Bad bytecode */
+      }
+    } else if(op & PGTH_OPSIMPLE_GET) {
+	if(op & (PGTH_OPSIMPLE_GET-1) >= FSSTACKSIZE)
+	  return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
+	fsstkpos++;
+    } else {	/* 1-byte set */
+      if(op >= FSSTACKSIZE)
+	return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
+      fsstkpos--;
+    }
+#ifdef DEBUG_THEME
+    printf("out: %d\n", fsstkpos);
+#endif
+    if(fsstkpos<0)
+      return mkerror(PG_ERRT_BADPARAM,88);  /* Stack underflow */
+    if (fsstkpos>=FSSTACKSIZE)
+      return mkerror(PG_ERRT_BADPARAM,89);  /* Stack overflow */
+   }
+  if(p>plimit)
+    return mkerror(PG_ERRT_BADPARAM,91);  /* Truncated opcode */
+  return success;
+ }
 
 /* Fillstyle interpreter- generates/refreshes a gropnode list */
 g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
@@ -337,7 +448,7 @@ g_error exec_fillstyle(struct gropctxt *ctx,unsigned short state,
     }
     else {
       /* 1-byte set */
-      e = fsset(op & (PGTH_OPSIMPLE_GET-1));  /* PGTH_OPSIMPLE_GET is correct here */
+      e = fsset(op);
       errorcheck;
     }
 
