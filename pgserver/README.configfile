@@ -202,5 +202,13 @@ quoted appropriately. For example:
   with maps produced by Gimp's image map plugin. The parser is awfully dumb,
   so don't expect it to work with anything other than Gimp at this time.
 
+[video-serial40x4]
+
+- device
+  This is the name of the LCD device. LCD commands are sent to this device,
+  no ioctl()s are used, and it is never read from. This will usually be a
+  symlink to a serial port, but it could theoretically be anything you can
+  write to.
+
 --- The End ---
 

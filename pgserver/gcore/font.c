@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.26 2001/09/01 23:12:10 micahjd Exp $
+/* $Id: font.c,v 1.27 2001/09/02 20:49:25 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -61,7 +61,7 @@ struct fontglyph const *font_getglyph(struct fontdesc *fd, u8 c) {
 
   ch -= fd->font->beginglyph;
   if (ch < 0 || ch >= fd->font->numglyphs)
-    ch = fd->font->defaultglyph;
+    ch = fd->font->defaultglyph - fd->font->beginglyph;
   return fd->font->glyphs+ch;
 }
 
@@ -82,7 +82,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
    my = *y;
 
    u = g->x;
-   v = fd->font->ascent - g->h - g->y - 1;
+   v = fd->font->ascent - g->h - g->y;
 
    /* Only render if the character has a bitmap */
    if (g->w && g->h) {
