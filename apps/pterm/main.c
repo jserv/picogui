@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.9 2001/10/08 02:14:07 micahjd Exp $
+/* $Id: main.c,v 1.10 2001/10/24 09:51:34 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -48,6 +48,8 @@ pghandle wTerminal;         /* Widgets */
 
 /* Recieves data from the pgBind association */
 int termInput(struct pgEvent *evt) {
+   write(1,evt->e.data.pointer,evt->e.data.size);
+   
    /* Write the input character to the subprocess */
    write(ptyfd,evt->e.data.pointer,evt->e.data.size);
    return 0;
@@ -140,13 +142,10 @@ int main(int argc, char **argv) {
 
   /* Process arguments */
 
-  if (argc) {
-     argc--;                /* Skip program name */
-     argv++;
-  }
-  while (argc) {            /* Process switch(es) */
-     if (!*argv || **argv != '-')
-       break;               /* Out of switches, rest is for subprocess */
+
+  if (*argv)
+     argv++;                 /* Skip program name */
+  while (*argv && **argv=='-') {            /* Process switch(es) */
      switch ((*argv)[1]) {  /* Switch :-) */
 	
       case 'f':             /* Font size */
@@ -168,7 +167,6 @@ int main(int argc, char **argv) {
       default:
 	printHelp();
      }
-     argc--;
      argv++;
   }	
    
@@ -201,7 +199,7 @@ int main(int argc, char **argv) {
   if (!childpid) {
     /* This is the child process */
 
-    if (argc)
+    if (argv[0])
        /* Run specified program */
        execvp(argv[0],argv);
     else
