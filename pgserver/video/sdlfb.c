@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.3 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: sdlfb.c,v 1.4 2001/01/10 13:10:42 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -44,6 +44,9 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
   /* Default mode: 640x480 */
   if (!xres) xres = 640;
   if (!yres) yres = 480;
+
+  /* Only linear8 is done so far, force to 8bpp */
+  bpp = 8;
 
   /* Start up the SDL video subsystem thingy */
   if (SDL_Init(SDL_INIT_VIDEO))
