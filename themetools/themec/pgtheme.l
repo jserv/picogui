@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.15 2000/10/14 03:54:50 micahjd Exp $
+/* $Id: pgtheme.l,v 1.16 2000/10/15 01:59:52 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -42,7 +42,11 @@ fillstyle       { return FILLSTYLE; }
 var             { return VAR; }
 "<<"            { return SHIFTL; }
 ">>"            { return SHIFTR; }
-Color           { return CNVCOLOR; }
+ColorConv       { return CNVCOLOR; }
+ColorAdd        { return COLORADD; }
+ColorSub        { return COLORSUB; }
+ColorDiv        { return COLORDIV; }
+ColorMult       { return COLORMULT; }
 
    /* symbols, operators, and strings */
 

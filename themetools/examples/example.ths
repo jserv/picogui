@@ -22,7 +22,7 @@ object default {
     /* Hilight with gradients! */
     gw1 = 5+w/20;   // Width of left gradient
     gw2 = w/10;   // Width of right gradient
-    Gradient(x,y,gw1,h,0,ColorDiv(bgcolor,0x020202),bgcolor,0);
+    Gradient(x,y,gw1,h,0,ColorDiv(bgcolor,0x000202),bgcolor,0);
     Rect(x+gw1,y,w-gw1-gw2,h,ColorConv(bgcolor));
     Gradient(x+w-gw2,y,gw2,h,0,bgcolor,ColorAdd(bgcolor,0x202040),0);
     Gradient(x+w/4,y+h*7/8,w,h,34,0x000000,0x303000,1);

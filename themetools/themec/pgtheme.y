@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.17 2000/10/14 03:54:50 micahjd Exp $
+/* $Id: pgtheme.y,v 1.18 2000/10/15 01:59:52 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -78,7 +78,7 @@
 %type <fsn>      fsprop
 
    /* Reserved words */
-%token OBJ FILLSTYLE VAR SHIFTR SHIFTL CNVCOLOR
+%token OBJ FILLSTYLE VAR SHIFTR SHIFTL CNVCOLOR COLORADD COLORSUB COLORDIV COLORMULT
 
 %left '|'
 %left '&'
@@ -359,6 +359,10 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      | fsprop              { $$ = $1; }
      | CNVCOLOR '(' fsexp ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLOR)); }
+     | COLORADD '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORADD)); }
+     | COLORSUB '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORSUB)); }
+     | COLORMULT '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORMULT)); }
+     | COLORDIV '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORDIV)); }
      ;
 
 fsprop: THOBJ ':' PROPERTY { $$ = fsnewnode(PGTH_OPCMD_PROPERTY); $$->param = $1; $$->param2 = $3; }
