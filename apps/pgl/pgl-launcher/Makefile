@@ -91,7 +91,7 @@ STRIP = strip
 VERSION = 0.5
 
 bin_PROGRAMS = pgl-launcher 
-pgl_launcher_SOURCES = pgl-launcher.c configfile.c applet.c linkedList.c 
+pgl_launcher_SOURCES = pgl-launcher.c configfile.c linkedList.c 
 
 LDFLAGS =  
 LDADD = -lpgui
@@ -108,7 +108,7 @@ DEFS = -DHAVE_CONFIG_H -I. -I$(srcdir) -I../..
 CPPFLAGS = 
 LIBS = 
 pgl_launcher_OBJECTS =  pgl-launcher.$(OBJEXT) configfile.$(OBJEXT) \
-applet.$(OBJEXT) linkedList.$(OBJEXT)
+linkedList.$(OBJEXT)
 pgl_launcher_LDADD = $(LDADD)
 pgl_launcher_DEPENDENCIES = 
 pgl_launcher_LDFLAGS = 
@@ -123,8 +123,7 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/applet.P .deps/configfile.P .deps/linkedList.P \
-.deps/pgl-launcher.P
+DEP_FILES =  .deps/configfile.P .deps/linkedList.P .deps/pgl-launcher.P
 SOURCES = $(pgl_launcher_SOURCES)
 OBJECTS = $(pgl_launcher_OBJECTS)
 
