@@ -59,6 +59,6 @@ char **get_section_params(char *section, int *count);
 int configfile_write(char *filename);
 
 //---------Config parsing--------------------------------
-char *resCGetACProperty(resResource *resource, char *section, char *property);
-void resSetACProperty(resResource *resource, char *section, char *property, char *data);
-char **resListACProperties(resResource *resource, char *section, int *count);
+const char *resGetACProperty(resResource *resource, const char *section, const char *property, const char *dparam);
+void resSetACProperty(resResource *resource, const char *section, const char *property, const char *data);
+const char **resListACProperties(resResource *resource, const char *section, int *count);

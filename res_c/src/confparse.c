@@ -328,13 +328,13 @@ int configfile_write(char *filename){
 
 //---------------------------------------------------------------------------
 
-char *resGetACProperty(resResource *resource, char *section, char *property){
+const char *resGetACProperty(resResource *resource, const char *section, const char *property, const char *dparam){
   char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
-  char *propertyData = NULL;
+  char *propertyData = dparam;
 
   sprintf(confPath, "%s/app.conf", resource->workingDir);
   if(configfile_parse(confPath)){
-    if(propertyData = get_param_str(section, property, NULL)){
+    if(propertyData = get_param_str(section, property, dparam)){
       propertyData = strdup(propertyData);
     }
     configfile_free();
@@ -342,8 +342,8 @@ char *resGetACProperty(resResource *resource, char *section, char *property){
   free(confPath);
   return propertyData;
 }
-
-void resSetACProperty(resResource *resource, char *section, char *property, char *data){
+  
+void resSetACProperty(resResource *resource, const char *section, const char *property, const char *data){
   char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
 
   sprintf(confPath, "%s/app.conf", resource->workingDir);
@@ -355,7 +355,7 @@ void resSetACProperty(resResource *resource, char *section, char *property, char
   free(confPath);
 }
 
-char **resListACProperties(resResource *resource, char *section, int *count){
+const char **resListACProperties(resResource *resource, const char *section, int *count){
   char *confPath = malloc(strlen(resource->workingDir)+sizeof("/app.conf")+1);
   char **paramList = NULL, **outputList = NULL;
   int paramCount = 0;

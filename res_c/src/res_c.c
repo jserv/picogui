@@ -39,7 +39,7 @@
 #include "confparse.h"
 
 //-------Launcher related code----------------------------------------
-char *resMakeAbsPath(char *rootPath, char *subdir, int appConf){
+const char *resMakeAbsPath(const char *rootPath, const char *subdir, int appConf){
   char *appPath = NULL;
 
   if(!appConf){
@@ -52,7 +52,7 @@ char *resMakeAbsPath(char *rootPath, char *subdir, int appConf){
   return appPath;
 }
 
-int resGetAppCount(char *path){
+int resGetAppCount(const char *path){
   DIR *directory = opendir(path);
   struct dirent *dinfo = NULL;
   FILE *testOpen;
@@ -76,7 +76,7 @@ int resGetAppCount(char *path){
   return appCount;
 }
    
-char **resGetAppPaths(char *rootPath){
+const char **resGetAppPaths(const char *rootPath){
   DIR *directory = opendir(rootPath);
   struct dirent *dinfo = NULL;
   char *appPath = NULL;
@@ -104,7 +104,7 @@ char **resGetAppPaths(char *rootPath){
 }
 
 //-------Resource related code----------------------------------------
-resResource *resLoadResource(char *path){
+resResource *resLoadResource(const char *path){
   resResource *newResource = malloc(sizeof(resResource));
 
   //This needs to do checking to see if we load app.conf or a resource.
@@ -121,21 +121,21 @@ resResource *resLoadResource(char *path){
   return newResource;
 }
 
-char *resGetProperty(resResource *resource, char *section, char *property){
+const char *resGetProperty(resResource *resource, const char *section, const char *property, const char *dparam){
   switch(resource->resourceType){
   case RES_ELF:
     //Do some interesting stuff here.
     break;
   case RES_APPCONF:
-    return (char *)resGetACProperty(resource, section, property);
+    return (char *)resGetACProperty(resource, section, property, dparam);
     break;
   default:
     break;
   }
-  return NULL;
+  return dparam;
 }
 
-void resSetProperty(resResource *resource, char *section, char *property, char *data){
+void resSetProperty(resResource *resource, const char *section, const char *property, const char *data){
   switch(resource->resourceType){
   case RES_ELF:
     //Do some REALY interesting stuff here.
@@ -148,7 +148,7 @@ void resSetProperty(resResource *resource, char *section, char *property, char *
   }
 }
 
-void *resGetResource(resResource *resource, char *section, char *property, int *size){
+void *resGetResource(resResource *resource, const char *section, const char *property, int *size){
   void *propertyData = NULL;
   char *pathName;
   struct stat st;
@@ -159,7 +159,7 @@ void *resGetResource(resResource *resource, char *section, char *property, int *
     //Do some interesting stuff here.
     break;
   case RES_APPCONF:
-    if(pathName = (char *)resGetACProperty(resource, section, property)){
+    if(pathName = (char *)resGetACProperty(resource, section, property, NULL)){
       fd = open(pathName, O_RDONLY);
       fstat(fd, &st);
       propertyData = mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
@@ -183,7 +183,7 @@ void *resGetResource(resResource *resource, char *section, char *property, int *
   return propertyData;
 }
 
-char **resListResources(resResource *resource, char *section, int *count){
+const char **resListResources(resResource *resource, const char *section, int *count){
   
  switch(resource->resourceType){
  case RES_ELF:
@@ -209,5 +209,32 @@ void resUnloadResource(resResource *resource){
     if(resource->workingDir)
       free(resource->workingDir);
     free(resource);
+  }
+}
+
+
+//-------Config related code-----------------------------------------
+const char *getConfigProperty(resResource *resource, const char *section, const char *property, const char *dparam){
+  char *configPath;
+  char *property;
+  resResource confResource;
+  
+  if(configPath = resGetProperty(resource, "Config", "path", NULL)){
+    confResource.workingDir = configPath;
+    property = resGetACProperty(&confResource, section, property, dparam);
+    free(configPath);
+    return property;
+  }
+  return dparam;
+}
+
+void setConfigProperty(resResource *resource, const char *section, const char *property, const char *data){
+  char *configPath;
+  resResource confResource;
+
+  if(configPath = resGetProperty(resource, "Config", "path", NULL)){
+    confResource.workingDir = configPath;
+    resSetACProperty(&confResource, section, property, data);
+    free(configPath);
   }
 }
