@@ -33,10 +33,37 @@ Don't worry your mind
 When you give it your best
 One two one two this is just a test
 
-And now, for something completely different...
+--------8<--------
+
 The formal name is "All-purpose Humanoid Fighting Machine - Android Evangelion" (HANYOU HITOGATA KESSEN HEIKI - JINZOU NINGEN EVANGELION). 14 years of time and an astronomical amount of money were used to build the Evangelion in order to carry out the Instrumentality Project. Able to both deploy and neutralize an A. T. Field, it is the only fighting force that humans have to counter the Angels. It operates on electric power, and is limited to about 5 minutes of active time without external supply. Therefore it is normally supplied with electrical power through the umbilical cable. (The Evangelion Mass-Production Models from Eva-05 onward are equipped with the S2 engine and thus do not need this cable.) Originally the Eva do not have souls. For this reason, the soul of Yui Ikari was made to dwell in Eva-01. The name Evangelion is thought to derive from "Eve", wife of Adam in the Old Testament, and "Evangel", the Greek word for "gospel". Source: The End of Evangelion : Glossary contained within The End of Evangelion - Theatrical Program.
 
-The End... or is it?"""
+--------8<--------
+
+Pink Floyd - Wish You Were Here
+
+so, so you think you can tell
+heaven from hell
+blue skies from pain
+can you tell a green field
+from a cold steel rail
+a smile from a veil
+do you think you can tell?
+and did they get you to trade your heroes for ghosts?
+hot ashes for trees?
+hot air for a cool breeze?
+cold comfort for change?
+and did you exchange a walk on part in the war
+for a lead role in a cage?
+how i wish
+how i wish you were here
+we're just two lost souls swimming in a fish bowl
+year after year
+running over the same old ground
+what have we found?
+the same old fears
+wish you were here
+
+-- The End --"""
 
 app.run()
 print "Testing text readback:\n\n\"" + app.server.getstring(tb.text)[:-1] + "\"\n";
