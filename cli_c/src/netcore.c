@@ -1,4 +1,4 @@
-/* $Id: netcore.c,v 1.37 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: netcore.c,v 1.38 2002/08/19 11:22:21 micahjd Exp $
  *
  * netcore.c - core networking code for the C client library
  *
@@ -615,6 +615,11 @@ void pgInit(int argc, char **argv)
   struct stat st;
   int enable_warning = 1;
 
+  if (_pgsockfd) {
+    printf("PicoGUI cli_c: Warning, pgInit called multiple times\n");
+    return;
+  }
+
   /* Save the program's name */
   if (argc > 0)
     _pg_appname = argv[0];
@@ -650,7 +655,7 @@ void pgInit(int argc, char **argv)
 	
 	else if (!strcmp(arg,"version")) {
 	  /* --pgversion : For now print CVS id */
-	  fprintf(stderr,"$Id: netcore.c,v 1.37 2002/07/28 17:06:48 micahjd Exp $\n");
+	  fprintf(stderr,"$Id: netcore.c,v 1.38 2002/08/19 11:22:21 micahjd Exp $\n");
 	  exit(1);
 	}
 	
