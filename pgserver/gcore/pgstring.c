@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.3 2002/09/17 22:50:18 micahjd Exp $
+/* $Id: pgstring.c,v 1.4 2002/09/26 12:11:54 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -235,7 +235,8 @@ void pgstring_encode_meta(struct pgstring *str, struct pgstr_iterator *p, u32 ch
   c.ch = ch;
   c.metadata = metadata;
   pgstr_boundscheck(str,p);
-  pgstr_getformat(str)->encode(str,p,c);
+  if (!p->invalid)
+    pgstr_getformat(str)->encode(str,p,c);
 }
 
 /* Decode a character from the string, with metadata
