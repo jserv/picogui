@@ -28,10 +28,10 @@ class PoingEditable(persistence.Persistent, Buffer):
         self.python_ns = {'buffer': self}
 
     def update_observer(self, o):
-        o.update_from(self)
+        o.update_view()
 
     def update_from(self, o):
-        o.update(self)
+        o.update_buffer()
 
     def save(self):
         transaction.get_transaction().commit()
@@ -84,13 +84,27 @@ class Schema(PoingEditable):
         else:
             raise ValueError, 'duplicate field name %r' % name
         self.fields.append(Field(name, widget))
+        self._notify_siblings()
 
     def delField(self, name):
         for field in self:
             if field.name == name:
                 self.fields.remove(field)
+                self._notify_siblings()
                 return
         raise KeyError, name
+
+    def _notify_siblings(self):
+        # look for buffers that have us as their schema and tell
+        # them we changed
+        frames = []
+        for o in self.observers:
+            if o.frame not in frames:
+                frames.append(o.frame)
+        for frame in frames:
+            for ws in frame.workspaces():
+                if getattr(ws.buffer, 'schema', None) is self:
+                    ws.update_view()
 
 class Datum(PoingEditable):
     def __init__(self, schema):

@@ -103,10 +103,16 @@ class Frame(object):
     def addWidget(self, *args):
         return self._app.addWidget(*args)
 
+    def delWidget(self, *args):
+        return self._app.delWidget(*args)
+
     def focus_workspace(self):
         if not self._pages:
             return
         self._app.server.focus(self.current)
+
+    def workspaces(self):
+        return [page.workspace for page in self._pages]
 
     def run(self):
         return self._app.run()
