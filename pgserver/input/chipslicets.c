@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.5 2001/11/09 19:43:04 bauermeister Exp $
+/* $Id: chipslicets.c,v 1.6 2001/11/12 00:58:25 bauermeister Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -27,68 +27,67 @@
  * 
  */
 
+
 #include <pgserver/common.h>
 
 #ifdef DRIVER_CHIPSLICETS
 
+#include <stdio.h>
 #include <unistd.h>
-
-#include <fcntl.h>     /* File control definitions (provide O_RDONLY) */
-#include <linux/kd.h>  /* for KIOCSOUND and KDMKTONE */
+#include <fcntl.h>
 
 #include <pgserver/input.h>
-#include <pgserver/widget.h>    /* for dispatch_pointing */
-#include <pgserver/pgnet.h>
+#include <pgserver/widget.h>
 #include <pgserver/configfile.h>
 
 #include <linux/mc68328digi.h>
+
 #include <rm_client.h>
 
+#define LOCAL_DEBUG 0
+#define LOCAL_TRACE 0
 
-#define POLL_USEC                100
-
-/*
- * timeout for sleep mode and backlight (not yet implemented)
- * show/hide pointing use now the pgserver timers and drivermessages
- * See gcore/video.c for the PGDM_CURSORVISIBLE message
- */
-#define SLEEP_IDLE_MAX_SEC       100
-//#define BACKLIGHT_IDLE_MAX_SEC    50
+/* ------------------------------------------------------------------------- */
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
-static const char *_file_ = __FILE__; 
 
 static int ts_fd = 0;
-static int iIsPenUp = 1;
 
-static struct timeval lastEvent;
+/* ------------------------------------------------------------------------- */
 
-void chipslicets_message(u32 message, u32 param, u32 *ret);
-
-/*
-#define DEBUG_EVENT
-*/
-
-/******************************************** Implementations */
-#include <stdio.h>
-
-int chipslicets_sleep(void) {
-#ifdef DEBUG_EVENT
-  printf("-- send RM_EV_IDLE to RM\n");
+#if LOCAL_DEBUG
+# define DPRINTF(x...) printf(__FILE__": " x)
+# define WARNF(x...)   printf(__FILE__": " x)
+#else
+# define DPRINTF(x...)
+# define WARNF(x...)   printf(__FILE__": " x)
+# undef LOCAL_TRACE
+# define LOCAL_TRACE 0
 #endif
 
-  /* call bios sleep function throught Ressources Manager */
-  rm_emit(RM_EV_IDLE);
+#if LOCAL_TRACE
+# define TRACEF(x...)  printf(__FILE__": " x)
+#else
+# define TRACEF(x...)
+#endif
 
-  /*
-   * the hit to wake up the ChipSlice isn't catch by the chipslicets driver.
-   * This because kernel is interrupt-off when it occure.
-   * It's then necessary to re-initiate the time of the last event.
-   */
-  gettimeofday(&lastEvent,NULL);
+/* ------------------------------------------------------------------------- */
+/*                      PicoGUI input events handling                        */
+/* ------------------------------------------------------------------------- */
+
+/* We insert our fd in the set for the server's select */ 
+void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout)
+{
+  if ((*n)<(ts_fd+1))
+    *n = ts_fd+1;
+  if (ts_fd>0)
+    FD_SET(ts_fd, readfds);
 }
 
-static int chipslicets_fd_activate(int fd) {
+/* ------------------------------------------------------------------------- */
+
+static int chipslicets_fd_activate(int fd)
+{
   struct ts_pen_info pen_info;
   int bytes_transferred;
 
@@ -102,21 +101,15 @@ static int chipslicets_fd_activate(int fd) {
 
     switch(pen_info.event) {
     case EV_PEN_UP:
-      if(pen_info.x > 350) {
-	chipslicets_sleep();
-	break;
-      }
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
       drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      gettimeofday(&lastEvent,NULL);
-      iIsPenUp = 1;
+      drivermessage(PGDM_CURSORBLKEN,1,NULL);
       break;
       
     case EV_PEN_DOWN:
       dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
       drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      gettimeofday(&lastEvent,NULL);
-      iIsPenUp = 0;
+      drivermessage(PGDM_CURSORBLKEN,0,NULL);
       break;
       
     case EV_PEN_MOVE:
@@ -125,68 +118,50 @@ static int chipslicets_fd_activate(int fd) {
        * this may certainly change in the future
        */
       dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,1);
-      //      if(iIsPointingDisplayed) {
-      //	VID(sprite_hide) (cursor);
-      //	iIsPointingDisplayed = 0;
-      //      }
       drivermessage(PGDM_CURSORVISIBLE,1,NULL);
-      gettimeofday(&lastEvent,NULL);
-      iIsPenUp = 0;
       break;
 
     default:
     }
 
-#ifdef DEBUG_EVENT
-    printf("%s: %c(%i,%i)\n", _file_,
-	   pen_info.event == EV_PEN_UP ? 'U' :
-	   pen_info.event == EV_PEN_DOWN ? 'D' :
-	   pen_info.event == EV_PEN_MOVE ? 'M' :
-	   '?',
-	   pen_info.x, pen_info.y);
-#endif
+    DPRINTF("%c(%i,%i)\n",
+	    pen_info.event == EV_PEN_UP ? 'U' :
+	    pen_info.event == EV_PEN_DOWN ? 'D' :
+	    pen_info.event == EV_PEN_MOVE ? 'M' :
+	    '?',
+	    pen_info.x, pen_info.y);
   }
-
-  /* If pen is up, test if there is some activity or not */
-  if(iIsPenUp) {
-    struct timeval lastIdle;
-    int delay_sec;
-
-    gettimeofday(&lastIdle,NULL);
-    delay_sec = lastIdle.tv_sec - lastEvent.tv_sec;
-
-    /* Management sleep mode */
-    if(delay_sec > SLEEP_IDLE_MAX_SEC)
-      chipslicets_sleep();
-  }
-
+  
   return 1;
 }
 
+/* ------------------------------------------------------------------------- */
+/*                             Un/initializations                            */
+/* ------------------------------------------------------------------------- */
 
-g_error chipslicets_init(void) {
+g_error chipslicets_init(void)
+{
   struct ts_drv_params  ts_params;
   int                   ret_val;
 
-#ifdef DEBUG_INIT
-  printf("%s: Opening device %s\n", _file_, DEVICE_FILE_NAME);
-#endif
+  DPRINTF("Opening device %s\n", DEVICE_FILE_NAME);
+
   ts_fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
   if(ts_fd < 0) {
-    fprintf(stderr, "%s: Can't open device file: %s\n", _file_,
-	    DEVICE_FILE_NAME);
-    fprintf(stderr, "Error: %s\n",strerror(errno));
+    fprintf(stderr, "%s: Can't open device: %s (%s)\n", __FILE__,
+	    DEVICE_FILE_NAME, strerror(errno)
+	    );
     goto error;
   }
   else {
     int mx1, mx2, my1, my2;
     int ux1, ux2, uy1, uy2;
     int offx = 0, offy = 0;
-    const char* calibration_string;
+    const char* cal_string;
 
     ret_val=ioctl(ts_fd,TS_PARAMS_GET,&ts_params);
     if(ret_val < 0) {
-      fprintf(stderr, "ioctl get error: %s\n",strerror(errno));
+      fprintf(stderr, "%s: ioctl get error: %s\n", __FILE__, strerror(errno));
       goto error_close;
     }
 
@@ -217,6 +192,7 @@ g_error chipslicets_init(void) {
     my1 = 508; uy1 =   0;
     mx2 = 188; ux2 = 159;
     my2 = 188; uy2 = 159;
+
 #elif defined(CONFIG_SOFT_CHIPSLICE)
     /* limits are like for ChipSlice */
     ts_params.y_max          = 320-1;
@@ -237,6 +213,7 @@ g_error chipslicets_init(void) {
     my1 = 508; uy1 =   0;
     mx2 = 188; ux2 = 159;
     my2 = 188; uy2 = 160*2-1;
+
 #elif defined(CONFIG_CHIPSLICE)
     ts_params.y_max          = 320-1;
     ts_params.y_min          = 0;
@@ -250,16 +227,15 @@ g_error chipslicets_init(void) {
 #endif
 
     /* param may override default values */
-  if(calibration_string = get_param_str("chipslicets", "calibration", 0)) {
-      sscanf(calibration_string, "%d %d %d %d %d %d %d %d %d %d",
+    if(cal_string = get_param_str("chipslicets", "calibration", 0)) {
+      sscanf(cal_string, "%d %d %d %d %d %d %d %d %d %d",
 	     &mx1, &my1, &mx2, &my2, &offx, &offy, &ux1, &uy1, &ux2, &uy2);
-#ifdef DEBUG_INIT
-      printf("%s: taking m1 and m2 points from param: '%s'\n",
-	     _file_, calibration_string);
-      printf("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d "
-	     "ux1=%d uy1=%d ux2=%d uy2=%d\n",
-	     mx1, my1, mx2, my2, offx, offy, ux1, uy1, ux2, uy2);
-#endif
+
+      DPRINTF("taking m1 and m2 points from param: '%s'\n",
+	      cal_string);
+      DPRINTF("  mx1=%d my1=%d mx2=%d my2=%d offx=%d offy=%d "
+	      "ux1=%d uy1=%d ux2=%d uy2=%d\n",
+	      mx1, my1, mx2, my2, offx, offy, ux1, uy1, ux2, uy2);
     }
 
     ux1 += offx;
@@ -279,14 +255,13 @@ g_error chipslicets_init(void) {
 
     ret_val=ioctl(ts_fd,TS_PARAMS_SET,&ts_params);
     if(ret_val < 0) {
-      sprintf(stderr, "ioctl set error: %s\n",strerror(errno));
+      fprintf(stderr, "%s: ioctl set error: %s\n", __FILE__, strerror(errno));
       goto error_close;
     }
 
     /* init the Ressources Manager */
     rm_init();
 
-    gettimeofday(&lastEvent,NULL);
     return sucess;
 
   error_close:
@@ -299,97 +274,34 @@ g_error chipslicets_init(void) {
     return mkerror(PG_ERRT_IO, 74);
 }
 
+/* ------------------------------------------------------------------------- */
 
-void chipslicets_close(void) {
-#ifdef DEBUG_INIT
-  printf("%s: Closing device %s\n",_file_, DEVICE_FILE_NAME);
-#endif
+void chipslicets_close(void)
+{
+  DPRINTF("Closing device %s\n", DEVICE_FILE_NAME);
 
   if(ts_fd)
     close(ts_fd);
+  ts_fd = 0;
 
 /* Disconnects the client from the Resource Manager */
   rm_exit ();
 }
 
+/* ------------------------------------------------------------------------- */
+/*                          Driver registration                              */
+/* ------------------------------------------------------------------------- */
 
-/* We insert our fd in the set for the server's select */ 
-void chipslicets_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-  if ((*n)<(ts_fd+1))
-    *n = ts_fd+1;
-  if (ts_fd>0)
-    FD_SET(ts_fd, readfds);
-}
-
-/* message between driver to provide sound (for exemple) */
-void chipslicets_message(u32 message, u32 param, u32 *ret) {
-
-  int snd_type;
-  *ret = 0;
-
-  switch (message) {
-
-#ifdef DRIVER_CHIPSLICETS_SND
-  /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
-  case PGDM_SOUNDFX:
-
-    switch(param) {
-
-    case PG_SND_SHORTBEEP:
-      snd_type = KDMKTONE;
-      break;
-
-    case PG_SND_KEYCLICK:
-      snd_type = KDMKTONE;
-      break;
-
-    default:
-      break;
-    }
-
-# if defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE)
-    printf("beep\n");
-
-# elif defined(CONFIG_CHIPSLICE)
-    {
-      int snd_freq = get_param_int("input-chipslicets","snd_frequency",8000);
-      int snd_leng = get_param_int("input-chipslicets","snd_length",50);
-      int snd_fd = 0;
-
-      /* if no frequency defined, get_param_int return 5000.
-       * if no length defined, get_param_int return 300.
-       */
-
-      /* open virtual terminal read only */
-      snd_fd = open("/dev/tty2",O_RDONLY);
-
-      if(snd_fd < 1) {
-	printf("/dev/tty2: open error\n");
-	return;
-      }
-      ioctl(snd_fd,snd_type,(snd_freq + (snd_leng << 16)));
-      close(snd_fd);
-    }
-# endif /* defined(CONFIG_XCOPILOT) || defined(CONFIG_SOFT_CHIPSLICE) */
-#endif /* DRIVER_CHIPSLICETS_SND */
-
-  default:
-    break;
-  }
-  return;
-}
-
-
-
-/******************************************** Driver registration */
-
-g_error chipslicets_regfunc(struct inlib *i) {
+g_error chipslicets_regfunc(struct inlib *i)
+{
   i->init = &chipslicets_init;
   i->close = &chipslicets_close;
   i->fd_activate = &chipslicets_fd_activate;
   i->fd_init = &chipslicets_fd_init;
   return sucess;
 }
+
+/* ------------------------------------------------------------------------- */
 
 #endif /* DRIVER_CHIPSLICETS */
 /* The End */
