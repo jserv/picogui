@@ -29,22 +29,29 @@ runtime = [
                                  'pocketapps/bioscall',
                                  'resourcemanager/server',
                                  'pocketapps/initenv',
-                                 'pocketapps/remorakb_checker',
                                  ],
                      rcscript = '''
 # setup env vars
-echo  >/var/pgserver.dynconf "[pgserver]"
+rm -f /var/pgserver.dynconf
 
 # pre-calibrate the /dev/ts device using bios env var
 bioscall --ts-calibrate=PG_TS_CALIBRATION
 
 if bioscall --test PG_REMORAKB_ON -eq 1
 then
-  echo "/etc/rc: Using Remora keyboard on ttyS0"
-  remorakb_checker --force=0 >>/var/pgserver.dynconf
-  if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
+  if bioscall --test PLATFORM_NAME = "RemoraPilotRun"
   then
-    echo "baud_shift = 1" >>/var/pgserver.dynconf
+    echo "/etc/rc: Using Ericsson chatboard on ttyS0"
+    echo "[input-ericsson-chatboard]" >>/var/pgserver.dynconf
+    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
+  else
+    echo "/etc/rc: Using Remora keyboard on ttyS0"
+    echo "[remora-kb]" >>/var/pgserver.dynconf
+    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
+    if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
+    then
+      echo "baud_shift = 1" >>/var/pgserver.dynconf
+    fi
   fi
 fi
 
