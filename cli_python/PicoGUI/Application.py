@@ -84,6 +84,7 @@ class Application(Widget.Widget):
         self._event_registry.add(handler, widget, evname)
 
     def delWidget(self, widget):
+        widget.server.free(widget.handle)
         self._event_registry.remove(widget)
         if self._widget_registry.has_key(widget.handle):
             del self._widget_registry[widget.handle]
@@ -92,9 +93,9 @@ class Application(Widget.Widget):
         self._event_stack.append(InternalEvent(name, widget, attrs))
 
     def run(self):
-        self.server.update()
         while 1:
 
+            self.server.update()
             queued = self.server.checkevent()
 
             for i in range(queued):

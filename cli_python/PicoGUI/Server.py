@@ -29,6 +29,10 @@ def _getBitmap(str, server):
 def _getSize(s, server):
     # This converts fractions of the form "numerator/denominator"
     # into pgserver 8:8 bit fractions if necessary.
+    # Also, allow "None" to indicate automatic sizing,
+    # represented in the server by -1.
+    if s == None:
+        return 0xFFFF, _getSize
     fraction = string.split(str(s),'/')
     if len(fraction) > 1:
         return (int(fraction[0])<<8) | int(fraction[1]), _getSize
@@ -266,6 +270,10 @@ constants = {
         'readonly':			(59, {
         }),
         'insertmode':			(60, {
+            'overwrite':   (0, {}),	# Replace all text
+            'append':	   (1, {}),	# Add to the end
+            'prepend':	   (2, {}),	# Add to the beginning
+            'atcursor':	   (3, {}),	# Add at the current cursor
         }),
         'type':				(61, {
         }),
