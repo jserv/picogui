@@ -86,6 +86,9 @@ class Data(object):
 		"""
 		return self('!LHHHHHxx')
 
+	def __getslice__(self, left, right):
+		return self.data[left:right]
+
 def _data(args):
 	return args[0], Data(*args)
 

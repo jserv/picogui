@@ -28,6 +28,10 @@ class EventRegistry(object):
     def add(self, handler, widget=None, evname=None):
         self.get(widget, evname).append((handler, widget))
 
+    def remove(self, widget):
+        if self.map.has_key(widget):
+            del self.map[widget]
+
     def dispatch(self, ev):
         widget = ev.widget
         name = ev.name
@@ -62,6 +66,11 @@ class Application(Widget.Widget):
             evname = widget
             widget = None
         self._event_registry.add(handler, widget, evname)
+
+    def delWidget(self, widget):
+        self._event_registry.remove(widget)
+        if self._widget_registry.has_key(widget.handle):
+            del self._widget_registry[widget.handle]
 
     def send(self, widget, name, **attrs):
         self._event_stack.append(InternalEvent(name, widget, attrs))
