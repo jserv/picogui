@@ -90,11 +90,16 @@ class PackageVersion(object):
                task.warning("Updating bootstrap package %s" % self)
                isUpdated = repo.update(tempPathNew, task)
                if isUpdated:
-                   os.rename(localPath, tempPathOld)
-                   os.rename(tempPathNew, localPath)
+                   try:
+                       os.rename(localPath, tempPathOld)
+                       os.rename(tempPathNew, localPath)
+                   except OSError:
+                       raise PGBuild.Errors.EnvironmentError(
+                           ("There was a problem renaming the %s package to install an update.\n" +
+                           "This will happen on Windows systems if you have a file open in that package.") % self)
                    try:
                        shutil.rmtree(tempPathOld)
-                   except:
+                   except OSError:
                        progress.warning(("There was a problem removing the old version of %s after " +
                                          "upgrading.\nPlease try to remove the directory %s") % (self, tempPathOld))
            else:
