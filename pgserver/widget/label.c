@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.7 2000/06/03 17:50:43 micahjd Exp $
+/* $Id: label.c,v 1.8 2000/06/08 00:15:57 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -85,7 +85,8 @@ g_error label_install(struct widget *self) {
 }
 
 void label_remove(struct widget *self) {
-  r_divnode_free(self->in);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
 }
 
 g_error label_set(struct widget *self,int property, glob data) {

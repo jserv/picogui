@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.16 2000/06/07 08:51:23 micahjd Exp $
+/* $Id: request.c,v 1.17 2000/06/08 00:15:57 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -79,6 +79,9 @@ void closefd(int fd) {
       g_free(condemn->data_dyn);
     g_free(condemn);
   }
+
+  if (!in_shutdown)
+    update();
 }
 
 void newfd(int fd) {
@@ -285,12 +288,24 @@ g_error req_init(void) {
 
 void req_free(void) {
   int i;
+  struct conbuf *p,*condemn=NULL;
 
+  /* Don't clean up handles yet, handle cleanup will be done sometime
+     in the shutdown process... */
   if (!s) return;
   for (i=0;i<con_n;i++)
-    if (FD_ISSET(i,&con)) closefd(i);
+    if (FD_ISSET(i,&con)) close(i);
   close(s);
   s = 0;
+
+  /* Free the list! */
+  p = conbufs;
+  while (p) {
+    condemn = p;
+    p = p->next;
+    g_free(condemn->data_dyn);
+    g_free(condemn);
+  }
 
   #ifdef WINDOWS
   WSACleanup();

@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.11 2000/06/07 06:15:47 micahjd Exp $
+/* $Id: mainloop.c,v 1.12 2000/06/08 00:15:57 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -42,7 +42,8 @@
 #include <sys/types.h>
 #endif
 
-volatile int proceed;
+volatile int proceed = 1;
+volatile int in_shutdown = 0;
 extern long memref;
 struct dtstack *dts;
 
@@ -85,7 +86,6 @@ void windows_inputpoll_hack(void);
 
   /*************************************** Main loop */
 
-  proceed = 1;
   while (proceed && reqproc())
 #ifndef WINDOWS
     ;
@@ -94,6 +94,7 @@ void windows_inputpoll_hack(void);
 #endif
 
   /*************************************** cleanup time */
+  in_shutdown = 1;
   input_release();
   handle_cleanup(-1);
   dts_free();

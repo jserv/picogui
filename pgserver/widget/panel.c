@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.13 2000/06/03 17:50:43 micahjd Exp $
+/* $Id: panel.c,v 1.14 2000/06/08 00:15:57 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -76,7 +76,8 @@ g_error panel_install(struct widget *self) {
 }
 
 void panel_remove(struct widget *self) {
-  r_divnode_free(self->in);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
 }
 
 g_error panel_set(struct widget *self,int property, glob data) {

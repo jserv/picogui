@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.12 2000/06/03 17:50:42 micahjd Exp $
+/* $Id: div.c,v 1.13 2000/06/08 00:15:57 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -300,6 +300,10 @@ void update(void) {
   }
 
   dts->update_lock = 0;
+
+#ifdef DEBUG
+  printf("****************** Update\n");
+#endif
 }
 
 /* Update the divtree's calculations and render (both only if necessary) */
@@ -382,6 +386,7 @@ g_error dts_push(void) {
 void dts_pop(void) {
   struct divtree *condemn,*p;
 
+  reset_pointer();
   condemn = dts->top;
   dts->top = dts->top->next;
   divtree_free(condemn);

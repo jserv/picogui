@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.15 2000/06/03 17:50:42 micahjd Exp $
+/* $Id: button.c,v 1.16 2000/06/08 00:15:57 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -123,8 +123,8 @@ g_error button_install(struct widget *self) {
 
 void button_remove(struct widget *self) {
   g_free(self->data);
-
-  r_divnode_free(self->in);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
 }
 
 g_error button_set(struct widget *self,int property, glob data) {
@@ -194,6 +194,7 @@ glob button_get(struct widget *self,int property) {
 }
 
 void button_trigger(struct widget *self,long type,union trigparam *param) {
+  int event=-1;
 
   /* Figure out the button's new state */
   switch (type) {
@@ -213,7 +214,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_UP:
     if (DATA->on && param->mouse.chbtn==1) {
-      post_event(WE_ACTIVATE,self,0);
+      event = 0;
       DATA->on=0;
     }
     break;
@@ -224,7 +225,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     break;
 
   case TRIGGER_DIRECT:
-    post_event(WE_ACTIVATE,self,1);
+    event = 1;
     break;
     
   }
@@ -294,6 +295,12 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
+
+  /* Update, THEN send the event. */
+
+  if (self->dt==dts->top) update();
+  if (event>=0)
+    post_event(WE_ACTIVATE,self,event);
 }
 
 /* The End */

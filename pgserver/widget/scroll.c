@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.11 2000/06/07 06:49:54 micahjd Exp $
+/* $Id: scroll.c,v 1.12 2000/06/08 00:15:57 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -171,7 +171,8 @@ g_error scroll_install(struct widget *self) {
 
 void scroll_remove(struct widget *self) {
   g_free(self->data);
-  r_divnode_free(self->in);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
 }
 
 g_error scroll_set(struct widget *self,int property, glob data) {
@@ -263,6 +264,9 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
   }
 
   scrollupdate(self);
+
+  /* Use a precious update to animate the scrollbar */
+  if (self->dt==dts->top) update();
 }
 
 /* The End */

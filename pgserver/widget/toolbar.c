@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.3 2000/06/03 17:50:43 micahjd Exp $
+/* $Id: toolbar.c,v 1.4 2000/06/08 00:15:57 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -61,7 +61,8 @@ g_error toolbar_install(struct widget *self) {
 }
 
 void toolbar_remove(struct widget *self) {
-  r_divnode_free(self->in);
+  if (!in_shutdown)
+    r_divnode_free(self->in);
 }
 
 g_error toolbar_set(struct widget *self,int property, glob data) {

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.17 2000/06/03 17:50:43 micahjd Exp $
+/* $Id: widget.h,v 1.18 2000/06/08 00:15:57 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -35,6 +35,7 @@
 #include <video.h>
 #include <g_error.h>
 #include <g_malloc.h>
+#include <pgnet.h>
 
 struct blob;
 struct widgetdef;
@@ -240,6 +241,9 @@ extern struct widget *key_owners[NUM_KEYS];
 int find_hotkey(void);
 
 /**** These are entry points for the various input drivers. */
+
+/* Reset pointers for the pointing device when a layer is popped */
+void reset_pointer(void);
 
 /* This is a pointing device event.
    The trigger parameter is a struct pointing_trigger.

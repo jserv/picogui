@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.19 2000/06/02 07:44:03 micahjd Exp $
+/* $Id: widget.c,v 1.20 2000/06/08 00:15:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -29,6 +29,7 @@
 #include <widget.h>
 #include <divtree.h>
 #include <g_malloc.h>
+#include <pgnet.h>
 
 struct widget *key_owners[NUM_KEYS];
 
@@ -104,54 +105,58 @@ void widget_remove(struct widget *w) {
   struct divnode *sub_end;  
   handle hw;
 
-  /* Get rid of any pointers we have to it */
-  if (w==under) under = NULL;
-  if (w==prev_under) prev_under = NULL;
-  if (w==capture) capture = NULL;
-
-  /* Remove inner widgets if it can be done safely
-     (only remove if they have handles) */
-  while (w->sub && *w->sub) {    
-    if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL)))
-      handle_free(-1,hw);
-    else
-      break;
-  }
-
-  if (w->sub && *w->sub) {    
-    /* More pointer mangling...  :)  
-     * If this widget has other widgets inside of it,
-     * we will need to insert the 'sub' list */
+  if (!in_shutdown) {
+    /* Get rid of any pointers we have to it */
+    if (w==under) under = NULL;
+    if (w==prev_under) prev_under = NULL;
+    if (w==capture) capture = NULL;
     
-    sub_end = *w->sub;
-    while (sub_end->next) sub_end = sub_end->next;
-    if (w->where) *w->where = *w->sub;
-    if (w->sub && *w->sub && (*w->sub)->owner)
-      (*w->sub)->owner->where = w->where;
-    if (w->out) sub_end->next = *w->out;
-    if (w->out && *w->out && (*w->out)->owner)
-      (*w->out)->owner->where = &sub_end->next;
+    /* Remove inner widgets if it can be done safely
+       (only remove if they have handles) */
+    while (w->sub && *w->sub) {    
+      if ((*w->sub)->owner && (hw = hlookup((*w->sub)->owner,NULL)))
+	handle_free(-1,hw);
+      else
+	break;
+    }
+    
+    if (w->sub && *w->sub) {    
+      /* More pointer mangling...  :)  
+       * If this widget has other widgets inside of it,
+       * we will need to insert the 'sub' list */
+      
+      sub_end = *w->sub;
+      while (sub_end->next) sub_end = sub_end->next;
+      if (w->where) *w->where = *w->sub;
+      if (w->sub && *w->sub && (*w->sub)->owner)
+	(*w->sub)->owner->where = w->where;
+      if (w->out) sub_end->next = *w->out;
+      if (w->out && *w->out && (*w->out)->owner)
+	(*w->out)->owner->where = &sub_end->next;
+    }
+    else {
+      if (w->where && w->out) *w->where = *w->out;
+      if (w->out && *w->out && (*w->out)->owner)
+	(*w->out)->owner->where = w->where;
+    }
+    
+    /* If we don't break this link, then deleting
+       the widget's divtree will keep on going
+       and delete other widgets' divtrees */
+    if (w->out) *w->out = NULL; 
+    if (w->sub) *w->sub = NULL;
   }
-  else {
-    if (w->where && w->out) *w->where = *w->out;
-    if (w->out && *w->out && (*w->out)->owner)
-      (*w->out)->owner->where = w->where;
-  }
-
-  /* If we don't break this link, then deleting
-     the widget's divtree will keep on going
-     and delete other widgets' divtrees */
-  if (w->out) *w->out = NULL; 
-  if (w->sub) *w->sub = NULL;
-   
+  
   if (w->def->remove) (*w->def->remove)(w);
 
-  /* Set the flags for redraw */
-  if (w->dt && w->dt->head) {
-    w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-    w->dt->flags |= DIVTREE_NEED_RECALC;
-  }   
-
+  if (!in_shutdown) {
+    /* Set the flags for redraw */
+    if (w->dt && w->dt->head) {
+      w->dt->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+      w->dt->flags |= DIVTREE_NEED_RECALC;
+    }   
+  }
+  
   g_free(w);
 }
 
@@ -165,6 +170,13 @@ glob inline widget_get(struct widget *w, int property) {
 }
 
 /***** Trigger stuff **/
+
+/* This is called to reinit the cursor handling when a layer is
+   popped from the dtstack
+*/
+void reset_pointer(void) {
+  under = prev_under = capture = NULL;
+}
 
 int find_hotkey(void) {
 }
@@ -199,7 +211,6 @@ int send_trigger(struct widget *w, long type,
 
 void dispatch_pointing(long type,int x,int y,int btn) {
   union trigparam param;
-  int call_update=0;
   int i;
 
   if (!(dts && dts->top && dts->top->head)) {
@@ -220,13 +231,13 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   if (divmatch) {
     under = divmatch->owner;
 
-    if (type == TRIGGER_UP && capture && (capture!=under)) {
-      call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
+    if ((type == TRIGGER_UP || !btn) && capture && (capture!=under)) {
+      send_trigger(capture,TRIGGER_RELEASE,&param);
       capture = NULL;
     }
 
     /* First send the 'raw' event, then handle the cooked ones. */
-    call_update |= (i = send_trigger(under,type,&param));
+    i = send_trigger(under,type,&param);
 
     if (type==TRIGGER_DOWN) {
       if (i)
@@ -239,37 +250,22 @@ void dispatch_pointing(long type,int x,int y,int btn) {
   else {
     under = NULL;
     if (type == TRIGGER_UP && capture) {
-      call_update |= send_trigger(capture,TRIGGER_RELEASE,&param);
+      send_trigger(capture,TRIGGER_RELEASE,&param);
       capture = NULL;
     }
   }
 
   if (under!=prev_under) {
     /* Mouse has moved over a different widget */
-    call_update |= send_trigger(under,TRIGGER_ENTER,&param);
-    call_update |= send_trigger(prev_under,TRIGGER_LEAVE,&param);
+    send_trigger(under,TRIGGER_ENTER,&param);
+    send_trigger(prev_under,TRIGGER_LEAVE,&param);
     prev_under = under;
   }
 
   /* If a captured widget accepts TRIGGER_DRAG, send it even when the
      mouse is outside its divnodes. */
   if (type == TRIGGER_MOVE && capture)
-    call_update |= send_trigger(capture,TRIGGER_DRAG,&param);
-
-  if (call_update) {
-#ifdef DEBUG
-    printf("Pointer: 0x%08X (%3d %3d %c%c%c %c%c%c) @ 0x%08X in 0x%08X\n",type,x,y,
-	   (btn & 1) ? '*' : '-',
-	   (btn & 2) ? '*' : '-',
-	   (btn & 4) ? '*' : '-',
-	   (param.mouse.chbtn & 1) ? '*' : '-',
-	   (param.mouse.chbtn & 2) ? '*' : '-',
-	   (param.mouse.chbtn & 4) ? '*' : '-',
-	   divmatch,under);
-#endif
-
-    update();   /* Do all the updates at once, if any are needed */ 
-  }
+    send_trigger(capture,TRIGGER_DRAG,&param);
 }
 
 void dispatch_key(long type,int key) {
