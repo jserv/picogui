@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.15 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: fillstyle.c,v 1.16 2002/01/05 15:34:38 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -49,8 +49,8 @@ int fsstkpos;  /* position in the stack */
 /* Little utility functions */
 
 g_error fsgrop(struct gropctxt *ctx,int grop);
-g_error fsget(unsigned long reg);
-g_error fsset(unsigned long reg);
+g_error fsget(int reg);
+g_error fsset(int reg);
 g_error fspopargs(void);
 
 /* Arguments for binary operators */
@@ -404,14 +404,14 @@ g_error fsgrop(struct gropctxt *ctx,int grop) {
   return success;
 }
 
-g_error fsget(unsigned long reg) {
+g_error fsget(int reg) {
   if (reg>=FSSTACKSIZE)
     return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
   fsstack[fsstkpos++] = fsstack[reg];
   return success;
 }
 
-g_error fsset(unsigned long reg) {
+g_error fsset(int reg) {
   if (reg>=FSSTACKSIZE)
     return mkerror(PG_ERRT_BADPARAM,90);  /* Var out of range */
   fsstack[reg] = fsstack[--fsstkpos]; 
