@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.11 2000/10/10 00:22:33 micahjd Exp $
+/* $Id: demo.c,v 1.12 2000/10/16 18:03:50 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -70,7 +70,6 @@ int main(int argc, char *argv[])
   wBox = pgNewWidget(PG_WIDGET_BOX,0,0);
   pgSetWidget(0,
 	      PG_WP_SIZE,100,
-	      PG_WP_BORDERCOLOR,0x000000,
 	      0);
 
   /* Make a nifty little click meter */
@@ -84,6 +83,14 @@ int main(int argc, char *argv[])
 	      PG_WP_ALIGN,PG_A_LEFT,  /* Put the text at the left side of the widget */
 	      PG_WP_TEXT,pgNewString("100 clicks"),
 	      0);
+
+  pgNewWidget(PG_WIDGET_LABEL,0,0);
+  pgSetWidget(0,
+	      PG_WP_TRANSPARENT,0,
+	      PG_WP_TEXT,pgNewString("Click the buttons above"),
+	      PG_WP_FONT,pgNewFont("Courier",0,0),
+	      0);
+  
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(0,
 	      PG_WP_SIDE,PG_S_BOTTOM,
@@ -102,21 +109,23 @@ int main(int argc, char *argv[])
   /**** Widgets inside the toolbar */
 
   pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wToolbar);
-  pgSetWidget(0,
-	      PG_WP_ALIGN,PG_A_LEFT,
-	      PG_WP_TEXT,pgNewString("1"),
-	      0);
+  pgSetWidget(0,PG_WP_TEXT,pgNewString("1"),0);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,PG_WP_TEXT,pgNewString("2"),0);
+
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(0,PG_WP_TEXT,pgNewString("3"),0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(0,
-	      PG_WP_ALIGN,PG_A_LEFT,
-	      PG_WP_TEXT,pgNewString("2"),
+	      PG_WP_TEXT,pgNewString("Bitmap"),
 	      0);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,             /* PGDEFAULT is the same as
 					using 0 here (see client_c.h) */
-	      PG_WP_ALIGN,PG_A_LEFT,
+	      PG_WP_SIDE,PG_S_RIGHT,
 	      PG_WP_TEXT,pgNewString("Hello, World!"),
 	      0);
   /* this button gets an event handler */
