@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.138 2002/05/16 21:53:43 micahjd Exp $
+/* $Id: constants.h,v 1.139 2002/05/20 16:00:49 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -831,6 +831,7 @@ typedef unsigned long pghandle;
 #define PG_TRAVERSE_FORWARD   2
 #define PG_TRAVERSE_BACKWARD  3    //!< Going backwards is much slower than going forward right now
 #define PG_TRAVERSE_CONTAINER 4    //!< 'count' is the number of container levels to traverse up
+#define PG_TRAVERSE_APP       5    //!< Find the root widget owning this app, and traverse 'count' applications forward from it.
 
 /* Types of widgets (in the same order they are
    in the table in widget.c) */

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.84 2002/04/08 23:43:56 micahjd Exp $
+/* $Id: client_c.h,v 1.85 2002/05/20 16:00:48 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -783,6 +783,7 @@ void pgAttachWidget(pghandle parent, s16 rship, pghandle widget);
  *  - PG_TRAVERSE_FORWARD returns the widget added count'th widgets after this widget
  *  - PG_TRAVERSE_BACKWARD the opposite of forward
  *  - PG_TRAVERSE_CONTAINER travels to the widget's container, for \p count iterations
+ *  - PG_TRAVERSE_APP travels to the root widget that contains the specified widget, then forward in the application list for \p count iterations. If the \p widget is 0, it returns the first app root widget. Note that the app list is continuously sorted by "Z-order".
  *
  */
 pghandle pgTraverseWidget(pghandle widget, int direction, int count);

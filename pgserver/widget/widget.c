@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.177 2002/05/17 20:06:11 micahjd Exp $
+/* $Id: widget.c,v 1.178 2002/05/20 16:00:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1298,15 +1298,15 @@ void global_hotkey(u16 key,u16 mods, u32 type) {
 struct widget *widget_traverse(struct widget *w, int direction, int count) {
   struct widget *p;
   struct divnode *d;
+  struct app_info **appinfo_p, *appinfo;
   
-  if (!w)
-    return NULL;
-
   switch (direction) {
 
     /* Traverse to the first child, then go forward 
      */
   case PG_TRAVERSE_CHILDREN:
+    if (!w)
+      return NULL;
     if (!w->sub || !*w->sub)
       return NULL;
     return widget_traverse((*w->sub)->owner,PG_TRAVERSE_FORWARD,count);
@@ -1350,6 +1350,30 @@ struct widget *widget_traverse(struct widget *w, int direction, int count) {
 	return NULL;
       w = d->owner;
     }
+    break;
+
+    /* Traverse through the application list */
+  case PG_TRAVERSE_APP:
+    if (w) {
+      /* Find the appinfo structure associated with this widget */
+      appinfo_p = appmgr_findapp(w);
+      if (!appinfo_p)
+	return NULL;
+      
+      /* Traverse the appinfo list */
+      for (appinfo=*appinfo_p;appinfo && count;count--)
+	appinfo = appinfo->next;
+    }
+    else {
+      /* If they passed a 0 widget, start them off with the first app */
+      appinfo = applist;
+    }
+
+    /* Return the root widget */
+    if (!appinfo)
+      return NULL;
+    if (iserror(rdhandle((void**) &w, PG_TYPE_WIDGET, -1, appinfo->rootw)))
+      return NULL;
     break;
   }
 

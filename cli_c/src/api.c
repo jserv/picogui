@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.41 2002/04/14 21:37:30 micahjd Exp $
+/* $Id: api.c,v 1.42 2002/05/20 16:00:49 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -942,7 +942,7 @@ s32 pgGetWidget(pghandle widget, s16 property) {
 
 pghandle pgTraverseWidget(pghandle widget, int direction, int count) {
   struct pgreqd_traversewgt arg;
-  arg.widget = htonl(widget ? widget : _pgdefault_widget);
+  arg.widget = htonl(widget);
   arg.direction = htons(direction);
   arg.count = htons(count);
 #ifdef ENABLE_THREADING_SUPPORT
