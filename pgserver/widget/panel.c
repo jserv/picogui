@@ -1,5 +1,5 @@
 
-/* $Id: panel.c,v 1.52 2001/03/17 04:16:36 micahjd Exp $
+/* $Id: panel.c,v 1.53 2001/03/19 05:59:28 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -35,10 +35,10 @@
 #define DRAG_DELAY    20   /* Min. # of milliseconds between
 			      updates while dragging */
 
-#define MINDRAGLEN    (vid->xres/100)    /* Min. # of pixels movement for a click to be
+#define MINDRAGLEN    (vid->lxres/100)    /* Min. # of pixels movement for a click to be
 		                     	    interpreted as a drag */
 
-#define MAXROLLUP     (vid->xres/50)     /* If the user resizes the panel to this
+#define MAXROLLUP     (vid->lxres/50)     /* If the user resizes the panel to this
 			                    or smaller, it will be interpreted
 			                    as a panel roll-up */
 

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.66 2001/03/17 04:16:36 micahjd Exp $
+/* $Id: widget.c,v 1.67 2001/03/19 05:59:29 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -653,7 +653,7 @@ void dispatch_key(long type,int key,int mods) {
 
     case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
       VID(clear) ();
-      VID(update) (0,0,vid->xres,vid->yres);
+      VID(update) (0,0,vid->lxres,vid->lyres);
       return;
 
     case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -675,7 +675,7 @@ void dispatch_key(long type,int key,int mods) {
 	struct divtree *p;
 	/* Push through the black screen */
 	VID(clear) ();
-	VID(update) (0,0,vid->xres,vid->yres);
+	VID(update) (0,0,vid->lxres,vid->lyres);
 	/* Force redrawing everything to the backbuffer */
 	p = dts->top;
 	while (p) {
@@ -693,9 +693,9 @@ void dispatch_key(long type,int key,int mods) {
       return;
 
     case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-      VID(rect) (0,0,vid->xres,vid->yres,
+      VID(rect) (0,0,vid->lxres,vid->lyres,
 		   VID(color_pgtohwr) (0x0000FF));
-      VID(update) (0,0,vid->xres,vid->yres);
+      VID(update) (0,0,vid->lxres,vid->lyres);
       return;
 
 #endif /* DEBUG_KEYS */

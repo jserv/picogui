@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.36 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: div.c,v 1.37 2001/03/19 05:59:28 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -270,8 +270,8 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
-  (*dt)->head->w = vid->xres;
-  (*dt)->head->h = vid->yres;
+  (*dt)->head->w = vid->lxres;
+  (*dt)->head->h = vid->lyres;
   (*dt)->flags = DIVTREE_ALL_REDRAW;
   return sucess;
 }

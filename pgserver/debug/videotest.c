@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.5 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: videotest.c,v 1.6 2001/03/19 05:59:28 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -46,36 +46,36 @@ void testpat_line(void) {
    VID(font_newdesc) (&fd);
    
    /* Background */
-   VID(rect) (0,0,vid->xres,vid->yres,bg);
+   VID(rect) (0,0,vid->lxres,vid->lyres,bg);
 
    /* Lines 5 pixels from each edge */
-   VID(slab) (0,5,vid->xres,fg);
-   VID(slab) (0,vid->yres-6,vid->xres,fg);
-   VID(bar) (5,0,vid->yres,fg);
-   VID(bar) (vid->xres-6,0,vid->yres,fg);
+   VID(slab) (0,5,vid->lxres,fg);
+   VID(slab) (0,vid->lyres-6,vid->lxres,fg);
+   VID(bar) (5,0,vid->lyres,fg);
+   VID(bar) (vid->lxres-6,0,vid->lyres,fg);
    
    /* More lines lining the edges (to test for off-by-one framebuffer bugs) */
-   VID(slab) (7,0,vid->xres-14,fg);
-   VID(slab) (7,vid->yres-1,vid->xres-14,fg);
-   VID(bar) (0,7,vid->yres-14,fg);
-   VID(bar) (vid->xres-1,7,vid->yres-14,fg);
+   VID(slab) (7,0,vid->lxres-14,fg);
+   VID(slab) (7,vid->lyres-1,vid->lxres-14,fg);
+   VID(bar) (0,7,vid->lyres-14,fg);
+   VID(bar) (vid->lxres-1,7,vid->lyres-14,fg);
    
    /* 4x4 rectangles in each corner, to make sure we can address those
     * extremities with ease */
    VID(rect) (0,0,4,4,fg);
-   VID(rect) (vid->xres-4,0,4,4,fg);
-   VID(rect) (0,vid->yres-4,4,4,fg);
-   VID(rect) (vid->xres-4,vid->yres-4,4,4,fg);
+   VID(rect) (vid->lxres-4,0,4,4,fg);
+   VID(rect) (0,vid->lyres-4,4,4,fg);
+   VID(rect) (vid->lxres-4,vid->lyres-4,4,4,fg);
    
    /* Horizontal and vertical text labels along the inside of the lines */
    outtext(&fd,7,7,fg,"PicoGUI Video Test Pattern #1",NULL);
-   outtext_v(&fd,7,vid->yres-8,fg,"PicoGUI Video Test Pattern #1",NULL);
+   outtext_v(&fd,7,vid->lyres-8,fg,"PicoGUI Video Test Pattern #1",NULL);
 
    /* Center the test pattern bounding box */
-   patw = ((vid->xres<vid->yres)?vid->xres:vid->yres) -
+   patw = ((vid->lxres<vid->lyres)?vid->lxres:vid->lyres) -
      24 - fd.fs->normal->h*2;
-   patx = (vid->xres - patw) >> 1;
-   paty = (vid->yres - patw) >> 1;
+   patx = (vid->lxres - patw) >> 1;
+   paty = (vid->lyres - patw) >> 1;
    
    /* Draw little alignment marks, a 1-pixel gap from the test pattern */
    VID(slab) (patx-5,paty,4,fg);
@@ -92,7 +92,7 @@ void testpat_line(void) {
       VID(line) (patx+i,paty,patx+patw,paty+i,fg);
       VID(line) (patx,paty+i,patx+i,paty+patw,fg);
    }
-   outtext(&fd,(vid->xres-fd.fs->normal->h)>>1,(vid->yres-fd.fs->normal->h)>>1,
+   outtext(&fd,(vid->lxres-fd.fs->normal->h)>>1,(vid->lyres-fd.fs->normal->h)>>1,
 	   fg,"1",NULL);
 }
 
@@ -115,31 +115,31 @@ void testpat_color(void) {
    h = fd.fs->normal->h;
    
    /* Background */
-   VID(rect) (0,0,vid->xres,vid->yres,bg);
+   VID(rect) (0,0,vid->lxres,vid->lyres,bg);
    
    outtext(&fd,0,y,fg,"Black -> White",NULL);
    y+=h;
-   VID(gradient) (0,y,vid->xres,h*2,0,0x000000,0xFFFFFF,0);
+   VID(gradient) (0,y,vid->lxres,h*2,0,0x000000,0xFFFFFF,0);
    y+=2*h;
 
    outtext(&fd,0,y,fg,"White -> Black",NULL);
    y+=h;
-   VID(gradient) (0,y,vid->xres,h*2,0,0xFFFFFF,0x000000,0);
+   VID(gradient) (0,y,vid->lxres,h*2,0,0xFFFFFF,0x000000,0);
    y+=2*h;
 
    outtext(&fd,0,y,fg,"Black -> Red",NULL);
    y+=h;
-   VID(gradient) (0,y,vid->xres,h*2,0,0x000000,0xFF0000,0);
+   VID(gradient) (0,y,vid->lxres,h*2,0,0x000000,0xFF0000,0);
    y+=2*h;
    
    outtext(&fd,0,y,fg,"Black -> Green",NULL);
    y+=h;
-   VID(gradient) (0,y,vid->xres,h*2,0,0x000000,0x00FF00,0);
+   VID(gradient) (0,y,vid->lxres,h*2,0,0x000000,0x00FF00,0);
    y+=2*h;
    
    outtext(&fd,0,y,fg,"Black -> Blue",NULL);
    y+=h;
-   VID(gradient) (0,y,vid->xres,h*2,0,0x000000,0x0000FF,0);
+   VID(gradient) (0,y,vid->lxres,h*2,0,0x000000,0x0000FF,0);
    y+=2*h;
    
 }
@@ -171,15 +171,15 @@ void testpat_unblit(void) {
    VID(font_newdesc) (&fd);
    
    /* Background */
-   VID(rect) (0,0,vid->xres,vid->yres,bg);
+   VID(rect) (0,0,vid->lxres,vid->lyres,bg);
 
    /* test pattern bounding box */
    patw = 50;
    patx = patxstart = 10;
-   VID(bar) (patw+25,0,vid->yres,fg);
+   VID(bar) (patw+25,0,vid->lyres,fg);
    
    /* Repeat for different pixel alignments */
-   for (paty=10;paty+patw<vid->yres;paty+=patw+15,patx=++patxstart,patw--) {
+   for (paty=10;paty+patw<vid->lyres;paty+=patw+15,patx=++patxstart,patw--) {
       
       /* Draw little alignment marks, a 1-pixel gap from the test pattern */
       VID(slab) (patx-5,paty,4,fg);
@@ -212,7 +212,7 @@ void testpat_unblit(void) {
       
       
       /* Same pattern, shifted to the side in various alignments */
-      for (patx=patw+40,i=0;patx+patw<vid->xres;patx=((patx+patw+25)&(~7))+(i++)) {
+      for (patx=patw+40,i=0;patx+patw<vid->lxres;patx=((patx+patw+25)&(~7))+(i++)) {
 	 
 	 VID(slab) (patx-5,paty,4,fg);
 	 VID(slab) (patx-5,paty+patw,4,fg);
@@ -238,7 +238,7 @@ void testpat_slab(void) {
    int i;
 
    /* Background */
-   VID(rect) (0,0,vid->xres,vid->yres,bg);
+   VID(rect) (0,0,vid->lxres,vid->lyres,bg);
 
    for (i=0;i<16;i++) {
       VID(slab) (5+i,5+(i<<1),12,fg);
@@ -281,7 +281,7 @@ void videotest_run(int number) {
       exit(1);
    }
    
-   VID(update) (0,0,vid->xres,vid->yres);
+   VID(update) (0,0,vid->lxres,vid->lyres);
 }
 
 /* The End */

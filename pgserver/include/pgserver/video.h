@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.27 2001/03/18 18:52:05 micahjd Exp $
+/* $Id: video.h,v 1.28 2001/03/19 05:59:28 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -134,13 +134,16 @@ struct vidlib {
    */
   void (*close)(void);
 
-  /* Current mode (read only to all but driver)
+  /* Current mode (only used in driver)
    *
    * The default bitmap functions should handle 1,2,4,8,16,24,32 bpp ok
    */
   int xres,yres,bpp;
   unsigned long flags;
 
+  /* Logical screen size, read-only outside of driver */
+  int lxres,lyres;
+   
   /* Framebuffer information (for framebuffer Video Base Libraries) */
   unsigned char *fb_mem;
   unsigned int fb_bpl;   /* Bytes Per Line */

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.30 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: video.c,v 1.31 2001/03/19 05:59:28 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -37,6 +37,7 @@
 /* Vidlib vars */
 struct vidlib *vid, *vidwrap;
 struct vidlib vidlib_static;
+struct vidlib vidwrap_static;
 struct sprite *spritelist;
 int upd_x;
 int upd_y;
@@ -150,7 +151,19 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 	(((i & 0x04) ? 0x800000 : 0) |
 	 ((i & 0x02) ? 0x008000 : 0) |
 	 ((i & 0x01) ? 0x000080 : 0)) );
-	
+
+  /* Add wrapper library */
+#ifdef CONFIG_ROTATE
+  vidwrap_static = vidlib_static;
+  vidwrap = &vidwrap_static;
+  vidwrap_rotate90(vidwrap);
+  vid->lxres = vid->yres;
+  vid->lyres = vid->xres;
+#else
+  vid->lxres = vid->xres;
+  vid->lyres = vid->yres;
+#endif   
+   
   return sucess;
 }
 
@@ -207,10 +220,10 @@ void realize_updareas(void) {
 	 upd_h += upd_y;
 	 upd_y = 0;
       }
-      if ((upd_x+upd_w)>vid->xres)
-	upd_w = vid->xres-upd_x;
-      if ((upd_y+upd_h)>vid->yres)
-	upd_h = vid->yres-upd_y;
+      if ((upd_x+upd_w)>vid->lxres)
+	upd_w = vid->lxres-upd_x;
+      if ((upd_y+upd_h)>vid->lyres)
+	upd_h = vid->lyres-upd_y;
 #ifdef DEBUG_VIDEO
       /* Show update rectangles */
       //      VID(frame) (upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000));

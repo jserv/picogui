@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.20 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: g_error.c,v 1.21 2001/03/19 05:59:28 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -88,8 +88,8 @@ void guru(const char *fmt, ...) {
   VID(clear) ();
   rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,defaultfont);
   screenclip.x1 = screenclip.y1 = 0;
-  screenclip.x2 = vid->xres-1;
-  screenclip.y2 = vid->yres-1;
+  screenclip.x2 = vid->lxres-1;
+  screenclip.y2 = vid->lyres-1;
 
 #ifdef CONFIG_FORMAT_XBM
   /* Icon (if this fails, no big deal) */
@@ -115,7 +115,7 @@ void guru(const char *fmt, ...) {
 
   outtext(df,10+deadcomp_width,5,VID(color_pgtohwr) (0xFFFFFF),msgbuf,
 	  &screenclip);
-  VID(update) (0,0,vid->xres,vid->yres);
+  VID(update) (0,0,vid->lxres,vid->lyres);
 }
 
 #endif /* DEBUG_ANY */

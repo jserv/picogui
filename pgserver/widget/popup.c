@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.27 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: popup.c,v 1.28 2001/03/19 05:59:28 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -55,8 +55,8 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   /* Special positioning codes */
 
   if (((signed short)x) == PG_POPUP_CENTER) {
-    x=(vid->xres>>1)-(w>>1);
-    y=(vid->yres>>1)-(h>>1);
+    x=(vid->lxres>>1)-(w>>1);
+    y=(vid->lyres>>1)-(h>>1);
   }
 
   if (((signed short)x) == PG_POPUP_ATCURSOR) {
@@ -90,16 +90,16 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
   (*wgt)->in->div->y = y-margin;
   (*wgt)->in->div->w = w+(margin<<1);
   (*wgt)->in->div->h = h+(margin<<1);
-  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)
-    (*wgt)->in->div->x = vid->xres - (*wgt)->in->div->w - margin;
-  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->yres)
-    (*wgt)->in->div->y = vid->yres - (*wgt)->in->div->h - margin;
+  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->lxres)
+    (*wgt)->in->div->x = vid->lxres - (*wgt)->in->div->w - margin;
+  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->lyres)
+    (*wgt)->in->div->y = vid->lyres - (*wgt)->in->div->h - margin;
   if ((*wgt)->in->div->x <0) (*wgt)->in->div->x = 0;
   if ((*wgt)->in->div->y <0) (*wgt)->in->div->y = 0;
-  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->xres)
-    (*wgt)->in->div->w = vid->xres-(*wgt)->in->div->x-1;
-  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->yres)
-    (*wgt)->in->div->h = vid->yres-(*wgt)->in->div->y-1;
+  if ((*wgt)->in->div->x+(*wgt)->in->div->w >= vid->lxres)
+    (*wgt)->in->div->w = vid->lxres-(*wgt)->in->div->x-1;
+  if ((*wgt)->in->div->y+(*wgt)->in->div->h >= vid->lyres)
+    (*wgt)->in->div->h = vid->lyres-(*wgt)->in->div->y-1;
 
   /* Yahoo! */
   return sucess;
