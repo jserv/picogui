@@ -2,8 +2,12 @@ import PicoGUI, math
 
 
 def inputHandler(t, sender):
+    # Move the ship and camera in reaction to the mouse position
     if t.dev == 'mouse' and t.name == 'move':
-        ship.yaw = t.x
+        camera.roll = (t.x - 320) * 0.02
+        ship.roll = (t.x - 320) * 0.05
+        ship.altitude = 17 + (t.y - 240) * -0.02
+        camera.altitude = 21 + (t.y - 240) * -0.04
         
 def velocityChange(ev, widget):
     # Completely nonscientific equations to both set the velocity

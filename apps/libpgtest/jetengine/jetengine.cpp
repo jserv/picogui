@@ -8,6 +8,7 @@
 #include "PythonInterpreter.h"
 #include "FlatLand.h"
 #include "Ship.h"
+#include "Camera.h"
 
 
 int main(int argc, char **argv) {
@@ -16,19 +17,15 @@ int main(int argc, char **argv) {
     EmbeddedPGserver pgserver(argc, argv);
     PythonThread pythread;
     FlatLand world;
+    Camera camera;
     Ship ship;
     u32 old_ticks, new_ticks;
     float frame_time;
 
     pythread.addObject("world",&world);
     pythread.addObject("ship",&ship);
+    pythread.addObject("camera",&camera);
     pythread.run();
-
-    glViewport(0, 0, 640, 480);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(50, 640.0/480.0, 1, 10000);
-    glMatrixMode(GL_MODELVIEW);
 
     old_ticks = SDL_GetTicks();
     while (pgserver.mainloopIsRunning()) {
@@ -41,9 +38,7 @@ int main(int argc, char **argv) {
       glClear(GL_DEPTH_BUFFER_BIT);
       glShadeModel(GL_SMOOTH);
 
-      glLoadIdentity();	
-      glTranslatef(0,-20,-5);
-
+      camera.setMatrix();
       world.draw();
       ship.draw();
       world.animate(frame_time);

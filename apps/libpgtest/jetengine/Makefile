@@ -6,7 +6,8 @@ OBJS = \
 	ScriptableObject.o	\
 	PythonInterpreter.o	\
 	FlatLand.o		\
-	Ship.o
+	Ship.o			\
+	Camera.o
 
 HEADERS = \
 	EmbeddedPGserver.h	\
@@ -16,7 +17,8 @@ HEADERS = \
 	ScriptableObject.h	\
 	PythonInterpreter.h	\
 	FlatLand.h		\
-	Ship.h
+	Ship.h			\
+	Camera.h
 
 BIN = jetengine
 
