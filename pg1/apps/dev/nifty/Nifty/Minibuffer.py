@@ -94,6 +94,9 @@ class Minibuffer(object):
             # no buffers open
             self._frame.toolbar.focus()
 
+    def clear(self):
+        self._field.text = ''
+
     def bind(__self, **kw):
         __self.python_ns.update(kw)
         # we use __self instead of self so that someone may bind the name 'self'

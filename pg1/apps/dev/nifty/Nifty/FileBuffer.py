@@ -1,4 +1,5 @@
 from Buffer import TextBuffer
+from Frame import file_detectors
 import os
 
 class FileBuffer(TextBuffer):
@@ -29,3 +30,9 @@ class FileBuffer(TextBuffer):
         print 'buffer %r saved' % self.basename
         self.changed = False
         self.change_name(self.basename)
+
+def detector(path):
+    if not os.path.isdir(path):
+        return FileBuffer(path)
+
+file_detectors.append(detector)

@@ -10,7 +10,7 @@ def _clip_print(template, text):
 class Textbox(Workspace):
     def open(self, frame, page, buffer):
         Workspace.open(self, frame, page, buffer)
-        frame.link(self.handle_key, self, 'kbd keyup')
+        frame.link(self.handle_key, self, 'kbd keydown')
         self._partial_command = None
         self._keybindings = {}
         self._mark = None
@@ -24,21 +24,27 @@ class Textbox(Workspace):
 
     def handle_key(self, ev):
         key = self._resolve_key(ev)
-        if key is None: return
+        if key is None:
+            self.buffer.notify_changed(ev)
+            return
+        self.frame.minibuffer.clear()
         seq = (key,)
         if self._partial_command:
             seq = self._partial_command + seq
         self._partial_command = None
-        self.extdevents = None
         cmd = keybindings.resolve(seq, (self._keybindings, keybindings.default))
+        if cmd is not None:
+            print seq
         if type(cmd) is dict:
             self._partial_command = seq
             self.extdevents = 'kbd'
             return
+        self.extdevents = None
         if type(cmd) is str:
             self.buffer.python_ns['workspace'] = self
             try:
-                exec cmd in self.frame.python_ns, self.buffer.python_ns
+                c = compile(cmd, '<string>', 'single')
+                exec c in self.frame.python_ns, self.buffer.python_ns
             except SystemExit:
                 raise
             except:
@@ -46,6 +52,23 @@ class Textbox(Workspace):
                 traceback.print_exc()
         if callable(cmd):
             cmd(self)
+        # if we got this far, update the buffer
+        self.buffer.notify_changed(ev)
+
+    def _revert_to_buffer(self):
+        self.text = self.buffer.text
+
+    def confirm_close(self):
+        import sys
+        print >>sys.stderr, 'confirm close', self.buffer.path
+        if not self.buffer.changed:
+            return True
+        k = self.frame.ask_confirm('Closing - save %r?' % self.buffer.path,)
+        if k == 'a':
+            return False
+        if k == 'y':
+            self.buffer.save()
+        return True
     
     def set_mark(self):
         self._mark = self.cursor_position

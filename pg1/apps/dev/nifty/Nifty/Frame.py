@@ -3,6 +3,8 @@ from Minibuffer import Minibuffer
 from DebugBuffer import DebugBuffer
 import Nifty.config
 
+file_detectors = []
+
 class Frame(object):
     "A window"
 
@@ -65,6 +67,15 @@ class Frame(object):
         ws.open(self, page, buffer)
         return ws
 
+    def open_file(self, path):
+        for detector in file_detectors:
+            buffer = detector(path)
+            if buffer is not None:
+                self.open(buffer)
+                print buffer.__class__.__name__
+                return
+        print 'No detectors were successful'
+
     def close(self, workspace=None):
         if workspace is None:
             workspace = self.current
@@ -114,6 +125,9 @@ class Frame(object):
     def workspaces(self):
         return [page.workspace for page in self._pages]
 
+    def ask_confirm(self, question, options):
+        print >>sys.stderr, question
+
     def copy(self, data):
         self._clipboard.append(data)
         if len(self._clipboard) > self.clipboard_limit:
@@ -127,6 +141,12 @@ class Frame(object):
         return self._clipboard[-offset]
 
     def run(self):
-        r = self._app.run()
+        _stop = False
+        while not _stop:
+            r = self._app.run()
+            _stop = True
+            for page in self._pages:
+                if _stop and hasattr(page.workspace, 'confirm_close'):
+                    _stop = _stop and page.workspace.confirm_close()
         self._app.shutdown()
         return r

@@ -10,7 +10,10 @@ default = {
     'C-w': 'workspace.cut()',
     'C-y': 'workspace.paste()',
     'A-y': 'workspace.rotate_paste()',
-    'A-x': 'frame.minibuffer.focus()'
+    'A-x': 'frame.minibuffer.focus()',
+    'tab': 'buffer.indent(workspace)',
+    'return': 'buffer.indent_if_auto(workspace)',
+    'backspace': 'buffer.unindent_if_at_start(workspace)',
 }
 
 def _resolve(sequence, where=default):
