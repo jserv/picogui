@@ -1,4 +1,3 @@
-
 CONFIG_LINUX_GENERIC
      Select the platform to compile PicoGUI for. Supported so far:
      
@@ -290,10 +289,12 @@ CONFIG_MAX_ZOMBIEGROPS
 
 CONFIG_TOUCHSCREEN
       Shared code for touchscreen drivers. Takes care of calibration.
+      Eventually all touchscreens should be migrated to this.
+      Note that CONFIG_NOEXCLUSIVE must NOT be set for calibration
+      within PicoGUI to function.
 
 DRIVER_PALMAXTS
       Touchscreen driver for Palmax mininotebooks
-      Requires CONFIG_TOUCHSCREEN
 
 DRIVER_GPM
       Driver for reading mouse events from GPM

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.77 2002/01/18 09:32:13 micahjd Exp $
+/* $Id: dispatch.c,v 1.78 2002/01/18 11:14:34 lonetech Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -38,6 +38,9 @@
 #include <pgserver/timer.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
+#ifdef CONFIG_TOUCHSCREEN
+#include <pgserver/touchscreen.h>
+#endif
 
 #include <string.h>	/* strncmp */
 
@@ -668,7 +671,12 @@ g_error rqh_unregowner(int owner, struct pgrequest *req,
 
     case PG_OWN_POINTER:
       if (pointer_owner==owner)
+       {
+#ifdef CONFIG_TOUCHSCREEN
+	touchscreen_calibrated = 1;
+#endif
 	pointer_owner = 0;
+       }
       break;
       
     case PG_OWN_SYSEVENTS:

@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.17 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: eventq.c,v 1.18 2002/01/18 11:14:34 lonetech Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -46,7 +46,7 @@ void post_event(int event,struct widget *from,long param,int owner,char *data) {
   struct conbuf *cb;
 
   /* Is there a callback to absorb this event? */
-  if (from->callback && from->callback(event,from,param,owner,data))
+  if (from && from->callback && from->callback(event,from,param,owner,data))
     return;
 
   /* Determine the owner of the originating widget */

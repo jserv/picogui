@@ -57,6 +57,7 @@ void touchscreen_pentoscreen(int *x, int *y)
       *y=n;
      }
    }
+#ifndef CONFIG_NOEXCLUSIVE
   else if(pointer_owner)
    {
     /* Dispatch an event for the calibration program */
@@ -118,6 +119,7 @@ void touchscreen_pentoscreen(int *x, int *y)
 #endif
     post_event(PG_NWE_CALIB_PENPOS, NULL, sizeof data, pointer_owner, data);
    }
+#endif
  }
 
 g_error touchscreen_init(void)
@@ -159,9 +161,12 @@ void touchscreen_message(u32 message, u32 param, u32 *ret)
 
 	switch(message)
 	{
+#ifndef CONFIG_NOEXCLUSIVE
 		case PGDM_INPUT_CALEN:
-			touchscreen_calibrated = !param;
+			if(pointer_owner)
+			  touchscreen_calibrated = !param;
 			break;
+#endif
 		case PGDM_INPUT_SETCAL:
 			if(iserror(rdhandle((void**)&str, PG_TYPE_STRING, -1,
 							param)) || !str) break;
