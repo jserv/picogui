@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.26 2002/03/26 17:49:03 instinc Exp $
+/* $Id: handle.h,v 1.27 2002/04/07 01:26:17 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -139,6 +139,12 @@ g_error handle_dup(handle *dest, int owner, handle src);
  * Can be positive or negative
  */
 g_error handle_chcontext(handle h, int owner, s16 delta);
+
+/*
+ * Set an extra mapping table used for handles with the high bit
+ * set (from 0x80000000 to 0xFFFFFFFF)
+ */
+void handle_setmapping(handle *table, int num_entries);
 
 #ifdef DEBUG_KEYS
 /* Debugging function to dump handle tree to stdout on CTRL-ALT-H */

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.87 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: dispatch.c,v 1.88 2002/04/07 01:26:17 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -38,6 +38,7 @@
 #include <pgserver/timer.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>
+#include <pgserver/svrwt.h>
 #ifdef CONFIG_TOUCHSCREEN
 #include <pgserver/touchscreen.h>
 #endif
@@ -1237,6 +1238,20 @@ g_error rqh_traversewgt(int owner, struct pgrequest *req,
   *ret = hlookup(widget_traverse(w, ntohs(arg->direction), ntohs(arg->count)),NULL);
   return success;
 }
+
+g_error rqh_mktemplate(int owner, struct pgrequest *req,
+		       void *data, u32 *ret, int *fatal) {
+  handle h;
+  g_error e;
+  
+  e = wt_load(&h,owner,data,req->size);
+  errorcheck;
+
+  *ret = h;
+
+  return success;
+}
+
 
 /* The End */
 

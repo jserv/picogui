@@ -53,6 +53,7 @@ RQH(createwidget)
 RQH(attachwidget)
 RQH(findthobj)
 RQH(traversewgt)
+RQH(mktemplate)
 RQH(undef)        /* undef must be last */
 
 /* The End */

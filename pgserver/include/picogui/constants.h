@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.134 2002/03/29 20:09:24 micahjd Exp $
+/* $Id: constants.h,v 1.135 2002/04/07 01:26:17 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -253,6 +253,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
 #define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
 #define PG_TYPE_GROP       10   //!< A graphical operation (used by the canvas widget)
+#define PG_TYPE_WT         11   //!< Created by pgLoadWidgetTemplate
 
 #define PG_TYPEMASK        0x1F
 

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.38 2002/03/26 16:27:27 instinc Exp $
+/* $Id: api.c,v 1.39 2002/04/07 01:26:16 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -122,6 +122,37 @@ pghandle pgLoadTheme(struct pgmemdata obj) {
   }
 #else  
   _pg_add_request(PGREQ_MKTHEME,obj.pointer,obj.size);
+  _pg_free_memdata(obj);
+
+  pgFlushRequests();
+  return _pg_return.e.retdata;
+#endif  
+}
+
+pghandle pgLoadWidgetTemplate(struct pgmemdata obj) {
+
+  /* Error */
+  if (!obj.pointer) return 0;
+
+  /* FIXME: I should probably find a way to do this that
+     doesn't involve copying the data- probably flushing any
+     pending packets, then writing the mmap'd file data directly
+     to the socket.
+
+     The current method is memory hungry when dealing with larger files.
+  */
+#ifdef ENABLE_THREADING_SUPPORT  
+  {
+    pgClientReturnData retData;
+    sem_init(&retData.sem, 0, 0);
+    _pg_add_request(PGREQ_MKTEMPLATE,obj.pointer,obj.size, 
+		    (unsigned int)&retData, 1);
+    _pg_free_memdata(obj);
+    sem_wait(&retData.sem);
+    return retData.ret.e.retdata;
+  }
+#else  
+  _pg_add_request(PGREQ_MKTEMPLATE,obj.pointer,obj.size);
   _pg_free_memdata(obj);
 
   pgFlushRequests();

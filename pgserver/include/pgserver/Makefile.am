@@ -22,7 +22,8 @@ noinst_HEADERS = \
 	hotspot.h \
 	textbox.h \
 	sdlgl.h \
-	fbkeys.h
+	fbkeys.h \
+	svrwt.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 

@@ -116,3 +116,8 @@
 /* 108 */ "Invalid LGOP parameter",
 /* 109 */ "Can't open a theme file specified for automatic loading",
 /* 110 */ "Can't open the specified palette file",
+/* 111 */ "Widget template has no header",
+/* 112 */ "Bad magic number in widget template",
+/* 113 */ "Bad CRC-32 checksum in widget template",
+/* 114 */ "Widget template length mismatch",
+/* 115 */ "Incomplete request in widget template",

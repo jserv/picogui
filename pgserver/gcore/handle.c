@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.53 2002/03/27 15:09:24 lonetech Exp $
+/* $Id: handle.c,v 1.54 2002/04/07 01:26:17 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -35,11 +35,16 @@
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 #include <pgserver/input.h>	/* unload_inlib */
+#include <pgserver/svrwt.h>
 
 #define NIL ((struct handlenode *)(&sentinel))
 struct handlenode const sentinel = {0,0,0,0,0,0,NULL,NIL,NIL,NIL};
 
 struct handlenode *htree = NIL;
+
+/* Handle mapping, for translating handles with the high bit set */
+handle *handle_mapping;
+int handle_mapping_len;
 
 /************ Internal functions */
 
@@ -295,6 +300,11 @@ void htree_delete(struct handlenode *z) {
 
 struct handlenode *htree_find(handle id) {
   struct handlenode *current = htree;
+
+  /* Map the handle first */
+  if ((id & 0x80000000) && ((id & 0x7FFFFFFF) < handle_mapping_len))
+    id = handle_mapping[id & 0x7FFFFFFF];
+
   while(current != NIL)
     if(id == current->id)
       return (current);
@@ -364,6 +374,9 @@ void object_free(struct handlenode *n) {
       break;
     case PG_TYPE_DRIVER:
       unload_inlib((struct inlib *)n->obj);
+      break;
+    case PG_TYPE_WT:
+      wt_free((struct pgmemwt *)n->obj);
       break;
     default:
       g_free(n->obj);
@@ -699,7 +712,7 @@ g_error handle_dup(handle *dest, int owner, handle src) {
   if (owner>=0 && n->owner>=0 && n->owner != owner) 
     return mkerror(PG_ERRT_HANDLE,27);
   
-  /* Check the type. Right now we can only duplicate very simple objects */
+  /* Check the type */
   switch (n->type & PG_TYPEMASK) {
 
   case PG_TYPE_STRING:
@@ -707,14 +720,20 @@ g_error handle_dup(handle *dest, int owner, handle src) {
     e = g_malloc(&newobj,sz);
     errorcheck;
     memcpy(newobj,n->obj,sz);
+    e = mkhandle(dest,n->type & PG_TYPEMASK,owner,newobj);
+    errorcheck;
+    break;
+
+  case PG_TYPE_WT:
+    e = wt_instantiate(dest, (struct pgmemwt *) n->obj, src, owner);
+    errorcheck;
     break;
 
   default:
     return mkerror(PG_ERRT_BADPARAM,45);   /* Can't duplicate object */
   }
-  
-  /* Just make a new one! */
-  return mkhandle(dest,n->type & PG_TYPEMASK,owner,newobj);
+ 
+  return success;
 }
 
 /*
@@ -728,6 +747,15 @@ g_error handle_chcontext(handle h, int owner, s16 delta) {
     return mkerror(PG_ERRT_HANDLE,27);
   n->context += delta;
   return success;
+}
+
+/*
+ * Set an extra mapping table used for handles with the high bit
+ * set (from 0x80000000 to 0xFFFFFFFF)
+ */
+void handle_setmapping(handle *table, int num_entries) {
+  handle_mapping = table;
+  handle_mapping_len = num_entries;
 }
 
 /* The End */

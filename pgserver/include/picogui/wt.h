@@ -1,4 +1,4 @@
-/* $Id: wt.h,v 1.1 2002/04/06 17:03:56 micahjd Exp $
+/* $Id: wt.h,v 1.2 2002/04/07 01:26:17 micahjd Exp $
  * 
  * wt.h - Defines the Widget Template file format, used by the server and by
  *        programs that read and write Widget Template files
@@ -36,11 +36,11 @@
 /* All numbers in network byte order */
 
 /* Every widget template starts with this header (20 bytes) */
-struct pgtheme_header {
+struct pgwt_header {
   char magic[4];              /* = "PGwt" */ 
 
   u32 file_len;    /* Expected file length, or 0 to disable checking length and checksum */
-  u32 file_sum32;  /* 32-bit checksum */
+  u32 file_crc32;  /* 32-bit checksum, using zlib's CRC-32 algorithm */
 
   u16 file_ver;    /* Format version */
 

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.82 2002/03/26 16:27:24 instinc Exp $
+/* $Id: client_c.h,v 1.83 2002/04/07 01:26:16 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -1049,6 +1049,19 @@ void pgSizeBitmap(int *w, int *h, pghandle bitmap);
  * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
  */
 pghandle pgLoadTheme(struct pgmemdata obj);
+
+/*!
+ * \brief Load a compiled Widget Template
+ * 
+ * \param obj A pgmemdata structure, as returned by a pgFrom* function
+ * \returns A handle to the new Widget Template object created in the PicoGUI server
+ * 
+ * This widget template is like a cookie-cutter that can be used to instantiate a whole tree
+ * of widgets or other objects. You instantiate the template using pgDup().
+ * 
+ * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgDup
+ */
+pghandle pgLoadWidgetTemplate(struct pgmemdata obj);
 
 /*!
  * \brief Find a theme object's ID given its name
