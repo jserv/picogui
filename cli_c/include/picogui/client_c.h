@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.76 2001/12/14 00:31:58 micahjd Exp $
+/* $Id: client_c.h,v 1.77 2001/12/15 16:34:47 lonetech Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -577,7 +577,7 @@ void pgDriverMessage(unsigned long message, unsigned long param);
  * \param dest Handle of the destination widget
  * \param data A pgmemdata structure containing the data, as returned by a pgFrom* function
  *
- * The \p data parameter is sent as the \p data in a PG_WP_APPMSG
+ * The \p data parameter is sent as the \p data in a PG_WE_APPMSG
  * event on behalf of the \p dest widget.
  */
 void pgAppMessage(pghandle dest, struct pgmemdata data);
