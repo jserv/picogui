@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.34 2002/01/04 04:49:52 lonetech Exp $
+/* $Id: pgtheme.y,v 1.35 2002/01/04 05:56:25 lonetech Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -184,7 +184,7 @@ thobj: THOBJ          { $$ = $1; }
      ;
 
 property: PROPERTY
-        | NUMBER      { $$ = $1; }
+        | constexp    { $$ = $1; }
         | THOBJ       { yyerror("Theme object found in place of property"); }
         | UNKNOWNSYM  { $$ = 0; }
         ;
