@@ -1,4 +1,4 @@
-/* $Id: gl_grop.c,v 1.3 2002/11/26 02:22:23 micahjd Exp $
+/* $Id: gl_grop.c,v 1.4 2002/11/28 11:08:27 micahjd Exp $
  *
  * gl_grop.c - OpenGL driver for picogui
  *             This handles all new gropnodes that export OpenGL interfaces to
@@ -140,6 +140,18 @@ void gl_grop_handler(struct groprender *r, struct gropnode *n) {
     vector[2] = UNFIX(n->param[2]);
     vector[3] = UNFIX16(n->r.w,n->r.h);
     glMaterialfv(n->r.x,n->r.y,(const GLfloat *)&vector);
+    break;
+
+  case PG_GROP_GL_TEXGENFV:
+    vector[0] = UNFIX(n->param[0]);
+    vector[1] = UNFIX(n->param[1]);
+    vector[2] = UNFIX(n->param[2]);
+    vector[3] = UNFIX16(n->r.w,n->r.h);
+    glTexGenfv(n->r.x,n->r.y,(const GLfloat *)&vector);
+    break;
+
+  case PG_GROP_GL_TEXGENI:
+    glTexGeni(n->param[0], n->param[1], n->param[2]);
     break;
 
   case PG_GROP_GL_MATERIALI:
