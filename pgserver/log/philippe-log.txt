@@ -1,3 +1,11 @@
+2001-07-12    Philippe Ney <philippe.ney@smartdata.ch>
+
+Fixing a bug that was breaking pgserver under XCopilot
+
+       * pgmain.c: passing NULL rather then "" (null string)
+		   to get_param_str() at line 400
+
+
 2001-06-07    Philippe Ney <philippe.ney@smartdata.ch>
 
 Cleaned platform dependant stuff
