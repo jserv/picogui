@@ -36,6 +36,7 @@ runtime = [
                      content = [ 'bin/pgserver'],
                      depends = [ 'resourcemanager/install',
                                  'kernel/video',
+                                 ('kernel/keyboard', S ('product/remora')),
                                  ('libjpeg/library', ~ S ('platform/m68k-pic-coff'))
                                  ],
                      help = "Install the PicoGUI Server" ),
@@ -123,6 +124,18 @@ blocked  = 1
         fd.write ('''
 name = picogui-server
 argv = pgserver -m 320x240x16
+
+wait = resource-manager
+
+restart  = 1
+announce = 1
+blocked  = 0
+    ''')
+
+    elif platform.fqn () == 'arm-linux-remora':
+        fd.write ('''
+name = picogui-server
+argv = pgserver --input-ttykb.device=/dev/tty1
 
 wait = resource-manager
 
