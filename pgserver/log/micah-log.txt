@@ -14,6 +14,15 @@ them for linear2 and linear4.
       * vidbase/linear4.c: Replaced the broken blitter with a modified
         version of the blitter I wrote for linear1. Also added the slab with
 	PG_LGOP_STIPPLE support.
+	
+      * vidbase/linear1.c: Added blitter support for PG_LGOP_INVERT_AND and
+        PG_LGOP_INVERT for fast charblits
+
+      * vidbase/linear1.c: Wrote a charblit that doesn't handle rotation or
+        clipping, but for 'normal' characters simply converts the arguments
+	and calls blit(). Fast!
+	
+      * debug/videotest.c: Added a video test mode for text
 
 2001-05-31    Micah Dowty <micahjd@users.sourceforge.net>
 

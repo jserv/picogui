@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.14 2001/06/05 18:15:54 micahjd Exp $
+/* $Id: videotest.c,v 1.15 2001/06/06 03:21:08 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -32,7 +32,7 @@
 #include <pgserver/appmgr.h>
 #include <time.h>               /* For benchmarking */
 
-#define NUM_PATTERNS    5
+#define NUM_PATTERNS    6
 #define TEST_DURATION   2      /* Length of each benchmark run, in seconds */
 
 /************ Line test pattern */
@@ -263,6 +263,36 @@ void testpat_stipple(void) {
    }
 }
 
+/************ Text test pattern */
+
+void testpat_text(void) {
+   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+   hwrcolor fg = VID(color_pgtohwr) (0x000000);
+   struct fontdesc *fd;
+   int x,y;
+   u8 c;
+   
+   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,defaultfont);
+   
+   /* Background */
+   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+
+   /* Draw characters! */
+   x=y=0;
+   c=' ';
+   while (1) {
+      if (x+fd->font->vwtab[c]>vid->xres) {
+	 y+=fd->font->h;
+	 x = 0;
+      }
+      if (y+fd->font->h>vid->yres)
+	return;
+      if (c>'~')
+	c = ' ';
+      outchar(vid->display,fd,&x,&y,0,c++,NULL,0,0,PG_LGOP_NONE,0);
+   }
+}
+   
 /************ Front-end */
 
 void videotest_help(void) {
@@ -272,6 +302,7 @@ void videotest_help(void) {
 	"\t3\tBlit/unblit test pattern\n"
 	"\t4\tSlab alignment test pattern\n"
 	"\t5\tStippled rectangle test pattern\n"
+	"\t6\tText test pattern\n"
 	"\t99\tAll tests\n"
 	"\tnegative value: repeat test in a loop\n"
 	);
@@ -295,7 +326,10 @@ static void videotest_run_one(int number,int update) {
   case 5:
     testpat_stipple();
     break;
-  default:
+  case 6:
+    testpat_text();
+    break;
+default:
     printf("Unknown video test mode");
     exit(1);
   }
