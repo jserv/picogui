@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.35 2002/02/28 07:09:04 micahjd Exp $
+/* $Id: sdlinput.c,v 1.36 2002/03/03 01:03:02 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -233,6 +233,11 @@ g_error sdlinput_init(void) {
     int i;
     g_error e;
     char *p;
+    int mapscale_n,mapscale_d;
+     
+    sscanf(get_param_str("input-sdlinput","mapscale","1 1"), "%d %d",
+	   &mapscale_n, &mapscale_d);
+     
     if (fname && (f = fopen(fname,"r"))) {
 
       /* Count the number of rectangles */
@@ -252,13 +257,13 @@ g_error sdlinput_init(void) {
       while (fgets(linebuf,79,f) && i<sdlinput_mapsize)
 	if (!strncmp(linebuf,"<AREA",5)) {
 	  p = strstr(linebuf,"COORDS=")+8;
-	  sdlinput_map[i].x1 = atoi(p);
+	  sdlinput_map[i].x1 = atoi(p) * mapscale_n / mapscale_d;
 	  p = strchr(p,',')+1;
-	  sdlinput_map[i].y1 = atoi(p);
+	  sdlinput_map[i].y1 = atoi(p) * mapscale_n / mapscale_d;
 	  p = strchr(p,',')+1;
-	  sdlinput_map[i].x2 = atoi(p);
+	  sdlinput_map[i].x2 = atoi(p) * mapscale_n / mapscale_d;
 	  p = strchr(p,',')+1;
-	  sdlinput_map[i].y2 = atoi(p);
+	  sdlinput_map[i].y2 = atoi(p) * mapscale_n / mapscale_d;
 	  p = strstr(p,"HREF=")+6;
 	  sdlinput_map[i].key = atoi(p);
 	  i++;

@@ -283,6 +283,9 @@ quoted appropriately. For example:
   with maps produced by Gimp's image map plugin. The parser is awfully dumb,
   so don't expect it to work with anything other than Gimp at this time.
 
+- scalemap
+  Scale the map by this fraction. (space-separated numerator and denominator)
+
 [video-serial40x4]
 
 - device
@@ -427,7 +430,8 @@ quoted appropriately. For example:
   (performed in pixel coordinates)
 
 - texture_filtering
-  This may be "linear" or "nearest". Defaults to "linear"
+  This may be "linear" or "nearest". Defaults to "linear". Note that font textures
+  always use linear filtering and mipmapping.
 
 - continuous
   Nonzero to update the screen continuously, rather than just when picogui calls for it
