@@ -27,7 +27,7 @@ def request(reqtype, data='', id=None):
 		id = reqtype
 	# Pad the data to the next 32-bit boundary
 	if (len(data)%3) != 0:
-		data += '\0' * (4 - (len(data)%3))
+		data += "\0" * (3 - (len(data)%3))
 	return pack('LLHxx', id, len(data), reqtype) + data
 
 # specific requests
