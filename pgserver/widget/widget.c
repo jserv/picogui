@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.32 2000/08/05 03:37:36 micahjd Exp $
+/* $Id: widget.c,v 1.33 2000/08/05 05:00:23 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -457,7 +457,7 @@ void dispatch_key(long type,int key,int mods) {
   while (p) {
     if (p->hotkey == keycode) {
       suppress = 1;
-      if (type = TRIGGER_KEYDOWN)
+      if (type == TRIGGER_KEYDOWN)
 	send_trigger(p,TRIGGER_HOTKEY,NULL);
     }
     p = p->hknext;
