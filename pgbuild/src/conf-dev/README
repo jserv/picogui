@@ -3,8 +3,3 @@ PGBuild's configuration database with project-specific data.
 Files in this directory are 'mounted' into the config
 database first.
 
-It also contains XSL and CSS stylesheets so that the
-configuration defaults can be displayed in an easy to read
-form in an XSLT-compatible web browser or with XSLT
-preprocessing.
-

@@ -17,7 +17,8 @@
   This has the side effect of making sure our code can handle XML
   processing instructions.
 -->
-<?xml-stylesheet type="text/xsl" href="pgbuild.xsl"?>
+<?xml-stylesheet type="text/xsl"
+  href="http://navi.picogui.org/svn/picogui/trunk/tools/xslt/pgbuild_to_xhtml.xslt"?>
 
 <!--
   The PGBuild tag marks data that should be mounted into

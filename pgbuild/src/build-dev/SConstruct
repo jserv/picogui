@@ -14,7 +14,7 @@ conf.mount(env.fs.Entry("../conf-dev/sources.xml"))
 conf.mount(env.fs.Entry("test.xml"), "rw")
 
 # Dump our current in-memory tree to XML
-open("../conf-dev/test_out.xml","w").write(conf.toprettyxml())
+open("merged.xml","w").write(conf.toprettyxml())
 
 # Try using an XPath to get the title of our working copy
 print repr(conf.xpath("/pgbuild/@title")[0].value)
