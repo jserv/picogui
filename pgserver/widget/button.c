@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.75 2001/09/02 19:10:26 micahjd Exp $
+/* $Id: button.c,v 1.76 2001/09/03 00:45:52 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -326,6 +326,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 	      /* Turn it off */
 	      ((struct btndata *)(old->data))->on = 0;
 	      div_setstate(old->in->div,
+			   ((struct btndata *)(old->data))->over ?
+			   ((struct btndata *)(old->data))->state_hilight :
 			   ((struct btndata *)(old->data))->state,0);
 	    }
 	    
@@ -383,11 +385,27 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_HOTKEY:
   case TRIGGER_DIRECT:
-    /* No graphical interaction here, so just
-       post the event and get on with it */
-    post_event(PG_WE_ACTIVATE,self,2,0,NULL);
-    return;
-    
+
+    /* If it's a toggle button, go ahead and make it change state. Otherwise
+     * send the event and get out of here without redrawing anything
+     */
+
+    if (DATA->extdevents & PG_EXEV_TOGGLE) {
+      union trigparam mytrig;
+      
+      /* Simulate a mouse press/release */
+      memset(&mytrig,0,sizeof(mytrig));
+      mytrig.mouse.chbtn = 1;
+      button_trigger(self,TRIGGER_DOWN,&mytrig);
+      button_trigger(self,TRIGGER_UP,&mytrig);
+    }
+    else {
+      /* No graphical interaction here, 
+       * so just post the event and get on with it 
+       */
+      post_event(PG_WE_ACTIVATE,self,2,0,NULL);
+      return;
+    }
   }
 
   /* Update, THEN send the event. */

@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.6 2001/09/02 19:20:26 micahjd Exp $
+/* $Id: mobile.ths,v 1.7 2001/09/03 00:45:52 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -18,7 +18,7 @@
  * a couple kilobytes on a pG logo, you can just comment out the whole
  * 'background' object and the background will be blank.
  *
- * Version 1.00
+ * Version 0.50
  *
  * -- Micah Dowty <micahjd@users.sourceforge.net>
  */
@@ -215,19 +215,20 @@ object menuitem {
     SetColor(bgcolor);
     Rect(x+11,y,w-11,h);
     SetColor(0xCCCCCC);
-    Rect(x,y,11,h-1);
+    Rect(x,0,11,h-1);
     Slab(x,y+h-1,w,1);
 
     /* Right arrow */
     SetLgop(PG_LGOP_AND);
-    Bitmap(x+w-7,0,6,9,bitmap1);
+    Bitmap(x+w-7,1,6,9,bitmap1);
     SetLgop(PG_LGOP_OR);
-    Bitmap(x+w-7,0,6,9,bitmap2);
+    Bitmap(x+w-7,1,6,9,bitmap2);
     SetLgop(PG_LGOP_NONE);
 
     x = x+11;
     w = w-30;
-  };
+    h = h-2;
+};
 }
 object menuitem.hilight {
   bgcolor = 0x000000;
@@ -262,7 +263,7 @@ object checkbox {
     SetColor(bgcolor);
     Rect(x+11,y,w-11,h);
     SetColor(0xCCCCCC);
-    Rect(x,y,11,h-1);
+    Rect(x,0,11,h-1);
     Slab(x,y+h-1,w,1);
 
     /* Checkbox */
@@ -270,7 +271,8 @@ object checkbox {
 
     x = x+11;
     w = w-30;
-  };
+    h = h-2;
+};
 }
 object checkbox.hilight {
   bgcolor = 0x000000;
