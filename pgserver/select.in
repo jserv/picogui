@@ -119,6 +119,8 @@ add_if_true x11_window.c         $DRIVER_X11
 add_if_true x11_init.c           $DRIVER_X11
 add_if_true x11_primitives.c     $DRIVER_X11
 add_if_true mgl2fb.c             $DRIVER_MGL2FB
+add_if_true vncserver.c          $DRIVER_VNCSERVER
+add_if_true libvncserver/libvncserver.la $DRIVER_VNCSERVER
 
 close_section
 

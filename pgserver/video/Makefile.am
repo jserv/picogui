@@ -1,3 +1,5 @@
+SUBDIRS = libvncserver
+
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include $(DRIVER_CFLAGS)
 
 noinst_LTLIBRARIES = libvideo.la
@@ -24,7 +26,8 @@ EXTRA_libvideo_la_SOURCES = \
 	x11_primitives.c \
 	mgl2fb.c \
 	sdlgl.c \
-	glcontext.c
+	glcontext.c \
+	vncserver.c
 
 noinst_HEADERS = \
 	yuv.h

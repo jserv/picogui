@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.117 2003/01/01 03:43:01 micahjd Exp $
+/* $Id: video.h,v 1.118 2003/01/19 07:04:24 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -852,6 +852,7 @@ g_error s1d13806_regfunc(struct vidlib *v);
 g_error sed133x_regfunc(struct vidlib *v);
 g_error x11_regfunc(struct vidlib *v);
 g_error mgl2fb_regfunc(struct vidlib *v);
+g_error vncserver_regfunc(struct vidlib *v);
 
 /***************************************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);

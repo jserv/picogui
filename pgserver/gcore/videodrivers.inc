@@ -50,6 +50,10 @@
   DRV("serial40x4",&serial40x4_regfunc)
 #endif   
 
+#ifdef DRIVER_VNCSERVER
+  DRV("vncserver",&vncserver_regfunc)
+#endif
+
 #ifdef DRIVER_SCRSHOT
   DRV("scrshot",&scrshot_regfunc)
 #endif

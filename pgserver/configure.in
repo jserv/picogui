@@ -384,6 +384,7 @@ AC_OUTPUT(
 	configscript/lxdialog/Makefile
 	formats/Makefile
 	profiles/Makefile
+	video/libvncserver/Makefile
 	picogui-server.spec
 )
 

@@ -1,4 +1,4 @@
-/* $Id: nullfb.c,v 1.7 2003/01/01 03:43:06 micahjd Exp $
+/* $Id: nullfb.c,v 1.8 2003/01/19 07:04:24 micahjd Exp $
  *
  * nullfb.c - For testing and profiling. Uses linear* VBLs to generate a frame
  *            but does not blit the buffer to any actual hardware
@@ -27,7 +27,6 @@
  */
 
 #include <pgserver/common.h>
-
 #include <pgserver/video.h>
 
 /* Macros to easily access the members of vid->display */
