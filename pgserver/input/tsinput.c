@@ -1,6 +1,6 @@
-/* $Id: tsinput.c,v 1.2 2001/03/07 18:33:39 pney Exp $
+/* $Id: tsinput.c,v 1.3 2001/03/19 22:58:15 bauermeister Exp $
  *
- * tsinput.h - input driver for touch screen
+ * tsinput.c - input driver for touch screen
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -23,7 +23,7 @@
  *   Philippe Ney <philippe.ney@smardata.ch>
  * 
  * Contributors:
- * 
+ *   Pascal Bauermeister <pascal.bauermeister@smardata.ch>
  * 
  */
 
@@ -40,22 +40,13 @@
 
 #define POLL_USEC 100
 
-#define DEVICE_FILE_NAME  "/dev/ts"
-
+static const char *DEVICE_FILE_NAME = "/dev/ts";
+static const char *_file_ = __FILE__; 
 
 static int fd=0;
-static int  bytes_transfered=0;
+static int bytes_transfered=0;
 
 /******************************************** Implementations */
-
-static int conv_xy(int inval, int isx) {
-  inval -= 400;
-  inval  *= 320;
-  if(isx) inval  /= 3500;
-  else    inval  /= 3400;
-  return inval;
-}
-
 
 void tsinput_poll(void) {
   struct ts_pen_info pen_info;
@@ -65,25 +56,29 @@ void tsinput_poll(void) {
   bytes_transfered=read(fd,(char *)&pen_info,sizeof(pen_info));
 
   if(pen_info.x != -1) {
-    pen_info.x = conv_xy(pen_info.x,1);
-    pen_info.y = conv_xy(pen_info.y,0);
 
-  switch(pen_info.event) {
-  case EV_PEN_UP:
-    dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
-    break;
-    
-  case EV_PEN_DOWN:
-    dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
-    break;
-    
-  case EV_PEN_MOVE:
-    dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,0);
-    break;
-  }
+    switch(pen_info.event) {
+    case EV_PEN_UP:
+      dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
+      break;
+      
+    case EV_PEN_DOWN:
+      dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
+      break;
+      
+    case EV_PEN_MOVE:
+      dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,0);
+      break;
+    }
 
-//  printf("(%i,%i)\n",pen_info.x,pen_info.y);
-    
+#ifdef DEBUG_EVENT
+    printf("%s: %c(%i,%i)\n", _file_,
+	   pen_info.event == EV_PEN_UP ? 'U' :
+	   pen_info.event == EV_PEN_DOWN ? 'D' :
+	   pen_info.event == EV_PEN_MOVE ? 'M' :
+	   '?',
+	   pen_info.x, pen_info.y);
+#endif
   }
 }
 
@@ -92,31 +87,86 @@ g_error tsinput_init(void) {
   struct ts_drv_params  ts_params;
   int                   ret_val;
 
+#ifdef DEBUG_INIT
+  printf("%s: Opening device %s\n", _file_, DEVICE_FILE_NAME);
+#endif
   fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
   if(fd < 0) {
-    printf("Can't open device file: %s\n",DEVICE_FILE_NAME);
+    printf("%s: Can't open device file: %s\n", _file_, DEVICE_FILE_NAME);
     printf("Error: %s\n",strerror(errno));
-    return -1;
+    goto error;
   }
   else {
-    printf("Device %s open\n");
+    int mx1, mx2, my1, my2;
+    int ux1, ux2, uy1, uy2;
 
     ret_val=ioctl(fd,TS_PARAMS_GET,&ts_params);
-    if(ret_val < 0) printf("ioctl read error: %s\n",strerror(errno));
+    if(ret_val < 0) {
+      printf("ioctl get error: %s\n",strerror(errno));
+      goto error_close;
+    }
 
+    ts_params.version_req    = MC68328DIGI_VERSION;
     ts_params.event_queue_on = 0;
+    ts_params.deglitch_on    = 0;
+    ts_params.sample_ms      = 10;
+    ts_params.follow_thrs    = 0;
+    ts_params.mv_thrs        = 2;
+    ts_params.xy_swap        = 0;
+
+#ifdef CONFIG_XCOPILOT
+    ts_params.y_max          = 159 + 66;  /* to allow scribble area */
+    ts_params.y_min          = 0;
+    ts_params.x_max          = 159;
+    ts_params.x_min          = 0;
+
+    /* according to mc68328digi.h 'How to calculate the parameters', we have
+     * measured:
+     */
+    mx1 = 508; ux1 =   0;
+    my1 = 508; uy1 =   0;
+    mx2 = 188; ux2 = 159;
+    my2 = 188; uy2 = 159;
+#elif defined(CONFIG_CHIPSLICE)
+# error TODO: set _min, _max, and m1, m2, u1,u2 for CHIPSLICE
+#endif
+    ts_params.x_ratio_num    = ux1 - ux2;
+    ts_params.x_ratio_den    = mx1 - mx2;
+    ts_params.x_offset       =
+      ux1 - mx1 * ts_params.x_ratio_num / ts_params.x_ratio_den;
+    
+    ts_params.y_ratio_num    = uy1 - uy2;
+    ts_params.y_ratio_den    = my1 - my2;
+    ts_params.y_offset       =
+      uy1 - my1 * ts_params.y_ratio_num / ts_params.y_ratio_den;
+
 
     ret_val=ioctl(fd,TS_PARAMS_SET,&ts_params);
-    if(ret_val < 0) printf("ioctl write error: %s\n",strerror(errno));
+    if(ret_val < 0) {
+      printf("ioctl set error: %s\n",strerror(errno));
+      goto error_close;
+    }
 
-    return 0;
+    return sucess;
+
+  error_close:
+    close(fd);
+    fd = 0;
+    goto error;
   }
+
+  error:
+    return mkerror(PG_ERRT_IO, 74);
 }
 
 
 void tsinput_close(void) {
-  close(fd);
-  printf("Device %s closed.\n",DEVICE_FILE_NAME);
+#ifdef DEBUG_EVENT
+  printf("%s: Closing device %s\n",_file_, DEVICE_FILE_NAME);
+#endif
+
+  if(fd)
+    close(fd);
 }
 
 
