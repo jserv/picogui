@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.27 2001/11/23 04:24:09 micahjd Exp $
+/* $Id: request.c,v 1.28 2001/12/04 18:39:35 cgrigis Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -40,7 +40,8 @@
 #include <sys/un.h>
 
 /* Default server unix domain socket path */
-#define PG_REQUEST_SERVER "/tmp/.pgui"
+#define PG_REQUEST_SERVER "/var/tmp/.pgui"
+
 #endif
 
 #ifndef CONFIG_MAXPACKETSZ
@@ -370,7 +371,10 @@ g_error net_init(void) {
   tmp = strlen(server_sockaddr.sun_path) + sizeof(server_sockaddr.sun_family);
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, tmp) == -1)
+  {
+    perror ("bind");
     return mkerror(PG_ERRT_NETWORK,52);
+  }
 
 #endif
 

@@ -14,7 +14,7 @@ UCLINUX=y
 CONFIG_SOFT_CHIPSLICE=y
 # CONFIG_XCOPILOT is not set
 # ASM_68000 is not set
-# CONFIG_UNIX_SOCKET is not set
+CONFIG_UNIX_SOCKET=y
 
 #
 # Debugging
@@ -36,6 +36,8 @@ CONFIG_VIDEOTEST=y
 # DEBUG_MEMORY is not set
 CONFIG_STDERR_GURU=y
 # DEBUG_HTML is not set
+# CONFIG_X11_NOPIXEL is not set
+# CONFIG_SDL_FULLUPDATE is not set
 
 #
 # Fonts
@@ -60,6 +62,7 @@ FONT_HELVETICA24=y
 #
 # DRIVER_FBDEV is not set
 # DRIVER_SDLFB is not set
+# DRIVER_X11 is not set
 # DRIVER_SVGAFB is not set
 DRIVER_EZ328=y
 # DRIVER_EZ328VGA is not set
@@ -74,6 +77,7 @@ DRIVER_EZ328=y
 # Input Drivers
 #
 # DRIVER_SDLINPUT is not set
+# DRIVER_X11INPUT is not set
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
 DRIVER_CHIPSLICETS=y
@@ -81,6 +85,7 @@ DRIVER_EVENTBROKER=y
 # DRIVER_R3912TS is not set
 # DRIVER_VR3TS is not set
 # DRIVER_TUXTS is not set
+# DRIVER_UCB1X00 is not set
 # DRIVER_TTYKB is not set
 # DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
