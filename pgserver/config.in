@@ -86,6 +86,7 @@ if [ "$CONFIG_FONTENGINE_BDF" = "y" ]; then
     bool '  Times 10, 10b'                       FONT_TIMES10
     bool '  Utopia 25'                           FONT_UTOPIA25
     bool '  Fixed 13 ja (Japanese Unicode)'      FONT_FIXED13JA
+    bool '  YoungAtHeart 18'                     FONT_YOUNGATHEART18
 fi
 endmenu
 

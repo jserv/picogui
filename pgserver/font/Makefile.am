@@ -30,7 +30,8 @@ FDF_FILES = \
         lucida10.bdf \
         times10.bdf \
         times10b.bdf \
-        utopia25.bdf
+        utopia25.bdf \
+        youngatheart18.bdf
 
 FI_FILES = \
         clean12.fi \
@@ -48,7 +49,8 @@ FI_FILES = \
         helvetica8.fi \
         lucida10.fi \
         times10.fi \
-        utopia25.fi
+        utopia25.fi \
+        youngatheart18.fi
 
 EXTRA_DIST = $(FDF_FILES) $(FI_FILES)
 
