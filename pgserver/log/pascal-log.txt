@@ -1,3 +1,21 @@
+2001-03-23    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+
+Now we have yet another platform on which PicoGUI works very nicely !
+
+I have tweaked Xcopilot to have a 320x240 lcd panel. Later I'll introduce some
+simple skinning features so that the lcd, digi, and case dimensions can be
+read from ~/.xcopilot/config, with some image file for the case. So for now,
+the ChipSlice-ization of Xcopilot is hard-coded. It is chosen by the
+CONFIG_SOFT_CHIPSLICE symbol. The lcd panel and the digi area have exactly the
+same size.
+
+	* config.in: Added the SOFT_CHIPSLICE target
+
+	* input/tsinput.c: Added settings for the geometry of SOFT_CHIPSLICE
+
+	* video/ez328.c:  Added settings for the geometry of SOFT_CHIPSLICE
+
+	
 2001-03-19    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 
 	* config.in: Supports XCOPILOT as target

@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.11 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: ez328.c,v 1.12 2001/03/23 01:31:30 bauermeister Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -64,12 +64,18 @@ g_error ez328_init(void) {
 #elif defined(CONFIG_XCOPILOT)
    LXMAX  = 160;
    LYMAX  = 160-1;
-   bpp = 1;
+   vid->bpp = 1;
+#elif defined(CONFIG_SOFT_CHIPSLICE)
+   LXMAX  = 240;
+   LYMAX  = 320-1;
+   vid->bpp = 1;
 #endif
    
    if (!vid->bpp) vid->bpp = 1;        /* Default to black and white */
    
-#if defined(CONFIG_CHIPSLICE) || defined(CONFIG_XCOPILOT)
+#if defined(CONFIG_CHIPSLICE) || \
+    defined(CONFIG_XCOPILOT)  || \
+    defined(CONFIG_SOFT_CHIPSLICE)
    /* Load the ts driver as the main input driver */
    return load_inlib(&tsinput_regfunc,&inlib_main);
 #else
@@ -137,7 +143,9 @@ void ez328_close(void) {
    memcpy(REGS_START,ez328_saveregs,REGS_LEN);   
 #endif
 
-#ifdef CONFIG_CHIPSLICE
+#if defined(CONFIG_CHIPSLICE) || \
+    defined(CONFIG_XCOPILOT)  || \
+    defined(CONFIG_SOFT_CHIPSLICE)
    unload_inlib(inlib_main);   /* Chipslice loaded an input driver */
 #endif
 

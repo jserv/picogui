@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.3 2001/03/19 22:58:15 bauermeister Exp $
+/* $Id: tsinput.c,v 1.4 2001/03/23 01:31:30 bauermeister Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -127,6 +127,20 @@ g_error tsinput_init(void) {
     my1 = 508; uy1 =   0;
     mx2 = 188; ux2 = 159;
     my2 = 188; uy2 = 159;
+#elif defined(CONFIG_SOFT_CHIPSLICE)
+    /* limits are like for ChipSlice */
+    ts_params.y_max          = 320-1;
+    ts_params.y_min          = 0;
+    ts_params.x_max          = 240-1;
+    ts_params.x_min          = 0;
+
+    /* ratio s are like for xcopilot, except that for big screen
+     * height, y is divided by two
+     */
+    mx1 = 508; ux1 =   0;
+    my1 = 508; uy1 =   0;
+    mx2 = 188; ux2 = 159;
+    my2 = 188; uy2 = 160*2-1;
 #elif defined(CONFIG_CHIPSLICE)
 # error TODO: set _min, _max, and m1, m2, u1,u2 for CHIPSLICE
 #endif
