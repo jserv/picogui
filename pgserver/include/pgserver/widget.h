@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.40 2001/09/03 02:04:00 micahjd Exp $
+/* $Id: widget.h,v 1.41 2001/09/18 21:51:50 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -259,7 +259,8 @@ DEF_WIDGET_PROTO(flatbutton)
 DEF_WIDGET_PROTO(listitem)
 DEF_WIDGET_PROTO(submenuitem);
 DEF_WIDGET_PROTO(radiobutton);
-			    
+DEF_WIDGET_PROTO(textbox);			
+    
 /* Set to the client # if a client has taken over the system resource */
 extern int keyboard_owner;
 extern int pointer_owner;
