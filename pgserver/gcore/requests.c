@@ -1,4 +1,4 @@
-/* $Id: requests.c,v 1.3 2002/11/20 12:18:21 micahjd Exp $
+/* $Id: requests.c,v 1.4 2002/11/20 12:29:32 micahjd Exp $
  *
  * requests.c - Process the requests that form picogui's network
  *              protocol and several file formats.
@@ -589,7 +589,7 @@ g_error rqh_mkcontext(struct request_data *r) {
 
 g_error rqh_rmcontext(struct request_data *r) {
   struct conbuf *cb;
-  reqarg(rmcontext);
+  struct pgreqd_rmcontext *arg = (struct pgreqd_rmcontext *) r->in.data;
 
   if (r->in.req->size < sizeof(struct pgreqd_rmcontext)) {
     /* We don't have a structure, follow the stack behavior */
@@ -937,9 +937,9 @@ g_error rqh_getfstyle(struct request_data *r) {
   g_error e;
   reqarg(getfstyle);
 
-  e = g_malloc((void*)&gfs, sizeof(*gfs));
+  e = g_malloc((void**)&gfs, sizeof(*gfs));
   errorcheck;
-  memset(&gfs,0,sizeof(*gfs));
+  memset(gfs,0,sizeof(*gfs));
 
   font_getstyle(ntohs(arg->index),&fs);
 
