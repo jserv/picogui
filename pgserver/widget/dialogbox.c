@@ -1,4 +1,4 @@
-/* $Id: dialogbox.c,v 1.8 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: dialogbox.c,v 1.9 2002/11/06 09:10:09 micahjd Exp $
  *
  * dialogbox.c - The dialogbox is a type of popup widget that is always
  *               automatically sized, and has a title
@@ -73,7 +73,7 @@ g_error dialogbox_set(struct widget *self,int property, glob data) {
   
   case PG_WP_TEXT:
     /* If possible, get the popup widget to set the title */
-    if (iserror(popup_set(self,property,data))) {
+    if (iserror(WIDGET_PARENT->set(self,property,data))) {
       /* Otherwise, we'll use our own title widget */
       
       /* Need to create the title? */
@@ -97,17 +97,17 @@ g_error dialogbox_set(struct widget *self,int property, glob data) {
     break;
 
   default:
-    return popup_set(self,property,data);
+    return WIDGET_PARENT->set(self,property,data);
   }
   return success;
 }
 
 glob dialogbox_get(struct widget *self,int property) {
-  return popup_get(self,property);
+  return WIDGET_PARENT->get(self,property);
 }
 
 void dialogbox_trigger(struct widget *self,s32 type,union trigparam *param) {
-  popup_trigger(self,type,param);
+  WIDGET_PARENT->trigger(self,type,param);
 }
 
 /* The End */
