@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.4 2001/05/12 22:45:51 micahjd Exp $
+/* $Id: serial40x4.c,v 1.5 2001/05/13 04:12:30 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -231,7 +231,7 @@ void serial40x4_close(void) {
    close(lcd_fd);
 }
 
-/* Use a shadow buffer to send RLE-delta encoded data to the LCD.
+/* Use a shadow buffer to send only changed data to the LCD.
  *
  * Cruftily hardcoded to a split 40x4 Hitachi-compatible LCD
  */
