@@ -1,4 +1,4 @@
 NAME = Console
 SIZE = 8
-STYLE = fixed ibmextend
+STYLE = fixed encoding_ibm
 NORMAL = console8

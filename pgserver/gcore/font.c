@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.34 2001/10/26 22:54:20 micahjd Exp $
+/* $Id: font.c,v 1.35 2001/10/26 23:56:32 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -42,8 +42,8 @@
  * attributes
  */
 #define FCMP_TYPE     (1<<14)
-#define FCMP_FIXEDVAR (1<<13)
-#define FCMP_CHARSET  (1<<12)
+#define FCMP_CHARSET  (1<<13)
+#define FCMP_FIXEDVAR (1<<12)
 #define FCMP_SIZE(x)  ((0xFF-(x&0xFF))<<3)   /* This macro is passed the
 						difference in size between the
 						request and the actual font */
@@ -433,8 +433,12 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags) {
   if ( ((flags&PG_FSTYLE_SYMBOL)==(fs->flags&PG_FSTYLE_SYMBOL)) &&
        ((flags&PG_FSTYLE_SUBSET)==(fs->flags&PG_FSTYLE_SUBSET)))
     result |= FCMP_TYPE;
-  if ( ((flags&PG_FSTYLE_EXTENDED)==(fs->flags&PG_FSTYLE_EXTENDED)) &&
-       ((flags&PG_FSTYLE_IBMEXTEND)==(fs->flags&PG_FSTYLE_IBMEXTEND)))
+  if ( ((flags&PG_FSTYLE_ENCODING_ISOLATIN1)==
+	(fs->flags&PG_FSTYLE_ENCODING_ISOLATIN1)) &&
+       ((flags&PG_FSTYLE_ENCODING_UNICODE)==
+	(fs->flags&PG_FSTYLE_ENCODING_UNICODE)) &&
+       ((flags&PG_FSTYLE_ENCODING_IBM)==
+	(fs->flags&PG_FSTYLE_ENCODING_IBM)))
     result |= FCMP_CHARSET;
 
   return result;

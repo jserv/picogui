@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.18 2001/10/18 07:02:28 micahjd Exp $
+# $Id: fontdef.pl,v 1.19 2001/10/26 23:56:32 micahjd Exp $
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.
@@ -68,6 +68,7 @@ foreach $file (@fontfiles) {
     $fiparam{'STYLE'} = join('|',map('PG_FSTYLE_'.$_,
 				     split(/\s/,uc($fiparam{'STYLE'}))));
     $norm = $bold = $ital = $bital = 'NULL';
+    $fiparam{'STYLE'} = 0 if (!$fiparam{'STYLE'});
 
     if ($fiparam{'NORMAL'}) {
 	$norm = '(struct font *) &'.$fiparam{'NORMAL'};

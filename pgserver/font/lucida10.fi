@@ -1,4 +1,4 @@
 NAME = Lucida
 SIZE = 10
-STYLE = extended default
+STYLE = encoding_isolatin1 default
 NORMAL = lucida10

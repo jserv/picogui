@@ -1,6 +1,6 @@
 NAME = Helvetica
 SIZE = 24
-STYLE = default extended
+STYLE = default
 NORMAL = helvetica24
 BOLD = helvetica24b
 
