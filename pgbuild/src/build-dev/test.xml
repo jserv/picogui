@@ -1,16 +1,3 @@
-<test-fu>
-
-   <ducks>
-
-     <duck name="fred"/>
-     <duck name="murray"/>
-
-     <duck name="henry">
-       <quotation>
-          Thribble thribbly wonk!
-       </quotation>
-     </duck>
-
-   </ducks>
-
-</test-fu>
+<pgbuild title="Test configuration file" root="some/thingy/doodad">
+  <quack/>
+</pgbuild>

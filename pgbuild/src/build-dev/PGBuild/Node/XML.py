@@ -115,6 +115,7 @@ class Element(SCons.Node.Node):
         return self.toxml()
 
     def xpath(self, path):
+        # Pass this off to the separate XPath implementation class
         return default_xpath.parse(self, path)
 
 class Document(Element):
