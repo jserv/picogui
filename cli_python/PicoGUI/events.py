@@ -43,15 +43,21 @@ typenames = {
     0x301:	'appmsg',	# Messages from another application 
 
     # Non-widget events
-    0x140A:	'kbd char',	# These are sent if the client has captured the 
-    0x140B:	'kbd keyup',	# keyboard (or pointing device ) 
-    0x140C:	'kbd keydown',
-    0x1209:	'pntr move',
-    0x1205:	'pntr up',
-    0x1204:	'pntr down',
-    0x120D:	'bgclick',	# The user clicked the background widget 
-    0x1101:	'pntr raw',	# Raw coordinates, for tpcal or games 
-    0x1301:	'calib penpos',	# Raw 32-bit coordinates, for tpcal 
+    0x1001:	'theme inserted',	# This notifies all clients when a theme
+                                        # is inserted, so they can reevaluate
+                                        # theme properties they're using. The
+                                        # parameter passed with this event is a
+                                        # handle to the theme.
+    0x1002:	'theme removed',	# This notifies all clients when a theme
+                                        # is removed, so they can reevaluate
+                                        # theme properties they're using. The
+                                        # parameter passed with this event is a
+                                        # handle to the theme. Note that at the
+                                        # time this event is sent, the handle
+                                        # will be invalid, but it is provided for
+                                        # comparison purposes if needed.
+    0x1302:	'infilter',		# Carries an event from pgserver to a
+                                        # client-side input filter.
 }
 
 class Event(object):
