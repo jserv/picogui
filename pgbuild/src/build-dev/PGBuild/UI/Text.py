@@ -102,10 +102,17 @@ class Progress(PGBuild.UI.None.Progress):
             self.color.write("\n")            
 
     def _warning(self, text):
-        self._textBlock("Warning:\n" + text, ('bold', 'brown'))
+        self._prefixedTextBlock(text, "Warning:", ('bold', 'brown'))
             
     def _error(self, text):
-        self._textBlock("Error:\n" + text, ('bold', 'red'))
+        self._prefixedTextBlock(text, "Error:", ('bold', 'red'))
+
+    def _prefixedTextBlock(self, text, prefix, color):
+        if len(text.split("\n")) > 1:
+            separator = "\n"
+        else:
+            separator = " "
+        self._textBlock(prefix + separator + text, color)
 
     def _message(self, text):
         self._textBlock(text)
