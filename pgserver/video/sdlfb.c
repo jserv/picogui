@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.15 2001/05/31 11:57:44 micahjd Exp $
+/* $Id: sdlfb.c,v 1.16 2001/07/05 04:36:46 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -75,7 +75,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   int i;
 
   /* Interpret flags */
-  if (flags & PG_VID_FULLSCREEN)
+  if (get_param_int("video-sdlfb","fullscreen",0))
     sdlflags |= SDL_FULLSCREEN;
 
 #ifdef CONFIG_SDLEMU_BLIT
@@ -224,7 +224,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   }
    
   /* Info */
-  sprintf(str,"PicoGUI (sdl@%dx%dx%d)",
+  sprintf(str,get_param_str("video-sdlfb","caption","PicoGUI (sdl@%dx%dx%d)"),
 	  vid->xres,vid->yres,bpp);
   SDL_WM_SetCaption(str,NULL);
    

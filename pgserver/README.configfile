@@ -1,0 +1,85 @@
+--------------------- Config file format --------
+
+In addition to the compile-time options that can be browsed and selected
+using 'make menuconfig', pgserver has runtime options that can be selected
+using the command line or a configuration file.
+
+Configuration settings are loaded and processed in this order:
+ - /etc/pgserver.conf
+ - ~/.pgserverrc
+ - Command line options
+ 
+The settings are key-value pairs organized into sections. In the
+configuration files, this is represented by the following format
+ - Blank lines are ignored
+ - Leading and trailing whitespace on comments, keys, or values are ignored
+ - Comment lines begin with '#'
+ - The current section is set with a "[section]" line
+ - Key-value pair lines are in the format "key = value"
+ 
+For example:
+-----------------------8<------------------------
+# Sample config file
+
+[pgserver]
+xres = 640
+yres = 480
+
+[video-sdl]
+caption = Welcome to PicoGUI!
+----------------------->8------------------------
+
+Config options can be specified on the command line using the format:
+  --section.key=value
+If the section is omitted, 'pgserver' is assumed. If the value contains
+spaces or other 'strange' characters the whole command line option must be
+quoted appropriately. For example:
+  pgserver --xres=640 --yres=480 '--video-sdl.caption=Welcome to PicoGUI!'
+
+--------------------- Reference -----------------
+
+[pgserver]
+
+- width
+  Default display width in pixels
+
+- height
+  Default display height in pixels
+
+- depth
+  Default display depth in bits per pixel
+
+- vidflags
+  Default video flags (integer)
+
+- mode
+  Video mode in the format WxH or WxHxD
+
+- videotest
+  If this is set, display the specified video test pattern.
+  Set it to "help" to list the possible settings.
+
+- benchmark
+  Set this to 1 to enable benchmarking mode
+
+- messagefile
+  The name of a file to load internationalized messages/errors from
+
+- themes
+  Whitespace-separated list of theme files to load
+
+- input
+  Whitespace-separated list of input drivers to load
+
+- rotate
+  Number of degrees to rotate the screen. The proper video wrappers must be
+  compiled in for this to have any effect.
+
+[video-sdlfb]
+
+- caption
+  Set the window caption when PicoGUI is run in a window. This is a printf
+  format string with 3 integer parameters: width, height, and color depth.
+  
+- fullscreen
+  Set to 1 to enable fullscreen mode

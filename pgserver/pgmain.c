@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.5 2001/07/04 05:45:19 micahjd Exp $
+/* $Id: pgmain.c,v 1.6 2001/07/05 04:36:46 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -95,7 +95,22 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_INIT
    printf("Init: processing command line\n");
 #endif
-   
+
+  /* Read in global and user-specific config files */
+  {
+    char *s,*home;
+
+    configfile_parse("/etc/pgserver.conf");
+
+    home = getenv("HOME");
+    if (home && !iserror(prerror(g_malloc((void**)&s,strlen(home)+20)))) {
+      strcpy(s,home);
+      strcat(s,"/.pgserverrc");
+      configfile_parse(s);
+      g_free(s);
+    }
+  }   
+
   {  /* Restrict the scope of these vars so they go away after
 	initialization is done with them */
 
@@ -106,48 +121,59 @@ int main(int argc, char **argv) {
     unsigned char *themebuf;
     struct themefilenode *tail = NULL,*p;
     handle h;
-
-    /* Default video mode: 0x0x0 (driver chooses) */
-    int vidw=0,vidh=0,vidd=0,vidf=0;
-
-    /* Drivers */
+    int vidw,vidh,vidd,vidf;
+    char *str;
     g_error (*viddriver)(struct vidlib *v) = NULL;
     
 #ifndef WINDOWS    /* Command line processing is broke in windoze */
 
     while (1) {
 
-      c = getopt(argc,argv,"mf12bhlx:y:d:v:i:t:s:e:");
+      c = getopt(argc,argv,"hlv:m:i:t:c:-:");
       if (c==-1)
 	break;
       
       switch (c) {
 
-      case 'e':        /* Error table */
-	if (iserror(prerror(errorload(optarg))))
+      case '-':        /* config option */
+	{
+	  char *section, *key, *value;
+
+	  if (key = strchr(optarg,'.')) {
+	    *key = 0;
+	    key++;
+	    section = optarg;
+	  }
+	  else {
+	    key = optarg;
+	    section = "pgserver";
+	  }
+
+	  if (value = strchr(key,'=')) {
+	    *value = 0;
+	    value++;
+	  }
+	  else
+	    value = "1";
+	  
+	  set_param_str(section,key,value);
+	}
+	 
+	break;
+	
+      case 'v':        /* Video driver */
+	set_param_str("pgserver","video",optarg);
+	break;
+
+      case 'm':        /* Video mode */
+	set_param_str("pgserver","mode",optarg);
+	break;
+
+      case 'c':        /* Config file */
+	if (iserror(prerror(configfile_parse(optarg))))
 	  return 1;
 	break;
 
-      case 'f':        /* Fullscreen */
-	vidf |= PG_VID_FULLSCREEN;
-	break;
-	 
-      case 'b':        /* Double-buffering */
-        vidf |= PG_VID_DOUBLEBUFFER;
-	break;
-	 
-#ifdef CONFIG_ROTATE
-      case '1':        /* Rotate */
-	vidf |= PG_VID_ROTATE90;
-	break;
-#endif
-	 
-#ifdef CONFIG_ROTATE180
-      case '2':        /* Rotate */
-	vidf |= PG_VID_ROTATE180;
-	break;
-#endif
-	 
 #ifdef CONFIG_TEXT
       case 'l':        /* List */
 
@@ -222,25 +248,6 @@ int main(int argc, char **argv) {
 	exit(1);
 #endif
 
-      case 'x':        /* Width */
-       	vidw = atoi(optarg);
-	break;
-
-      case 'y':        /* Height */
-	vidh = atoi(optarg);
-	break;
-
-      case 'd':        /* Depth */
-       	vidd = atoi(optarg);
-	break;
-
-      case 'v':        /* Video */
-	if (!(viddriver = find_videodriver(optarg))) {
-	  prerror(mkerror(PG_ERRT_BADPARAM,77));
-	  exit(1);
-	}
-	break;
-
       case 'i':        /* Input */
 	if (iserror(prerror(
 			    load_inlib(find_inputdriver(optarg),NULL)
@@ -263,21 +270,6 @@ int main(int argc, char **argv) {
 	tail = p;
 	break;
 
-#ifdef CONFIG_VIDEOTEST /* Video test mode */
-      case 's':
-	videotest_on = 1;
-	videotest_mode = atoi(optarg);
-	if (!videotest_mode) {
-	   videotest_help();
-	   exit(1);
-	}
-	break;
-
-      case 'm':
-	videotest_on = 2;
-        break;
-#endif
-	 
       default:        /* Need help */
 #ifndef CONFIG_TEXT
 	puts("Commandline error");
@@ -286,32 +278,21 @@ int main(int argc, char **argv) {
 #ifdef DEBUG_ANY
 	     "DEBUG MODE ON\n\n"
 #endif
-	     "usage: pgserver [-fbhl] [-x width] [-y height] [-d depth] [-v driver]\n"
+	     "usage: pgserver [-hl] [-c configfile] [-v driver] [-m WxHxD]\n"
+	     "                [--section.key=value] [--key=value] [--key]\n"
 	     "                [-i driver] [-t theme] [session manager...]\n\n"
-	     "  f : Fullscreen mode (if the driver supports it)\n"
-	     "  b : double-buffering (if the driver supports it)\n"
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n"
-#ifdef CONFIG_ROTATE
-	     "  1 : Begin with screen rotated 90 degrees\n"
-#endif
-#ifdef CONFIG_ROTATE180
-	     "  2 : Begin with screen rotated 180 degrees\n"
-#endif
-#ifdef CONFIG_VIDEOTEST
-	     "  m : enter benchmark mode\n"
-#endif
 	     "\n"
-	     "  x width   : default screen width\n"
-	     "  y height  : default screen height\n"
-	     "  d depth   : default bits per pixel\n"
-	     "  v driver  : default video driver (see -l)\n"
-	     "  i driver  : load an input driver, can use more than one (see -l)\n"
-	     "  t theme   : load a compiled theme file, can use more than one\n"
-#ifdef CONFIG_VIDEOTEST
-	     "  s modenum : enter video test mode. modenum = 'help' to list modes\n"
-#endif
-	     "  e txtfile : Load internationalized error text\n"
+	     "  c conf    : Load a configuration file\n"
+	     "  v driver  : Set the video driver (see -l)\n"
+	     "  m WxHxD   : Set the video mode resolution and color depth\n"
+	     "  i driver  : Load an input driver, can use more than one (see -l)\n"
+	     "  t theme   : Load a compiled theme file, can use more than one\n"
+	     "\n"
+	     "  Configuration options may be specified with section, key, and value.\n"
+	     "  If the section is omitted, 'pgserver' is assumed. If the value is\n"
+	     "  missing, '1' is used.\n"
 	     "\n"
 	     "  If specified, a session manager process will be run after server\n"
 	     "  initialization is done, and the server will quit after the last\n"
@@ -328,13 +309,113 @@ int main(int argc, char **argv) {
 
      
 #endif /* WINDOWS */
-     
-    if (viddriver) {
-      /* Force a specific driver */
 
+     /* Load alternate messages into the error table */
+     if (iserror(prerror(errorload(get_param_str("pgserver",
+						 "messagefile",
+						 NULL)))))
+    return 1;
+    
+#ifdef CONFIG_VIDEOTEST
+     /* Process test mode config options */
+
+     if (str = get_param_str("pgserver","videotest",NULL)) {
+	videotest_on = 1;
+	videotest_mode = atoi(str);
+	if (!videotest_mode) {
+	  videotest_help();
+	  exit(1);
+	}
+     }
+
+     if (get_param_int("pgserver","benchmark",0)) {
+	videotest_on = 2;
+     }
+#endif
+
+     /* Transcribe the list of themes from config option to linked list.
+      * This makes it easier to load themes from the command line also,
+      * and this is necessary so handles to the loaded themes can be stored
+      * for reloading later 
+      *
+      * For some reason that wierd GNU manpage for strtok() says I shouldn't
+      * use it, but in this case there's no reason why not to.
+      */
+     {
+       char *themes;
+       char *tok;
+
+       if (themes = get_param_str("pgserver","themes",NULL)) {
+	 themes = strdup(themes);
+
+	 while (tok = strtok(themes," \t")) {
+
+	   if (iserror(prerror(g_malloc((void**)&p,
+					sizeof(struct themefilenode)))))
+	     return 1;
+	   p->name = tok;
+	   p->next = NULL;
+	   if (tail)
+	     tail->next = p;
+	   else
+	     themefiles = tail = p;
+	   tail = p;
+	   
+	   themes = NULL;
+	 }
+       }
+     } 
+
+     /* Use strtok again to load input drivers */
+     {
+       char *inputs,*str;
+       char *tok;
+
+       if (inputs = get_param_str("pgserver","input",NULL)) {
+	 str = inputs = strdup(inputs);
+
+	 while (tok = strtok(str," \t")) {
+	   if (iserror(prerror(
+			       load_inlib(find_inputdriver(tok),NULL)
+			       ))) 
+	     return 1;
+
+	   str = NULL;
+	 }
+	 free(inputs);
+       }
+     } 
+
+    /* Process video driver config options */
+    vidw = get_param_int("pgserver","width",0);
+    vidh = get_param_int("pgserver","height",0);
+    vidd = get_param_int("pgserver","depth",0);
+    vidf = get_param_int("pgserver","vidflags",0);
+    sscanf(get_param_str("pgserver","mode",""),"%dx%dx%d",&vidw,&vidh,&vidd);
+
+    /* Add rotation flags */
+    switch (get_param_int("pgserver","rotate",0)) {
+    case 90:
+      vidf |= PG_VID_ROTATE90;
+      break;
+    case 180:
+      vidf |= PG_VID_ROTATE180;
+      break;
+    case 270:
+      vidf |= PG_VID_ROTATE270;
+      break;
+    }
+
+    /* Force a specific video driver? */
+    if (str = get_param_str("pgserver","video",NULL)) {
+      if (!(viddriver = find_videodriver(str))) {
+	prerror(mkerror(PG_ERRT_BADPARAM,77));
+	exit(1);
+      }
       if (iserror(prerror(
 			  load_vidlib(viddriver,vidw,vidh,vidd,vidf)
-			  ))) exit(1);  
+			  )))
+	exit(1);  
     }
     else {
       /* Try to detect a driver (see driverinfo.c) */

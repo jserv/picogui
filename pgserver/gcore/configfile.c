@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.1 2001/07/04 05:45:19 micahjd Exp $
+/* $Id: configfile.c,v 1.2 2001/07/05 04:36:46 micahjd Exp $
  *
  * pgserver/configfile.c - Utilities for loading, storing, and retrieving
  *                         configuration options
@@ -112,8 +112,8 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
   }
   if (!p) {
     /* Create the new item */
-    g_malloc((void**) &p,
-	     sizeof(struct cfg_item) + strlen(key) + 1);
+    e = g_malloc((void**) &p,
+		 sizeof(struct cfg_item) + strlen(key) + 1);
     errorcheck;
     memset(p,0,sizeof(struct cfg_item));
     p->next = sect->items;
@@ -121,15 +121,13 @@ g_error configfile_set(struct cfg_section *sect, const char *key,
     p->key = ((char*)p) + sizeof(struct cfg_item);
     strcpy(p->key,key);
   }
-    
-  /* Free the existing value, if any */
-  if (p->value) {
+  else {
+    /* Free the existing value */
     g_free(p->value);
-    p->value = NULL;
   }
   
   /* Allocate a new value */
-  g_malloc((void**) &p->value,strlen(value)+1);
+  e = g_malloc((void**) &p->value,strlen(value)+1);
   errorcheck;
   strcpy(p->value,value);
 
@@ -149,9 +147,11 @@ void strip_tail(char *s) {
   p = s;
   while (*p)
     p++;
+  p--;
   while (p>=s) {
-    if (isspace(*p))
-      *p = 0;
+    if (!isspace(*p))
+      break;
+    *p = 0;
     p--;
   }
 }

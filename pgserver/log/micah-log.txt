@@ -1,9 +1,26 @@
+2001-07-04    Micah Dowty <micahjd@users.sourceforge.net>
+
+Happy July 4th!
+"Celebrate your nation's independance by blowing up a small part of it"
+   -- Apu, The Simpsons
+
+	   * gcore/configfile.c: Fixed a stupid bug with wierd results
+		  (I forgot to return g_malloc()'s error code to 'e')
+		  
+		* pgmain.c: Loading themes from the "themes" config option
+		  Finished command line processing
+
 2001-07-03    Micah Dowty <micahjd@users.sourceforge.net>
 
 PicoGUI has working internationalization now!
 The command line option '-e' can load a simple text file with
 internationalized messages.
 Now I'm starting on config file parsing.
+-
+I now have the config file utilities implemented (and hopefully debugged).
+I need to fix a memory leak when using the command line to redefine an item
+already defined in the config file, and in general finish the command line
+handling.
 
 		* gcore/errortext.c: Completely rewritten errortext(), added loading
 		  function.
@@ -15,6 +32,11 @@ Now I'm starting on config file parsing.
 
 		* gcore/configfile.c: Implementing functions to parse, store, and
 		  retrieve configuration options
+		  
+		* pgmain.c: Integrating config options with the command line processing
+		
+		* include/picogui/constants.h: Removing the fullscreen and doublebuffer
+		  options. They will be turned into driver-specific config options.
 
 2001-06-29    Micah Dowty <micahjd@users.sourceforge.net>
 
