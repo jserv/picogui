@@ -20,7 +20,7 @@
 #
 
 $option{'side'} = PG_S_BOTTOM;
-$option{'size'} = 24;
+$option{'size'} = 19;
 $option{'sizemode'} = PG_SZMODE_PERCENT;
 $option{'path'} = './img/';
 
