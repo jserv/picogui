@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.73 2002/11/08 08:23:06 micahjd Exp $
+/* $Id: popup.c,v 1.74 2002/11/21 10:35:53 thierrythevoz Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -32,9 +32,13 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
+#include <pgserver/hotspot.h>
 
 struct popupdata {
   struct divtree *my_dt;
+  /* TTH: Menu/submenu flag */
+  unsigned int menu : 1;
+  unsigned int submenu : 1;
 };
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(popupdata)
@@ -136,6 +140,10 @@ g_error popup_install(struct widget *self) {
   g_error e;
 
   WIDGET_ALLOC_DATA(popupdata)
+  
+  /* TTH: Reset Menu/submenu flags */
+  DATA->menu = 0;
+  DATA->submenu = 0;
 
   /* Before freezing the current layer, make sure it's up to date */
   activate_client_divnodes(self->owner);
@@ -186,7 +194,7 @@ g_error popup_install(struct widget *self) {
   self->in->div->calc.y = PG_POPUP_CENTER;
   self->in->div->calc.w = 0;
   self->in->div->calc.h = 0;
-
+  
   return success;
 }
 
@@ -255,6 +263,21 @@ g_error popup_set(struct widget *self,int property, glob data) {
   case PG_WP_HEIGHT:
     self->in->div->calc.h = data;
     break;
+  
+  /* TTH: Menu/submenu flags */
+  case PG_WP_POPUP_IS_MENU:
+    DATA->menu = data;
+    self->in->div->state = PGTH_O_POPUP_MENU;
+    self->in->state = PGTH_O_POPUP_MENU;
+    self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+    break;
+  
+  case PG_WP_POPUP_IS_SUBMENU:
+    DATA->submenu = data;
+    self->in->div->state = PGTH_O_POPUP_MENU;
+    self->in->state = PGTH_O_POPUP_MENU;
+    self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
+    break;
 
   default:
     return mkerror(ERRT_PASS,0);
@@ -290,8 +313,17 @@ void popup_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_KEYUP:
   case PG_TRIGGER_KEYDOWN:
   case PG_TRIGGER_CHAR:
-    if (param->kbd.key != PGKEY_ESCAPE)
+#ifdef CONFIG_SUBMENU_NAVIGATION
+    /* TTH: Menu/submenu popup : handle hotkey_left as deactivate */
+    if ( (param->kbd.key != PGKEY_ESCAPE) &&
+         ((param->kbd.key != hotkey_left) || 
+         (!(DATA->menu) && !(DATA->submenu))))
       return;
+#else 
+    if (param->kbd.key != PGKEY_ESCAPE) 
+      return;
+#endif /* CONFIG_SUBMENU_NAVIGATION */
+    
     param->kbd.consume++;
     if (type != PG_TRIGGER_KEYUP)
       return;

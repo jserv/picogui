@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.172 2002/11/15 12:53:11 micahjd Exp $
+/* $Id: constants.h,v 1.173 2002/11/21 10:35:53 thierrythevoz Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -993,6 +993,8 @@ typedef unsigned long pghandle;
 #define PG_WP_TYPE            61  /* Return the type of the widget (PG_WIDGET_*) */
 #define PG_WP_TAB             62  /* The tab associated with a tabpage widget */
 #define PG_WP_TAB_BAR         63  /* The tab bar associated with a tabpage widget */
+#define PG_WP_POPUP_IS_MENU   64  /* Popup is menu flag */
+#define PG_WP_POPUP_IS_SUBMENU 65 /* Popup is submenu flag */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
