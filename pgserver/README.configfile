@@ -49,9 +49,6 @@ quoted appropriately. For example:
 --------------------- Reference -----------------
 
 [pgserver]
-- video
-  Select the default video driver
-
 - width
   Default display width in pixels
 
