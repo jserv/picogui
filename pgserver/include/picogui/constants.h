@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.178 2003/01/18 07:50:36 micahjd Exp $
+/* $Id: constants.h,v 1.179 2003/03/04 06:55:12 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1120,6 +1120,7 @@ typedef unsigned long pghandle;
 #define PG_TRIGGER_TOUCHSCREEN   (1<<21) /* A touchscreen event to be processed by infilter_touchscreen */
 #define PG_TRIGGER_TS_CALIBRATE  (1<<22) /* Store the touchscreen calibration given in this event */
 #define PG_TRIGGER_CLOSE         (1<<23) /* Sent by drivers to a managed window when externally closed */
+#define PG_TRIGGER_MOTIONTRACKER (1<<24) /* Data from a motion tracker sensor */
 
 /* List of triggers that use the mouse parameters 
  */
@@ -1131,6 +1132,11 @@ typedef unsigned long pghandle;
  */
 #define PG_TRIGGERS_KEY          (PG_TRIGGER_KEYUP | PG_TRIGGER_KEYDOWN | PG_TRIGGER_CHAR | PG_TRIGGER_KEY_START |\
                                   PG_TRIGGER_KEY )
+
+/* Body part flags used with PG_TRIGGER_MOTIONTRACKER */
+#define PG_BODYPART_LEFT_HAND      1
+#define PG_BODYPART_RIGHT_HAND     2
+#define PG_BODYPART_EITHER_HAND    3
 
 
 /* Note on PG_TRIGGER_RELEASE:  This is when the mouse was pressed inside

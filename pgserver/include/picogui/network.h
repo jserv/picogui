@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.71 2003/01/01 03:43:02 micahjd Exp $
+/* $Id: network.h,v 1.72 2003/03/04 06:55:12 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -125,6 +125,12 @@ union pg_client_trigger {
 	u32 consume;             /* Consume event during widget propagation */
 	u32 divtree;             /* The divtree to dispatch the event to, 0 for top */
       } kbd;
+
+      struct {
+	u32 position[3];         /* Position axes normalized between 0 and 0xFFFFFFFF */
+	u32 orientation[3];      /* Position axes normalized between 0 and 0xFFFFFFFF */
+	u32 bodyPart;          /* A PG_BODYPART_* constant indicating what this motion data is for */
+      } motion;
 
     } u;
   } content;

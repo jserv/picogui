@@ -1,4 +1,4 @@
-/* $Id: if_client_adaptor.c,v 1.5 2003/01/01 03:43:02 micahjd Exp $
+/* $Id: if_client_adaptor.c,v 1.6 2003/03/04 06:55:13 micahjd Exp $
  *
  * if_client_adaptor.c - Send events to clients, for client-side input filters
  *
@@ -60,6 +60,9 @@ void infilter_client_adaptor_handler(struct infilter *self, u32 trigger, union t
     cli_trig.content.u.mouse.cursor_handle  = hlookup(param->mouse.cursor,NULL); 
     cli_trig.content.u.mouse.ts_calibration = param->mouse.ts_calibration;
     cli_trig.content.u.mouse.divtree        = param->mouse.divtree;
+  }
+  else if (trigger & PG_TRIGGER_MOTIONTRACKER) {
+    memcpy(&cli_trig.content.u.motion, &param->motion, sizeof(param->motion));
   }
   
   /* Convert it to network byte order

@@ -35,6 +35,8 @@ trigger_types = {
   1<<21:	'touchscreen',	# A touchscreen event to be processed by
                                 # infilter_touchscreen 
   1<<22:	'ts calibrate',	# Store the touchscreen calibration given in this event
+  1<<23:	'close',	# Sent by drivers to a managed window when it's externally closed
+  1<<24:	'motiontracker',# Data from a motion tracker sensor
 }
 
 mouse_triggers = ('pntr relative', 'up', 'down', 'move', 'drag', 'pntr status',

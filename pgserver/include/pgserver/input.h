@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.52 2003/01/19 09:25:50 micahjd Exp $
+/* $Id: input.h,v 1.53 2003/03/04 06:55:12 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -194,6 +194,19 @@ union trigparam {
     handle divtree;
 
   } kbd;
+
+  /* Data from a motion tracking device-
+   * Values unsupported by the device should be zero.
+   * Coordinates are in device-dependent physical units, but should
+   * be normalized between 0 and 0xFFFFFFF. If possible, the client
+   * library should interpret this as a floating point number
+   * between 0.0 and 1.0
+   */
+  struct trigparam_motion {
+    u32 position[3];
+    u32 orientation[3];
+    u32 bodyPart;          /* A PG_BODYPART_* constant indicating what this motion data is for */
+  } motion;
 
   struct trigparam_stream {
     u32 size;
