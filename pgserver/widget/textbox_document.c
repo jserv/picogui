@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.43 2002/10/21 12:13:50 micahjd Exp $
+/* $Id: textbox_document.c,v 1.44 2002/10/22 01:35:03 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -318,7 +318,7 @@ void textbox_build_par_div(struct gropctxt *c, u16 state, struct widget *self) {
   grops->next->next->r = grops->next->r;
 
   DBG("Build, size: %d,%d,%d,%d preferred: %d,%d\n",
-      c->r.x,c->r.y,c->r.w,c->r.h,c->owner->pw,c->owner->ph);
+      c->r.x,c->r.y,c->r.w,c->r.h,c->owner->preferred.w,c->owner->preferred.h);
 }
 
 void textbox_delete_parlist(struct paragraph *list) {

@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.14 2002/10/21 12:13:51 micahjd Exp $
+/* $Id: textbox_frontend.c,v 1.15 2002/10/22 01:35:04 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -137,6 +137,7 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 
     case PG_INSERT_OVERWRITE:
       document_nuke(DATA->doc);
+      return success;
       break;
 
     }
