@@ -21,7 +21,7 @@
 
 #include <pgserver/common.h>
 #include <pgserver/configfile.h>
-#include <pgserver/widget.h>	/* vid, for screen size */
+#include <pgserver/widget.h>	/* for screen size and pointer owner */
 #include <stdio.h>
 
 typedef struct
@@ -44,17 +44,81 @@ static const char *calib_file=NULL;
 u8 touchscreen_calibrated=0;
 static TRANSFORMATION_COEFFICIENTS tc={0,0,0,0,0,0,0};
 
-void touchscreen_pentoscreen(s16 *x, s16 *y)
-{
-	if(tc.s && touchscreen_calibrated)
-	{
-		int m, n;
-		m=(tc.a**x+tc.b**y+tc.c)*vid->xres/tc.s;
-		n=(tc.d**x+tc.e**y+tc.f)*vid->yres/tc.s;
-		*x=m;
-		*y=n;
-	}
-}
+void touchscreen_pentoscreen(int *x, int *y)
+ {
+  if(touchscreen_calibrated)
+   {
+    if(tc.s)
+     {		/* apply the calibrated transformation */
+      int m, n;
+      m=(tc.a**x+tc.b**y+tc.c)*vid->xres/tc.s;
+      n=(tc.d**x+tc.e**y+tc.f)*vid->yres/tc.s;
+      *x=m;
+      *y=n;
+     }
+   }
+  else if(pointer_owner)
+   {
+    /* Dispatch an event for the calibration program */
+    unsigned char data[9];	/* x, y, rotation */
+    *(s32*)data=htonl(*x);
+    *((s32*)data+1)=htonl(*y);
+#ifdef CONFIG_ROTATIONBASE_0
+    data[8]=vid->flags&PG_VID_ROTATEMASK;
+#elif defined(CONFIG_ROTATIONBASE_90)
+    switch(vid->flags&PG_VID_ROTATEMASK)
+     {
+      case 0:
+	data[8]=PG_VID_ROTATE90;
+	break;
+      case PG_VID_ROTATE90:
+	data[8]=PG_VID_ROTATE180;
+	break;
+      case PG_VID_ROTATE180:
+	data[8]=PG_VID_ROTATE270;
+	break;
+      case PG_VID_ROTATE270:
+	data[8]=0;
+	break;
+     }
+#elif defined(CONFIG_ROTATIONBASE_180)
+    switch(vid->flags&PG_VID_ROTATEMASK)
+     {
+      case 0:
+	data[8]=PG_VID_ROTATE180;
+	break;
+      case PG_VID_ROTATE90:
+	data[8]=PG_VID_ROTATE270;
+	break;
+      case PG_VID_ROTATE180:
+	data[8]=0;
+	break;
+      case PG_VID_ROTATE270:
+	data[8]=PG_VID_ROTATE90;
+	break;
+     }
+#elif defined(CONFIG_ROTATIONBASE_270)
+    switch(vid->flags&PG_VID_ROTATEMASK)
+     {
+      case 0:
+	data[8]=PG_VID_ROTATE270;
+	break;
+      case PG_VID_ROTATE90:
+	data[8]=0;
+	break;
+      case PG_VID_ROTATE180:
+	data[8]=PG_VID_ROTATE90;
+	break;
+      case PG_VID_ROTATE270:
+	data[8]=PG_VID_ROTATE180;
+	break;
+     }
+#else
+#error Err.. what screen rotation are you using?
+#endif
+    post_event(PG_NWE_CALIB_PENPOS, NULL, sizeof data, pointer_owner, data);
+   }
+ }
 
 g_error touchscreen_init(void)
 {

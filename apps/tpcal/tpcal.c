@@ -37,10 +37,10 @@
 #define DBG(x)
 #endif
 
-static int xext=0, yext=0, xoffs=0, yoffs=0;
+static int xext=0, yext=0, xoffs=0, yoffs=0, rotation;
 static CALIBRATION_PAIRS cps;
 static CALIBRATION_PAIR* pcp = 0;
-static POINT current_target_location;
+static POINT current_target_location, penposition, physicalresolution;
 static TRANSFORMATION_COEFFICIENTS tc;
 
 static int total_targets = 5;
@@ -50,6 +50,55 @@ const int inset = 10;
 pghandle  wCanvas;
 pghandle  wStatusLabel;
 
+POINT coord_logicalize(POINT pp)
+ {
+  POINT lp;
+
+  switch(rotation)
+   {
+    case 0:
+      lp=pp;
+      break;
+    case PG_VID_ROTATE90:
+      lp.x=physicalresolution.y-1-pp.y;
+      lp.y=pp.x;
+      break;
+    case PG_VID_ROTATE180:
+      lp.x=physicalresolution.x-1-pp.x;
+      lp.y=physicalresolution.y-1-pp.y;
+      break;
+    case PG_VID_ROTATE270:
+      lp.x=pp.y;
+      lp.y=physicalresolution.x-1-pp.x;
+      break;
+   }
+  return lp;
+ }
+
+POINT coord_physicalize(POINT lp)
+ {
+  POINT pp;
+
+  switch(rotation)
+   {
+    case 0:
+      pp=lp;
+      break;
+    case PG_VID_ROTATE90:
+      pp.x=lp.y;
+      pp.y=physicalresolution.y-1-lp.x;
+      break;
+    case PG_VID_ROTATE180:
+      pp.x=physicalresolution.x-1-lp.x;
+      pp.y=physicalresolution.y-1-lp.y;
+      break;
+    case PG_VID_ROTATE270:
+      pp.x=physicalresolution.x-1-lp.y;
+      pp.y=lp.x;
+      break;
+   }
+  return pp;
+ }
 
 POINT GetTarget(int n)
 {
@@ -125,8 +174,7 @@ void showTransformations(void)
 		     tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
 
   exit(0);
-
-}
+ }
 
 void DrawTarget(POINT p, unsigned long int c) {
   const int center = 3;
@@ -191,25 +239,42 @@ int evtPenUp(struct pgEvent *evt) {
   }
 }
 
+int evtPenPos(struct pgEvent *evt) {
+  struct penposdata {s32 x, y; unsigned char r;} *data=
+    (struct penposdata*)evt->e.data.pointer;
+
+  if(evt->e.data.size!=9)
+   {
+    fprintf(stderr, "Penpos packet size %d, expected 9\n", evt->e.data.size);
+    pgDriverMessage(PGDM_INPUT_CALEN, 0);
+    exit(1);
+   }
+  penposition.x=htonl(data->x);
+  penposition.y=htonl(data->y);
+  rotation=((unsigned char*)evt->e.data.pointer)[8];
+}
+
 int evtPenDown(struct pgEvent *evt) {
   POINT hit;
   int distance, target;
 
-  DBG((__FUNCTION__ " (x=%d,y=%d)\n",evt->e.pntr.x,evt->e.pntr.y));
+  DBG((__FUNCTION__ " (x=%d,y=%d)\n",penposition.x,penposition.y));
 
   if (pcp == 0)
     return 0;
 
   pcp->screen.x = current_target_location.x + xoffs;
   pcp->screen.y = current_target_location.y + yoffs;
-  hit.x = pcp->device.x = evt->e.pntr.x;
-  hit.y = pcp->device.y = evt->e.pntr.y;
+  pcp->screen=coord_physicalize(pcp->screen);
+  hit.x = pcp->device.x = penposition.x;
+  hit.y = pcp->device.y = penposition.y;
   target=current_target++;
 
   if(!CalcTransformationCoefficientsBest(&cps.center, &tc, current_target))
    {
+    DBG(("Current target: %d\n", current_target));
     hit=pentoscreen(hit, &tc);
-    printf("Hit: %d,%d\n", hit.x, hit.y);
+    coord_logicalize(hit);
     hit.x-=xoffs;
     hit.y-=yoffs;
     DrawTarget(hit, 0x808080);
@@ -224,20 +289,24 @@ int evtPenDown(struct pgEvent *evt) {
 int main(int argc, char *argv[]) 
 {
   pghandle fntLabel;
+  struct pgmodeinfo mi;
 
   srandom(time(NULL));
 
   pgInit(argc,argv);
 
+  mi=*pgGetVideoMode();
+  physicalresolution.x=mi.xres;
+  physicalresolution.y=mi.yres;
+
   pgRegisterApp(PG_APP_NORMAL,"Please touch the center of the target.",0);
 
   fntLabel = pgNewFont(NULL,10,PG_FSTYLE_FIXED);
-
-
   wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   pgBind(PGDEFAULT,PG_WE_BUILD,&evtDrawTarget,NULL);
   pgBind(PGBIND_ANY,PG_NWE_PNTR_DOWN,&evtPenDown,NULL);
   pgBind(PGBIND_ANY,PG_NWE_PNTR_UP,&evtPenUp,NULL);
+  pgBind(PGBIND_ANY,PG_NWE_CALIB_PENPOS,&evtPenPos,NULL);
   pgRegisterOwner(PG_OWN_POINTER);
   pgDriverMessage(PGDM_INPUT_CALEN, 1);
 
@@ -255,6 +324,4 @@ int main(int argc, char *argv[])
 
   return 0;
 }
-
-
 
