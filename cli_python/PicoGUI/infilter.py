@@ -1,7 +1,7 @@
 # support for input filters
 import struct
 
-trigger_base_format = '!' + ('l' * 16)
+trigger_base_format = '!' + ('L' * 16)
 
 trigger_types = {
   1<<0:		'timer',	# Timer event from install_timer 
@@ -54,10 +54,9 @@ class Trigger(object):
         self._data = list(struct.unpack(trigger_base_format, data))
         if sender:
             self.sender = sender
-            ttype = None
         else:
-            self.sender, ttype = struct.unpack('!LL', data[:8])
-        self.name = name or trigger_types.get(ttype, ttype)
+            self.sender = self._data[0]
+        self.name = name or trigger_types.get(self._data[1], self._data[1])
         if self.name in mouse_triggers:
             self.dev = mouse
         elif self.name in kbd_triggers:
@@ -107,6 +106,14 @@ class Trigger(object):
     )
 
     def pack(self):
+        if hasattr(self.sender, 'handle'):
+            self._data[0] = self.sender.handle
+        elif type(self.sender) in (int, long):
+            self._data[0] = self.sender
+        for code, name in trigger_types.items():
+            if name == self.name:
+                self._data[1] = code
+                break
         format = getattr(self, 'format_' + self.dev, None)
         if format:
             if callable(format):
