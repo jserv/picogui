@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.72 2002/01/28 08:33:20 micahjd Exp $
+/* $Id: div.c,v 1.73 2002/01/28 08:36:00 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -376,13 +376,13 @@ int divnode_recalc(struct divnode **pn, struct divnode *parent) {
    if (!n)
      return 0;
 
-   if ( (n->flags & DIVNODE_NEED_RECALC) && !(n->flags & DIVNODE_UNDERCONSTRUCTION) ) {
+   if (n->flags & DIVNODE_NEED_RECALC) {
      
      /* Split the rectangle */
      divnode_split(n,&divrect,&nextrect);
      
      /* Handle autowrapping */
-     if (n->flags & DIVNODE_AUTOWRAP) {
+     if ((n->flags & DIVNODE_AUTOWRAP) && !(n->flags & DIVNODE_UNDERCONSTRUCTION) ) {
 
        /* If we're mushed, move this node to the next line. Normally
 	* it isn't a great idea to rearrange the divtree while it's
