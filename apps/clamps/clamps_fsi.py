@@ -11,20 +11,21 @@ class filesystemInterface:
         self.URI = "file://"
 
     def listFiles(self):
-        fileList = list()
+        fileList = dict()
         for fileName in os.listdir(self.path):
             if os.path.isdir(os.path.join(self.path, fileName)):
                 fileName = fileName+os.sep
                 type = "Directory"
-                fileList.append((fileName, type, None))
+                fileList[fileName]=(fileName, type, None)
             else:
                 try:
                     statData = os.stat(os.path.join(self.path, fileName))
                     size = statData.st_size
                     type = "File"
-                    fileList.append((fileName, type, size))
+                    fileList[fileName] = (fileName, type, size)
                 except:
                     print "Bad file"
+        self.fileList = fileList
         return fileList
 
     def getPath(self):
@@ -44,11 +45,27 @@ class filesystemInterface:
         newPath = string.join(pathList, os.sep)
         self.path = newPath
 
+    def executeFile(self, filename, args):
+        if os.fork() == 0:
+            os.execl(os.path.join(self.path, filename), os.path.join(self.path, filename))
+        
+
     def isRootDir(self):
         if self.path == '/':
             return 1
         else:
             return 0
+
+    def isExecutable(self, filename):
+        fullPath = os.path.join(self.path, filename)
+        if(self.fileList[filename][1] != "Directory"):
+            if os.access(os.path.join(self.path, filename), os.X_OK) == 1:
+                return 1
+            else:
+                return 0
+        else:
+            return 0
+
                           
 class filesystemAbstractor:
     def __init__(self):

@@ -27,19 +27,25 @@ class clampsInterface:
         self.fsa = fsa
         self.fsi = fsa.getDefaultFilesystem()
 
+        #InfoBox
+        self.infoBox = self.app.addWidget("box")
+        self.infoBox.sizemode = "percent"
+        self.infoBox.size = "30"
+
         #Toolbox
         self.toolbox = self.app.addWidget("box")
         self.toolbox.side = "top"
         self.toolbox.sizemode = "percent"
-        self.toolbox.size = "30"
+        self.toolbox.size = "20"
 
         #Tools
         self.pathView = self.toolbox.addWidget("field", "inside")
         self.pathGo = self.toolbox.addWidget("button", "inside")
         self.pathGo.text = "Go"
         self.pathGo.side = "right"
-        self.app.link(self.pathUpdate, self.pathGo, "activate") 
-       
+        self.app.link(self.pathUpdate, self.pathGo, "activate")
+        #self.app.link(self.pathView, self.pathGo, "activate")
+
         #Dirview
         metaview = self.app.addWidget("box")
         metaview.sizemode = "percent"
@@ -63,7 +69,7 @@ class clampsInterface:
         dirlist = self.fsi.listFiles()
         for fileInfo in dirlist:
             widget = self.dirview.addWidget("flatbutton", "inside")
-            widget.text = fileInfo[0]
+            widget.text = fileInfo
             widget.side = "top"
             widget.align = "left"
             self.diritems.append(widget)
@@ -93,9 +99,8 @@ class clampsInterface:
     def handleFile(self, ev, button):
         if self.selectedFile != None and self.selectedFile == button:
             filename = self.app.server.getstring(button.text)[:-1]
-            splitName = string.split(filename, '.', 1)
-            if len(splitName) > 1:
-                self.contentHandler.handleFile(splitName[1], self.fsi.path+filename)
+            if self.fsi.isExecutable(filename) == 1:
+                self.fsi.executeFile(filename, list())
             else:
                 self.fsi.followDir(filename)
                 self.redraw()
