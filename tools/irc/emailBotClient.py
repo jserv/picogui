@@ -10,6 +10,7 @@ import sys, email, os
 
 logFile = "/home/commits/mail.log"
 statsDir = "/home/commits/stats"
+statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
 
 # Allowed commands, split up into those with content and those without
@@ -23,18 +24,19 @@ badChannels = ("shell",)
 def incrementProjectCommits(project):
     if project.find(os.sep) >= 0:
         return
-    statFile = os.path.join(statsDir, project)
-    count = 0
-    try:
-        f = open(statFile)
-        count = int(f.read().strip())
+    for statsSubdir in statsSubdirs:
+        statFile = os.path.join(statsDir, statsSubdir, project)
+        count = 0
+        try:
+            f = open(statFile)
+            count = int(f.read().strip())
+            f.close()
+        except:
+            pass
+        count += 1
+        f = open(statFile, "w")
+        f.write("%d\n" % count)
         f.close()
-    except:
-        pass
-    count += 1
-    f = open(statFile, "w")
-    f.write("%d\n" % count)
-    f.close()
 
 class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
