@@ -1,0 +1,16 @@
+This is the top-level directory for PicoGUI's build system.
+
+  build.py
+    A python script functioning as the build system's entry point. Try
+    ./build.py --help for information.
+
+  src/
+    Directory containing the source code for the build engine, and where
+    sources for other components are automatically downloaded.
+
+  build/
+    Compiled binaries and object files, sorted by architecture.
+
+  conf/
+    Configuration files for the build system. This starts out blank, but is
+    populated when choices about the build are made.
