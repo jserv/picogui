@@ -73,12 +73,14 @@ DRIVER_SDLINPUT=y
 # CONFIG_VBL_LINEAR2 is not set
 # CONFIG_VBL_LINEAR4 is not set
 CONFIG_VBL_LINEAR8=y
+# CONFIG_VBL_LINEAR16 is not set
 
 #
-# Optional Widgets
+# Widget Options
 #
 CONFIG_WIDGET_TERMINAL=y
 CONFIG_WIDGET_CANVAS=y
+# CONFIG_NOPANELBAR is not set
 
 #
 # Security
