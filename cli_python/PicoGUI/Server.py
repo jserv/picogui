@@ -32,6 +32,7 @@ constants = {
             'panelbar':		(20, {}),	# draggable bar and container
             'simplemenu':	(21, {}),	# create a simple menu from a string or array
     },
+    'get': 'set',
     'mkfont': ( # first argument (family) is string and should pass trough
         {
             'fixed':			((1<<0), {}),	# fixed width

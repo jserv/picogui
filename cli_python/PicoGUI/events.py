@@ -7,21 +7,21 @@ class ParameterError(ProtocolError):
 _paramtypes = ('num', 'xy', 'pointer', 'data', 'kbd')
 
 kmods = {
-    'LSHIFT':	0x0001,
-    'RSHIFT':	0x0002,
-    'SHIFT':	0x0003,
-    'LCTRL':	0x0040,
-    'RCTRL':	0x0080,
-    'CTRL':	0x00C0,
-    'LALT':	0x0100,
-    'RALT':	0x0200,
-    'ALT':	0x0300,
-    'LMETA':	0x0400,
-    'RMETA':	0x0800,
-    'META':	0x0C00,
-    'NUM':	0x1000,
-    'CAPS':	0x2000,
-    'MODE':	0x4000,
+    'lshift':	0x0001,
+    'rshift':	0x0002,
+    'shift':	0x0003,
+    'lctrl':	0x0040,
+    'rctrl':	0x0080,
+    'ctrl':	0x00c0,
+    'lalt':	0x0100,
+    'ralt':	0x0200,
+    'alt':	0x0300,
+    'lmeta':	0x0400,
+    'rmeta':	0x0800,
+    'meta':	0x0c00,
+    'num':	0x1000,
+    'caps':	0x2000,
+    'mode':	0x4000,
 }
 
 typenames = {
@@ -30,28 +30,28 @@ typenames = {
     0x002:	'deactivate',	# Sent when the user clicks outside the active popup 
     0x003:	'close',	# A top-level widget has closed 
     0x004:	'focus',	# Sent when a button is focused, only if it has PG_EXEV_FOCUS. The field widget always sends this. 
-    0x204:	'pntr_down',	# The "mouse" button is now down 
-    0x205:	'pntr_up',	# The "mouse" button is now up 
-    0x206:	'pntr_release',	# The "mouse" button was released outside the widget 
+    0x204:	'pntr down',	# The "mouse" button is now down 
+    0x205:	'pntr up',	# The "mouse" button is now up 
+    0x206:	'pntr release',	# The "mouse" button was released outside the widget 
     0x306:	'data',		# Widget is streaming data to the app 
     0x107:	'resize',	# For terminal widgets 
     0x108:	'build',	# Sent from a canvas, clients can rebuild groplist 
-    0x209:	'pntr_move',	# The "mouse" moved 
-    0x40A:	'kbd_char',	# A focused keyboard character recieved 
-    0x40B:	'kbd_keyup',	# A focused raw keyup event 
-    0x40C:	'kbd_keydown',	# A focused raw keydown event 
+    0x209:	'pntr move',	# The "mouse" moved 
+    0x40A:	'kbd char',	# A focused keyboard character recieved 
+    0x40B:	'kbd keyup',	# A focused raw keyup event 
+    0x40C:	'kbd keydown',	# A focused raw keydown event 
     0x301:	'appmsg',	# Messages from another application 
 
     # Non-widget events
-    0x140A:	'kbd_char',	# These are sent if the client has captured the 
-    0x140B:	'kbd_keyup',	# keyboard (or pointing device ) 
-    0x140C:	'kbd_keydown',
-    0x1209:	'pntr_move',
-    0x1205:	'pntr_up',
-    0x1204:	'pntr_down',
+    0x140A:	'kbd char',	# These are sent if the client has captured the 
+    0x140B:	'kbd keyup',	# keyboard (or pointing device ) 
+    0x140C:	'kbd keydown',
+    0x1209:	'pntr move',
+    0x1205:	'pntr up',
+    0x1204:	'pntr down',
     0x120D:	'bgclick',	# The user clicked the background widget 
-    0x1101:	'pntr_raw',	# Raw coordinates, for tpcal or games 
-    0x1301:	'calib_penpos',	# Raw 32-bit coordinates, for tpcal 
+    0x1101:	'pntr raw',	# Raw coordinates, for tpcal or games 
+    0x1301:	'calib penpos',	# Raw 32-bit coordinates, for tpcal 
 }
 
 class Event(object):
@@ -109,7 +109,7 @@ class Event(object):
     def hasMod(self, mod):
         """Check for a keyboard modifier"""
         if hasattr(self, 'mods'):
-            return self.mods & kmods.get(mod.upper(), 0)
+            return self.mods & kmods.get(mod.lower(), 0)
 
     def __repr__(self):
         r = '<PicoGUI %s event object at %s' % (self.name, id(self))
