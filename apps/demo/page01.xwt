@@ -1,3 +1,25 @@
 <box>
-     <label side="all">This is the second page</label>
+   <label align="left" text="Widgets" font=":35"/>
+   <label>PicoGUI currently has 25 widgets; only a few are demoed here so far.</label>
+   <box side="all" transparent="1">
+      <tabpage text="Small widgets">
+         <box transparent="1">
+            <label align="right" side="left" sizemode="percent" size="30" text="Buttons in a toolbar: "/>
+   	    <toolbar>
+               <button text="Default"/>
+	       <button text="Disabled" disabled="1"/>
+               <button text="Toggle" extdevents="toggle"/>
+            </toolbar>
+         </box>	
+         <box transparent="1">
+            <label align="right" side="left" sizemode="percent" size="30" text="Field: "/>
+            <field text="You can type here"/>
+         </box>
+      </tabpage>
+      <tabpage text="Textbox">
+         <scrollbox>
+	    <textbox text="You can type multiple lines here"/>
+	 </scrollbox>
+      </tabpage>
+   </box>
 </box>

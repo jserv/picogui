@@ -1,3 +1,5 @@
 <box>
-     <label side="all">This is the first page</label>
+	<label bitmap_src="data/crystal-128-network.png"/>
+	<label font=":35">Welcome to PicoGUI</label>
+	<textbox side="all" readonly="1" text_src="data/intro.text"/>
 </box>
