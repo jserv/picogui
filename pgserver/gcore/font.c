@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.37 2001/11/04 11:51:27 micahjd Exp $
+/* $Id: font.c,v 1.38 2001/11/15 06:22:27 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -72,46 +72,13 @@ struct fontglyph *font_findglyph(struct fontglyph *start,
   return NULL;
 }
 
-/* Small helper function used in outchar_fake and outchar 
- *
- * If it's an invalid character, first try replacing it with the Unicode
- * symbol for an unknown character, then if that doesn't work use a question
- * mark. If the question mark doesn't work either, use the font's default
- * character.
- */
-struct fontglyph const *font_getglyph(struct fontdesc *fd, int ch) {
-  struct fontglyph *g, *start, *end;
-
-  start = fd->font->glyphs;
-  end = start + fd->font->numglyphs-1;
-
-  /* Try the requested character */
-  g = font_findglyph(start,end,ch);
-  if (g) return g;
-
-  /* Get the Unicode symbol for an unknown character */
-  g = font_findglyph(start,end,0xFFFD);
-  if (g) return g;
-
-  /* Try an ASCII question mark */
-  g = font_findglyph(start,end,'?');
-  if (g) return g;
-
-  /* The font's default character */
-  g = font_findglyph(start,end,fd->font->defaultglyph);
-  if (g) return g;
-
-  /* shouldn't get here, but to avoid crashing return the 1st glyph */
-  return fd->font->glyphs;
-}
-
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
 	     s16 *x, s16 *y,hwrcolor col,int c,struct quad *clip,
 	     s16 lgop, s16 angle) {
    int i,j;
    s16 cel_w; /* Total width of this character cel */
-   struct fontglyph const *g = font_getglyph(fd,c);
+   struct fontglyph const *g = VID(font_getglyph)(fd,c);
    u8 *glyph;
    s16 u,v;   /* Displacement (in font coordinate space) of character from the cursor position */
 
@@ -241,7 +208,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 /* A version of outchar that doesn't make any
    output. Used for sizetext */
 void outchar_fake(struct fontdesc *fd, s16 *x,int  c) {
-  *x += font_getglyph(fd,c)->dwidth + fd->boldw + fd->interchar_space;
+  *x += VID(font_getglyph)(fd,c)->dwidth + fd->boldw + fd->interchar_space;
 }
 
 /* Output text, interpreting '\n' but no other control chars.
@@ -414,7 +381,7 @@ g_error findfont(handle *pfh,int owner, char *name,int size,stylet flags) {
       
       if (flags&PG_FSTYLE_DOUBLESPACE) fd->interline_space = fd->font->h;
       if (flags&PG_FSTYLE_DOUBLEWIDTH) fd->interchar_space =
-					 font_getglyph(fd,-1)->dwidth+
+					 VID(font_getglyph)(fd,-1)->dwidth+
 					 fd->boldw;
       if (flags&PG_FSTYLE_UNDERLINE) fd->hline = closest->normal->ascent +
 				       (closest->normal->descent >> 1);

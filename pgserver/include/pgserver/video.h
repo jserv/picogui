@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.56 2001/10/29 23:57:55 micahjd Exp $
+/* $Id: video.h,v 1.57 2001/11/15 06:22:27 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -207,7 +207,16 @@ struct vidlib {
    * Default implementation: none
    */
   void (*font_newdesc)(struct fontdesc *fd, char *name, int size, int flags);
+  /* Utility to do a binary search for a font glyph */
   
+  /* Optional
+   *   Called to look up the glyph associated with a character encoding.
+   *   The video driver may modify this to implement fake font logic,
+   *   for an ASCII display or something other strange device.
+   *
+   * Default implementation: binary search of the font's glyph table
+   */
+  struct fontglyph const *(*font_getglyph)(struct fontdesc *fd, int ch);
    
   /***************** Colors */
 
@@ -536,6 +545,7 @@ void def_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 void def_sprite_protectarea(struct quad *in,struct sprite *from);
 g_error def_bitmap_loadxbm(hwrbitmap *bmp,const u8 *data, s16 w, s16 h,
 			   hwrcolor fg, hwrcolor bg);
+struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch);
 
 /************* Registration functions for video drivers */
 

@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.15 2001/11/04 11:51:28 micahjd Exp $
+/* $Id: font.h,v 1.16 2001/11/15 06:22:27 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -137,6 +137,10 @@ int decode_utf8(u8 **str);
 
 /* Very simple decoder for ASCII and ISO Latin-1 */
 int decode_ascii(u8 **str);
+
+/* Utility to do a binary search for a font glyph */
+struct fontglyph *font_findglyph(struct fontglyph *start, 
+				 struct fontglyph *end, s32 key);
 
 #endif /* __H_FONT */
 

@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.54 2001/11/06 06:57:59 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.55 2001/11/15 06:22:28 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1470,6 +1470,39 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   return sucess;
 }
    
+/* Small helper function used in outchar_fake and outchar 
+ *
+ * If it's an invalid character, first try replacing it with the Unicode
+ * symbol for an unknown character, then if that doesn't work use a question
+ * mark. If the question mark doesn't work either, use the font's default
+ * character.
+ */
+struct fontglyph const *def_font_getglyph(struct fontdesc *fd, int ch) {
+  struct fontglyph *g, *start, *end;
+
+  start = fd->font->glyphs;
+  end = start + fd->font->numglyphs-1;
+
+  /* Try the requested character */
+  g = font_findglyph(start,end,ch);
+  if (g) return g;
+
+  /* Get the Unicode symbol for an unknown character */
+  g = font_findglyph(start,end,0xFFFD);
+  if (g) return g;
+
+  /* Try an ASCII question mark */
+  g = font_findglyph(start,end,'?');
+  if (g) return g;
+
+  /* The font's default character */
+  g = font_findglyph(start,end,fd->font->defaultglyph);
+  if (g) return g;
+
+  /* shouldn't get here, but to avoid crashing return the 1st glyph */
+  return fd->font->glyphs;
+}
+
 /* Load our driver functions into a vidlib */
 void setvbl_default(struct vidlib *vid) {
   /* Set defaults */
@@ -1509,6 +1542,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->bitmap_modeunconvert = &def_bitmap_modeunconvert;
   vid->bitmap_get_groprender = &def_bitmap_get_groprender;
   vid->coord_keyrotate = &def_coord_keyrotate;
+  vid->font_getglyph = &def_font_getglyph;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.5 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: common.h,v 1.6 2001/11/15 06:22:27 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -36,7 +36,7 @@ typedef unsigned short   u16;
 typedef signed short     s16;
 typedef unsigned long    u32;
 typedef signed long      s32;
-#ifndef bool
+#if !defined(bool) && !defined(NO_BOOL)
 typedef unsigned char    bool;
 #endif
 
