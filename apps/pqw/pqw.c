@@ -18,6 +18,7 @@
 
 #include <picogui.h>
 #include <picogui/pgkeys.h>
+#include "../pgboard/pgboard.h"
 #include "pics.h"
 
 typedef enum
@@ -124,7 +125,7 @@ int load_bitmaps (void);
 int which_zone (int x, int y);
 
 pgcontext gc, gcBitmap;
-pghandle bmps[4], lock_bmp, ctrl_bmp, alt_bmp, keys_bmp;
+pghandle bmps[4], lock_bmp, ctrl_bmp, alt_bmp, keys_bmp, app;
 
 int sqrs_[62];
 int *sqrs = sqrs_ + 31;
@@ -135,18 +136,41 @@ int input_lock_ = MODE_NORMAL;
 int meta_key_ = 0;
 int ctrl_key_ = 0;
 
+/*
+ * Send a message to the keyboard application
+ *
+ * msg : pointer to the command to send
+ */
+void sendMsgToPgboard (struct keyboard_command * cmd)
+{
+  if (cmd)
+    {
+      struct pgmemdata data = {cmd, sizeof (struct keyboard_command), 0};
+      pghandle kb = pgFindWidget (PG_KEYBOARD_APPNAME);
+
+      if (kb)
+	{
+	  pgAppMessage (kb, data);
+	}
+    }
+}
+
 int
 main (int argc, char **argv)
 {
   int i;
+  struct keyboard_command pgb_cmd_hide = {htons (PG_KEYBOARD_HIDE)};
+  struct keyboard_command pgb_cmd_show = {htons (PG_KEYBOARD_SHOW)};
 
   for (i = 0; i < 31; i++)
     sqrs[i] = sqrs_[31 - i] = i * i;
 
   pgInit (argc, argv);
 
-  pgRegisterApp (PG_APP_TOOLBAR, "Keyboard", 0);
+  app = pgRegisterApp (PG_APP_TOOLBAR, "QuickWriting", 0);
   pgSetWidget (PGDEFAULT, PG_WP_SIDE, PG_S_BOTTOM, PG_WP_SIZE, 65, 0);
+
+  sendMsgToPgboard (&pgb_cmd_hide);
 
   pgNewWidget (PG_WIDGET_CANVAS, PG_DERIVE_INSIDE, 0);
   pgSetWidget (0,
@@ -162,6 +186,10 @@ main (int argc, char **argv)
   addButtons ();
 
   pgEventLoop ();
+
+  sendMsgToPgboard (&pgb_cmd_show);
+
+  pgEventPoll ();
 
   return 0;
 }
@@ -224,7 +252,7 @@ checkButtons (int x, int y)
   if (y > 40)
     hit_key (PGKEY_DOWN);
   else if (y > 20)
-    exit (0);
+    pgExitEventLoop ();
   else
     hit_key (PGKEY_UP);
 }
@@ -236,7 +264,7 @@ bttnPush (struct pgEvent *evt)
   switch (i)
     {
     case 0:			/*Done */
-      exit (0);
+      pgExitEventLoop ();
     case 1:
       hit_key (PGKEY_RIGHT);
       break;
