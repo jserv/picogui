@@ -2,13 +2,13 @@
 # Simple disorganized python module for processing CIA stats
 #
 
-import os
+import os, glob
 
 baseDir = "/home/commits"
 statDir = os.path.join(baseDir, "stats")
 urlDir = os.path.join(baseDir, "urls")
 mtbcSubdir = 'mtbc'
-channelFile = os.path.join(baseDir, "channels.list")
+channelBaseFile = os.path.join(baseDir, "channels.list")
 commandLog = os.path.join(baseDir, "commands.log")
 
 # List out the subdirs explicitly so we can set the order-
@@ -49,7 +49,11 @@ def readStats():
             projects.append(project)
 
     # Yucky hack to strip off "#"
-    channels = open(channelFile).read().strip().split("\n")
+
+    # iterate over each channel in the list
+    channels = ""
+    for channelFile in glob.glob(channelBaseFile + ".*"):
+        channels = channels + open(channelFile).read().strip().split("\n")
     channels.sort()
 
     projectCounts = {}
