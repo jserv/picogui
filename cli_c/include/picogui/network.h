@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.20 2001/03/30 08:29:05 micahjd Exp $
+/* $Id: network.h,v 1.21 2001/03/30 23:34:34 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -116,7 +116,7 @@ struct pghello {
 #define PGREQ_REGOWNER     19  /* Get exclusive privileges       |  struct */
 #define PGREQ_UNREGOWNER   20  /* Give up exclusive privileges   |  struct */
 #define PGREQ_SETMODE      21  /* Sets video mode/depth/rotation |  struct */
-#define PGREQ__OLD__2      22  /* Will be replaced */
+#define PGREQ_GETMODE      22  /* Returns a modeinfo struct      |  none */
 #define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
 #define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
 #define PGREQ_FOCUS        25  /* Force focus to specified widget|  handle */
@@ -241,5 +241,16 @@ struct pgcommand {
    /* Followed by numparams * signed long */
 };
 
+/* Returned by rqh_getmode */
+struct pgmodeinfo {
+   u32 flags;
+   u16 xres;     /* Physical resolution */
+   u16 yres;
+   u16 lxres;    /* Logical resolution */
+   u16 lyres;
+   u16 bpp;  
+   u16 dummy;
+};
+   
 #endif /* __H_PG_NETWORK */
 /* The End */

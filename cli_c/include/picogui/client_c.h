@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.38 2001/03/22 00:22:17 micahjd Exp $
+/* $Id: client_c.h,v 1.39 2001/03/30 23:34:34 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -242,6 +242,10 @@ void pgSendPointerInput(unsigned long type,unsigned short x,unsigned short y,
 void pgSetVideoMode(unsigned short xres,unsigned short yres,
 		    unsigned short bpp,unsigned short flagmode,
 		    unsigned long flags);
+
+/* Get information about the current video mode.
+ * The returned pointer is good only until the next PicoGUI call */
+struct pgmodeinfo *pgGetVideoMode(void);
 
 /******************** Objects */
 

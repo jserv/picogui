@@ -3,12 +3,15 @@
 #include <picogui.h>
 
 int main(int argc, char **argv) {
-   pghandle result,wApply,wPopup,wFullscreen,wRotate;
-   unsigned long vidflags;
+   struct pgEvent *evt;
+   pghandle wApply,sTmp;
+   pghandle wXres,wYres,wBpp,wRotate,wPopup;
+   struct pgmodeinfo mi;
+   char buf[20];
    
    pgInit(argc,argv);
    /* FIXME: PicoGUI needs a way to automatically size popups */
-   wPopup = pgNewPopupAt(PG_POPUP_ATCURSOR,0,100,200);
+   wPopup = pgNewPopupAt(PG_POPUP_ATCURSOR,0,150,120);
 
    /******** Take care of such niceties... */
    
@@ -25,30 +28,110 @@ int main(int argc, char **argv) {
    
    /******** Mode options */
    
-   wFullscreen = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
-   pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Fullscreen"),0);
+   /* For now just make boxes, we'll fill them in later */
+   wXres = pgNewWidget(PG_WIDGET_BOX,0,0);
+   pgSetWidget(PGDEFAULT,PG_WP_TRANSPARENT,1,0);
+   wYres = pgNewWidget(PG_WIDGET_BOX,0,0);
+   pgSetWidget(PGDEFAULT,PG_WP_TRANSPARENT,1,0);
+   wBpp = pgNewWidget(PG_WIDGET_BOX,0,0);
+   pgSetWidget(PGDEFAULT,PG_WP_TRANSPARENT,1,0);
    
    wRotate = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
    pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("Rotation"),0);
    
+   /* Fill in the boxes */
+   
+   wXres = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wXres);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_SIZE,50,
+	       PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
+	       0);
+   pgNewWidget(PG_WIDGET_LABEL,0,0);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_TEXT,pgNewString("Width:"),
+	       0);
+   
+   wYres = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wYres);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_SIZE,50,
+	       PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
+	       0);
+   pgNewWidget(PG_WIDGET_LABEL,0,0);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_TEXT,pgNewString("Height:"),
+	       0);
+   
+   wBpp = pgNewWidget(PG_WIDGET_FIELD,PG_DERIVE_INSIDE,wBpp);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_SIZE,50,
+	       PG_WP_SIZEMODE,PG_SZMODE_PERCENT,
+	       0);
+   pgNewWidget(PG_WIDGET_LABEL,0,0);
+   pgSetWidget(PGDEFAULT,
+	       PG_WP_SIDE,PG_S_RIGHT,
+	       PG_WP_TEXT,pgNewString("BPP:"),
+	       0);
    
    /******** Run a tiny event loop */
    
-   /* Until the popup box sends us a close event */
-   while ( (result=pgGetEvent()->from) != wPopup ) {
-      /* If we're not ready to apply yet, wait some more... */
-      if (result!=wApply)
-	continue;
+   /* Big loop setting modes... */
+   for (;;) {
       
-      /* Get the widget status, and make some video mode parameters */
+      /* Get actual mode info, put it in the widgets.
+       * Not the best way, but for now pgReplaceTextFmt doesn't work on
+       * field widgets because their handle handling is different :)
+       * The field copies our string to an internal buffer so we don't need
+       * to keep the handle around. Note that a server bug (listed in my
+       * todo file) will cause a server segfault if pgReplaceText is used!
+       */
+      mi = *pgGetVideoMode();
       
-      vidflags = (pgGetWidget(wRotate,PG_WP_ON) ? PG_VID_ROTATE90 : 0) |
-	(pgGetWidget(wFullscreen,PG_WP_ON) ? PG_VID_FULLSCREEN : 0);
+      sprintf(buf,"%d",mi.xres);
+      sTmp = pgNewString(buf);
+      pgSetWidget(wXres,PG_WP_TEXT,sTmp,0);
+      pgDelete(sTmp);
 
-      /* Set the video mode */
-      pgSetVideoMode(0,0,0,PG_FM_SET,vidflags);
+      sprintf(buf,"%d",mi.yres);
+      sTmp = pgNewString(buf);
+      pgSetWidget(wYres,PG_WP_TEXT,sTmp,0);
+      pgDelete(sTmp);
+
+      sprintf(buf,"%d",mi.bpp);
+      sTmp = pgNewString(buf);
+      pgSetWidget(wBpp,PG_WP_TEXT,sTmp,0);
+      pgDelete(sTmp);
+
+      pgSetWidget(wRotate,PG_WP_ON,mi.flags & PG_VID_ROTATE90,0);
+      
+      /* Small event loop waiting for an apply */
+      for (;;) {
+	 evt = pgGetEvent();
+	 
+	 /* The popup box itself sends a PG_WE_DEACTIVATE if the
+	  * user clicks outside it */
+	 if (evt->from == wPopup)
+	   return 0;
+	 
+	 /* Any PG_WE_ACTIVATE causes apply, this covers clicking the apply
+	  * button or pressing enter in a field. Specifically exclude
+	  * clicking the rotate checkbox */
+	 if (evt->type == PG_WE_ACTIVATE && evt->from != wRotate) 
+	   break;
+      }
+      
+      /* Set mode based on widget values */
+      pgSetVideoMode(atoi(pgGetString(pgGetWidget(wXres,PG_WP_TEXT))),
+		     atoi(pgGetString(pgGetWidget(wYres,PG_WP_TEXT))),
+		     atoi(pgGetString(pgGetWidget(wBpp,PG_WP_TEXT))),
+		     pgGetWidget(wRotate,PG_WP_ON) ? PG_FM_ON : PG_FM_OFF,
+		     PG_VID_ROTATE90);
    }
-
+   
    return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.3 2001/03/22 00:22:18 micahjd Exp $
+/* $Id: api.c,v 1.4 2001/03/30 23:34:34 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -243,19 +243,21 @@ void pgDelete(pghandle object) {
   _pg_add_request(PGREQ_FREE,&arg,sizeof(arg));
 
   /* Delete handlers that rely on this widget */
-  if (_pghandlerlist->widgetkey == object) {
-    condemn = _pghandlerlist;
-    _pghandlerlist = condemn->next;
-    free(condemn);
-  }
-  n = _pghandlerlist;
-  while (n->next) {
-    if (n->next->widgetkey == object) {
-      condemn = n->next;
-      n->next = condemn->next;
-      free(condemn);
-    }
-    n = n->next;
+  if (_pghandlerlist) {
+     if (_pghandlerlist->widgetkey == object) {
+	condemn = _pghandlerlist;
+	_pghandlerlist = condemn->next;
+	free(condemn);
+     }
+     n = _pghandlerlist;
+     while (n->next) {
+	if (n->next->widgetkey == object) {
+	   condemn = n->next;
+	   n->next = condemn->next;
+	   free(condemn);
+	}
+	n = n->next;
+     }
   }
 }
 
@@ -470,6 +472,24 @@ char *pgGetString(pghandle string) {
   _pg_add_request(PGREQ_GETSTRING,&string,sizeof(pghandle));
   pgFlushRequests();
   return _pg_return.e.data.data;
+}
+
+/* Get video mode data */
+struct pgmodeinfo *pgGetVideoMode(void) {
+  struct pgmodeinfo *mi;
+  _pg_add_request(PGREQ_GETMODE,NULL,0);
+  pgFlushRequests();
+  mi = (struct pgmodeinfo *) _pg_return.e.data.data;   
+   
+  /* Convert byte order */
+  mi->flags = ntohl(mi->flags);
+  mi->xres  = ntohs(mi->xres);
+  mi->yres  = ntohs(mi->yres);
+  mi->lxres = ntohs(mi->lxres);
+  mi->lyres = ntohs(mi->lyres);
+  mi->bpp   = ntohs(mi->bpp);
+   
+  return mi;
 }
 
 /* Get and delete the previous text, and set the
