@@ -16,7 +16,7 @@ CONFIG_OPTIMIZE_SPEED=y
 #
 # Debugging
 #
-# CONFIG_TEXT is not set
+CONFIG_TEXT=y
 # CONFIG_NOSTRIP is not set
 # DEBUG_KEYS is not set
 # CONFIG_VIDEOTEST is not set
