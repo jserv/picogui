@@ -36,5 +36,6 @@ void ai4(struct board *it);
 int linetrap(struct board *it);
 int linetrapwin(struct board *it);
 int linetraplose(struct board *it);
+int linetrapgetleft(struct board *it);
 
 #endif /* __AI4_H__ */

@@ -191,3 +191,57 @@ int linetraplose(struct board *it)
   
   return -1;
 }
+
+int linetrapgetleft(struct board *it)
+{
+    int x, y;
+  int total;
+  int i;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"linetrapgetleft called\n");
+#endif
+
+  /*horizontal line traps*/
+  for(x=1;x<4;x++)
+    for(y=0;y<6;y++)
+    {
+      total = glook(it,x,y) + glook(it,x+1,y) + glook(it,x+2,y);
+      if(total == 2)
+	if(glook(it,x-1,y-1) != 0 && glook(it,x-1,y) == 0 &&
+	   glook(it,x+3,y-1) != 0 && glook(it,x+3,y) == 0)
+	  for(i=0;i<3;i++)
+	    if(glook(it,x+i,y) == 0 && glook(it,x+i,y-1) != 0)
+	      return x-1;
+    }
+  
+  /*positive slope*/
+  
+  for(x=1;x<4;x++)
+     for(y=1;y<3;y++)
+     {
+       total = glook(it,x,y) + glook(it,x+1,y+1) + glook(it,x+2,y+2);
+       if(total == 2)
+	 if(glook(it,x-1,y-2) != 0 && glook(it,x-1,y-1) == 0 &&
+	    glook(it,x+3,y+2) != 0 && glook(it,x+3,y+3) == 0)
+	   for(i=0;i<3;i++)
+	     if(glook(it,x+i,y+i) == 0 && glook(it,x+i,y-1+i) != 0)
+	      return x-1;
+     }
+  
+  /*negative slope*/
+  
+  for(x=1;x<4;x++)
+    for(y=3;y<6;y++)
+    {
+      total = glook(it,x,y) + glook(it,x+1,y-1) + glook(it,x+2,y-2);
+      if(total == 2)
+	if(glook(it,x-1,y) != 0 && glook(it,x-1,y+1) == 0 &&
+	   glook(it,x+3,y-3) != 0 && glook(it,x+3,y-2) == 0)
+	  for(i=0;i<3;i++)
+	    if(glook(it,x+i,y-i) == 0 && glook(it,x+i,y-1-i) != 0)
+	      return x-1;
+    }
+  
+  return -1;
+}

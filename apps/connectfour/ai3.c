@@ -29,6 +29,7 @@
 #include "ai2.h"
 #include "ai3.h"
 
+#include "ai5.h"
 
 #define DEBUG
 #define FUNCTION_DEBUG
@@ -123,7 +124,10 @@ void notmove(struct board *it, int param)
   /* try for a random good spot 100 times */
   while(tester != 20)
   {
-    spot = rand() % 7;
+    if(it -> ailevel > 4)
+      spot = rand() % 5 + it->aipref - 1; 
+    else
+      spot = rand() % 7;
     if(paramcheck(param,spot) == -1)
     {
       if(move(it,spot) != -1)
@@ -142,7 +146,10 @@ void notmove(struct board *it, int param)
     }
   }
   
-  randommove(it);
+  if(it -> ailevel < 5)
+    randommove(it);
+  else
+    prandmove(it);
 }
 
 int paramcheck(int param, int test)

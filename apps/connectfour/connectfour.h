@@ -65,6 +65,10 @@ typedef struct board
   
   int aipref;
 
+  // temp pointer
+  
+  struct board *it;
+
 }board;
 
 void catsgame(struct board *it);

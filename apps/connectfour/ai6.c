@@ -38,6 +38,8 @@
 void ai6(struct board *it)
 {
   int temp;
+  int isbad;
+  int leftside;
 
   temp = nextmovewin(it);
 #ifdef DEBUG
@@ -55,8 +57,40 @@ void ai6(struct board *it)
 #endif
   if(temp != -1)
   {
-    move(it,temp);
-    return;
+    /*
+      checks to see if blocking the trap will directly lead to a loss
+      if it is bad, then it goes to the sides.  If everything is bad, 
+      then it might as well lose.
+    */
+    isbad = nextmovelose(it,-1);
+    if(isbad != -1)
+    {
+      if(paramcheck(isbad,temp) == -1)
+      {
+	move(it,temp);
+	return;
+      }
+      else
+      {
+	leftside = linetrapgetleft(it);
+	if(paramcheck(isbad,leftside))
+	{
+	  move(it,leftside);
+	  return;
+	}
+	else if(paramcheck(isbad,leftside+4))
+	{
+	  move(it,leftside+4);
+	  return;
+	}
+      }
+    }
+    /* This is the normal state of opperation */
+    else
+    {
+      move(it,temp);
+      return;
+    }
   }
 
   temp = gentrap(it);
@@ -142,11 +176,13 @@ int spotwin(struct board *it, int x, int y, int player)
       for(j=0;j<5;j++)
 	if(gmask(it,x,8,x-2+i,y) == 0 && gmask(it,x,8,x-2+i,y-1) != 0)
 	  return maskout(x,x-2+i);
+
     /* positive slope */
     if((gmask(it,x,y,x-2+i,y-2+i)+gmask(it,x,y,x-1+i,y-1+i)+gmask(it,x,y,x+i,y+i)) == player*2)
       for(j=0;j<5;j++)
 	if(gmask(it,x,y,x-2+i,y-2+i) == 0 && gmask(it,x,y,x-2+i,(y-2+i)-1) != 0)
 	  return maskout(x,x-2+i);
+
     /* negative slope */
     if((gmask(it,x,y,x-2+i,y+2-i)+gmask(it,x,y,x-1+i,y+1-i)+gmask(it,x,y,x+i,y-i)) == player*2)
       for(j=0;j<5;j++)
