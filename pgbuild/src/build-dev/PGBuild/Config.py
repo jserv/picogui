@@ -18,7 +18,7 @@ The extra rules imposed on the XML:
 2. In merging child nodes, order is preserved
 
 3. Python attributes from the second of the two nodes are preserved
-   when merging. This means that metadata like the 'mdoc' attribute
+   when merging. This means that metadata like the 'minfo' attribute
    is overwritten on new mounts. So, a read-write mount merely has
    to mention an element to claim ownership of it when it comes time
    so save changes.
@@ -50,10 +50,6 @@ import PGBuild.XMLUtil
 import PGBuild.Errors
 import re
 
-def getElementSig(x):
-    """Return a string signature that can be used to compare two elements"""
-    return repr([x.nodeName, x.parentNode, PGBuild.XMLUtil.getAttrDict(x)])
-
 def mergeElements(root):
     """Merge all identical elements under the given one,
        as defined in this module's document string.
@@ -61,9 +57,9 @@ def mergeElements(root):
     # Make a dictionary of signatures to (relatively) efficiently
     # determine whether any of our children are duplicates.
     d = {}
-    for child in root.childNodes:
-        sig = getElementSig(child)
-        print sig
+    # Copy the child list here, so when it's modified below our iteration doesn't go wonky
+    for child in root.childNodes[:]:
+        sig = repr([child.nodeName, PGBuild.XMLUtil.getAttrDict(child)])
         if d.has_key(sig):
             # This is a duplicate! Prepend all the children from
             # the first one, and delete it.
@@ -74,7 +70,7 @@ def mergeElements(root):
                     child.insertBefore(last, child.childNodes[0])
                 else:
                     child.appendChild(last)
-            #old.parentNode.removeChild(old)
+            old.parentNode.removeChild(old)
         d[sig] = child
     del d
 
@@ -116,15 +112,15 @@ class MountInfo(PGBuild.XMLUtil.Document):
         return self.__str__()
 
 class Tree(PGBuild.XMLUtil.Document):
-    """Configuration tree- an XML document with a <pgbuild> root
-       that supports merging in other documents with a <pgbuild>
-       root, then saving changes back to those documents.
+    """Configuration tree- an XML document that supports merging
+       in other documents with the same root type, then saving
+       changes back to those documents.
        """
-    def __init__(self):
-        PGBuild.XMLUtil.Document.__init__(self,
-                                          """<?xml version="1.0" ?>
-                                          <pgbuild title="Merged configuration tree"/>
-                                          """)
+    def __init__(self, title="Merged configuration tree", rootName="pgbuild"):
+        PGBuild.XMLUtil.Document.__init__(
+            self, '<?xml version="1.0" ?><%s title="%s"/>' % (rootName, title))
+        self.rootName = rootName
+        self.title = title
         self.mounts = []
 
     def mount(self, file, mode="r"):
@@ -134,30 +130,25 @@ class Tree(PGBuild.XMLUtil.Document):
            a mode of "w" allows writing back changes.
            """
         dom = PGBuild.XMLUtil.Document(file)
-        stripElements(dom)
-        dom.normalize()
-
-        selfPgb = self.xpath("/pgbuild")[0]
 
         # Validate the <pgbuild> tag
-        try:
-            domPgb = dom.xpath("/pgbuild")[0]
-        except IndexError:
+        if dom.getRoot().nodeName != self.rootName:
             raise PGBuild.Errors.UserError(
-                "Trying to mount a config file without a <pgbuild> root")
+                "Trying to mount a config tree with a <%s> root where <%s> is expected" %
+                (dom.getRoot().nodeName,self.rootName))
 
         # Save the document's attributes and it's original DOM in the
         # MountInfo for later access via mounts[]
-        mdoc = MountInfo(file, mode, domPgb.attributes, dom)
-        self.mounts.append(mdoc)
+        minfo = MountInfo(file, mode, dom.getRoot().attributes, dom)
+        self.mounts.append(minfo)
 
         # Recursively tag all objects in the
         # new DOM with their MountInfo
-        def rTag(element, mdoc):
-            element.mdoc = mdoc
+        def rTag(element, minfo):
+            element.minfo = minfo
             for child in element.childNodes:
-                rTag(child, mdoc)
-        rTag(dom, mdoc)
+                rTag(child, minfo)
+        rTag(dom, minfo)
 
         # Merge any top-level processing instruction nodes regardless
         # of mount points. This, for example, lets our tree painlessly
@@ -174,20 +165,20 @@ class Tree(PGBuild.XMLUtil.Document):
                 # The reason for messing with parentNode is explained below
                 # in the main appending code.
                 newNode.parentNode = None
-                self.insertBefore(newNode, selfPgb)
+                self.insertBefore(newNode, self.getRoot())
 
         # This implements the semantics described in sources.xml for the
         # /pgbuild/@root attribute. If it's not present, the document
         # is mounted at the pgbuild element. Otherwise it's an XPath
         # relative to the pgbuild element.
         try:
-            mountPath = domPgb.attributes['root'].value
+            mountPath = dom.getRoot().attributes['root'].value
         except KeyError:
             mountPath = '.'
 
         # Now we need to resolve the mount path to exactly one element.
         while 1:
-            matches = self.xpath(mountPath, selfPgb)
+            matches = self.xpath(mountPath)
 
             # Only one match? We're done
             if len(matches) == 1:
@@ -198,7 +189,7 @@ class Tree(PGBuild.XMLUtil.Document):
             if len(matches) > 1:
                 mergeElements(self)
                 # Still multiple matches? We can't continue
-                if len(self.xpath(mountPath, selfPgb)) > 1:
+                if len(self.xpath(mountPath)) > 1:
                     raise PGBuild.Errors.UserError("Ambiguous mount point")
 
             # No match? Create elements as needed to match the path.
@@ -211,7 +202,7 @@ class Tree(PGBuild.XMLUtil.Document):
                         "Mount point doesn't exist, too complex to automatically create")
                 # Make it absolute
                 if mountPath[0] != '/':
-                    absMountPath = "/pgbuild/" + mountPath
+                    absMountPath = "/%s/%s" % (self.rootName, mountPath)
                 else:
                     absMountPath = mountPath
                 # Walk the path, creating elements if necessary
@@ -223,13 +214,13 @@ class Tree(PGBuild.XMLUtil.Document):
                         newN = self.createElement(tag)
                         n.appendChild(newN)
                         n = newN
-                if len(self.xpath(mountPath, selfPgb)) == 0:
+                if len(self.xpath(mountPath)) == 0:
                     raise PGBuild.Errors.InternalError("Automatic mount point creation failed")
 
         # Now that we have the source and destination resolved, we can
-        # implement the mount by appending all the children of domPgb
+        # implement the mount by appending all the children of dom.getRoot()
         # to mountElement. Then, let mergeElements() sort out the rest.
-        for child in domPgb.childNodes:
+        for child in dom.getRoot().childNodes:
             # Clear the parentNode to keep minidom from exploding
             # when it tries to remove the node from the original DOM.
             # Note that it's important for parentNode to be valid in
@@ -240,6 +231,10 @@ class Tree(PGBuild.XMLUtil.Document):
             # pointing to the mount point.
             child.parentNode = None
             mountElement.appendChild(child)
+
+        # Strip whitespace, strip empty text nodes, and merge the tree
+        stripElements(self)
+        self.normalize()
         mergeElements(self)
                     
 default = Tree()

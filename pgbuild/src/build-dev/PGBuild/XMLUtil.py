@@ -57,6 +57,9 @@ class Node(SCons.Node.Node):
             self.__class__.__name__,
             self.dom)
 
+    def __repr__(self):
+        return str(self)
+
     # This node always exists, and it's outside the filesystem
     def sconsign(self):
         pass
@@ -115,16 +118,47 @@ class Document(PGBuild.XML.dom.minidom.Document):
             if not hasattr(self, attr):
                 setattr(self, attr, getattr(dom, attr))
 
-    def xpath(self, path, context=None):
-        """Another XPath convenience function"""
-        if context:
-            return default_xpath.parse(context, path)
-        else:
-            return default_xpath.parse(self, path)
+    def getRoot(self):
+        """Return the document's root element, caching
+           it in the 'root' attribute.
+           """
+        if not hasattr(self, 'root'):
+            for n in self.childNodes:
+                if n.nodeType == n.ELEMENT_NODE:
+                    self.root = n
+                    break
+        return self.root
 
-    def node(self):
-        """For convenience, an XMLUtil.Node factory"""
-        return Node(self)
+    def xpath(self, path, context=None):
+        """Another XPath convenience function.
+           By default, paths are relative to the document's root element.
+           """
+        if not context:
+            context = self.getRoot()
+        return default_xpath.parse(context, path)
+
+    def node(self, path=None, context=None):
+        """For convenience, an XMLUtil.Node factory. This by default
+           refers to the document root, but an XPath can be given to
+           cause it to refer to any arbitrary subtree. If the XPath
+           matches exactly once, a single node will be returned. If
+           it doesn't match at all, this returns None. If it matches
+           multiple times, this returns a list of nodes.
+           """
+        if path:
+            n = self.xpath(path, context)
+        else:
+            n = [self]
+        if len(n) == 0:
+            return None
+        for i in xrange(len(n)):
+            # Note: We could cache the resulting SCons nodes, but
+            #       it would create circular references. They're small
+            #       enough it's really not worth the trouble.
+            n[i] = Node(n[i])
+        if len(n) == 1:
+            return n[0]
+        return n
     
 ### The End ###
         
