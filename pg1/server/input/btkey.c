@@ -27,6 +27,7 @@
 #include <termios.h>
 #include <sys/poll.h>
 
+#include <pgserver/autoconf.h>
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
