@@ -10,7 +10,7 @@
  */ 
 
 /* Bitmaps */
-prop bBackground, bDarkInterlace, bBrightHBar, bButtonWhite;
+prop bBackground, bDarkInterlace;
 
 /* Fillstyles */
 prop fBitmap, fNop, fExpand;
@@ -29,8 +29,6 @@ object default {
 
   bBackground = LoadBitmap("data/background.jpeg");
   bDarkInterlace = LoadBitmap("data/dark_interlace.png");
-  bBrightHBar = LoadBitmap("data/bright_hbar.png");
-  bButtonWhite = LoadBitmap("data/button_white.png");
 
   fNop = fillstyle {
     Nop();
@@ -125,28 +123,52 @@ object base.tlcontainer {
   bitmap1 = Copy(default::bDarkInterlace);
 }
 
+object panel {
+  margin = 0;
+}
+
 object panelbar {
   width = 19;
   bgfill = Copy(default::fExpand);
-  bitmap1 = Copy(default::bBrightHBar);  
-  srcw = 20;
+  bitmap1 = LoadBitmap("data/bright_hbar.png");
+  srcw = 21;
   srch = 19;
-  left_sz = 7;
+  left_sz = 8;
   right_sz = 6;
   align = PG_A_LEFT;
+  fgcolor = 0x57596F;
+  margin = 2;
 }
 
 object base.panelbtn {
+  bgfill = Copy(default::fNop);
   side = PG_S_RIGHT;
   width = 13;
   height = 13;
+  margin = 0;
 }
   
+object rotatebtn widgetbitmap = LoadBitmap("data/panel_swirl.png");
+object closebtn widgetbitmap = LoadBitmap("data/panel_x.png");
+object zoombtn widgetbitmap = LoadBitmap("data/panel_square.png");
+
+/********************************** Popups */
+
+object popup {
+  margin = 0;
+}
+
+object label.dlgtitle {
+  parent = PGTH_O_PANELBAR;
+  margin = 5;
+  
+}
+
 /********************************** Buttons */
 
 object button {
   bgfill = Copy(default::fExpand);
-  bitmap1 = Copy(default::bButtonWhite);
+  bitmap1 = LoadBitmap("data/button_white.png");
   width = 24;
   height = 24;
   srcw = 24;
@@ -155,6 +177,10 @@ object button {
   right_sz = 12;
   top_sz = 11;
   bottom_sz = 12;
+  margin = 4;
+  spacing = 2;
 }  
+
+object button.on bitmap1 = LoadBitmap("data/button_bright.png");
 
 /* The End */
