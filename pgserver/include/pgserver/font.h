@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.31 2002/11/05 21:30:30 micahjd Exp $
+/* $Id: font.h,v 1.32 2002/11/06 01:19:59 micahjd Exp $
  *
  * font.h - Common structures for defining fonts, and an interface
  *          for specific font engines to attach to
@@ -87,7 +87,19 @@ struct fontengine {
 extern struct fontengine fontengine_list[];
 g_error font_find_engine(struct fontengine **fe, const char *name);
 
-/* Font engine registration functions */
+
+/********************************** Default implementations ***/
+
+void def_draw_string(struct font_descriptor *fd, hwrbitmap dest, struct pair *position,
+		     hwrcolor col, const struct pgstring *str, struct quad *clip,
+		     s16 lgop, s16 angle);
+
+void def_measure_string(struct font_descriptor *fd, const struct pgstring *str,
+			s16 angle, s16 *w, s16 *h);
+
+
+/********************************** Registration functions ***/
+
 g_error bdf_regfunc(struct fontlib *f);
 g_error freetype_regfunc(struct fontlib *f);
 g_error textmode_regfunc(struct fontlib *f);
@@ -147,6 +159,8 @@ struct fontlib {
    */
   void (*getmetrics)(struct font_descriptor *fd, struct font_metrics *m);
 };
+
+
 
 #endif /* __H_FONT */
 

@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.66 2002/11/04 14:05:14 micahjd Exp $
+/* $Id: popup.c,v 1.67 2002/11/06 01:19:59 micahjd Exp $
  *
  * popup.c - A root widget for modal dialogs that display above the
  *           root divtree.
@@ -311,11 +311,8 @@ void popup_trigger(struct widget *self,s32 type,union trigparam *param) {
 }
 
 void popup_resize(struct widget *self) {
-  printf("popup size %d,%d %p\n",self->in->child.w, self->in->child.h, DATA->my_dt->display);
-  if (VID(is_rootless)()) {
-    if (self->in->child.w && self->in->child.h)
-      VID(window_set_size)(DATA->my_dt->display,self->in->child.w,self->in->child.h);
-  }
+  if (self->in->child.w && self->in->child.h)
+    VID(window_set_size)(DATA->my_dt->display,self->in->child.w,self->in->child.h);
 }
 
 /* The End */

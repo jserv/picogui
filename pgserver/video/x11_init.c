@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.6 2002/11/04 13:14:05 micahjd Exp $
+/* $Id: x11_init.c,v 1.7 2002/11/06 01:19:59 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -34,7 +34,7 @@
 
 /* Display and file descriptor for the X server */
 Display *x11_display;
-int x11_fd;
+int x11_fd, x11_screen;
 
 /* A table of graphics contexts for each LGOP mode */
 GC x11_gctab[PG_LGOPMAX+1];
@@ -55,14 +55,15 @@ g_error x11_init(void) {
 
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
+  x11_screen = DefaultScreen(x11_display);
 
   if (!x11_display)
     return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
 
   x11_fd = ConnectionNumber(x11_display);
-  vid->bpp  = DefaultDepth(x11_display,0);
+  vid->bpp  = DefaultDepth(x11_display, x11_screen);
   vid->display = NULL;
-  x11_gc_setup(RootWindow(x11_display, 0));
+  x11_gc_setup(RootWindow(x11_display, x11_screen));
   
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
@@ -74,7 +75,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   XRectangle rect;
 
   /* Get the display size */
-  XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
+  XGetGeometry(x11_display, RootWindow(x11_display, x11_screen), &root,
 	       &x, &y, &rootw, &rooth, &border, &depth);
 
   if (flags & PG_VID_ROOTLESS) {

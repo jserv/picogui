@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.100 2002/11/04 11:44:29 micahjd Exp $
+/* $Id: div.c,v 1.101 2002/11/06 01:19:59 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -143,8 +143,8 @@ void divnode_split(struct divnode *n, struct rect *divrect,
     /* Special positioning codes */
     
     if (x == PG_POPUP_CENTER) {
-      x=(vid->lxres>>1)-(w>>1);
-      y=(vid->lyres>>1)-(h>>1);
+      x=(n->calc.w>>1)-(w>>1);
+      y=(n->calc.w>>1)-(h>>1);
     }
     else if (x == PG_POPUP_ATCURSOR || x==PG_POPUP_ATEVENT) {
       struct widget *snap;

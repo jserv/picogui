@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.2 2002/11/04 10:29:34 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.3 2002/11/06 01:19:59 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -48,6 +48,9 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   XImage *img;
   hwrcolor c;
 
+#ifdef CONFIG_X11_NOPIXEL
+  return VID(color_pgtohwr)(0xFF0000);
+#else
   /* This is really _really_ damn slow. Our goal is to never 
    * have to actually use this function, but we need it for
    * compatibility. I thought about caching the XImage to
@@ -59,6 +62,7 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   c = XGetPixel(img,0,0);
   XDestroyImage(img);
   return c;
+#endif
 }
 
 void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
@@ -113,14 +117,14 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
     return;
   }
   XSetForeground(x11_display,g,c);
-  XDrawArc(x11_display,XB(dest)->d,g,x,y,w,h,0,360*64);
+  XDrawArc(x11_display,XB(dest)->d,g,x,y,w-1,h-1,0,360*64);
 }
 
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   GC g = x11_gctab[lgop];
 
   if (!g) {
-    def_fellipse(dest,x,y,w,h,c,lgop);
+    def_fellipse(dest,x,y,w-1,h-1,c,lgop);
     return;
   }
   XSetForeground(x11_display,g,c);

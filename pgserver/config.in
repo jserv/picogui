@@ -57,6 +57,7 @@ bool 'gcov coverage analysis'           CONFIG_GCOV
 bool 'gprof profiling'                  CONFIG_GPROF
 bool 'Dont catch fatal signals'         DEBUG_FATALSIGNALS
 bool 'Update the entire surface in sdlfb' CONFIG_SDL_FULLUPDATE
+bool 'Mark X11 getpixel access in red'  CONFIG_X11_NOPIXEL
 endmenu
 
 mainmenu_option next_comment

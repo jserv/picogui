@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.4 2002/11/05 21:30:30 micahjd Exp $
+/* $Id: x11.h,v 1.5 2002/11/06 01:19:59 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -73,7 +73,7 @@ struct x11bitmap {
 
 /* Display and file descriptor for the X server */
 extern Display *x11_display;
-extern int x11_fd;
+extern int x11_fd, x11_screen;
 
 /* Stipple bitmap */
 #define x11_stipple_width 8
@@ -120,6 +120,9 @@ struct x11bitmap *x11_get_window(Window w);
  * even in response to x11_window_set_size 
  */
 void x11_acknowledge_resize(hwrbitmap window, int w, int h);
+
+/* Internals of x11_window_set_resize, will work in rootless or monolithic mode */
+void x11_internal_window_resize(hwrbitmap window, int w, int h);
 
 
 /******************************************************** Primitives */

@@ -1,4 +1,4 @@
-/* $Id: font_xft.c,v 1.1 2002/11/05 21:30:31 micahjd Exp $
+/* $Id: font_xft.c,v 1.2 2002/11/06 01:19:59 micahjd Exp $
  *
  * font_xft.c - Font engine for X implemented using Xft
  *
@@ -28,56 +28,192 @@
 #include <pgserver/common.h>
 #include <pgserver/font.h>
 #include <pgserver/x11.h>
+#include <pgserver/video.h>
 
-void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
-			hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
+XftDraw *xft_draw;
+
+struct xft_fontdesc {
+  XftFont *f;
+  int flags;
+};
+#define DATA ((struct xft_fontdesc *)self->data)
+
+/* Utility function to do the setup work before Xft rendering */
+void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *xftc);
+
 void xft_measure_char(struct font_descriptor *self, struct pair *position,
-			   int ch, s16 angle);
-g_error xft_create(struct font_descriptor *self, const struct font_style *fs);
-void xft_destroy(struct font_descriptor *self);
-void xft_getstyle(int i, struct font_style *fs);
+		      int ch, s16 angle);
+void xft_measure_string(struct font_descriptor *fd, const struct pgstring *str,
+			s16 angle, s16 *w, s16 *h);
 void xft_getmetrics(struct font_descriptor *self, struct font_metrics *m);
 
 
 /********************************** Implementations ***/
 
+g_error xft_engine_init(void) {
+  /* We use just one global Xft drawable, since all our
+   * drawables will use the default pixel format and visual.
+   */
+  xft_draw = XftDrawCreate(x11_display,
+			   RootWindow(x11_display, x11_screen),
+			   DefaultVisual(x11_display, x11_screen), 
+			   DefaultColormap(x11_display, x11_screen));
+  return success;
+}
+
+void xft_engine_shutdown(void) {
+  XftDrawDestroy(xft_draw);
+}
+
 void xft_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
 		   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle) {
+  u32 ch32 = ch;
+  XftColor xftc;
+
+  xft_draw_setup(dest,col,clip,&xftc);
+
+  XftDrawString32(xft_draw, &xftc, DATA->f, position->x,
+		  position->y + DATA->f->ascent, &ch32, 1);
+
+  xft_measure_char(self,position,ch,angle);
+}
+
+void xft_draw_string(struct font_descriptor *self, hwrbitmap dest, struct pair *position,
+		     hwrcolor col, const struct pgstring *str, struct quad *clip,
+		     s16 lgop, s16 angle) {
+  XftColor xftc;
+  s16 w,h;
+  struct font_metrics m;
+
+  switch (str->flags & PGSTR_ENCODE_MASK) {
+  case PGSTR_ENCODE_ASCII:
+  case PGSTR_ENCODE_UTF8:
+    //    break;
+  default:
+    def_draw_string(self,dest,position,col,str,clip,lgop,angle);
+    return;
+  }
+  
+  xft_draw_setup(dest,col,clip,&xftc);
+  
+  /*
+  xft_getmetrics(self,&m);
+  position->x += m.margin;
+  position->y += m.margin;
+  */
+
+  XftDrawStringUtf8(xft_draw, &xftc, DATA->f, position->x,
+		    position->y + DATA->f->ascent, str->buffer, str->num_chars);
+}
+
+void xft_measure_string(struct font_descriptor *self, const struct pgstring *str,
+			s16 angle, s16 *w, s16 *h) {
+  XGlyphInfo xgi;
+
+  switch (str->flags & PGSTR_ENCODE_MASK) {
+  case PGSTR_ENCODE_ASCII:
+  case PGSTR_ENCODE_UTF8:
+    break;
+  default:
+    def_measure_string(self,str,angle,w,h);
+    return;
+  }
+
+  XftTextExtentsUtf8(x11_display,DATA->f,str->buffer,str->num_chars,&xgi);
+  *w = xgi.xOff;
+  *h = xgi.yOff;  
 }
 
 void xft_measure_char(struct font_descriptor *self, struct pair *position,
 		      int ch, s16 angle) {
+  XGlyphInfo xgi;
+  u32 ch32 = ch;
+  XftTextExtents32(x11_display,DATA->f,&ch32,1,&xgi);
+  position->x += xgi.xOff;
+  position->y += xgi.yOff;
 }
 
 g_error xft_create(struct font_descriptor *self, const struct font_style *fs) {
+  g_error e;
+
+  e = g_malloc((void**)&self->data, sizeof(struct xft_fontdesc));
+  errorcheck;
+  memset(self->data,0,sizeof(struct xft_fontdesc));
+
+  /* FIXME: do this right */
+  DATA->f = XftFontOpenName(x11_display, x11_screen, "foo-15");
+
   return success;
 }
+
 void xft_destroy(struct font_descriptor *self) {
+  XftFontClose(x11_display, DATA->f);
+  g_free(self->data);
 }
  
 void xft_getstyle(int i, struct font_style *fs) {
 }
 
 void xft_getmetrics(struct font_descriptor *self, struct font_metrics *m) {
-  m->charcell.w = 1;
-  m->charcell.h = 1;
-  m->ascent = 1;
-  m->descent = 0;
-  m->margin = 0;
-  m->linegap = 0;
-  m->lineheight = 1;
+  m->charcell.w = DATA->f->max_advance_width;
+  m->charcell.h = DATA->f->ascent + DATA->f->descent;
+  m->ascent = DATA->f->ascent;
+  m->descent = DATA->f->descent;
+  m->lineheight = DATA->f->height;
+  m->linegap = m->lineheight - m->ascent - m->descent;
+
+  if (DATA->flags & PG_FSTYLE_FLUSH)
+    m->margin = 0;
+  else
+    m->margin = m->descent;
+}
+
+
+/********************************** Internal utilities ***/
+
+/* Utility function to do the setup work before Xft rendering */
+void xft_draw_setup(hwrbitmap dest, hwrcolor col, struct quad *clip, XftColor *xftc) {
+  Region r;
+  XRectangle rect;
+  pgcolor pgc;
+
+  XftDrawChange(xft_draw, XB(dest)->d);
+
+  /* Yucky way of setting the clip rectangle... 
+   * this is messy and probably slow 
+   */
+  r = XCreateRegion();
+  rect.x = clip->x1;
+  rect.y = clip->y1;
+  rect.width = clip->x2 - clip->x1 + 1;
+  rect.height = clip->y2 - clip->y1 + 1;
+  XUnionRectWithRegion(&rect,r,r);
+  XftDrawSetClip(xft_draw,r);
+  XDestroyRegion(r);
+
+  /* This assumes we know what we're doing, but we do, right? :) */
+  pgc = VID(color_hwrtopg)(col);
+  xftc->color.red   = getred(pgc) << 8;
+  xftc->color.green = getgreen(pgc) << 8;
+  xftc->color.blue  = getblue(pgc)  << 8;
+  xftc->color.alpha = 0xFFFF;
+  xftc->pixel = col;
 }
 
 
 /********************************** Registration ***/
 
 g_error xft_regfunc(struct fontlib *f) {
+  f->engine_init = &xft_engine_init;
+  f->engine_shutdown = &xft_engine_shutdown;
   f->draw_char = &xft_draw_char;
   f->measure_char = &xft_measure_char;
   f->create = &xft_create;
   f->destroy = &xft_destroy;
   f->getstyle = &xft_getstyle;
   f->getmetrics = &xft_getmetrics;
+  //  f->draw_string = &xft_draw_string;
+  f->measure_string = &xft_measure_string;
   return success;
 }
 

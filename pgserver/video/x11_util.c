@@ -1,4 +1,4 @@
-/* $Id: x11_util.c,v 1.7 2002/11/05 17:08:38 micahjd Exp $
+/* $Id: x11_util.c,v 1.8 2002/11/06 01:19:59 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -82,7 +82,7 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   if (!h) h = 1;
 
   /* Allocate a corresponding X pixmap */
-  (*pxb)->d  = XCreatePixmap(x11_display,RootWindow(x11_display, 0),w,h,vid->bpp);
+  (*pxb)->d  = XCreatePixmap(x11_display,RootWindow(x11_display, x11_screen),w,h,vid->bpp);
 
   return success;
 }
@@ -122,8 +122,10 @@ hwrbitmap x11_window_debug(void) {
     if (!x11_debug_window) {
       /* FIXME: There's nothing we can do with an error here */
       x11_window_new(&x11_debug_window,NULL);
-      x11_window_set_title(x11_debug_window,pgstring_tmpwrap("PicoGUI Debug Window"));
-      x11_window_set_size(x11_debug_window,640,480);
+      XStoreName(x11_display, XB(x11_debug_window)->frontbuffer ? 
+		 XB(x11_debug_window)->frontbuffer->d : XB(x11_debug_window)->d,
+		 "PicoGUI Debug Window");
+      x11_internal_window_resize(x11_debug_window,640,480);
     }
     return x11_debug_window;
   }
@@ -158,7 +160,7 @@ g_error x11_window_new(hwrbitmap *hbmp, struct divtree *dt) {
 
 g_error x11_create_window(hwrbitmap *hbmp) {
   struct x11bitmap *xb;
-  int black;
+  int bgcolor;
   g_error e;
   XSetWindowAttributes attr;
 
@@ -167,13 +169,13 @@ g_error x11_create_window(hwrbitmap *hbmp) {
   memset(xb,0,sizeof(struct x11bitmap));
   xb->is_window = 1;
 
-  black = BlackPixel(x11_display, DefaultScreen(x11_display));
+  bgcolor = VID(color_pgtohwr)(theme_lookup(PGTH_O_MANAGEDWINDOW,PGTH_P_BGCOLOR));
 
   /* Create the window.
-   * The size and everything else will be configured in x11_window_set_size()
+   * The size and everything else will be configured in x11_internal_window_resize()
    */
-  xb->d = XCreateSimpleWindow(x11_display, DefaultRootWindow(x11_display),
-			      0, 0, 1, 1, 0, black, black);
+  xb->d = XCreateSimpleWindow(x11_display, RootWindow(x11_display, x11_screen),
+			      0, 0, 1, 1, 0, bgcolor, bgcolor);
   xb->w = xb->h = 0;
 
   /* Set the bit gravity so X doesn't redraw any background */
@@ -227,12 +229,19 @@ void x11_window_set_position(hwrbitmap window, s16 x, s16 y) {
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
   XWindowChanges wc;
 
-  wc.x = x;
-  wc.y = y;
-  XConfigureWindow(x11_display, xb->d, CWX | CWY, &wc);
+  if (VID(is_rootless)()) {
+    wc.x = x;
+    wc.y = y;
+    XConfigureWindow(x11_display, xb->d, CWX | CWY, &wc);
+  }
 }
 
 void x11_window_set_size(hwrbitmap window, s16 w, s16 h) {
+  if (VID(is_rootless)())
+    x11_internal_window_resize(window,w,h);
+}
+
+void x11_internal_window_resize(hwrbitmap window, int w, int h) {
   XWindowChanges wc;
   XEvent ev;
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
@@ -370,7 +379,7 @@ void x11_monolithic_window_update(void) {
   char title[256];
 
   if (vid->display) {
-    x11_window_set_size(vid->display, vid->xres, vid->yres);
+    x11_internal_window_resize(vid->display, vid->xres, vid->yres);
     title[sizeof(title)-1] = 0;
     snprintf(title,sizeof(title)-1,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
 	     vid->xres,vid->yres,vid->bpp);

@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.6 2002/11/04 10:40:15 micahjd Exp $
+/* $Id: init.c,v 1.7 2002/11/06 01:19:59 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -84,12 +84,12 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   e = infilter_init();
   errorcheck;
 
-  DBG("fonts");
-  e = font_init();
-  errorcheck;
-
   DBG("video");
   e = video_init();
+  errorcheck;
+
+  DBG("fonts");
+  e = font_init();
   errorcheck;
 
   DBG("app manager");
