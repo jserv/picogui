@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.20 2001/08/27 07:13:36 bauermeister Exp $
+/* $Id: tsinput.c,v 1.21 2001/09/21 03:50:56 micahjd Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -307,8 +307,15 @@ void tsinput_close(void) {
 
 /* Polling time for the input driver */ 
 void tsinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-  timeout->tv_sec = 0;
-  timeout->tv_usec = POLL_USEC;
+  
+  /* Don't increase the poll time, but try to decrease it to POLL_USEC */
+
+  if (timeout->tv_sec) {
+    timeout->tv_sec = 0;
+    timeout->tv_usec = POLL_USEC;
+  }
+  else if (timeout->tv_usec > POLL_USEC)
+    timeout->tv_usec = POLL_USEC;
 }
 
 /******************************************** Driver registration */

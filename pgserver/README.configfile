@@ -225,5 +225,13 @@ quoted appropriately. For example:
   symlink to a serial port, but it could theoretically be anything you can
   write to.
 
+[input-serialmouse]
+
+- device
+  The name of serial port device. Defaults to /dev/ttyS0.
+
+- multiplier
+  A value to multiply delta movement by. Defaults to 2.
+
 --- The End ---
 

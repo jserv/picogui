@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.13 2001/07/11 07:38:20 micahjd Exp $
+/* $Id: input.h,v 1.14 2001/09/21 03:50:56 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -129,6 +129,7 @@ g_error ncursesinput_regfunc(struct inlib *i);
 g_error tsinput_regfunc(struct inlib *i);
 g_error r3912ts_regfunc(struct inlib *i);
 g_error vr3ts_regfunc(struct inlib *i);
+g_error serialmouse_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

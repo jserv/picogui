@@ -11,7 +11,8 @@ EXTRA_libinput_a_SOURCES = \
 	sdlinput.c \
 	svgainput.c \
 	tsinput.c \
-	vr3ts.c
+	vr3ts.c \
+	serialmouse.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)

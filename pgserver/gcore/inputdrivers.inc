@@ -29,4 +29,8 @@
   DRV("vr3ts",&vr3ts_regfunc)
 #endif
 
+#ifdef DRIVER_SERIALMOUSE
+  DRV("serialmouse",&serialmouse_regfunc)
+#endif
+
 /* The End */
