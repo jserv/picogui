@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.11 2000/10/10 00:49:06 micahjd Exp $
+/* $Id: main.c,v 1.12 2001/01/02 19:08:44 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -28,6 +28,8 @@
  * 
  */
 
+#include <unistd.h>
+
 #include "themec.h"
 #include "y.tab.h"
 
@@ -40,23 +42,93 @@ unsigned long num_thobj;
 unsigned long num_totprop;
 unsigned long datasz_loader;
 unsigned long datasz_tags;
-char *filename;
+char *filename = "stdin";
 char *fsvartab[FS_MAX_LOCALS];
 int fsvartab_pos;
 
 int main(int argc, char **argv) {
+  int quiet = 0, testrun = 0;
+  char *outfile = NULL;
+  FILE *out;
+  int c;
 
   /**** Command line */
-  /* I will put in a nice getopt-based arg processor later */
 
-  filename = "stdin";
-  if (argc==2) {
-    yyin = fopen(filename = argv[1],"r");
-    if (!yyin) {
-      perror("Error opening file");
-      return 2;
+  while (1) {
+    c = getopt(argc,argv,"hqto:");
+    if (c==-1)
+      break;
+    
+    switch (c) {
+      
+    case 'q':
+      quiet = 1;
+      break;
+      
+    case 't':
+      testrun = 1;
+      break;
+      
+    case 'o':
+      outfile = strdup(optarg);
+      break;
+      
+    case '?':        /* Need help */
+    case 'h':
+      puts("PicoGUI Theme Compiler (pgui.sourceforge.net)\n\n"
+	   "usage: themec [-q] [-t] [-o thfile] [thsfile]\n\n"
+	   "  q         : Quiet, suppress theme statistics\n"
+	   "  t         : Test run, parse and output stats but don't write file\n"
+	   "  o thfile  : specify a name for the compiled theme (*.th)\n"
+	   "              - defaults to input file with a .th extension\n"
+	   "              - if input is stdin, defaults to stdout\n"
+	   "  thsfile   : specify the theme source file (*.ths)\n"
+	   "              - defaults to stdin");
+      exit(1);
     }
   }
+
+  /* Any leftover argument - the theme file? */
+  if (optind<argc && argv[optind]) {
+    filename = argv[optind];
+    
+    /* Open it */
+    yyin = fopen(filename = argv[1],"r");
+    if (!yyin) {
+      perror("Error opening input file");
+      return 2;
+    }
+
+    if (!outfile) {
+      char *p;
+
+      /* Make an output file name from the input file.
+	 Change the .ths extension to .th */
+      
+      outfile = malloc(strlen(filename)+5);
+      strcpy(outfile,filename);
+      p = strstr(outfile,".ths");
+      if (p) *p = 0;
+      strcat(outfile,".th");
+    }
+  }
+
+  /* Open the output file */
+  if (!testrun && outfile) {
+    out = fopen(outfile,"wb");
+    if (!out) {
+      perror("Error opening output file");
+      return 3;
+    }
+  }
+  else {
+    out = stdout;
+    outfile = "stdout";
+  }
+
+  /* Little message thing */
+  if (!quiet && !testrun)
+    printf("Compiling %s -> %s\n",filename,outfile);
 
   /*** Initialization */
 
@@ -82,21 +154,23 @@ int main(int argc, char **argv) {
   
   /**** Summary info */
 
-  fprintf(stderr,
-	  "Generated theme. Summary:\n"
-	  "\t    Objects: %d\n"
-	  "\t Properties: %d\n"
-	  "\t       Tags: %d\n"
-	  "\t   Tag Data: %d\n"
-	  "\tLoader Data: %d\n"
-	  "\t Total size: %d\n",
-	  num_thobj,num_totprop,num_tags,datasz_tags,
-	  datasz_loader,themeheap_size);
+  if (!quiet)
+    fprintf(stderr,
+	    "Generated theme. Summary:\n"
+	    "\t    Objects: %d\n"
+	    "\t Properties: %d\n"
+	    "\t       Tags: %d\n"
+	    "\t   Tag Data: %d\n"
+	    "\tLoader Data: %d\n"
+	    "\t Total size: %d\n",
+	    num_thobj,num_totprop,num_tags,datasz_tags,
+	    datasz_loader,themeheap_size);
 
   /**** Output */
   /* Write it to a file */
 
-  fwrite(themeheap,themeheap_size,1,stdout);
+  if (!testrun)
+    fwrite(themeheap,themeheap_size,1,out);
 
   return 0;
 }
