@@ -102,6 +102,12 @@ quoted appropriately. For example:
   Set to nonzero to use solid panel dragging, which is cool but very CPU heavy
   Requires the CONFIG_DRAGSOLID compile-time option
 
+- palette
+  If the the 8bpp palette mode is set to "Custom" at compile time, this option
+  may be used to load a new palette. The argument should be the path to a palette
+  in Gimp's palette format (3 integers values per line between 0 and 255, comments
+  begin with #, blank lines ignored)
+
 [sound]
 
 - click
