@@ -59,11 +59,7 @@ void palette_load(void)
 		struct pgtheme_prop def, palette;
 		struct pgrequest req;
 		u32 array[TOTAL_COLORS];
-	} termtheme = {
-		hdr: {
-			magic: {'P', 'G', 't', 'h'},
-		},
-	};
+	} termtheme;
 
 	i=snprintf(prefname, sizeof prefname, "%s/palette.conf", get_xdir());
 	if(i>0&&i<sizeof prefname)
@@ -101,12 +97,14 @@ void palette_load(void)
 			close(fh);
 		}
 	}
-	/* TODO: build terminal palette theme
-	 * implement bright color code in terminal widget - background? */
+	/* build terminal palette theme */
+	memset(&termtheme, 0, sizeof termtheme);
+	termtheme.hdr.magic[0]='P';
+	termtheme.hdr.magic[0]='G';
+	termtheme.hdr.magic[0]='t';
+	termtheme.hdr.magic[0]='h';
 	termtheme.hdr.file_len=htonl(sizeof termtheme);
 	termtheme.hdr.file_ver=htons(PGTH_FORMATVERSION);
-	termtheme.hdr.file_sum32=0;
-	termtheme.hdr.num_tags=0;
 	termtheme.hdr.num_thobj=htons(1);
 	termtheme.hdr.num_totprop=htons(2);
 	termtheme.obj.id=htons(PGTH_O_TERMINAL);
@@ -122,7 +120,6 @@ void palette_load(void)
 			sizeof(termtheme.obj)+sizeof(termtheme.def)+
 			sizeof(termtheme.palette));
 	termtheme.req.type=htons(PGREQ_MKARRAY);
-	termtheme.req.id=0;
 	termtheme.req.size=htonl(sizeof(termtheme.array));
 	for(i=0;i<TOTAL_COLORS;i++)
 		termtheme.array[i]=htonl(colconv_rgb[i]);
