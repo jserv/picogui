@@ -30,9 +30,9 @@ socketName = socketName + "." + str(botID);
 channelFile = channelFile + "." + str(botID);
 
 # Lalo's joke: A brainless entity created to keep an eye on subversion                 
-botNick = "CIA"
+botNick = "TD"
 if botID > 1:
-    botNick = "CIA" + str(botID)  
+    botNick = botNick + str(botID)  
 
 # List of channels we're in. These will be autojoined by the
 # AccountManager. We update this and save it when we get a mail
@@ -156,6 +156,10 @@ class BotChat(basechat.ChatUI):
 
     def getConversation(self, person, Class=BotConversation, stayHidden=0):
         return basechat.ChatUI.getConversation(self, person, Class, stayHidden)
+
+    def unregisterAccountClient(self, client):
+        basechat.ChatUI.unregisterAccountClient(self, client)
+        accounts[0].logOn(self)
 
 from twisted.internet.app import Application
 application = Application("announceBot")
