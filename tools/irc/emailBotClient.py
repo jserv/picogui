@@ -210,7 +210,7 @@ if __name__ == '__main__':
             # convert the message into the lines to send to the socket, and log it
             # This limits the length of the maximum message, mainly to prevent DOS'ing the bot too badly
             lines = []
-            for line in message.split("\n")[:40]:
+            for line in message.split("\n")[:8]:
                 line = line.strip()
                 if len(line) > 0:
                     commandLine = "%s %s %s\r\n" % (subjectFields[0], subjectFields[1], line)
