@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.20 2002/01/17 07:58:54 micahjd Exp $
+/* $Id: fbdev.c,v 1.21 2002/01/17 18:19:53 abergmann Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -43,6 +43,7 @@
 /* Macros to easily access the members of vid->display */
 #define FB_MEM   (((struct stdbitmap*)vid->display)->bits)
 #define FB_BPL   (((struct stdbitmap*)vid->display)->pitch)
+#define FB_TYPE(type,bpp)  (((type)<<8)|(bpp))
 
 /* This information is only saved so we can munmap() and close()... */
 int fbdev_fd;
@@ -95,7 +96,7 @@ g_error fbdev_init(void) {
    vid->bpp    = varinfo.bits_per_pixel;
 
    /* Load a VBL */
-   switch (vid->bpp) {
+   switch (FB_TYPE(fixinfo.type,vid->bpp)) {
       
 #ifdef CONFIG_VBL_LINEAR1
     case 1:
@@ -138,6 +139,12 @@ g_error fbdev_init(void) {
 #ifdef CONFIG_VBL_LINEAR32
     case 32:
       setvbl_linear32(vid);
+      break;
+#endif
+
+#ifdef CONFIG_VBL_VGAPLAN4
+    case FB_TYPE(FB_TYPE_VGA_PLANES,4):
+      setvbl_vgaplan4(vid);
       break;
 #endif
 
