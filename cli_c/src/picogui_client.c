@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.48 2001/02/02 08:06:08 micahjd Exp $
+/* $Id: picogui_client.c,v 1.49 2001/02/07 08:36:43 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -586,7 +586,7 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.48 2001/02/02 08:06:08 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.49 2001/02/07 08:36:43 micahjd Exp $\n");
 	exit(1);
       }
       
@@ -934,6 +934,18 @@ void pgSetPayload(pghandle object,unsigned long payload) {
   _pg_add_request(PGREQ_SETPAYLOAD,&arg,sizeof(arg));
 }
 
+void pgRegisterOwner(int resource) {
+  struct pgreqd_regowner arg;
+  arg.res = htons(resource);
+  _pg_add_request(PGREQ_REGOWNER,&arg,sizeof(arg));
+}
+
+void pgUnregisterOwner(int resource) {
+  struct pgreqd_regowner arg;
+  arg.res = htons(resource);
+  _pg_add_request(PGREQ_UNREGOWNER,&arg,sizeof(arg));
+}
+
 unsigned long pgGetPayload(pghandle object) {
   object = htonl(object);
   _pg_add_request(PGREQ_GETPAYLOAD,&object,sizeof(object));
@@ -1174,6 +1186,19 @@ long pgGetWidget(pghandle widget,short property) {
   return _pg_return.e.retdata;
 }
 
+/* Measure a piece of text in a font, in pixels */
+void pgSizeText(int *w,int *h,pghandle font,pghandle text) {
+  struct pgreqd_sizetext arg;
+  arg.text = htonl(text);
+  arg.font = htonl(font);
+  _pg_add_request(PGREQ_SIZETEXT,&arg,sizeof(arg));
+   
+  /* Get the return value */
+  pgFlushRequests();
+  if (w) *w = _pg_return.e.retdata >> 16;
+  if (h) *h = _pg_return.e.retdata & 0xFFFF;
+}
+   
 /* Get the contents of a string handle. */
 char *pgGetString(pghandle string) {
   string = htonl(string);

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.33 2001/02/02 07:42:06 micahjd Exp $
+/* $Id: client_c.h,v 1.34 2001/02/07 08:36:42 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -208,6 +208,12 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
 void pgCustomizeSelect(pgselecthandler handler);
 #endif
 
+/* These functions register and unregister, respectively, exclusive access
+ * for the specified resource. The parameter must be a PG_OWN_* constant
+ */
+void pgRegisterOwner(int resource);
+void pgUnregisterOwner(int resource);
+
 /******************** Objects */
 
 /* Delete any object that has a handle */
@@ -287,6 +293,13 @@ void pgReplaceTextFmt(pghandle widget,const char *fmt, ...);
  * to ignore that parameter.
  */
 pghandle pgNewFont(const char *name,short size,unsigned long style);
+
+/* In *w and *h, returns the size in pixels of the given text
+ * in the given font. 
+ *
+ * font may be 0 to use the default font
+ */
+void pgSizeText(int *w,int *h,pghandle font,pghandle text);
 
 /* Load a compiled theme file into the server */
 pghandle pgLoadTheme(struct pgmemdata obj);
