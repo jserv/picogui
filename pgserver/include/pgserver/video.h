@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.107 2002/10/27 19:02:56 micahjd Exp $
+/* $Id: video.h,v 1.108 2002/10/27 19:03:18 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -158,9 +158,6 @@ struct vidlib {
    * Default implementation: does nothing 
    */
   g_error (*setmode)(s16 xres,s16 yres,s16 bpp,u32 flags);
-
-  /* This should be set to the mask of flags handled by this driver */
-  u32 supported_flags;
 
   /* Optional
    *   This is called after mode setting is complete, including all wrappers
