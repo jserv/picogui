@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.25 2002/10/17 00:09:51 micahjd Exp $
+/* $Id: font_freetype.c,v 1.26 2002/10/17 00:21:59 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -587,38 +587,18 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   /* Store the font metrics now, since they'll be needed frequently */
   ft_get_descriptor_face(self,&face);
 
-  if ((closest->fs.representation & PG_FR_SCALABLE) || face->num_fixed_sizes==0) {
-    DATA->metrics.ascent = face->size->metrics.ascender >> 6;
-    DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
-    DATA->metrics.lineheight = face->size->metrics.height >> 6;
-    DATA->metrics.linegap = DATA->metrics.lineheight - 
-      DATA->metrics.ascent - DATA->metrics.descent;
-    DATA->metrics.charcell.w = face->size->metrics.max_advance >> 6;
-    DATA->metrics.charcell.h = DATA->metrics.ascent + DATA->metrics.descent;
-  }
-  else {
-    DATA->metrics.charcell.w = face->available_sizes->width;
-    DATA->metrics.charcell.h = face->available_sizes->height;
-
-    /* Is there any way to get the rest of the metrics?
-     * Just fudge them for now...
-     */
-    DATA->metrics.ascent = DATA->metrics.charcell.h;
-    DATA->metrics.descent = 0;
-    DATA->metrics.lineheight = DATA->metrics.charcell.h;
-    DATA->metrics.linegap = 0;
-  }
+  DATA->metrics.ascent = face->size->metrics.ascender >> 6;
+  DATA->metrics.descent = (-face->size->metrics.descender) >> 6;
+  DATA->metrics.lineheight = face->size->metrics.height >> 6;
+  DATA->metrics.linegap = DATA->metrics.lineheight - 
+    DATA->metrics.ascent - DATA->metrics.descent;
+  DATA->metrics.charcell.w = face->size->metrics.max_advance >> 6;
+  DATA->metrics.charcell.h = DATA->metrics.ascent + DATA->metrics.descent;
 
   if (DATA->flags & PG_FSTYLE_FLUSH)
     DATA->metrics.margin = 0;
   else
     DATA->metrics.margin = DATA->metrics.descent;
-
-  printf("Found font ");
-  ft_style_print(&DATA->face->fs);
-  printf(" for request of ");
-  ft_style_print(fs);
-  printf("\n");
 
   return success;
 }
