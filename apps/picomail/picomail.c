@@ -7,12 +7,18 @@
 
 #define CONFIG_FILE "/.picomail.conf"
 
-pghandle wBox;
+pghandle wBox, picomailapp,mesgviewer, messagebox;
 int row;
 int selectedMessage = -1;
 
 int closeboxHandler(struct pgEvent *evt) {
   return 0;
+}
+
+int viewerCloseboxHandler(struct pgEvent *evt) {
+        pgSetWidget(picomailapp,PG_WP_SIZE,0x7FFF,0);
+        pgSetWidget(mesgviewer,PG_WP_SIZE,0,0);
+  return 1;
 }
 
 
@@ -25,14 +31,10 @@ int deleteMessage(struct pgEvent *evt) {
 }
 
 int readMessage(struct pgEvent *evt) {
-	pghandle mesgviewer, msgscroll, msgbox;
 	if (selectedMessage>0)
 	{
-		mesgviewer = pgRegisterApp(PG_APP_NORMAL,"PicoMail Message",0);
-   		msgscroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
-   		msgbox = pgNewWidget(PG_WIDGET_BOX,0,0);
-   		pgSetWidget(msgbox,PG_WP_SIDE,PG_S_ALL,0);
-		pgSetWidget(msgscroll,PG_WP_BIND,msgbox,0);
+        pgSetWidget(mesgviewer,PG_WP_SIZE,0x7FFF,0);
+        pgSetWidget(picomailapp,PG_WP_SIZE,0,0);
 		imap_getmesg(selectedMessage);
 	}
 	else
@@ -75,12 +77,13 @@ int main(int argc, char *argv[])
 {
    char *home, *conffile;
 
+   pghandle msgscroll, msgbox;
    pghandle wToolbar, wScroll, wItem;
    
    row = 0;
    
    pgInit(argc,argv);
-   pgRegisterApp(PG_APP_NORMAL,"PicoMail",0);
+   picomailapp = pgRegisterApp(PG_APP_NORMAL,"PicoMail",0);
    
    home = getenv("HOME");
    conffile = malloc( strlen(home) + strlen(CONFIG_FILE) + 1);
@@ -142,7 +145,21 @@ int main(int argc, char *argv[])
 
    pgBind(PGBIND_ANY,PG_WE_CLOSE,&closeboxHandler,NULL);
 
-
+/* message viewer */
+   
+		mesgviewer = pgRegisterApp(PG_APP_NORMAL,"PicoMail Message",0);
+        pgBind(mesgviewer,PG_WE_CLOSE,&viewerCloseboxHandler,NULL);
+        pgSetWidget(mesgviewer,PG_WP_SIZE,0,0);
+   		msgscroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
+   		msgbox = pgNewWidget(PG_WIDGET_BOX,0,0);
+   		pgSetWidget(msgbox,PG_WP_SIDE,PG_S_ALL,0);
+		pgSetWidget(msgscroll,PG_WP_BIND,msgbox,0);
+        messagebox = pgNewWidget(PG_WIDGET_TEXTBOX,0,0);
+        pgSetWidget(msgscroll, PG_WP_BIND,messagebox, 0);
+        pgSetWidget(messagebox,
+              PG_WP_TEXT,pgNewString("Email!"),
+              PG_WP_TEXT,pgNewString("Hier is uw bericht!"),
+                 0);
 
 
 
