@@ -17,18 +17,19 @@ class Frame(object):
         self._box.side = 'All'
 
         self.python_ns = {'frame': self}
-        exec 'from Nifty import FileBuffer, ScratchBuffer' in self.python_ns
+        exec 'from Nifty import FileBuffer, ScratchBuffer, keybindings' in self.python_ns
 
         bar = self._app.panelbar() or self.addWidget('toolbar')
         bt = bar.addWidget('Button', 'inside')
         bt.text = 'Save'
+        self.toolbar = bar
 
         self.link(self._save_button_handler, bt, 'activate')
 
         self.minibuffer = Minibuffer(self)
         sys.stdout = self.minibuffer
 
-        #sys.stderr = DebugBuffer(self)
+        sys.stderr = DebugBuffer(self)
 
     def get_current(self):
         for page in self._pages:
