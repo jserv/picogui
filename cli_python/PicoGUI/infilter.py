@@ -107,7 +107,7 @@ class Trigger(object):
                     self._data[index] = long(value)
             else:
                 for index, name in format:
-                    self._data[index] = long(getattr(self, name), self._data[index])
+                    self._data[index] = long(getattr(self, name))
         return struct.pack(trigger_base_format, *self._data)
 
 
