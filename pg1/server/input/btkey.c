@@ -46,7 +46,7 @@
 
 #define	BTKEY_FIFO_PATH	"/dev/btfifo"  
 
-#define LOCAL_DEBUG 	1
+#define LOCAL_DEBUG 	0
 
 #if LOCAL_DEBUG
 # define DPRINTF(x...) 	printf(__FILE__": " x)
