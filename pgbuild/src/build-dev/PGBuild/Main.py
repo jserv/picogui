@@ -153,30 +153,52 @@ class OptionsXML(object):
         return self.xml.getvalue()
 
 
+class BootstrapXML:
+    """An object that wraps a Bootstrap object, providing an XML document that
+       can be mounted into the configuration tree.
+       """
+    def __init__(self, bootstrap):
+        self.xml = StringIO.StringIO()
+        self.xml.write('<pgbuild title="Bootstrap Configuration" root="bootstrap">')
+        for path in bootstrap.paths:
+            self.xml.write('<path name="%s">%s</path>' % (path, bootstrap.paths[path]))
+        for package in bootstrap.packages:
+            self.xml.write('<package name="%s">%s</package>' % (package, bootstrap.packages[package]))
+        self.xml.write('</pgbuild>')
+
+    def get_contents(self):
+        return self.xml.getvalue()
+
+
+class PackageXML:
+    """An object that wraps a python package, providing an XML document that
+       can be mounted into the configuration tree, representing all of its
+       public string attributes.
+       """
+    def __init__(self, package, root):
+        self.xml = StringIO.StringIO()
+        self.xml.write('<pgbuild title="%s package attributes" root="%s">' % (package.__name__, root))
+        for attr in dir(package):
+            if attr[0] != '_' and type(getattr(package,attr)) == str:
+                self.xml.write('\t<attr name="%s">%s</attr>' % (attr, getattr(package,attr)))
+        self.xml.write('</pgbuild>')
+
+    def get_contents(self):
+        return self.xml.getvalue()
+        
+
 def boot(config, bootstrap):
     """Initialize the configuration tree from a Bootstrap object- This takes
        care of mounting all the configuration files required to get us started,
        and stores the bootstrap object's information in the config tree.
        """
 
-    class BootstrapXML:
-        """An object that wraps a Bootstrap object, providing an XML document that
-           can be mounted into the configuration tree.
-           """
-        def __init__(self, bootstrap):
-            self.bootstrap = bootstrap
-
-        def get_contents(self):
-            xml = '<pgbuild title="Bootstrap Configuration" root="bootstrap">\n'                
-            for path in self.bootstrap.paths:
-                xml += '\t<path name="%s">%s</path>\n' % (path, self.bootstrap.paths[path])
-            for package in self.bootstrap.packages:
-                xml += '\t<package name="%s">%s</package>\n' % (package, self.bootstrap.packages[package])                    
-            xml += '</pgbuild>\n'
-            return xml
-
     # Mount in an XML representation of the bootstrap object
     config.mount(BootstrapXML(bootstrap))
+
+    # Mount an XML representation of the PGBuild package's attributes, including
+    # the description and version of this build system
+    config.mount(PackageXML(PGBuild, "sys"))
 
     # Try to make sure all our bootstrap paths exist
     for path in bootstrap.paths.values():
