@@ -210,10 +210,18 @@ if __name__ == '__main__':
                 # we always choose the last bot to be started for joining channels
                 socketName = socketBaseName + "." + lastBotID;
             #print "socketName is " + socketName
-            # now launch the client object
+            
+            # now launch the client object for the channel-specific bot
             f = AnnounceClientFactory()
             reactor.connectUNIX(socketName, f)
             reactor.run()
+
+            # and now send to the first bot, so it goes into the main channels
+            socketName = socketBaseName + ".1"
+            f = AnnounceClientFactory()
+            reactor.connectUNIX(socketName, f)
+            reactor.run()
+
             
         except IndexError:
             # this command does not relate to a channel
