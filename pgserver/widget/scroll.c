@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.71 2002/10/30 05:08:07 micahjd Exp $
+/* $Id: scroll.c,v 1.72 2002/11/03 22:44:48 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -46,10 +46,10 @@
 #define SCROLL_DELAY 15
 
 /* # of milliseconds between scrolls when holding down the mouse */
-#define SCROLLSPEED  5
+#define SCROLLSPEED  15
 
 /* Amount of pixels per redraw while holding down the mouse */
-#define SCROLLAMOUNT 10
+#define SCROLLAMOUNT 5
 
 /* A power of two to divide the scroll bar's height by to get the
    indicator's height */
@@ -441,7 +441,7 @@ void scroll_trigger(struct widget *self,s32 type,union trigparam *param) {
       * and skip a frame. Otherwise, just use a timer as a throttle */
      if (events_pending())
        return;
-     tick = getticks();
+     tick = os_getticks();
      if (tick < DATA->wait_tick) return;
      DATA->wait_tick = tick + SCROLL_DELAY;
      

@@ -1,4 +1,4 @@
-/* $Id: zaurus.c,v 1.12 2002/08/23 12:40:53 micahjd Exp $
+/* $Id: zaurus.c,v 1.13 2002/11/03 22:44:47 micahjd Exp $
  *
  * zaurus.c - Input driver for the Sharp Zaurus SL-5000. This includes a
  *            simple touchscreen driver, and some extras to handle sound
@@ -32,6 +32,7 @@
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
+#include <pgserver/os.h>
 #include <stdio.h>
 
 /* These headers are from the Zaurus' kernel source */
@@ -152,7 +153,7 @@ void infilter_zaurus_handler(struct infilter *self, u32 trigger, union trigparam
 
     /* Detect double-press of the cancel button as suspend */
   case PGKEY_ESCAPE:
-    now = getticks();
+    now = os_getticks();
     if (now < last_cancel_press + 250)
       drivermessage(PGDM_POWER, PG_POWER_SLEEP, NULL);
     else

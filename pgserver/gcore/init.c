@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.2 2002/11/03 05:15:08 micahjd Exp $
+/* $Id: init.c,v 1.3 2002/11/03 22:44:47 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -114,8 +114,7 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   errorcheck;
 
   DBG("timers");
-  e = timer_init();
-  errorcheck;
+  timer_init();
 
   DBG("initial themes");
   e = reload_initial_themes();
@@ -152,7 +151,6 @@ g_error pgserver_init(int flags, int argc, char **argv) {
 /* Shut down all pgserver subsystems */
 g_error pgserver_shutdown(void) {
   /* Clean up after each subsystem */
-  timer_release();
   theme_shutdown();
   handle_cleanup(-1,-1);
   hotspot_free();

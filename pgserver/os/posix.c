@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: posix.c,v 1.2 2002/11/03 22:44:48 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -27,35 +27,40 @@
 
 #include <pgserver/common.h>
 #include <pgserver/os.h>
-#include <pgserver/init.h>
 #include <pgserver/os_posix.h>
 
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/time.h>
 extern char **environ;
 
 /* Return value of the last process to exit */
 int os_posix_child_return;
 
+/* Reference point for os_getticks */
+static struct timeval os_posix_first_tick;
+
+/* Value set with os_set_timer */
+u32 os_posix_timer;
+
 
 /********************************************** Public OS interface */
 
-/* OS-specific init shutdown, always called first and last respectively.
- * os_init gets a copy of the flags from pgserver_init, it is expected
- * to obey applicable flags like PGINIT_NO_SIGNALS
- */
-g_error os_init(int flags) {
+g_error os_init(void) {
   g_error e;
 
-  if (!(flags & PGINIT_NO_SIGNALS))
-    os_posix_signals_install();
+  /* Signal handlers */
+  os_posix_signals_install();
   
+  /* Get a reference point for os_getticks */
+  gettimeofday(&os_posix_first_tick,NULL);
+
   return success;
 }
 
 void os_shutdown(void) {
+
 }
 
 /* Present a g_error message to the user */
@@ -81,7 +86,10 @@ g_error os_child_run(const char *cmdline) {
     sargv[2] = (char *) cmdline;
     sargv[3] = 0;
     execve("/bin/sh",sargv,environ);
-    prerror(mkerror(PG_ERRT_BADPARAM,55));
+    /* FIXME: This should pass the error back to os_child_run
+     *        somehow instead of just exiting here!
+     */
+    os_show_error(mkerror(PG_ERRT_BADPARAM,55));
     kill(my_pid,SIGTERM);
     exit(1);
   }
@@ -92,6 +100,36 @@ g_error os_child_run(const char *cmdline) {
 /* Get the return code from the most recently exited child process. */
 int os_child_returncode(void) {
   return os_posix_child_return;
+}
+
+/* Get the number of milliseconds since an arbitrary epoch */
+u32 os_getticks(void) {
+    static struct timeval now;
+
+  gettimeofday(&now,NULL);
+  return (now.tv_sec  - os_posix_first_tick.tv_sec ) * 1000 + 
+         (now.tv_usec - os_posix_first_tick.tv_usec) / 1000;
+}
+
+/* Set a timer that will call master_timer() 'ticks' milliseconds
+ * from now. If 'ticks' is 0, no new timer will be set. In any
+ * event, the previously set timer is cancelled.
+ *
+ * This implementation sets an itimer that will generate SIGALRM,
+ * the signal handler then calls master_timer()
+ */
+void os_set_timer(u32 ticks) {
+  struct itimerval itv;
+  os_posix_timer = ticks;
+  ticks -= os_getticks();
+  memset(&itv,0,sizeof(struct itimerval));
+  itv.it_value.tv_sec  = (ticks/1000);
+  itv.it_value.tv_usec = (ticks%1000)*1000;
+  setitimer(ITIMER_REAL,&itv,NULL);
+}
+
+u32 os_get_timer(void) {
+  return os_posix_timer;
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: posix_signals.c,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: posix_signals.c,v 1.2 2002/11/03 22:44:48 micahjd Exp $
  *
  * posix_signals.c - Handle signals necessary for subprocess termination,
  *                   quit requests, and VT switching
@@ -41,6 +41,7 @@ static int pgserver_signals[] = {
   /* Not-so-fatal signals */
   SIGPIPE,
   SIGCHLD,
+  SIGALRM,
   /* Fatal signals */
 #ifndef DEBUG_FATALSIGNALS
   SIGTERM,
@@ -75,6 +76,10 @@ void signals_handler(int sig) {
     waitpid(-1, &i, WNOHANG);
     os_posix_child_return = WEXITSTATUS(i);
     childqueue_pop();
+    break;
+
+  case SIGALRM:
+    master_timer();
     break;
 
   case SIGUSR1:

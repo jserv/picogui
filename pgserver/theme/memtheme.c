@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.75 2002/11/03 04:54:25 micahjd Exp $
+/* $Id: memtheme.c,v 1.76 2002/11/03 22:44:48 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -37,6 +37,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/pgstring.h>
 #include <pgserver/configfile.h>
+#include <pgserver/os.h>
 #include <picogui/theme.h>
 
 #include <stdio.h>  /* for NULL */
@@ -280,7 +281,7 @@ u32 theme_lookup(u16 object, u16 property) {
   case PGTH_P_TIME_ON:          return 250;
   case PGTH_P_TIME_OFF:         return 125;
   case PGTH_P_TIME_DELAY:       return 500;
-  case PGTH_P_TICKS:            return getticks();
+  case PGTH_P_TICKS:            return os_getticks();
   case PGTH_P_CURSORBITMAP:     return res[PGRES_DEFAULT_CURSORBITMAP];
   case PGTH_P_CURSORBITMASK:    return res[PGRES_DEFAULT_CURSORBITMASK];
   case PGTH_P_CURSOR_WIDTH:     return 2;

@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: os.h,v 1.2 2002/11/03 22:44:47 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
@@ -30,11 +30,9 @@
 #ifndef __H_OS
 #define __H_OS
 
-/* Os-specific init shutdown, always called first and last respectively.
- * os_init gets a copy of the flags from pgserver_init, it is expected
- * to obey applicable flags like PGINIT_NO_SIGNALS
+/* OS-specific init shutdown, always called first and last respectively.
  */
-g_error os_init(int flags);
+g_error os_init(void);
 void os_shutdown(void);
 
 /* Present a g_error message to the user */
@@ -45,6 +43,17 @@ g_error os_child_run(const char *cmdline);
 
 /* Get the return code from the most recently exited child process. */
 int os_child_returncode(void);
+
+/* Get the number of milliseconds since an arbitrary epoch */
+u32 os_getticks(void);
+
+/* Set a timer that will call master_timer() as soon as possible after
+ * os_getticks() passes the given 'ticks' value.
+ */
+void os_set_timer(u32 ticks);
+
+/* Return the timer value most recently set with os_set_timer() */
+u32 os_get_timer(void);
 
 #endif /* __H_OS */
 

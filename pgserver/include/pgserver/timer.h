@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.6 2002/01/20 09:56:16 micahjd Exp $
+/* $Id: timer.h,v 1.7 2002/11/03 22:44:47 micahjd Exp $
  *
  * timer.h - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -32,13 +32,8 @@
 #include <pgserver/g_error.h>
 #include <pgserver/widget.h>
 
-g_error timer_init(void);
-void timer_release(void);
-
-/* General-purpose func to get the time
-   in milliseconds
-*/
-u32 getticks(void);
+/* Initialize the timer subsystem */
+void timer_init(void);
 
 /* reset the inactivity timer */
 void inactivity_reset();
@@ -51,9 +46,17 @@ u32 inactivity_get();
  */
 void inactivity_set(u32 t);
 
-/* If this is nonzero, timers may not trigger
+/*
+ * Set a timer.  After the specified interval, in milliseconds,
+ * the widget will recieve a PG_TRIGGER_TIMER
  */
-extern int disable_timers;
+void install_timer(struct widget *self,u32 interval);
+void remove_timer(struct widget *w);
+
+/* This is the callback triggered by os_set_timer, it is the entry
+ * point for all widget timers and inactivity timers.
+ */
+void master_timer(void);
 
 #endif /* __H_TIMER */
 

@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.16 2002/10/23 02:09:08 micahjd Exp $
+/* $Id: panelbar.c,v 1.17 2002/11/03 22:44:48 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -88,7 +88,7 @@ int panel_throttle(struct widget *self) {
    * and skip a frame. Otherwise, just use a timer as a throttle */
   if (events_pending())
     return 1;
-  tick = getticks();
+  tick = os_getticks();
   if (tick < DATA->wait_tick)
     return 1;
   DATA->wait_tick = tick + DRAG_DELAY;  

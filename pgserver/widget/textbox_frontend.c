@@ -1,4 +1,4 @@
-/* $Id: textbox_frontend.c,v 1.31 2002/11/01 09:14:59 lalo Exp $
+/* $Id: textbox_frontend.c,v 1.32 2002/11/03 22:44:49 micahjd Exp $
  *
  * textbox_frontend.c - User and application interface for
  *                      the textbox widget. High level document handling
@@ -261,7 +261,7 @@ void textbox_trigger(struct widget *self,s32 type,union trigparam *param) {
   case PG_TRIGGER_TIMER:
     if (DATA->focus==0) break;
 
-    if (getticks() > DATA->update_time + DATA->time_delay) {
+    if (os_getticks() > DATA->update_time + DATA->time_delay) {
       if (DATA->flash_on = !DATA->flash_on)
 	paragraph_show_cursor(DATA->doc->crsr);
       else
@@ -439,7 +439,7 @@ void textbox_reset_inactivity(struct widget *self) {
     DATA->flash_on = 1;
     paragraph_show_cursor(DATA->doc->crsr);
   }
-  DATA->update_time = getticks();
+  DATA->update_time = os_getticks();
 }
 
 /* The End */

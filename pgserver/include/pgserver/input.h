@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.47 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: input.h,v 1.48 2002/11/03 22:44:47 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -404,21 +404,6 @@ void send_propagating_trigger(struct widget *w, s32 type, union trigparam *param
  * a hotkey.  Sends PG_TRIGGER_ACTIVATE and PG_TRIGGER_DEACTIVATE, and sets kbdfocus
  */
 void request_focus(struct widget *self);
-
-/*
- * Set a timer.  At the time, in ticks, specified by 'time',
- * the widget will recieve a PG_TRIGGER_TIMER
- */
-void install_timer(struct widget *self,u32 interval);
-void remove_timer(struct widget *w);
-
-/* This is called by the timer subsystem.  It triggers the
- * timer and uninstalls it from the linked list of timers.
- *
- * It is assumed that this is triggering the timer at the
- * beginning of the timerwidgets list
- */
-void trigger_timer(void);
 
 #endif /* __H_INPUT */
 /* The End */

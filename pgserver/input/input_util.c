@@ -1,4 +1,4 @@
-/* $Id: input_util.c,v 1.4 2002/10/26 07:53:07 micahjd Exp $
+/* $Id: input_util.c,v 1.5 2002/11/03 22:44:47 micahjd Exp $
  *
  * input_util.c - Collection of utilities used by the input code
  *
@@ -30,79 +30,6 @@
 #include <pgserver/appmgr.h>
 #include <pgserver/widget.h>
 
-/***************************************** Timers *******/
-
-struct widget *timerwidgets;
-
-/*
-   Set a timer.  At the time, in ticks, specified by 'time',
-   the widget will recieve a PG_TRIGGER_TIMER
-*/
-void install_timer(struct widget *self,u32 interval) {
-  struct widget *w;
-
-  /* Remove old links */
-  remove_timer(self);
-
-  self->time = getticks() + interval;
-
-  /* Stick it in the sorted timerwidgets list */
-  if (timerwidgets && (timerwidgets->time < self->time)) {
-    /* Find a place to insert it */
-
-    w = timerwidgets;
-    while (w->tnext && (w->tnext->time < self->time)) 
-      w = w->tnext;
-
-    /* Stick it in! */
-    self->tnext = w->tnext;
-    w->tnext = self;
-  }
-  else {
-    /* The list is empty, or the new timer needs to go
-       before everything else in the list */
-
-    self->tnext = timerwidgets;
-    timerwidgets = self;
-  }
-}
-
-/* Trigger and remove the next timer trigger */
-void inline trigger_timer(void) {
-  struct widget *w;
-
-
-  /* Verify that the trigger is actually due.
-   * The trigger might have been modified between
-   * now and when it was set.
-   */
-  if (timerwidgets && getticks()>=timerwidgets->time) {
-    /* Good. Take it off and trigger it */
-    w = timerwidgets;
-    timerwidgets = timerwidgets->tnext;
-
-    send_trigger(w,PG_TRIGGER_TIMER,NULL);
-  };
-}
-
-void remove_timer(struct widget *w) {
-  if (timerwidgets) {
-    if (w==timerwidgets) {
-      timerwidgets = w->tnext;
-    }
-    else {
-      struct widget *p = timerwidgets;
-      while (p->tnext)
-	if (p->tnext == w) {
-	  /* Take us out */
-	  p->tnext = w->tnext;
-	  break;
-	}
-	else
-	  p = p->tnext;
-    }
-  }
-}
 
 /***************************************** Focus *******/
 

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.20 2002/09/25 15:26:08 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.21 2002/11/03 22:44:48 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -198,7 +198,7 @@ void gl_frame(void) {
   /***************** Onscreen display */
 
   /* FPS calculations */
-  now = getticks();
+  now = os_getticks();
   frames++;
   interval = (now-then)/1000.0f;
   if (interval > gl_global.fps_interval) {
@@ -346,9 +346,9 @@ void gl_make_texture(struct glbitmap *glb) {
   /* FIXME: This is a hack! We need lock/unlock commands for SHM bitmaps so we know when to update. This
    * code just updates volatile bitmaps every blit, limiting the maximum number of updates per second.
    */
-  if (glb->volatilesb && getticks()>glb->last_update_time+30) {
+  if (glb->volatilesb && os_getticks()>glb->last_update_time+30) {
     gl_invalidate_texture((hwrbitmap)glb);
-    glb->last_update_time = getticks();
+    glb->last_update_time = os_getticks();
   }
 
   if (!glb->texture) {

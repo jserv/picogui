@@ -1,4 +1,4 @@
-/* $Id: init.h,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: init.h,v 1.2 2002/11/03 22:44:47 micahjd Exp $
  *
  * init.h - High level pgserver initialization, main loop, and shutdown
  *
@@ -39,9 +39,8 @@ void rqhtab_init(void);
 #endif
 
 /* Flags for init */
-#define PGINIT_NO_SIGNALS      (1<<1)
-#define PGINIT_NO_CONFIGFILE   (1<<2)
-#define PGINIT_NO_COMMANDLINE  (1<<3)
+#define PGINIT_NO_CONFIGFILE   (1<<1)
+#define PGINIT_NO_COMMANDLINE  (1<<2)
 
 /* Initialize all pgserver subsystems.
  * Normally this will initialize everything, if you want to change

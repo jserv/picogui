@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.24 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: timer.c,v 1.25 2002/11/03 22:44:47 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -27,22 +27,13 @@
  */
 
 #include <pgserver/common.h>
-
-#include <string.h>
-#ifdef WINDOWS
-#include <windows.h>
-#include <mmsystem.h>
-#else
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#endif
-
 #include <pgserver/configfile.h>
 #include <pgserver/timer.h>
+#include <pgserver/os.h>
+#include <limits.h>               /* For INT_MAX */
 
-u32 lastactivity;
+/* os_getticks() of the last activity */
+u32 timer_lastactivity;
 
 /* Timers for activating driver messages after periods of inactivity */
 u32 timer_cursorhide;
@@ -50,136 +41,27 @@ u32 timer_backlightoff;
 u32 timer_sleep;
 u32 timer_vidblank;
 
-/* Internal function to send driver messages after periods of inactivity
- * specified in the configuration file
+/* Sorted list of timers widgets have requested, in increasing order of time */
+struct widget *timer_widgets;
+
+/* Evaluate a timer that's supposed to go off at 't',
+ * return nonzero if the timer should be triggered, otherwise
+ * return 0 and set up a timer for it.
  */
-void inactivity_check(void);
+int timer_eval(u32 t);
+
+
+/******************************************************** Public Methods */
 
 /* Load timer values from the config file */
-void inactivity_init(void);
+void timer_init(void) {
+  timer_cursorhide    = get_param_int("timers","cursorhide",50);
+  timer_backlightoff  = get_param_int("timers","backlightoff",0);
+  timer_sleep         = get_param_int("timers","sleep",0);
+  timer_vidblank      = get_param_int("timers","vidblank",0);
 
-/* This defines the maximum 
-   precision of the PG_TRIGGER_TIMER */
-#define TIMERINTERVAL 50   /* In milliseconds */
-
-/* If this is nonzero, timers may not trigger
- */
-int disable_timers;
-
-/* All this code is OS-specific */
-
-#ifdef WINDOWS
-/**************** Windows */
-
-static DWORD first_tick;
-static UINT ntimer;
-
-static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
-				 DWORD dw1, DWORD dw2) {
-  if (disable_timers)
-    return;
-
-  inactivity_check();
-  trigger_timer();
+  master_timer();  /* Reevaluate the next timer to trigger */
 }
-
-g_error timer_init(void) {
-  inactivity_init();
-  
-  /* Get a reference point for getticks */
-  first_tick = timeGetTime();
-  
-  /* Set timer resolution */
-  timeBeginPeriod(TIMERINTERVAL);
-
-  /* Start up the repeating timer, just like
-     the sigalrm handler for linux... */
-  ntimer = timeSetEvent(TIMERINTERVAL,1,HandleAlarm,0,TIME_PERIODIC);
-  
-  return success;
-}
-
-void timer_release(void) {
-  /* Shut off the timer */
-
-  if (ntimer)
-    timeKillEvent(ntimer);
-  timeEndPeriod(TIMERINTERVAL);
-}
-
-u32 getticks(void) {
-  return timeGetTime();
-}
-
-#else
-/**************** Linux */
-
-static struct timeval first_tick;
-
-static void sigalarm(int sig) {
-  if (disable_timers)
-    return;
-
-  inactivity_check();
-  trigger_timer();
-}
-
-g_error timer_init(void) {
-  struct itimerval itv;
-  struct sigaction action;
-
-  inactivity_init();
-
-  /* Get a reference point for getticks */
-  gettimeofday(&first_tick,NULL);
-
-  /* Start the ever-repeating SIGALRM timer
-   * I tried using individual setitimers for the events,
-   * but it had some thread issues and sometimes it
-   * would just in general act wierd.  This probably
-   * isn't as efficient, but it seems to work better.
-   * And hey, this is how SDL does it, so it must
-   * be right, right?
-   */
-
-  /* Signal handler */
-  memset(&action, 0, sizeof(struct sigaction));
-  action.sa_handler = sigalarm;
-  action.sa_flags = SA_RESTART;
-  sigemptyset(&action.sa_mask);
-  sigaction(SIGALRM, &action, NULL);
-
-  /* itimer */
-  memset(&itv,0,sizeof(struct itimerval));
-  itv.it_interval.tv_sec = itv.it_value.tv_sec = 
-    ((TIMERINTERVAL)/1000);
-  itv.it_interval.tv_usec = itv.it_value.tv_usec =
-    ((TIMERINTERVAL)%1000)*1000;
-  setitimer(ITIMER_REAL,&itv,NULL);
-
-  return success;
-}
-
-void timer_release(void) {
-  struct itimerval itv;
-
-  /* Shut off the timer */
-
-  memset(&itv,0,sizeof(struct itimerval));
-  setitimer(ITIMER_REAL,&itv,NULL);
-}
-
-u32 getticks(void) {
-  static struct timeval now;
-
-  gettimeofday(&now,NULL);
-  return (now.tv_sec-first_tick.tv_sec)*1000 + 
-    (now.tv_usec-first_tick.tv_usec)/1000;
-}
-
-#endif /* WINDOWS */
-
-/**************** OS-Neutral code */
 
 /* reset the inactivity timer */
 void inactivity_reset() {
@@ -188,9 +70,7 @@ void inactivity_reset() {
 
 /* retrieve the number of milliseconds since the last activity */
 u32 inactivity_get() {
-  
-
-  return getticks() - lastactivity;
+  return os_getticks() - timer_lastactivity;
 }
 
 /* Set the number of milliseconds since last activity.
@@ -201,47 +81,106 @@ void inactivity_set(u32 t) {
     /* Wake up the hardware */
     drivermessage(PGDM_POWER,PG_POWER_FULL,NULL);
   }
-
-  lastactivity = getticks() - t;
+  timer_lastactivity = os_getticks() - t;
 }
 
-/* These variables are accessed so often (10 times a second) that it
- * makes sense to not do a config lookup each time they're used
+/*
+ * Set a timer.  After the specified interval, in milliseconds,
+ * the widget will recieve a PG_TRIGGER_TIMER
  */
-void inactivity_init(void) {
-  timer_cursorhide    = get_param_int("timers","cursorhide",50);
-  timer_backlightoff  = get_param_int("timers","backlightoff",0);
-  timer_sleep         = get_param_int("timers","sleep",0);
-  timer_vidblank      = get_param_int("timers","vidblank",0);
+void install_timer(struct widget *self,u32 interval) {
+  struct widget *w;
+
+  /* Remove old links */
+  remove_timer(self);
+
+  self->time = os_getticks() + interval;
+
+  /* Stick it in the sorted timer_widgets list */
+  if (timer_widgets && (timer_widgets->time < self->time)) {
+    /* Find a place to insert it */
+
+    w = timer_widgets;
+    while (w->tnext && (w->tnext->time < self->time)) 
+      w = w->tnext;
+
+    /* Stick it in! */
+    self->tnext = w->tnext;
+    w->tnext = self;
+  }
+  else {
+    /* The list is empty, or the new timer needs to go
+       before everything else in the list */
+
+    self->tnext = timer_widgets;
+    timer_widgets = self;
+  }
+
+  master_timer();  /* Reevaluate the next timer to trigger */
 }
 
-void inactivity_check(void) {
-  u32 now = inactivity_get()/100;
-  static u32 then = 0;
-
-  if (now == then)
-    return;
-  else if (now < then) {
-    then = 0;
-    return;
+void remove_timer(struct widget *w) {
+  if (timer_widgets) {
+    if (w==timer_widgets) {
+      timer_widgets = w->tnext;
+    }
+    else {
+      struct widget *p = timer_widgets;
+      while (p->tnext)
+	if (p->tnext == w) {
+	  /* Take us out */
+	  p->tnext = w->tnext;
+	  break;
+	}
+	else
+	  p = p->tnext;
+    }
   }
+}
 
-  if ( timer_cursorhide && now >= timer_cursorhide && then < timer_cursorhide) {
+/* This is the callback triggered by os_set_timer, it is the entry
+ * point for all widget timers and inactivity timers.
+ */
+void master_timer(void) {
+  struct widget *w;
+
+  /* If we have nothing better to do, just come back in 5 seconds */
+  os_set_timer(os_getticks() + 5000);
+
+  if (timer_cursorhide && timer_eval(timer_cursorhide + timer_lastactivity))
     hotspot_hide();
-  }
 
-  if ( timer_backlightoff && now >= timer_backlightoff && then < timer_backlightoff )
+  if (timer_backlightoff && timer_eval(timer_backlightoff + timer_lastactivity))
     drivermessage(PGDM_BACKLIGHT,0,NULL);
 
-  if ( timer_sleep && now >= timer_sleep && then < timer_sleep )
+  if (timer_sleep && timer_eval(timer_sleep + timer_lastactivity))
     drivermessage(PGDM_POWER,PG_POWER_SLEEP,NULL);
 
-  if ( timer_vidblank && now >= timer_vidblank && then < timer_vidblank )
+  if (timer_vidblank && timer_eval(timer_vidblank + timer_lastactivity))
     drivermessage(PGDM_POWER,PG_POWER_VIDBLANK,NULL);
 
-  then = now;
+  if (timer_widgets && timer_eval(timer_widgets->time)) {
+    w = timer_widgets;
+    timer_widgets = timer_widgets->tnext;
+    send_trigger(w,PG_TRIGGER_TIMER,NULL);
+  }
+}
+
+
+/******************************************************** Internal utilities */
+
+/* Evaluate a timer that's supposed to go off at 't',
+ * return nonzero if the timer should be triggered, otherwise
+ * return 0 and set up a timer for it.
+ */
+int timer_eval(u32 t) {
+  u32 now = os_getticks();
+
+  if (t <= now)
+    return 1;
+
+  os_set_timer(min(os_get_timer(), t));
+  return 0;
 }
 
 /* The End */
-
-

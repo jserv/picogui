@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.8 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.9 2002/11/03 22:44:48 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -368,7 +368,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     term_realize(self);  /* Realize rects, but don't do a full update */
     
     /* Reset the cursor timer */
-    DATA->update_time = getticks();
+    DATA->update_time = os_getticks();
     return;
     
   case PG_TRIGGER_CHAR:
@@ -416,7 +416,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
 			DATA->flashtime_off : DATA->flashtime_on ));
     
     /* Flash the cursor if it should be active */
-    if (getticks() > (DATA->update_time + DATA->cursor_wait))
+    if (os_getticks() > (DATA->update_time + DATA->cursor_wait))
       term_setcursor(self,!DATA->cursor_on);
     else {
       /* Make sure the cursor is on */

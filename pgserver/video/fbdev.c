@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.40 2002/10/23 02:09:07 micahjd Exp $
+/* $Id: fbdev.c,v 1.41 2002/11/03 22:44:48 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -286,7 +286,6 @@ int fbdev_getvt(void) {
 void fbdev_enable(void) {
   struct divtree *p;
   disable_output = 0;
-  disable_timers = 0;
   disable_input  = 0;
   
   DBG("on VT %d\n",fbdev_getvt());
@@ -300,7 +299,6 @@ void fbdev_disable(void) {
 
   inactivity_reset();
   disable_output = 1;
-  disable_timers = 1;
   disable_input = 1;
 }
 
