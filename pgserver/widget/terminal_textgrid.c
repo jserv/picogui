@@ -1,4 +1,4 @@
-/* $Id: terminal_textgrid.c,v 1.8 2002/11/06 09:08:04 micahjd Exp $
+/* $Id: terminal_textgrid.c,v 1.9 2002/12/23 10:27:35 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -127,10 +127,11 @@ void textgrid_render(struct groprender *r, struct gropnode *n) {
 	gropnode_clip(&br,&bn);
 	gropnode_draw(&br,&bn);
       }
-      
-      fd->lib->draw_char(fd,r->output,xy_to_pair(n->r.x,n->r.y),
-			 textcolors[attr & 0x0F],
-			 ch, &r->clip,r->lgop, 0);
+
+      if (ch != ' ')
+	fd->lib->draw_char(fd,r->output,xy_to_pair(n->r.x,n->r.y),
+			   textcolors[attr & 0x0F],
+			   ch, &r->clip,r->lgop, 0);
       n->r.x += celw;
     }
   }
