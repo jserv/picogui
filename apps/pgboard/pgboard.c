@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.1 2001/05/02 02:25:43 micahjd Exp $
+/* $Id: pgboard.c,v 1.2 2001/05/02 04:37:57 micahjd Exp $
   *
   * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices
   * 
@@ -25,23 +25,35 @@
   * 
   */
 
+#include <stdio.h>
 #include <picogui.h>
+#include "kbfile.h"
 
 int main(int argc,char **argv) {
-   pgcontext gc;
+   FILE *f;
+   struct mem_pattern pat;
+   pghandle c;
    
    /* Initialize drawing, set mapping */
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"Keyboard",0);
-   pgNewWidget(PG_WIDGET_CANVAS,0,0);
-   gc = pgNewCanvasContext(PGDEFAULT,PGFX_PERSISTENT);
-   pgWriteCmd(PGDEFAULT,PGCANVAS_GROP,6,PG_GROP_SETMAPPING,
-	      0,0,30,4,PG_MAP_SCALE);
-   
-   pgSlab(gc,0,1,30);
-   pgSlab(gc,0,2,30);
-   pgSlab(gc,0,3,30);
-   pgBar(gc,1,0,4);
+   c = pgNewWidget(PG_WIDGET_CANVAS,0,0);
+
+   /* Load a pattern */
+   memset(&pat,0,sizeof(pat));
+   f = fopen("examples/us_qwerty.kb","r");
+   if (!f) {
+      pgMessageDialog(*argv,"Error loading keyboard file",0);
+      return 1;
+   }
+   if (kb_validate(f,&pat)) {
+      pgMessageDialog(*argv,"Invalid keyboard file",0);
+      return 1;
+   }
+   if (kb_loadpattern(f,&pat,0,c)) {
+      pgMessageDialog(*argv,"Error loading keyboard pattern",0);
+      return 1;
+   }
    
    pgEventLoop();
 }

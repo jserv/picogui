@@ -1,4 +1,4 @@
-SRC = pgboard.c
+SRC = pgboard.c kbfile.c
 BINNAME = pgboard
 EXAMPLE = examples/us_qwerty
 
@@ -7,7 +7,7 @@ all: $(BINNAME) $(EXAMPLE).kb
 $(BINNAME): $(SRC)
 	gcc -o $(BINNAME) $(SRC) -lpgui -g
 
-$(EXAMPLE).kb: $(EXAMPLE).kbs
+$(EXAMPLE).kb: $(EXAMPLE).kbs kbcompile.pl
 	perl kbcompile.pl < $(EXAMPLE).kbs > $(EXAMPLE).kb
 
 clean:

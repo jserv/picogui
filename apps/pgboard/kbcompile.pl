@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.1 2001/05/02 02:25:43 micahjd Exp $
+# $Id: kbcompile.pl,v 1.2 2001/05/02 04:37:57 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -111,7 +111,7 @@ $file_data = pack("n4",split(/ /,$global{'virtual'}),
 $file_prefix = "PGkb".pack("N",length($file_data)+12);
 
 # Calculate checksum
-map {$checksum += $_} unpack("N*",$file_prefix.$file_data);
+map {$checksum += $_} unpack("c*",$file_prefix.$file_data);
 $checksum = pack("N",$checksum);
 
 print $file_prefix.$checksum.$file_data;

@@ -20,12 +20,12 @@
 #
 # -- Micah Dowty <micahjd@users.sourceforge.net>
 
-virtual = 10 10
+virtual = 30 4
 
 [normal]
 
 :pattern
-PGCANVAS_GROP,PG_GROP_FRAME,2,2,6,6
+PGCANVAS_GROP,PG_GROP_SLAB,0,1,30,1
 
 :keys
 2,2,6,6,0,'x',PGKEY_x,0,0

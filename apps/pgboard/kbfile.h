@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.1 2001/05/02 02:25:43 micahjd Exp $
+/* $Id: kbfile.h,v 1.2 2001/05/02 04:37:57 micahjd Exp $
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 
@@ -91,5 +91,28 @@ struct key_entry {
    unsigned short mods;             /* Key modifiers */
    unsigned short pattern;          /* Pattern to jump to */
 };
+
+/************** Keyboard loading functions and in-memory representation */
+
+struct mem_pattern {
+   /* Filled in during kb_validate */
+   unsigned short vw,vh;
+   unsigned short num_patterns;
+
+   /* Filled in during kb_loadpattern */
+   unsigned short num_keys;
+   struct key_entry *keys;
+};
+
+/* These functions return nonzero on error */
+
+/* Validate a pattern's header, fill in global data for mem_pattern */
+int kb_validate(FILE *f, struct mem_pattern *pat);
+
+/* Load (and allocate memory for if necessary) a pattern from file.
+ * This keeps the key table in memory, and loads the pattern itself
+ * into the specified canvas widget */
+int kb_loadpattern(FILE *f, struct mem_pattern *pat,
+		   short patnum, pghandle canvas);
 
 /* The End */
