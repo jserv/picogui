@@ -27,22 +27,19 @@ int drawStuff(struct pgEvent *evt) {
    pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
    
    /* Black background */
+   pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0x000000);
    pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,
 	      evt->e.size.w,evt->e.size.h);
-   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x000000);
-   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+
+   pgWriteCmd(evt->from,PGCANVAS_DEFAULTFLAGS,1,PG_GROPF_INCREMENTAL);
 
    /* Green trail behind the line */
+   pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0x008000);
    pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
-   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x008000);
-   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
-   pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
-   
+
    /* Draw line */
+   pgWriteCmd(evt->from,PGCANVAS_GROP,2,PG_GROP_SETCOLOR,0xFFFF80);
    pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
-   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0xFFFF80);
-   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
-   pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
 
    /* Draw the background (grops not marked as incremental) */
    pgWriteCmd(evt->from,PGCANVAS_REDRAW,1);
@@ -63,11 +60,11 @@ void animate(void) {
    static unsigned long frames = 0;      /* Frame counter */
 
    /* Erase previous line */
-   pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,1);
+   pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,3);
    pgWriteCmd(wCanvas,PGCANVAS_MOVEGROP,4,ox1,oy1,ox2-ox1,oy2-oy1);
 
    /* New line */
-   pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,2);
+   pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,5);
    pgWriteCmd(wCanvas,PGCANVAS_MOVEGROP,4,x1,y1,x2-x1,y2-y1);
    
    /* Save old position */

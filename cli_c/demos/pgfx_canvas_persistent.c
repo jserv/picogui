@@ -13,15 +13,14 @@ int main(int argc,char **argv) {
    
    /* FIXME: once coordinate translation is implemented you will know
     * the size of the canvas (in arbitrary units) beforehand */
-   pgGradient(gc,0,0,1000,1000,0,0x000000,0x0000A0,0);
+   pgGradient(gc,0,0,1000,1000,0,0x000000,0x0000A0);
 
    /* Some good ol'fashioned drawing */
    pgSetColor(gc,0xFF0000);
-   pgText(gc,10,10,pgNewString("Hello,\nWorld!"),
-	  pgNewFont(NULL,30,PG_FSTYLE_ITALIC | PG_FSTYLE_BOLD));
+   pgText(gc,10,10,pgNewString("Hello,\nWorld!"));
    pgFrame(gc,10,60,50,50);
    pgSetColor(gc,0x0000FF);
-   pgGradient(gc,11,61,48,48,25,0xFFFF00,0x0000FF,0);
+   pgGradient(gc,11,61,48,48,25,0xFFFF00,0x0000FF);
    pgRect(gc,20,70,30,30);
    pgSetColor(gc,0xFFFFFF);
    pgTextV(gc,25,95,pgNewString("pG"),0);

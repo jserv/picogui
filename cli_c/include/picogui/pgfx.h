@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.4 2001/04/17 04:02:20 micahjd Exp $
+/* $Id: pgfx.h,v 1.5 2001/04/29 17:29:49 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -66,24 +66,19 @@ struct pgfx_lib {
    pgprim (*pixel)     (pgcontext c, pgu x,  pgu y);
    pgprim (*line)      (pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2);
    pgprim (*rect)      (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
-   pgprim (*dim)       (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
    pgprim (*frame)     (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
    pgprim (*slab)      (pgcontext c, pgu x,  pgu y,  pgu w);
    pgprim (*bar)       (pgcontext c, pgu x,  pgu y,  pgu h);
-   pgprim (*text)      (pgcontext c, pgu x,  pgu y,  pghandle string,
-			pghandle font);
-   pgprim (*textv)     (pgcontext c, pgu x,  pgu y,  pghandle string,
-			pghandle font);
+   pgprim (*text)      (pgcontext c, pgu x,  pgu y,  pghandle string);
    pgprim (*bitmap)    (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
-			pghandle bitmap, pgu src_x, pgu src_y, short lgop);
+			pghandle bitmap);
    pgprim (*tilebitmap)(pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
-			pghandle bitmap, pgu src_x, pgu src_y, pgu src_w,
-			pgu src_h);
+			pghandle bitmap);
    pgprim (*gradient)  (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h,
-			pgu angle, pgcolor c1, pgcolor c2, short translucent);
+			pgu angle, pgcolor c1, pgcolor c2);
 
    /* Support functions */
-   void (*setcolor)(pgcontext c, pgcolor color);
+   pgprim (*setcolor)(pgcontext c, pgcolor color);
 
    /* Call to mark the device for updating. Because PGFX is
     * output-method-independant it is not necessary to call pgSubUpdate */
@@ -99,15 +94,13 @@ struct pgfx_lib {
 #define pgPixel(a,b,c)                    (*(a)->lib->pixel)(a,b,c)
 #define pgLine(a,b,c,d,e)                 (*(a)->lib->line)(a,b,c,d,e)
 #define pgRect(a,b,c,d,e)                 (*(a)->lib->rect)(a,b,c,d,e)
-#define pgDim(a,b,c,d,e)                  (*(a)->lib->dim)(a,b,c,d,e)
 #define pgFrame(a,b,c,d,e)                (*(a)->lib->frame)(a,b,c,d,e)
 #define pgSlab(a,b,c,d)                   (*(a)->lib->slab)(a,b,c,d)
 #define pgBar(a,b,c,d)                    (*(a)->lib->bar)(a,b,c,d)
-#define pgText(a,b,c,d,e)                 (*(a)->lib->text)(a,b,c,d,e)
-#define pgTextV(a,b,c,d,e)                (*(a)->lib->textv)(a,b,c,d,e)
-#define pgBitmap(a,b,c,d,e,f,g,h,i)       (*(a)->lib->bitmap)(a,b,c,d,e,f,g,h,i)
-#define pgTileBitmap(a,b,c,d,e,f,g,h,i,j) (*(a)->lib->tilebitmap)(a,b,c,d,e,f,g,h,i,j)
-#define pgGradient(a,b,c,d,e,f,g,h,i)     (*(a)->lib->gradient)(a,b,c,d,e,f,g,h,i)
+#define pgText(a,b,c,d)                   (*(a)->lib->text)(a,b,c,d)
+#define pgBitmap(a,b,c,d,e,f)             (*(a)->lib->bitmap)(a,b,c,d,e,f)
+#define pgTileBitmap(a,b,c,d,e,f)         (*(a)->lib->tilebitmap)(a,b,c,d,e,f)
+#define pgGradient(a,b,c,d,e,f,g,h)       (*(a)->lib->gradient)(a,b,c,d,e,f,g,h)
 #define pgSetColor(a,b)                   (*(a)->lib->setcolor)(a,b)
 #define pgContextUpdate(a)                (*(a)->lib->update)(a)
 
