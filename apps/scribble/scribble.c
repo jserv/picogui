@@ -1,4 +1,4 @@
-/* $Id: scribble.c,v 1.3 2001/10/15 02:59:39 micahjd Exp $
+/* $Id: scribble.c,v 1.4 2001/11/15 11:49:01 micahjd Exp $
  *
  * scribble.c - Simple paint program
  *
@@ -77,6 +77,14 @@ int main(int argc, char **argv) {
 	      0);
   wMainCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
   pgBind(PGDEFAULT,PGBIND_ANY,&evtCanvas,NULL);
+
+  /* The canvas does not by default process mouse movement events. Turn this
+   * on using PG_WP_TRIGGERMASK
+   */
+  pgSetWidget(wMainCanvas,
+	      PG_WP_TRIGGERMASK,pgGetWidget(wMainCanvas,
+					    PG_WP_TRIGGERMASK) | PG_TRIGGER_MOVE,
+	      0);
 
   /* Allocate a bitmap for the drawing. Since we don't have scrolling,
    * it is safe to make the bitmap the size of the display.
