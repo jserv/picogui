@@ -1,4 +1,254 @@
 <?xml version="1.0" ?>
 <pgbuild title="Theme packages for the PicoGUI 1.x architecture" root="packages">
 
+	<package name="pg1/themes/dev/bitmap_engine">
+		<description><summary>A theme for rendering the entire UI from a single 'skin' bitmap</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/bitmap_engine"/>
+	</package>
+
+	<package name="pg1/themes/dev/flux_capacitor">
+		<description><summary>A small theme inspired by Fluxbox's Cthulhain and Chaos themes</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/flux_capacitor"/>
+	</package>
+
+	<package name="pg1/themes/dev/lcars">
+		<description><summary>Theme based on Star Trek's LCARS interface</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/lcars"/>
+	</package>
+
+	<package name="pg1/themes/dev/phosphor">
+		<description><summary>Theme simulating an old green phosphor CRT</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/phosphor"/>
+	</package>
+
+	<package name="pg1/themes/dev/qvga">
+		<description><summary>Some experiments in shapes and colors that look good on QVGA-size PDA displays</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/qvga"/>
+	</package>
+
+	<package name="pg1/themes/dev/slate">
+		<description><summary>An experiment in texturing up the Pseudo3D theme a bit</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/dev/slate"/>
+	</package>
+
+	<package name="pg1/themes/test/crsr_active">
+		<description><summary>An example of a cursor that reacts to the object under it</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/crsr_active"/>
+	</package>
+
+	<package name="pg1/themes/test/crsr_button_circle">
+		<description><summary>Demonstrates a cursor with a non-default hotspot, and a reaction to button widgets</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/crsr_button_circle"/>
+	</package>
+
+	<package name="pg1/themes/test/crsr_bwsphere">
+		<description><summary>A big ugly black and white sphere cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/crsr_bwsphere"/>
+	</package>
+
+	<package name="pg1/themes/test/crsr_dot">
+		<description><summary>A one pixel dot cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/crsr_dot"/>
+	</package>
+
+	<package name="pg1/themes/test/crsr_flare">
+		<description><summary>A lens flare cursor :)</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/crsr_flare"/>
+	</package>
+
+	<package name="pg1/themes/test/gl_cube">
+		<description><summary>A rotating cube background, for video drivers supporting the OpenGL extensions</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/gl_cube"/>
+	</package>
+
+	<package name="pg1/themes/test/gl_smallcube">
+		<description><summary>A simpler untextured version of the gl_cube theme</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/test/gl_smallcube"/>
+	</package>
+
+	<package name="pg1/themes/working/aqua">
+		<description><summary>Theme modeled after Mac OS X's Aqua interface</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/aqua"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_dark_curves">
+		<description>
+			<summary>A spiffy dark and curvy translucent background</summary>
+			<detail>
+				Layer this on top of a solid color from the bg_solid theme for the full effect.
+			</detail>
+		</description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_dark_curves"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_picogui">
+		<description><summary>Background showing the old PicoGUI logo</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_picogui"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_solid">
+		<description><summary>An assortment of solid color backgrounds</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_solid"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_swirlypond">
+		<description><summary>Swirly wet background image for resolutions 640x480 and smaller</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_swirlypond"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_tuxscreen">
+		<description><summary>Background for the TuxScreen, featuring a big Tux</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_tuxscreen"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_waves">
+		<description><summary>Background featuring an ocean-surface-like pattern</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_waves"/>
+	</package>
+
+	<package name="pg1/themes/working/bg_zaurus">
+		<description><summary>Background for OpenZaurus on 240x320 devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/bg_zaurus"/>
+	</package>
+
+	<package name="pg1/themes/working/classique">
+		<description><summary>Theme modeled after the classic Mac OS interface</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/classique"/>
+	</package>
+
+	<package name="pg1/themes/working/crsr_alpha">
+		<description><summary>Translucent blue arrow cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/crsr_alpha"/>
+	</package>
+
+	<package name="pg1/themes/working/crsr_gold">
+		<description><summary>Large gold arrow cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/crsr_gold"/>
+	</package>
+
+	<package name="pg1/themes/working/crsr_gold_small">
+		<description><summary>Small gold arrow cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/crsr_gold_small"/>
+	</package>
+
+	<package name="pg1/themes/working/crsr_hand">
+		<description><summary>Hand cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/crsr_hand"/>
+	</package>
+
+	<package name="pg1/themes/working/crsr_ibeam_gold">
+		<description><summary>Gold I-beam cursor</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/crsr_ibeam_gold"/>
+	</package>
+
+	<package name="pg1/themes/working/flat16">
+		<description><summary>Small and flat theme friendly to 16-color VGA devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/flat16"/>
+	</package>
+
+	<package name="pg1/themes/working/fluidity">
+		<description><summary>A spiffy new look developed for PicoGUI, best on 240x320 devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/fluidity"/>
+	</package>
+
+	<package name="pg1/themes/working/icon_color">
+		<description><summary>A set of color icons for mesage dialogs</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/icon_color"/>
+	</package>
+
+	<package name="pg1/themes/working/icon_color_large">
+		<description><summary>A larger version of icon_color</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/icon_color_large"/>
+	</package>
+
+	<package name="pg1/themes/working/lcdgray">
+		<description><summary>A PalmOS-like look for grayscale LCD devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/lcdgray"/>
+	</package>
+
+	<package name="pg1/themes/working/lcdmono">
+		<description><summary>A PalmOS-like look for monochrome LCD devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/lcdmono"/>
+	</package>
+
+	<package name="pg1/themes/working/lucid">
+		<description><summary>Theme featuring translucent surfaces and clean edges</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/lucid"/>
+	</package>
+
+	<package name="pg1/themes/working/mobile">
+		<description><summary>Theme for small mobile devices like cellular phones</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/mobile"/>
+	</package>
+
+	<package name="pg1/themes/working/mod_blur">
+		<description><summary>Modifier theme that adds a blur effect to popups</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/mod_blur"/>
+	</package>
+
+	<package name="pg1/themes/working/mod_dimmer">
+		<description><summary>Modifier theme that dims the screen behind popups</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/mod_dimmer"/>
+	</package>
+
+	<package name="pg1/themes/working/mod_dropshadow">
+		<description><summary>Modifier theme that adds a drop shadow to popups</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/mod_dropshadow"/>
+	</package>
+
+	<package name="pg1/themes/working/ncurses_color">
+		<description><summary>Color theme for text-only environments using ncurses</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/ncurses_color"/>
+	</package>
+
+	<package name="pg1/themes/working/nifty3d">
+		<description><summary>A theme featuring gradients and beveled edges</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/nifty3d"/>
+	</package>
+
+	<package name="pg1/themes/working/pastel_light">
+		<description><summary>A simple theme with pastel surfaces and hard edges</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/pastel_light"/>
+	</package>
+
+	<package name="pg1/themes/working/photonic">
+		<description><summary>Theme modeled after QNX's Photon interface</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/photonic"/>
+	</package>
+
+	<package name="pg1/themes/working/pseudo3d">
+		<description><summary>A theme featuring Windows-95-style beveled edges</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/photonic"/>
+	</package>
+
+	<package name="pg1/themes/working/term_c64">
+		<description><summary>Terminal theme modeled after the Commodore 64 color scheme</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/term_c64"/>
+	</package>
+
+	<package name="pg1/themes/working/term_fogstreaks">
+		<description><summary>Terminal theme with a foggy-streaky bitmapped background</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/term_fogstreaks"/>
+	</package>
+
+	<package name="pg1/themes/working/term_retro">
+		<description><summary>Green on black terminal theme</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/term_retro"/>
+	</package>
+
+	<package name="pg1/themes/working/term_wet">
+		<description><summary>Terminal theme with a swirly water background</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/term_wet"/>
+	</package>
+
+	<package name="pg1/themes/working/term_white">
+		<description><summary>Black on white terminal theme</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/term_white"/>
+	</package>
+
+	<package name="pg1/themes/working/text_lcd">
+		<description><summary>Theme for text only LCD devices</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/themes/working/text_lcd"/>
+	</package>
+
 </pgbuild>
