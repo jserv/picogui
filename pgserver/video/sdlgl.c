@@ -1,4 +1,4 @@
-/* $Id: sdlgl.c,v 1.2 2002/02/27 18:12:03 micahjd Exp $
+/* $Id: sdlgl.c,v 1.3 2002/02/27 22:00:33 micahjd Exp $
  *
  * sdlgl.c - OpenGL driver for picogui, using SDL for portability
  *
@@ -56,6 +56,13 @@
 
 /************************************************** Definitions */
 
+/* Perspective values */
+#define GL_FOV          45      /* Vertical field of view in degrees */
+#define GL_MINDEPTH     0.1
+#define GL_MAXDEPTH     100
+#define GL_DEFAULTDEPTH 50
+#define GL_SCALE        (tan(GL_FOV/360.0f*3.141592654)*GL_DEFAULTDEPTH)
+
 SDL_Surface *sdlgl_vidsurf;
 
 #ifdef CONFIG_SDLSKIN
@@ -73,9 +80,13 @@ extern u16 sdlfb_scale;
  * stdbitmap is modified.
  */
 struct glbitmap {
-  GLuint texture;
   struct stdbitmap *sb;
   int has_texture;        /* Nonzero if the texture has been allocated */
+
+  /* OpenGL texture, valid if has_texture is nonzero */
+  GLuint texture;
+  float tx1,ty1,tx2,ty2;  /* Texture coordinates */
+  int tw,th;              /* Texture size (power of two) */
 };
 
 /* Macro to determine when to redirect drawing to linear32 */
@@ -87,15 +98,12 @@ struct glbitmap {
 /* Groprender structure for the display */
 struct groprender *gl_display_rend = NULL;
 
-/* Macros to convert from picogui to opengl coordinates */
-#define GL_X(x) (x)
-#define GL_Y(y) (vid->yres - 1 - (y))
-
 inline void gl_color(hwrcolor c);
 inline float gl_dist_line_to_point(float point_x, float point_y, 
 				   float line_px, float line_py,
 				   float line_vx, float line_vy);
 inline void gl_lgop(s16 lgop);
+int gl_power2_round(int x);
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop);
 hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y);
 void sdlgl_update(s16 x, s16 y, s16 w, s16 h);
@@ -224,6 +232,28 @@ inline void gl_lgop(s16 lgop) {
   }
 }
 
+/* Round up to the nearest power of two */
+int gl_power2_round(int x) {
+  int i,j;
+
+  /* Zero is a special case.. */
+  if (!x)
+    return 0;
+
+  /* Find the index of the highest bit set */
+  for (i=0,j=x;j!=1;i++)
+    j >>= 1;
+
+  /* If that's the only bit set, the input was already
+   * a power of two and we can leave it alone
+   */
+  if (x == 1<<i)
+    return x;
+  
+  /* Otherwise get the next power of two */
+  return 1<<(i+1);
+}
+
 /************************************************** Basic primitives */
 
 void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -231,10 +261,12 @@ void sdlgl_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
     linear32_pixel(STDB(dest),x,y,c,lgop);
     return;
   }
+  return;
+
   gl_lgop(lgop);
   glBegin(GL_POINTS);
   gl_color(c);
-  glVertex2f(GL_X(x),GL_Y(y));
+  glVertex2f(x,y);
   glEnd();
 }
 
@@ -248,9 +280,10 @@ hwrcolor sdlgl_getpixel(hwrbitmap dest,s16 x,s16 y) {
   if (GL_LINEAR32(dest))
     return linear32_getpixel(STDB(dest),x,y);
 
-  glReadPixels(GL_X(x),GL_Y(y),1,1,GL_RED,GL_UNSIGNED_BYTE,&r);
-  glReadPixels(GL_X(x),GL_Y(y),1,1,GL_GREEN,GL_UNSIGNED_BYTE,&g);
-  glReadPixels(GL_X(x),GL_Y(y),1,1,GL_BLUE,GL_UNSIGNED_BYTE,&b);
+  return 0;
+  glReadPixels(x,y,1,1,GL_RED,GL_UNSIGNED_BYTE,&r);
+  glReadPixels(x,y,1,1,GL_GREEN,GL_UNSIGNED_BYTE,&g);
+  glReadPixels(x,y,1,1,GL_BLUE,GL_UNSIGNED_BYTE,&b);
   return mkcolor(r,g,b);
 }
 
@@ -268,10 +301,10 @@ void sdlgl_rect(hwrbitmap dest,s16 x,s16 y,s16 w, s16 h, hwrcolor c,s16 lgop) {
   gl_lgop(lgop);
   glBegin(GL_QUADS);
   gl_color(c);
-  glVertex2f(GL_X(x)  ,GL_Y(y));
-  glVertex2f(GL_X(x+w-1),GL_Y(y));
-  glVertex2f(GL_X(x+w-1),GL_Y(y+h-1));
-  glVertex2f(GL_X(x)    ,GL_Y(y+h-1));
+  glVertex2f(x,y);
+  glVertex2f(x+w,y);
+  glVertex2f(x+w,y+h);
+  glVertex2f(x,y+h);
   glEnd();
 }
 
@@ -284,8 +317,8 @@ void sdlgl_slab(hwrbitmap dest,s16 x,s16 y,s16 w, hwrcolor c,s16 lgop) {
   gl_lgop(lgop);
   glBegin(GL_LINES);
   gl_color(c);
-  glVertex2f(GL_X(x),GL_Y(y));
-  glVertex2f(GL_X(x+w-1),GL_Y(y));
+  glVertex2f(x,y);
+  glVertex2f(x+w,y);
   glEnd();
 }
 
@@ -298,8 +331,8 @@ void sdlgl_bar(hwrbitmap dest,s16 x,s16 y,s16 h, hwrcolor c,s16 lgop) {
   gl_lgop(lgop);
   glBegin(GL_LINES);
   gl_color(c);
-  glVertex2f(GL_X(x),GL_Y(y));
-  glVertex2f(GL_X(x),GL_Y(y+h-1));
+  glVertex2f(x,y);
+  glVertex2f(x,y+h);
   glEnd();
 }
 
@@ -312,8 +345,8 @@ void sdlgl_line(hwrbitmap dest,s16 x1,s16 y1,s16 x2,s16 y2,hwrcolor c,s16 lgop) 
   gl_lgop(lgop);
   glBegin(GL_LINES);
   gl_color(c);
-  glVertex2f(GL_X(x1)  ,GL_Y(y1));
-  glVertex2f(GL_X(x2)  ,GL_Y(y2));
+  glVertex2f(x1,y1);
+  glVertex2f(x2,y2);
   glEnd();
 }
 
@@ -391,22 +424,22 @@ void sdlgl_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
   glColor3f(r_c + r_s * d1,
 	    g_c + g_s * d1,
 	    b_c + b_s * d1);
-  glVertex2f(GL_X(x)  ,GL_Y(y));
+  glVertex2f(x,y);
 
   glColor3f(r_c + r_s * d2,
 	    g_c + g_s * d2,
 	    b_c + b_s * d2);
-  glVertex2f(GL_X(x+w-1),GL_Y(y));
+  glVertex2f(x+w,y);
 
   glColor3f(r_c + r_s * d3,
 	    g_c + g_s * d3,
 	    b_c + b_s * d3);
-  glVertex2f(GL_X(x+w-1),GL_Y(y+h-1));
+  glVertex2f(x+w,y+h);
 
   glColor3f(r_c + r_s * d4,
 	    g_c + g_s * d4,
 	    b_c + b_s * d4);
-  glVertex2f(GL_X(x)    ,GL_Y(y+h-1));
+  glVertex2f(x,y+h);
 
   glEnd();  
 }
@@ -419,7 +452,79 @@ void sdlgl_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     return;
   }
 
-  def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
+  /* Blitting from an offscreen bitmap to the screen? */
+  if (GL_LINEAR32(src)) {
+    struct glbitmap *glsrc = (struct glbitmap *) src;
+
+    /* Make sure the bitmap has a corresponding texture */
+    if (!glsrc->has_texture) {
+      glGenTextures(1,&glsrc->texture);
+      glBindTexture(GL_TEXTURE_2D, glsrc->texture);
+
+      /* Linear filtering */
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+      /* We have to round up to the nearest power of two...
+       * FIXME: this is wasteful. We need a way to pack multiple
+       *        glbitmaps into one texture.
+       */
+      glsrc->has_texture = 1;
+      glsrc->tw = gl_power2_round(glsrc->sb->w);
+      glsrc->th = gl_power2_round(glsrc->sb->h);
+      glsrc->tx1 = 0;
+      glsrc->ty1 = 0;
+      glsrc->tx2 = ((float)glsrc->sb->w) / ((float)glsrc->tw);
+      glsrc->ty2 = ((float)glsrc->sb->h) / ((float)glsrc->th);
+      
+      printf("Expanding %d,%d to %d,%d\n",glsrc->sb->w,glsrc->sb->h,
+	     glsrc->tw,glsrc->th);
+
+      /* Allocate texture */
+      glTexImage2D(GL_TEXTURE_2D, 0, 4, glsrc->tw, glsrc->th, 0, 
+		   GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      printf("glteximage2d %s\n",gluErrorString(glGetError()));
+
+      /* Paste our subimage into it */
+      glTexSubImage2D(GL_TEXTURE_2D,0, 0,0, glsrc->sb->w, glsrc->sb->h,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, glsrc->sb->bits);
+
+      /* If there are extra rows/columns on the right and bottom sides, paste
+       * copies of the adjacent row so opengl doesn't blend the bitmap with
+       * random data.
+       */
+      glTexSubImage2D(GL_TEXTURE_2D,0, glsrc->sb->w,0, 1,glsrc->sb->h,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, 
+		      ((u32*)glsrc->sb->bits) + glsrc->sb->w-1); 
+      glTexSubImage2D(GL_TEXTURE_2D,0, 0,glsrc->sb->h, glsrc->sb->w,1,
+		      GL_BGRA_EXT, GL_UNSIGNED_BYTE, 
+		      glsrc->sb->bits + (glsrc->sb->h-1)*glsrc->sb->pitch); 
+    }      
+
+    /* Draw a texture-mapped quad
+     */
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, glsrc->texture);
+    glBegin(GL_QUADS);
+    glColor3f(1.0f,1.0f,1.0f);
+    glNormal3f(0.0f,0.0f,1.0f);
+    glTexCoord2f(glsrc->tx1,glsrc->ty1);
+    glVertex2f(x,y);
+    glTexCoord2f(glsrc->tx2,glsrc->ty1);
+    glVertex2f(x+w,y);
+    glTexCoord2f(glsrc->tx2,glsrc->ty2);
+    glVertex2f(x+w,y+h);
+    glTexCoord2f(glsrc->tx1,glsrc->ty2);
+    glVertex2f(x,y+h);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+
+    return;
+  }
+
+  //  def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
 }
 
 
@@ -549,15 +654,24 @@ g_error sdlgl_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   glClearDepth(1.0);
 
   /* Options */
-  glEnable(GL_TEXTURE_2D);
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST);
+  //  glDepthFunc(GL_LEQUAL);
+  //  glEnable(GL_DEPTH_TEST);
   glShadeModel(GL_SMOOTH);
 
-  /* Set up camera */
+  /* Set up camera so that we have 0,0 at the top-left,
+   * xres,yres at the bottom-right, but we want perspective
+   */
+  glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glViewport(0, 0, xres, yres);
-  glOrtho(0, xres, 0, yres, -1, 1);
+  gluPerspective(GL_FOV,1,GL_MINDEPTH,GL_MAXDEPTH);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glScalef(GL_SCALE,GL_SCALE,1.0f);
+  glScalef(2.0f/xres,-2.0f/yres,1.0f);
+  glTranslatef(-xres/2,-yres/2,-GL_DEFAULTDEPTH);
+
+  //  glRotatef(10.0f,1.0f,0.0f,1.0f);
+  
 
   return success; 
 }
