@@ -1,7 +1,7 @@
 #############################################################################
 #
 # PicoGUI client module for Perl
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 #
 # Micah Dowty <micah@homesoftware.com>
 #
@@ -13,7 +13,7 @@ package PicoGUI;
 require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
-		NewFont NewBitmap delete);
+		NewFont NewBitmap delete MakeBackground RestoreBackground);
 
 ################################ Constants
 
@@ -196,6 +196,9 @@ sub _free {
 sub _mkstring {
     _request(5,join('',@_));
 }
+sub _setbg {
+    _request(9,pack('N',@_));
+}
 
 ######### Public functions
 
@@ -207,6 +210,15 @@ sub GetHandle {
 sub delete {
     my $self = shift;
     _free($self->{'h'});
+}
+
+sub MakeBackground {
+    my $self = shift;
+    _setbg($self->{'h'});
+}
+
+sub RestoreBackground {
+    _setbg(0);
 }
 
 sub SetWidget {
