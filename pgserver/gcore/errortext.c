@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.29 2001/07/03 10:33:30 micahjd Exp $
+/* $Id: errortext.c,v 1.30 2001/08/01 21:50:51 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -67,11 +67,11 @@ const char *errortext(g_error e) {
     return errtxt;
 
   /* Builtin table */
-  if (errnum < sizeof(builtin_errors))
+  if (errnum < sizeof(builtin_errors)/sizeof(char *))
     errtxt = builtin_errors[errnum];
   if (errtxt)
     return errtxt;
-
+   
   /* Nothing left to do but give the raw numeric error code */
   sprintf(errbuf,"Error#%d/%d",e>>8,e & 0xFF);
   return errbuf;
