@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.92 2001/12/14 21:49:41 micahjd Exp $
+/* $Id: constants.h,v 1.93 2001/12/15 02:47:14 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -857,6 +857,7 @@ typedef unsigned long pghandle;
 #define PG_WP_HILIGHTED   32    /* Widget property to hilight a widget and all it's children */
 #define PG_WP_SELECTED    33    /* List property to select a row. */
 #define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
+#define PG_WP_AUTOSCROLL  35    /* For the textbox, scroll to any new text that's inserted */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0

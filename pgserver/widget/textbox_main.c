@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.21 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: textbox_main.c,v 1.22 2001/12/15 02:47:14 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -35,9 +35,12 @@
 #define FLASHTIME_OFF  150
 
 struct textboxdata {
-  int on,focus,flash_on;
   struct textbox_cursor c;
   handle textformat;
+  unsigned int on : 1;
+  unsigned int focus : 1;
+  unsigned int flash_on : 1;
+  unsigned int autoscroll : 1;
 };
 #define DATA ((struct textboxdata *)(self->data))
 
@@ -135,8 +138,17 @@ g_error textbox_set(struct widget *self,int property, glob data) {
       e = text_nuke(&DATA->c);
       errorcheck;
     }
-   
-    return text_load(&DATA->c,fmt,str,strlen(str));
+
+    /* Insert */
+    e = text_load(&DATA->c,fmt,str,strlen(str));
+
+    /* If we're autoscrolling, scroll to the new cursor position */
+    if (DATA->autoscroll && DATA->c.c_line) 
+      scroll_to_divnode(DATA->c.c_line);
+    break;
+
+  case PG_WP_AUTOSCROLL:
+    DATA->autoscroll = data;
     break;
     
   default:
@@ -150,6 +162,9 @@ glob textbox_get(struct widget *self,int property) {
 
   case PG_WP_TEXTFORMAT:
     return (glob) DATA->textformat;
+
+  case PG_WP_AUTOSCROLL:
+    return (glob) DATA->autoscroll;
 
   }
   return 0;
