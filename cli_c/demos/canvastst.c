@@ -15,7 +15,7 @@ int drawStuff(short event, pghandle from, long param) {
    pgWriteCmd(from,PGCANVAS_SETGROP,1,0x000000);
    pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
 
-   /* Dim it (dont erase, leave a faint trail */
+   /* Green trail behind the line */
    pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
    pgWriteCmd(from,PGCANVAS_SETGROP,1,0x008000);
    pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
@@ -23,7 +23,7 @@ int drawStuff(short event, pghandle from, long param) {
    
    /* Draw line */
    pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
-   pgWriteCmd(from,PGCANVAS_SETGROP,1,0xFFFF00);
+   pgWriteCmd(from,PGCANVAS_SETGROP,1,0xFFFF80);
    pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
    pgWriteCmd(from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
 
@@ -36,8 +36,9 @@ int drawStuff(short event, pghandle from, long param) {
 
 void animate(void) {
    static int ox1=0,oy1=0,ox2=0,oy2=0;   /* Previous coordinates of line */
-   static int x1=10,y1=10,x2=20,y2=20;       /* Current coordinates of line */
-   static int dx1=5,dy1=3,dx2=3,dy2=5; /* Velocity of line */
+   static int x1=10,y1=10,x2=20,y2=20;   /* Current coordinates of line */
+   static int dx1=5,dy1=3,dx2=3,dy2=5;   /* Velocity of line */
+   static unsigned long frames = 0;      /* Frame counter */
    
    /* Erase previous line */
    pgWriteCmd(wCanvas,PGCANVAS_FINDGROP,1,1);
@@ -80,9 +81,16 @@ void animate(void) {
 	y2 = height - 1;
    }
    x1 += dx1; y1 += dy1; x2 += dx2; y2 += dy2;
-   
-   /* Incremental update */
-   pgWriteCmd(wCanvas,PGCANVAS_INCREMENTAL,0);
+
+   /* Every so often to a full redraw to clear the canvas */
+   if (!(frames % 500))
+     pgWriteCmd(wCanvas,PGCANVAS_REDRAW,0);
+   else
+     /* Incremental update */
+     pgWriteCmd(wCanvas,PGCANVAS_INCREMENTAL,0);
+
+   /* Yay! */
+   frames++;
    pgSubUpdate(wCanvas);
 }
 
