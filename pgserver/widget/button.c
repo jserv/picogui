@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.22 2000/06/10 04:31:15 micahjd Exp $
+/* $Id: button.c,v 1.23 2000/06/10 22:09:37 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -88,7 +88,7 @@ void button(struct divnode *d) {
   align(d,DATA->align,&w,&h,&x,&y);
 
   /* If the text is bigger than the bitmap, center the bitmap in the text */
-  if (bit && bit->h<txt_h)
+  if (text && bit && bit->h<txt_h)
       y-=(DATA->dyt=(bit->h>>1)-(txt_h>>1));
 
   DATA->x = x;
