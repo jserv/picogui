@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.32 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: linear8.c,v 1.33 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -35,7 +35,7 @@
 #include <pgserver/video.h>
 #include <pgserver/render.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 #define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)

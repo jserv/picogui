@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.32 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: x11.c,v 1.33 2002/10/23 02:09:08 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -210,6 +210,8 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
  * at the very least for sprite buffering
  */
 void x11_buffered_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
+  if (display!=vid->display)
+    return;
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
   XFlush(xdisplay);
@@ -396,12 +398,18 @@ void x11_buffered_sprite_update(struct sprite *spr) {
    * old and new positions of the sprite are close together. Use
    * add_updarea to calculate us an update region.
    */
-  add_updarea(spr->x,spr->y,spr->w,spr->h);
-  add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
+  add_updarea(spr->dt,spr->x,spr->y,spr->w,spr->h);
+  add_updarea(spr->dt,spr->ox,spr->oy,spr->ow,spr->oh);
 
   /* Copy the relevant portion of the display to the backbuffer */
   XCopyArea(xdisplay,x11_display.d,x11_backbuffer->d,
-  	    x11_gctab[PG_LGOP_NONE],upd_x,upd_y,upd_w,upd_h,upd_x,upd_y);
+  	    x11_gctab[PG_LGOP_NONE],
+	    spr->dt->update_rect.x,
+	    spr->dt->update_rect.y,
+	    spr->dt->update_rect.w,
+	    spr->dt->update_rect.h,
+	    spr->dt->update_rect.x,
+	    spr->dt->update_rect.y);
 
   /* Normal sprite update, but draw to the backbuffer instead
    * of the display itself.
@@ -411,7 +419,11 @@ void x11_buffered_sprite_update(struct sprite *spr) {
   vid->sprite_show(spr);
   
   /* Copy backbuffer to display */
-  x11_buffered_update(NULL,upd_x,upd_y,upd_w,upd_h);
+  x11_buffered_update(spr->dt->display,
+		      spr->dt->update_rect.x,
+		      spr->dt->update_rect.y,
+		      spr->dt->update_rect.w,
+		      spr->dt->update_rect.h);
   vid->display = (hwrbitmap) &x11_display;
 }
 

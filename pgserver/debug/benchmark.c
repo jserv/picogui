@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.7 2002/10/22 23:08:08 micahjd Exp $
+/* $Id: benchmark.c,v 1.8 2002/10/23 02:09:02 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -53,72 +53,72 @@ void bench_color_hwrtopg(struct benchmark_param *b) {
 }
 
 void bench_update(struct benchmark_param *b) {
-  VID(update)(VID(default_display)(),0,0,b->w,b->h);
+  VID(update)(VID(window_debug)(),0,0,b->w,b->h);
 }
 
 void bench_pixel(struct benchmark_param *b) {
-  VID(pixel)(vid->display,42,42,benchmark_color,b->lgop);
+  VID(pixel)(VID(window_debug)(),42,42,benchmark_color,b->lgop);
 }
 
 void bench_getpixel(struct benchmark_param *b) {
-  VID(getpixel)(vid->display,42,42);
+  VID(getpixel)(VID(window_debug)(),42,42);
 }
 
 void bench_slab(struct benchmark_param *b) {
-  VID(slab)(vid->display,0,0,b->w,benchmark_color,b->lgop);
+  VID(slab)(VID(window_debug)(),0,0,b->w,benchmark_color,b->lgop);
 }
 
 void bench_bar(struct benchmark_param *b) {
-  VID(bar)(vid->display,0,0,b->h,benchmark_color,b->lgop);
+  VID(bar)(VID(window_debug)(),0,0,b->h,benchmark_color,b->lgop);
 }
 
 void bench_line(struct benchmark_param *b) {
-  VID(line)(vid->display,0,0,b->w,b->h,benchmark_color,b->lgop);
+  VID(line)(VID(window_debug)(),0,0,b->w,b->h,benchmark_color,b->lgop);
 }
 
 void bench_rect(struct benchmark_param *b) {
-  VID(rect)(vid->display,0,0,b->w,b->h,benchmark_color,b->lgop);
+  VID(rect)(VID(window_debug)(),0,0,b->w,b->h,benchmark_color,b->lgop);
 }
 
 void bench_gradient(struct benchmark_param *b) {
-  VID(gradient)(vid->display,0,0,b->w,b->h,0,0xFF0000,0x0000FF,b->lgop);
+  VID(gradient)(VID(window_debug)(),0,0,b->w,b->h,0,0xFF0000,0x0000FF,b->lgop);
 }
 
 void bench_blit(struct benchmark_param *b) {
-  VID(blit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,b->lgop);
+  VID(blit)(VID(window_debug)(),0,0,b->w,b->h,benchmark_srcbit,0,0,b->lgop);
 }
 
 void bench_scrollblit_up(struct benchmark_param *b) {
-  VID(scrollblit)(vid->display,0,0,b->w,b->h-1,vid->display,0,1,b->lgop);
+  VID(scrollblit)(VID(window_debug)(),0,0,b->w,b->h-1,VID(window_debug)(),0,1,b->lgop);
 }
 
 void bench_scrollblit_down(struct benchmark_param *b) {
-  VID(scrollblit)(vid->display,0,1,b->w,b->h-1,vid->display,0,0,b->lgop);
+  VID(scrollblit)(VID(window_debug)(),0,1,b->w,b->h-1,VID(window_debug)(),0,0,b->lgop);
 }
 
 void bench_scrollblit_left(struct benchmark_param *b) {
-  VID(scrollblit)(vid->display,0,0,b->w-1,b->h,vid->display,1,0,b->lgop);
+  VID(scrollblit)(VID(window_debug)(),0,0,b->w-1,b->h,VID(window_debug)(),1,0,b->lgop);
 }
 
 void bench_scrollblit_right(struct benchmark_param *b) {
-  VID(scrollblit)(vid->display,1,0,b->w-1,b->h,vid->display,0,0,b->lgop);
+  VID(scrollblit)(VID(window_debug)(),1,0,b->w-1,b->h,VID(window_debug)(),0,0,b->lgop);
 }
 
 void bench_multiblit_1_1(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,1,1,0,0,b->lgop);
+  VID(multiblit)(VID(window_debug)(),0,0,b->w,b->h,benchmark_srcbit,0,0,1,1,0,0,b->lgop);
 }
 
 void bench_multiblit_1_32(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,1,32,0,0,b->lgop);
+  VID(multiblit)(VID(window_debug)(),0,0,b->w,b->h,benchmark_srcbit,0,0,1,32,0,0,b->lgop);
 }
 
 void bench_multiblit_32_1(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,32,1,0,0,b->lgop);
+  VID(multiblit)(VID(window_debug)(),0,0,b->w,b->h,benchmark_srcbit,0,0,32,1,0,0,b->lgop);
 
 }
 
 void bench_multiblit_32_32(struct benchmark_param *b) {
-  VID(multiblit)(vid->display,0,0,b->w,b->h,benchmark_srcbit,0,0,32,32,0,0,b->lgop);
+  VID(multiblit)(VID(window_debug)(),0,0,b->w,b->h,benchmark_srcbit,0,0,32,32,0,0,b->lgop);
 }
 
 void bench_rotateblit_0(struct benchmark_param *b) {
@@ -127,7 +127,7 @@ void bench_rotateblit_0(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(rotateblit)(vid->display,0,0,
+  VID(rotateblit)(VID(window_debug)(),0,0,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,0,b->lgop);
 }
 
@@ -137,7 +137,7 @@ void bench_rotateblit_90(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(rotateblit)(vid->display,0,vid->lyres-1,
+  VID(rotateblit)(VID(window_debug)(),0,vid->lyres-1,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,90,b->lgop);
 }
 
@@ -147,7 +147,7 @@ void bench_rotateblit_180(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(rotateblit)(vid->display,vid->lxres-1,vid->lyres-1,
+  VID(rotateblit)(VID(window_debug)(),vid->lxres-1,vid->lyres-1,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,180,b->lgop);
 }
 
@@ -157,16 +157,16 @@ void bench_rotateblit_270(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(rotateblit)(vid->display,vid->lxres-1,0,
+  VID(rotateblit)(VID(window_debug)(),vid->lxres-1,0,
 		  benchmark_srcbit,0,0,b->w,b->h,&clip,270,b->lgop);
 }
 
 void bench_ellipse(struct benchmark_param *b) {
-  VID(ellipse)(vid->display,0,0,b->w,b->h,0,b->lgop);
+  VID(ellipse)(VID(window_debug)(),0,0,b->w,b->h,0,b->lgop);
 }
 
 void bench_fellipse(struct benchmark_param *b) {
-  VID(fellipse)(vid->display,0,0,b->w,b->h,0,b->lgop);
+  VID(fellipse)(VID(window_debug)(),0,0,b->w,b->h,0,b->lgop);
 }
 
 void bench_polygon_star(struct benchmark_param *b) {
@@ -179,15 +179,15 @@ void bench_polygon_star(struct benchmark_param *b) {
     31,127,
     63,0
   };
-  VID(fpolygon)(vid->display,star,0,0,0,b->lgop);
+  VID(fpolygon)(VID(window_debug)(),star,0,0,0,b->lgop);
 }
 
 void bench_blur_2(struct benchmark_param *b) {
-  VID(blur)(vid->display,0,0,b->w,b->h,2);
+  VID(blur)(VID(window_debug)(),0,0,b->w,b->h,2);
 }
 
 void bench_blur_16(struct benchmark_param *b) {
-  VID(blur)(vid->display,0,0,b->w,b->h,16);
+  VID(blur)(VID(window_debug)(),0,0,b->w,b->h,16);
 }
 
 void bench_charblit_0(struct benchmark_param *b) {
@@ -196,7 +196,7 @@ void bench_charblit_0(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(charblit)(vid->display,benchmark_char,0,0,b->w,b->h,
+  VID(charblit)(VID(window_debug)(),benchmark_char,0,0,b->w,b->h,
 		0,0,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -206,7 +206,7 @@ void bench_charblit_90(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(charblit)(vid->display,benchmark_char,0,vid->lyres-1,b->w,b->h,
+  VID(charblit)(VID(window_debug)(),benchmark_char,0,vid->lyres-1,b->w,b->h,
 		0,90,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -216,7 +216,7 @@ void bench_charblit_180(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(charblit)(vid->display,benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
+  VID(charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
 		0,180,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -226,7 +226,7 @@ void bench_charblit_270(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(charblit)(vid->display,benchmark_char,vid->lxres-1,0,b->w,b->h,
+  VID(charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,0,b->w,b->h,
 		0,270,0,&clip,b->lgop,b->w>>3);
 }
 
@@ -237,8 +237,8 @@ void bench_alpha_charblit_0(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(vid->display,benchmark_char,0,0,b->w,b->h,
-		128,benchmark_gamma,0,0,&clip,b->lgop);
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,0,0,b->w,b->h,
+		      128,benchmark_gamma,0,0,&clip,b->lgop);
 }
 
 void bench_alpha_charblit_90(struct benchmark_param *b) {
@@ -247,8 +247,8 @@ void bench_alpha_charblit_90(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(vid->display,benchmark_char,0,vid->lyres-1,b->w,b->h,
-		128,benchmark_gamma,90,0,&clip,b->lgop);
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,0,vid->lyres-1,b->w,b->h,
+		      128,benchmark_gamma,90,0,&clip,b->lgop);
 }
 
 void bench_alpha_charblit_180(struct benchmark_param *b) {
@@ -257,8 +257,8 @@ void bench_alpha_charblit_180(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(vid->display,benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
-		128,benchmark_gamma,180,0,&clip,b->lgop);
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,vid->lyres-1,b->w,b->h,
+		      128,benchmark_gamma,180,0,&clip,b->lgop);
 }
 
 void bench_alpha_charblit_270(struct benchmark_param *b) {
@@ -267,8 +267,8 @@ void bench_alpha_charblit_270(struct benchmark_param *b) {
   clip.y1 = 0;
   clip.x2 = vid->lxres-1;
   clip.y2 = vid->lyres-1;
-  VID(alpha_charblit)(vid->display,benchmark_char,vid->lxres-1,0,b->w,b->h,
-		128,benchmark_gamma,270,0,&clip,b->lgop);
+  VID(alpha_charblit)(VID(window_debug)(),benchmark_char,vid->lxres-1,0,b->w,b->h,
+		      128,benchmark_gamma,270,0,&clip,b->lgop);
 }
 #endif /* CONFIG_FONTENGINE_FREETYPE */
 
@@ -351,7 +351,7 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   for (i=0;i<benchmark_iterations;i++)
     test->func(b);
   gettimeofday(&end,NULL);
-  VID(update)(VID(default_display)(),0,0,vid->lxres,vid->lyres);
+  VID(update)(VID(window_debug)(),0,0,vid->lxres,vid->lyres);
 
   result = ((end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec)); 
 
@@ -402,9 +402,9 @@ void videotest_benchmark(void) {
 	 "Time             Name                           LGOP            Size   \n"
 	 "-----------------------------------------------------------------------\n");
 
-  VID(rect)(vid->display, 0,0,vid->lxres,vid->lyres,
+  VID(rect)(VID(window_debug)(), 0,0,vid->lxres,vid->lyres,
 	    VID(color_pgtohwr)(0x606060), PG_LGOP_NONE);
-  VID(rect)(vid->display, 0,0,vid->lxres,vid->lyres,
+  VID(rect)(VID(window_debug)(), 0,0,vid->lxres,vid->lyres,
 	    VID(color_pgtohwr)(0xA0A0A0), PG_LGOP_STIPPLE);
 
   benchmark_iterations = get_param_int("benchmark","iterations",1000);

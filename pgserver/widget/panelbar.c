@@ -1,4 +1,4 @@
-/* $Id: panelbar.c,v 1.15 2002/10/17 02:24:47 micahjd Exp $
+/* $Id: panelbar.c,v 1.16 2002/10/23 02:09:08 micahjd Exp $
  *
  * panelbar.c - Container and draggable bar for resizing panels
  *
@@ -292,7 +292,7 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     }
      
     /* Allocate the new sprite */
-    if(iserror(new_sprite(&DATA->s,DATA->panelbar->r.w,DATA->panelbar->r.h))) {
+    if(iserror(new_sprite(&DATA->s,self->dt,DATA->panelbar->r.w,DATA->panelbar->r.h))) {
        DATA->s = NULL;
        return;
     }
@@ -306,7 +306,7 @@ void panelbar_trigger_sprite(struct widget *self,s32 type,union trigparam *param
     
     /* Grab a bitmap of the panelbar to use as the sprite */
     VID(blit) (DATA->sbit,0,0,DATA->panelbar->r.w,DATA->panelbar->r.h,
-	       vid->display,DATA->s->x = DATA->panelbar->r.x,DATA->s->y = DATA->panelbar->r.y,
+	       self->dt->display,DATA->s->x = DATA->panelbar->r.x,DATA->s->y = DATA->panelbar->r.y,
 	       PG_LGOP_NONE);
 
     /* Clip the sprite to the travel allowed by boundwidget's parent */

@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.7 2002/10/22 23:08:11 micahjd Exp $
+/* $Id: if_magic.c,v 1.8 2002/10/23 02:09:05 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -84,109 +84,109 @@ g_error debug_bitmaps(const void **pobj, void *extra) {
 
   VID(bitmap_getsize) (bmp,&w,&h);
   if (data->db_x+10+w>vid->lxres) {
-     data->db_x = 0;
-     data->db_y += data->db_h+8;
-     data->db_h = 0;
-   }
-   if (h>data->db_h)
-     data->db_h = h;
+    data->db_x = 0;
+    data->db_y += data->db_h+8;
+    data->db_h = 0;
+  }
+  if (h>data->db_h)
+    data->db_h = h;
    
-   if (data->db_y+45+h>vid->lyres) {
-     df->lib->draw_string(df,vid->display,xy_to_pair(10,vid->lyres-m.charcell.h*3),
-			  VID(color_pgtohwr) (0xFFFF00),
-			  pgstring_tmpwrap("Too many bitmaps for this screen.\n"
-					   "Change video mode and try again"),
-			  &screenclip,PG_LGOP_NONE,0);
+  if (data->db_y+45+h>vid->lyres) {
+    df->lib->draw_string(df,VID(window_debug)(),xy_to_pair(10,vid->lyres-m.charcell.h*3),
+			 VID(color_pgtohwr) (0xFFFF00),
+			 pgstring_tmpwrap("Too many bitmaps for this screen.\n"
+					  "Change video mode and try again"),
+			 &screenclip,PG_LGOP_NONE,0);
 
-     return mkerror(PG_ERRT_INTERNAL,0);  /* Dummy error to get us to abort */
-   }
+    return mkerror(PG_ERRT_INTERNAL,0);  /* Dummy error to get us to abort */
+  }
    
-   VID(rect) (vid->display,data->db_x+3,data->db_y+38,w+4,h+4,
-	      VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
-   VID(rect) (vid->display,data->db_x+4,data->db_y+39,w+2,h+2,
-	      VID(color_pgtohwr)(0x000000),PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),data->db_x+3,data->db_y+38,w+4,h+4,
+	     VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),data->db_x+4,data->db_y+39,w+2,h+2,
+	     VID(color_pgtohwr)(0x000000),PG_LGOP_NONE);
 
-   has_alpha = w && h && (VID(getpixel)(bmp,0,0) & PGCF_ALPHA);
+  has_alpha = w && h && (VID(getpixel)(bmp,0,0) & PGCF_ALPHA);
      
-   /* If we have an alpha channel, draw a interlacy background so we can see the alpha */
-   if (has_alpha) {
-     for (i=0;i<h;i++)
-       VID(slab) (vid->display, data->db_x+5, data->db_y+40+i, w,
-		  VID(color_pgtohwr)(i&1 ? 0xFFFFFF : 0xCCCCCC), PG_LGOP_NONE);
+  /* If we have an alpha channel, draw a interlacy background so we can see the alpha */
+  if (has_alpha) {
+    for (i=0;i<h;i++)
+      VID(slab) (VID(window_debug)(), data->db_x+5, data->db_y+40+i, w,
+		 VID(color_pgtohwr)(i&1 ? 0xFFFFFF : 0xCCCCCC), PG_LGOP_NONE);
 
-     df->lib->draw_string(df,vid->display,xy_to_pair(data->db_x+5,data->db_y+40),
-			  VID(color_pgtohwr)(0x000000),
-			  pgstring_tmpwrap("Alpha"), &screenclip, PG_LGOP_NONE,0);
-   }
+    df->lib->draw_string(df,VID(window_debug)(),xy_to_pair(data->db_x+5,data->db_y+40),
+			 VID(color_pgtohwr)(0x000000),
+			 pgstring_tmpwrap("Alpha"), &screenclip, PG_LGOP_NONE,0);
+  }
 
-   VID(blit) (vid->display,data->db_x+5,data->db_y+40,w,h,bmp,0,0,
-	      has_alpha ? PG_LGOP_ALPHA : PG_LGOP_NONE);
+  VID(blit) (VID(window_debug)(),data->db_x+5,data->db_y+40,w,h,bmp,0,0,
+	     has_alpha ? PG_LGOP_ALPHA : PG_LGOP_NONE);
 
-   data->db_x += w+8;
-   return success;
+  data->db_x += w+8;
+  return success;
 }
    
-   /* Utility functions to implement CTRL-ALT-N gropnode dump */
+/* Utility functions to implement CTRL-ALT-N gropnode dump */
 void r_grop_dump(struct divnode *div) {
-   struct gropnode *n;
-   int i;
+  struct gropnode *n;
+  int i;
    
-   if (!div) return;
-   if (div->grop) {
-      printf("Divnode %p at (%d,%d,%d,%d): ",div,
-	     div->r.x,div->r.y,div->r.w,div->r.h);
-      if (div->owner)
-	printf("Owned by widget %p, type %d\n",div->owner,div->owner->type);
-      else
-	printf("Unowned\n");
+  if (!div) return;
+  if (div->grop) {
+    printf("Divnode %p at (%d,%d,%d,%d): ",div,
+	   div->r.x,div->r.y,div->r.w,div->r.h);
+    if (div->owner)
+      printf("Owned by widget %p, type %d\n",div->owner,div->owner->type);
+    else
+      printf("Unowned\n");
       
-      for (n=div->grop;n;n=n->next) {
-	 printf("  Gropnode: type 0x%04X flags 0x%04X at (%d,%d,%d,%d) params: ",
-		n->type,n->flags,n->r.x,n->r.y,n->r.w,n->r.h);
-	 for (i=0;i<PG_GROPPARAMS(n->type);i++)
-	   printf("%d ",n->param[i]);
-	 printf("\n");
-      }
-   }
-   r_grop_dump(div->div);
-   r_grop_dump(div->next);
+    for (n=div->grop;n;n=n->next) {
+      printf("  Gropnode: type 0x%04X flags 0x%04X at (%d,%d,%d,%d) params: ",
+	     n->type,n->flags,n->r.x,n->r.y,n->r.w,n->r.h);
+      for (i=0;i<PG_GROPPARAMS(n->type);i++)
+	printf("%d ",n->param[i]);
+      printf("\n");
+    }
+  }
+  r_grop_dump(div->div);
+  r_grop_dump(div->next);
 }
 void grop_dump(void) {
-   struct divtree *dt;
-   printf("---------------- Begin grop tree dump\n");
-   for (dt=dts->top;dt;dt=dt->next)
-     r_grop_dump(dt->head);
-   printf("---------------- End grop tree dump\n");
+  struct divtree *dt;
+  printf("---------------- Begin grop tree dump\n");
+  for (dt=dts->top;dt;dt=dt->next)
+    r_grop_dump(dt->head);
+  printf("---------------- End grop tree dump\n");
 }
      
 /* Utility functions to implement CTRL-ALT-D divnode dump */
 void r_div_dump(struct divnode *div, const char *label, int level) {
-   int i;
+  int i;
    
-   if (!div)
-     return;
+  if (!div)
+    return;
 
-   printf(label);
-   for (i=0;i<level;i++)
-     printf("\t");
-   printf("Div %p: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
-	  " calc=(%d,%d,%d,%d) divscroll=%p trans=(%d,%d)\n",
-	  div,div->flags,div->split,div->preferred.w,div->preferred.h,
-	  div->child.w,div->child.h,
-	  div->r.x,div->r.y,div->r.w,div->r.h,
-	  div->calc.x,div->calc.y,div->calc.w,div->calc.h,
-	  div->divscroll,
-	  div->translation.x, div->translation.y);
+  printf(label);
+  for (i=0;i<level;i++)
+    printf("\t");
+  printf("Div %p: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) rect=(%d,%d,%d,%d)"
+	 " calc=(%d,%d,%d,%d) divscroll=%p trans=(%d,%d)\n",
+	 div,div->flags,div->split,div->preferred.w,div->preferred.h,
+	 div->child.w,div->child.h,
+	 div->r.x,div->r.y,div->r.w,div->r.h,
+	 div->calc.x,div->calc.y,div->calc.w,div->calc.h,
+	 div->divscroll,
+	 div->translation.x, div->translation.y);
 
-   r_div_dump(div->div," Div:",level+1);
-   r_div_dump(div->next,"Next:",level+1);
+  r_div_dump(div->div," Div:",level+1);
+  r_div_dump(div->next,"Next:",level+1);
 }
 void div_dump(void) {
-   struct divtree *dt;
-   printf("---------------- Begin div tree dump\n");
-   for (dt=dts->top;dt;dt=dt->next)
-       r_div_dump(dt->head,"Root:",0);
-   printf("---------------- End div tree dump\n");
+  struct divtree *dt;
+  printf("---------------- Begin div tree dump\n");
+  for (dt=dts->top;dt;dt=dt->next)
+    r_div_dump(dt->head,"Root:",0);
+  printf("---------------- End div tree dump\n");
 }
 
 /* Trace the outlines of all divnodes onscreen */
@@ -205,7 +205,7 @@ void r_divnode_trace(struct divnode *div) {
     return;
 
   /* Set up rendering... */
-  r.output = vid->display;
+  r.output = VID(window_debug)();
   n.r = div->r;
   r.clip.x1 = 0;
   r.clip.y1 = 0;
@@ -255,7 +255,7 @@ void hotspot_draw(struct hotspot *spot) {
    */
   memset(&r,0,sizeof(r));
   memset(&n,0,sizeof(n));
-  r.output = vid->display;
+  r.output = VID(window_debug)();
   r.clip.x1 = 0;
   r.clip.y1 = 0;
   r.clip.x2 = vid->lxres-1;
@@ -278,11 +278,11 @@ void hotspot_draw(struct hotspot *spot) {
 
   /* If there's a scroll container, mark it with a frame */
   if (spot->div && spot->div->divscroll) {
-      r.color = VID(color_pgtohwr)(0xFF0000);
-      n.type = PG_GROP_FRAME;
-      n.r = spot->div->divscroll->calc;
-      gropnode_clip(&r,&n);
-      gropnode_draw(&r,&n);
+    r.color = VID(color_pgtohwr)(0xFF0000);
+    n.type = PG_GROP_FRAME;
+    n.r = spot->div->divscroll->calc;
+    gropnode_clip(&r,&n);
+    gropnode_draw(&r,&n);
   }
   
   /* Every hotspot gets a red crosshairs 
@@ -377,9 +377,9 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
-    VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
+    VID(rect)   (VID(window_debug)(), 0,0,vid->lxres,vid->lyres, 
 		 VID(color_pgtohwr) (0),PG_LGOP_NONE);
-    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     return;
     
   case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -400,19 +400,17 @@ void magic_button(s16 key) {
       
       struct divtree *p;
       /* Push through the black screen */
-      VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
+      VID(rect)   (VID(window_debug)(), 0,0,vid->lxres,vid->lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
-      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
       /* Force redrawing everything to the backbuffer */
-      p = dts->top;
-      while (p) {
+      for (p=dts->top;p;p=p->next)
 	p->flags |= DIVTREE_ALL_REDRAW;
-	p = p->next;
-      }
       update(NULL,0);  /* Note the zero flag! */
       /* Clear the update rectangle, breaking the
 	 pipeline that usually works so well :) */
-      upd_w = 0;
+      for (p=dts->top;p;p=p->next)
+	p->update_rect.w = 0;
       /* The above zero flag left sprites off.
 	 With sprites off it's tough to use the mouse! */
       VID(sprite_showall) ();
@@ -420,9 +418,9 @@ void magic_button(s16 key) {
     return;
     
   case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
-    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,
+    VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,
 	       VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
-    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     return;
     
   case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
@@ -432,13 +430,13 @@ void magic_button(s16 key) {
 
       guru("Table of loaded bitmaps:");
       handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps,&data);
-      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     }
     return;
     
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
     r_divnode_trace(dts->top->head);
-    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     return;
 
   case PGKEY_a:           /* CTRL-ALT-a shows application info */
@@ -461,7 +459,7 @@ void magic_button(s16 key) {
       struct hotspot *p;
       for (p=hotspotlist;p;p=p->next)
 	hotspot_draw(p);
-      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     }    
     return;
 
@@ -500,36 +498,36 @@ void magic_button(s16 key) {
 	     * This is a lot like what the scribble app does, but we don't have
 	     * the convenience of a "frame" gropnode at this low level.
 	     */
-	    VID(slab)(vid->display,pixelx,pixely,celw,white,PG_LGOP_NONE);
-	    VID(slab)(vid->display,pixelx,pixely+celh,celw,white,PG_LGOP_NONE);
-	    VID(bar)(vid->display,pixelx,pixely,celh,white,PG_LGOP_NONE);
-	    VID(bar)(vid->display,pixelx+celw,pixely,celh,white,PG_LGOP_NONE);
-	    VID(slab)(vid->display,pixelx+1,pixely+1,celw-2, black, PG_LGOP_NONE);
-	    VID(slab)(vid->display,pixelx+1,pixely-1+celh,celw-2, black, PG_LGOP_NONE);
-	    VID(bar)(vid->display,pixelx+1,pixely+1,celh-2, black, PG_LGOP_NONE);
-	    VID(bar)(vid->display,pixelx-1+celh,pixely+1,celh-2, black, PG_LGOP_NONE);
-	    VID(rect)(vid->display,pixelx+2,pixely+2,celw-3,celh-3, i    , PG_LGOP_NONE);
+	    VID(slab)(VID(window_debug)(),pixelx,pixely,celw,white,PG_LGOP_NONE);
+	    VID(slab)(VID(window_debug)(),pixelx,pixely+celh,celw,white,PG_LGOP_NONE);
+	    VID(bar)(VID(window_debug)(),pixelx,pixely,celh,white,PG_LGOP_NONE);
+	    VID(bar)(VID(window_debug)(),pixelx+celw,pixely,celh,white,PG_LGOP_NONE);
+	    VID(slab)(VID(window_debug)(),pixelx+1,pixely+1,celw-2, black, PG_LGOP_NONE);
+	    VID(slab)(VID(window_debug)(),pixelx+1,pixely-1+celh,celw-2, black, PG_LGOP_NONE);
+	    VID(bar)(VID(window_debug)(),pixelx+1,pixely+1,celh-2, black, PG_LGOP_NONE);
+	    VID(bar)(VID(window_debug)(),pixelx-1+celh,pixely+1,celh-2, black, PG_LGOP_NONE);
+	    VID(rect)(VID(window_debug)(),pixelx+2,pixely+2,celw-3,celh-3, i    , PG_LGOP_NONE);
 	  }
       }
       else {
 	/* Just some RGB gradients */
 
         y = 60;
-	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
 		      0x000000,0xFFFFFF, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
 		      0x000000,0xFF0000, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
 		      0x000000,0x00FF00, PG_LGOP_NONE);
 	y += 30;
-	VID(gradient)(vid->display,10,y,vid->lxres-20,20,0,
+	VID(gradient)(VID(window_debug)(),10,y,vid->lxres-20,20,0,
 		      0x000000,0x0000FF, PG_LGOP_NONE);
 	y += 30;
       }
 
-      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
     }
     return;
 

@@ -1,4 +1,4 @@
-/* $Id: slowvbl.c,v 1.3 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: slowvbl.c,v 1.4 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * slowvbl.c - intentionally slow VBL for debugging
@@ -50,8 +50,7 @@ void slowvbl_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
   static int count = 0;
   int i;
 
-  /* Save us all this pain if we're drawing offscreen or doing sprites*/
-  if (dest != vid->display || (slowvbl_fastsprites && slowvbl_in_sprite_update)) {
+  if ((slowvbl_fastsprites && slowvbl_in_sprite_update)) {
     (*slowvbl_original_pixel)(dest,x,y,c,lgop);
     return;
   }

@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.10 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.11 2002/10/23 02:09:06 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -80,11 +80,15 @@ int def_update_hook(void) {
 void def_grop_handler(struct groprender *r, struct gropnode *n) {
 }
  
-hwrbitmap def_default_display(void) {
+hwrbitmap def_window_debug(void) {
   return vid->display;
 }
 
-hwrbitmap def_window_new(void) {
+hwrbitmap def_window_fullscreen(void) {
+  return vid->display;
+}
+
+hwrbitmap def_window_new(struct divtree *dt) {
   return vid->display;
 }
 
@@ -109,6 +113,9 @@ void def_window_get_size(hwrbitmap window, s16 *w, s16 *h) {
   *h = vid->lyres;
 }
 
+int def_is_rootless(void) {
+  return 0;
+}
 
 /******* registration */
 
@@ -158,7 +165,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->grop_handler = &def_grop_handler;
   vid->blur = &def_blur;
   vid->charblit = &def_charblit;
-  vid->default_display = &def_default_display;
+  vid->window_debug = &def_window_debug;
+  vid->window_fullscreen = &def_window_fullscreen;
   vid->window_new = &def_window_new;
   vid->window_free = &def_window_free;
   vid->window_set_title = &def_window_set_title;
@@ -166,6 +174,7 @@ void setvbl_default(struct vidlib *vid) {
   vid->window_get_position = &def_window_get_position;
   vid->window_set_size = &def_window_set_size;
   vid->window_get_size = &def_window_get_size;
+  vid->is_rootless = &def_is_rootless;
 #ifdef CONFIG_FONTENGINE_FREETYPE
   vid->alpha_charblit = &def_alpha_charblit;
 #endif

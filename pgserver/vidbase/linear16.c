@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.35 2002/10/22 15:18:26 micahjd Exp $
+/* $Id: linear16.c,v 1.36 2002/10/23 02:09:06 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -35,7 +35,7 @@
 
 #include <stdlib.h> /* For alloca */
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 #define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)

@@ -1,4 +1,4 @@
-/* $Id: vgaplan4.c,v 1.5 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: vgaplan4.c,v 1.6 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * vgaplan4.c - For VGA compatible 4bpp access, based on linear1.c
@@ -69,7 +69,7 @@
 #include <sys/io.h> /* for iopl */
 #include <stdio.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 
@@ -1075,9 +1075,8 @@ local pgcolor vgaplan4_color_hwrtopg(hwrcolor c)
 /* update() uses the fast copy mode to move the changed
    memory from the first half of screen memory to the
    second half (on-screen). */
-local void vgaplan4_update(s16 x,s16 y,s16 w,s16 h)
+local void vgaplan4_update(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h)
 {
-  hwrbitmap dest = vid->display;
   u8 *src = PIXELBYTE(x,y);
   u8 *dst = src + 32768;
   u8 *s,*d;

@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.36 2002/10/22 23:08:10 micahjd Exp $
+/* $Id: g_error.c,v 1.37 2002/10/23 02:09:03 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -78,7 +78,7 @@ const u8 deadcomp_bits[] = {
   0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 
   0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x19, 0xff, 0x08, 0x01, 0x00, 0x08, 
   0x03, 0x00, 0x0c, 0x02, 0x00, 0x04, 0x02, 0x00, 0x04, 0xfe, 0xff, 0x07, 
-  };
+};
 #endif
 
 void guru(const char *fmt, ...) {
@@ -105,7 +105,7 @@ void guru(const char *fmt, ...) {
   if (!disable_output) {
 
     /* Setup */
-    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
+    VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,VID(color_pgtohwr)(0),
 	       PG_LGOP_NONE);
     rdhandle((void**)&df,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
     screenclip.x1 = screenclip.y1 = 0;
@@ -120,7 +120,7 @@ void guru(const char *fmt, ...) {
 					deadcomp_width,deadcomp_height,
 					VID(color_pgtohwr) (0xFFFF80),
 					VID(color_pgtohwr) (0x000000)))) {
-	VID(blit) (vid->display,5,5,deadcomp_width,deadcomp_height,
+	VID(blit) (VID(window_debug)(),5,5,deadcomp_width,deadcomp_height,
 		   icon,0,0,PG_LGOP_NONE);
 	VID(bitmap_free) (icon);
       }
@@ -130,19 +130,19 @@ void guru(const char *fmt, ...) {
 # define deadcomp_width 0
 #endif
   
-    df->lib->draw_string(df,vid->display,xy_to_pair(10+deadcomp_width,5),
+    df->lib->draw_string(df,VID(window_debug)(),xy_to_pair(10+deadcomp_width,5),
 			 VID(color_pgtohwr)(0xFFFFFF),pgstring_tmpwrap(msgbuf),
 			 &screenclip,PG_LGOP_NONE,0);
-    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);    
+    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);    
   }
   
 #ifdef CONFIG_STDERR_GURU
-    /* Mirror the message on stderr, prefix each line with "GURU:  " */
-    for (c=1,pline=msgbuf;c;pline=p+1) {
-      for (p=pline;*p && *p!='\n';p++);
-      c=*p; *p=0;
-      fprintf(stderr,"GURU:  %s\n",pline); 
-    }
+  /* Mirror the message on stderr, prefix each line with "GURU:  " */
+  for (c=1,pline=msgbuf;c;pline=p+1) {
+    for (p=pline;*p && *p!='\n';p++);
+    c=*p; *p=0;
+    fprintf(stderr,"GURU:  %s\n",pline); 
+  }
 #endif
     
   semaphore--;

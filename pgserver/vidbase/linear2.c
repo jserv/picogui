@@ -1,4 +1,4 @@
-/* $Id: linear2.c,v 1.11 2002/10/07 03:31:16 micahjd Exp $
+/* $Id: linear2.c,v 1.12 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * linear2.c - For 2-bit packed pixel devices (4 grayscales)
@@ -30,7 +30,7 @@
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy if possible*/
 #include <pgserver/video.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 #define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)

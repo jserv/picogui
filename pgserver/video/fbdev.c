@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.39 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: fbdev.c,v 1.40 2002/10/23 02:09:07 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -743,14 +743,19 @@ void fbdev_close(void) {
 }
 
 void fbdev_doublebuffer_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
+  if (d!=vid->display)
+    return;
+
 #ifdef CONFIG_FB_SYNC
   /* My first attempt at a VBL-sync'ed framebuffer...
    * IMHO this method sucks so hopefully there's a better way.
    */
-  struct fb_vblank vb;
-  do {
-    ioctl(fbdev_fd, FBIOGET_VBLANK, &vb);
-  } while ((vb.flags & FB_VBLANK_HAVE_VSYNC) && !(vb.flags & FB_VBLANK_VSYNCING));
+  {
+    struct fb_vblank vb;
+    do {
+      ioctl(fbdev_fd, FBIOGET_VBLANK, &vb);
+    } while ((vb.flags & FB_VBLANK_HAVE_VSYNC) && !(vb.flags & FB_VBLANK_VSYNCING));
+  }
 #endif
 
 #ifdef CONFIG_FB_PAGEFLIP

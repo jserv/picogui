@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.9 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: scrshot.c,v 1.10 2002/10/23 02:09:07 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -148,6 +148,9 @@ void scrshot_update(hwrbitmap d,s16 unusedx, s16 unusedy, s16 w, s16 h) {
   char buf[256];    /* I hate static buffers... */
   FILE *f;
   int x,y;
+
+  if (d!=vid->display)
+    return;
 
   if (scrshot_skip) {
     scrshot_skip--;

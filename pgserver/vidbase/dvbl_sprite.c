@@ -1,4 +1,4 @@
-/* $Id: dvbl_sprite.c,v 1.3 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: dvbl_sprite.c,v 1.4 2002/10/23 02:09:06 micahjd Exp $
  *
  * dvbl_sprite.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -105,21 +105,21 @@ void def_sprite_show(struct sprite *spr) {
   
   /* Grab a new backbuffer */
   VID(blit) (spr->backbuffer,0,0,spr->ow,spr->oh,
-	     vid->display,spr->x,spr->y,PG_LGOP_NONE);
+	     spr->dt->display,spr->x,spr->y,PG_LGOP_NONE);
 
   /* Display the sprite */
   if (spr->mask && *spr->mask) {
-     VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+     VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
 		*spr->mask,src_x,src_y,PG_LGOP_AND);
-     VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+     VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
 		*spr->bitmap,src_x,src_y,PG_LGOP_OR);
   }
   else {
-    VID(blit) (vid->display,spr->x,spr->y,spr->ow,spr->oh,
+    VID(blit) (spr->dt->display,spr->x,spr->y,spr->ow,spr->oh,
 	       *spr->bitmap,src_x,src_y,spr->lgop);
   }
    
-  add_updarea(spr->x,spr->y,spr->ow,spr->oh);
+  add_updarea(spr->dt,spr->x,spr->y,spr->ow,spr->oh);
 
   spr->onscreen = 1;
 }
@@ -145,9 +145,9 @@ void def_sprite_hide(struct sprite *spr) {
   def_sprite_hide_above(spr);
    
   /* Put back the old image */
-  VID(blit) (vid->display,spr->ox,spr->oy,spr->ow,spr->oh,
+  VID(blit) (spr->dt->display,spr->ox,spr->oy,spr->ow,spr->oh,
 	     spr->backbuffer,0,0,PG_LGOP_NONE);
-  add_updarea(spr->ox,spr->oy,spr->ow,spr->oh);
+  add_updarea(spr->dt,spr->ox,spr->oy,spr->ow,spr->oh);
 
   spr->onscreen = 0;
 }
@@ -159,7 +159,7 @@ void def_sprite_update(struct sprite *spr) {
   def_sprite_showall();       /* Also re-show the sprites we hid with protectarea */
 
   /* Redraw */
-  realize_updareas();
+  realize_updareas(spr->dt);
 }
 
 /* Traverse back -> front, showing sprites */

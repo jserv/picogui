@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.30 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: linear4.c,v 1.31 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -39,7 +39,7 @@
 #include <pgserver/video.h>
 #include <pgserver/render.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 #define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)

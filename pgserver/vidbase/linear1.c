@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.24 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: linear1.c,v 1.25 2002/10/23 02:09:06 micahjd Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -33,7 +33,7 @@
 
 #include <pgserver/appmgr.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 

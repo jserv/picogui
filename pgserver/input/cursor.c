@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.5 2002/10/14 10:22:12 micahjd Exp $
+/* $Id: cursor.c,v 1.6 2002/10/23 02:09:05 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -140,7 +140,7 @@ g_error cursor_set_theme(struct cursor *crsr, int thobj) {
     cursor_getposition(crsr,&x,&y);
 
     /* Create a new sprite (default hidden, as per description in input.h) */
-    e = new_sprite(&crsr->sprite,w,h);
+    e = new_sprite(&crsr->sprite,dts->root,w,h);
     errorcheck;
     crsr->sprite->visible = 0;
     

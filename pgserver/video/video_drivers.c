@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.9 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: video_drivers.c,v 1.10 2002/10/23 02:09:08 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -50,7 +50,10 @@ s16 upd_h;
 /* Statically allocated memory that the driver can use for vid->display */
 struct stdbitmap static_display;
 
-/* Trig table used in hwr_gradient (sin*256 for theta from 0 to 90) */
+/* Trig table (sin*256 for theta from 0 to 90) 
+ * This is used in the default implementation of gradient,
+ * and may be used by other VBL functions or drivers.
+ */
 unsigned char trigtab[] = {
   0x00,0x04,0x08,0x0D,0x11,0x16,0x1A,0x1F,0x23,0x28,
   0x2C,0x30,0x35,0x39,0x3D,0x42,0x46,0x4A,0x4F,0x53,
@@ -65,7 +68,7 @@ unsigned char trigtab[] = {
 };
 
 /* Sprite helper functions */
-g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
+g_error new_sprite(struct sprite **ps,struct divtree *dt,s16 w,s16 h) {
   g_error e;
   
   e = g_malloc((void**)ps,sizeof(struct sprite));
@@ -78,6 +81,7 @@ g_error new_sprite(struct sprite **ps,s16 w,s16 h) {
   (*ps)->next = spritelist;
   (*ps)->visible = 1;
   (*ps)->lgop = PG_LGOP_NONE;
+  (*ps)->dt = dt;
   spritelist = *ps;
 
   return success;
@@ -437,87 +441,6 @@ g_error (*find_videodriver(const u8 *name))(struct vidlib *v) {
     p++;
   }
   return NULL;
-}
-
-void add_updarea(s16 x,s16 y,s16 w,s16 h) {
-
-  /* Clip to logical display */
-  if (x<0) {
-    w -= x;
-    x = 0;
-  }
-  if (y<0) {
-    h -= y;
-    y = 0;
-  }
-  if ((x+w)>vid->lxres)
-    w = vid->lxres-x;
-  if ((y+h)>vid->lyres)
-    h = vid->lyres-y;
-
-  /* Is this a bogus update rectangle? */
-  if (w<=0 || h<=0)
-    return;
-
-  if (upd_w) {
-    if (x < upd_x) {
-      upd_w += upd_x - x;
-      upd_x = x;
-    }
-    if (y < upd_y) {
-      upd_h += upd_y - y;
-      upd_y = y;
-    }
-    if ((w+x) > (upd_x+upd_w))
-      upd_w = w+x-upd_x;
-    if ((h+y) > (upd_y+upd_h))
-      upd_h = h+y-upd_y;
-  }
-  else {
-    upd_x = x;
-    upd_y = y;
-    upd_w = w;
-    upd_h = h;
-  }
-}
-
-/* Update and reset the update rectangle */
-void realize_updareas(void) {
-  /* This lock is an effort to fix a bug observed while running in SDL:
-   * while blitting the update rectangles, another event is recieved,
-   * causing this to be entered twice. Apparently X doesn't like that :)
-   */
-  static unsigned char lock = 0;
-
-  if (lock) return;
-  lock = 1;
-
-   if (upd_w) {
-      if (upd_x<0) {
-	 upd_w += upd_x;
-	 upd_x = 0;
-      }
-      if (upd_y<0) {
-	 upd_h += upd_y;
-	 upd_y = 0;
-      }
-      if ((upd_x+upd_w)>vid->lxres)
-	upd_w = vid->lxres-upd_x;
-      if ((upd_y+upd_h)>vid->lyres)
-	upd_h = vid->lyres-upd_y;
-#ifdef DEBUG_VIDEO
-      /* Show update rectangles */
-      /*
-	VID(rect) (vid->display,
-		 upd_x,upd_y,upd_w,upd_h,(*vid->color_pgtohwr)(0xFF0000),
-		 PG_LGOP_STIPPLE);
-      */
-#endif
-      VID(update) (vid->display, upd_x,upd_y,upd_w,upd_h);
-      upd_x = upd_y = upd_w = upd_h = 0;
-   } 
-   
-   lock = 0;
 }
 
 /* Rotate an existing bitmap by the given angle, reallocating it.

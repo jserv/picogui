@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.7 2002/10/22 12:56:59 pney Exp $
+/* $Id: textedit_frontend.c,v 1.8 2002/10/23 02:09:08 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -422,7 +422,7 @@ void textedit_trigger ( struct widget *self,
                 for (y=0;y<vid->yres;y++) {
                     for (x=0;x<vid->xres;x++) {
                         pgcolor c;
-                        c = VID(color_hwrtopg)(VID(getpixel)(vid->display,x,y));
+                        c = VID(color_hwrtopg)(VID(getpixel)(DATA->dt->display,x,y));
                         fputc(getred(c),f);
                         fputc(getgreen(c),f);
                         fputc(getblue(c),f);
@@ -634,7 +634,8 @@ void textedit_draw_update ( struct widget *self ) {
         DATA->update_y2 += self->in->div->r.y;
 
         grop_render(self->in->div, NULL);  
-        VID(update) (DATA->update_x1,
+        VID(update) (self->dt->display,
+		     DATA->update_x1,
                      DATA->update_y1,
                      DATA->update_x2 - DATA->update_x1,
                      DATA->update_y2 - DATA->update_y1);

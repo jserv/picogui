@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.109 2002/10/12 19:53:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.110 2002/10/23 02:09:05 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -865,12 +865,12 @@ g_error rqh_render(int owner, struct pgrequest *req,
 
   /* First, validate the destination bitmap */
   if (!arg->dest) {
-    /* The client wants to draw directly to vid->display.
+    /* The client wants to draw directly to the screen.
      * To do this it must register for exclusive use of the display. */
 
     if (owner != display_owner)
       return mkerror(PG_ERRT_BUSY,9);   /* Not the display owner */
-    dest = vid->display;
+    dest = VID(window_fullscreen)();
     
     /* Keep quiet if output's disabled */
     if (disable_output)

@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.33 2002/10/22 23:08:08 micahjd Exp $
+/* $Id: videotest.c,v 1.34 2002/10/23 02:09:02 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -39,271 +39,275 @@
 /************ Line test pattern */
 
 void testpat_line(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   hwrcolor fg = VID(color_pgtohwr) (0x000000);
-   struct font_descriptor *fd;
-   struct font_metrics m;
-   int patx,paty,patw;
-   int i;
+  hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+  hwrcolor fg = VID(color_pgtohwr) (0x000000);
+  struct font_descriptor *fd;
+  struct font_metrics m;
+  int patx,paty,patw;
+  int i;
+  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
-   fd->lib->getmetrics(fd,&m);
+  rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
+  fd->lib->getmetrics(fd,&m);
    
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
 
-   /* Lines 5 pixels from each edge */
-   VID(slab) (vid->display,0,5,vid->lxres,fg,PG_LGOP_NONE);
-   VID(slab) (vid->display,0,vid->lyres-6,vid->lxres,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,5,0,vid->lyres,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,vid->lxres-6,0,vid->lyres,fg,PG_LGOP_NONE);
+  /* Lines 5 pixels from each edge */
+  VID(slab) (VID(window_debug)(),0,5,vid->lxres,fg,PG_LGOP_NONE);
+  VID(slab) (VID(window_debug)(),0,vid->lyres-6,vid->lxres,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),5,0,vid->lyres,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),vid->lxres-6,0,vid->lyres,fg,PG_LGOP_NONE);
    
-   /* More lines lining the edges (to test for off-by-one framebuffer bugs) */
-   VID(slab) (vid->display,7,0,vid->lxres-14,fg,PG_LGOP_NONE);
-   VID(slab) (vid->display,7,vid->lyres-1,vid->lxres-14,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,0,7,vid->lyres-14,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,vid->lxres-1,7,vid->lyres-14,fg,PG_LGOP_NONE);
+  /* More lines lining the edges (to test for off-by-one framebuffer bugs) */
+  VID(slab) (VID(window_debug)(),7,0,vid->lxres-14,fg,PG_LGOP_NONE);
+  VID(slab) (VID(window_debug)(),7,vid->lyres-1,vid->lxres-14,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),0,7,vid->lyres-14,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),vid->lxres-1,7,vid->lyres-14,fg,PG_LGOP_NONE);
    
-   /* 4x4 rectangles in each corner, to make sure we can address those
-    * extremities with ease */
-   VID(rect) (vid->display,0,0,4,4,fg,PG_LGOP_NONE);
-   VID(rect) (vid->display,vid->lxres-4,0,4,4,fg,PG_LGOP_NONE);
-   VID(rect) (vid->display,0,vid->lyres-4,4,4,fg,PG_LGOP_NONE);
-   VID(rect) (vid->display,vid->lxres-4,vid->lyres-4,4,4,fg,PG_LGOP_NONE);
+  /* 4x4 rectangles in each corner, to make sure we can address those
+   * extremities with ease */
+  VID(rect) (VID(window_debug)(),0,0,4,4,fg,PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),vid->lxres-4,0,4,4,fg,PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),0,vid->lyres-4,4,4,fg,PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),vid->lxres-4,vid->lyres-4,4,4,fg,PG_LGOP_NONE);
    
-   /* Horizontal and vertical text labels along the inside of the lines */
-   fd->lib->draw_string(fd,vid->display, xy_to_pair(7,7),
-			fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),NULL,PG_LGOP_NONE,0);
-   fd->lib->draw_string(fd,vid->display, xy_to_pair(7,vid->lyres-8),
-			fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),NULL,PG_LGOP_NONE,90);
+  /* Horizontal and vertical text labels along the inside of the lines */
+  fd->lib->draw_string(fd,VID(window_debug)(), xy_to_pair(7,7),
+		       fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),&clip,PG_LGOP_NONE,0);
+  fd->lib->draw_string(fd,VID(window_debug)(), xy_to_pair(7,vid->lyres-8),
+		       fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),&clip,PG_LGOP_NONE,90);
 
-   /* Center the test pattern bounding box */
-   patw = ((vid->lxres<vid->lyres)?vid->lxres:vid->lyres) - 40;
-   patx = (vid->lxres - patw) >> 1;
-   paty = (vid->lyres - patw) >> 1;
+  /* Center the test pattern bounding box */
+  patw = ((vid->lxres<vid->lyres)?vid->lxres:vid->lyres) - 40;
+  patx = (vid->lxres - patw) >> 1;
+  paty = (vid->lyres - patw) >> 1;
    
-   /* Draw little alignment marks, a 1-pixel gap from the test pattern */
-   VID(slab) (vid->display,patx-5,paty,4,fg,PG_LGOP_NONE);
-   VID(slab) (vid->display,patx-5,paty+patw,4,fg,PG_LGOP_NONE);
-   VID(slab) (vid->display,patx+patw+2,paty,4,fg,PG_LGOP_NONE);
-   VID(slab) (vid->display,patx+patw+2,paty+patw,4,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,patx,paty-5,4,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,patx+patw,paty-5,4,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,patx,paty+patw+2,4,fg,PG_LGOP_NONE);
-   VID(bar) (vid->display,patx+patw,paty+patw+2,4,fg,PG_LGOP_NONE);
+  /* Draw little alignment marks, a 1-pixel gap from the test pattern */
+  VID(slab) (VID(window_debug)(),patx-5,paty,4,fg,PG_LGOP_NONE);
+  VID(slab) (VID(window_debug)(),patx-5,paty+patw,4,fg,PG_LGOP_NONE);
+  VID(slab) (VID(window_debug)(),patx+patw+2,paty,4,fg,PG_LGOP_NONE);
+  VID(slab) (VID(window_debug)(),patx+patw+2,paty+patw,4,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),patx,paty-5,4,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),patx+patw,paty-5,4,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),patx,paty+patw+2,4,fg,PG_LGOP_NONE);
+  VID(bar) (VID(window_debug)(),patx+patw,paty+patw+2,4,fg,PG_LGOP_NONE);
 
-   /* Line thingies within the box */
-   for (i=0;i<=patw;i+=4) {
-      VID(line) (vid->display,patx+i,paty,patx+patw,paty+i,fg,PG_LGOP_NONE);
-      VID(line) (vid->display,patx,paty+i,patx+i,paty+patw,fg,PG_LGOP_NONE);
-   }
+  /* Line thingies within the box */
+  for (i=0;i<=patw;i+=4) {
+    VID(line) (VID(window_debug)(),patx+i,paty,patx+patw,paty+i,fg,PG_LGOP_NONE);
+    VID(line) (VID(window_debug)(),patx,paty+i,patx+i,paty+patw,fg,PG_LGOP_NONE);
+  }
 
-   fd->lib->draw_string(fd,vid->display,
-			xy_to_pair(vid->lxres>>1,vid->lyres>>1),
-			fg,pgstring_tmpwrap("1"),NULL,PG_LGOP_NONE,0);
+  fd->lib->draw_string(fd,VID(window_debug)(),
+		       xy_to_pair(vid->lxres>>1,vid->lyres>>1),
+		       fg,pgstring_tmpwrap("1"),&clip,PG_LGOP_NONE,0);
 }
 
 /************ Color test pattern */
 
 void testpat_color(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0x000000);
-   hwrcolor fg = VID(color_pgtohwr) (0xFFFFFF);
-   struct font_descriptor *fd;
-   int y=0;
-   int h;
-   struct font_metrics m;
+  hwrcolor bg = VID(color_pgtohwr) (0x000000);
+  hwrcolor fg = VID(color_pgtohwr) (0xFFFFFF);
+  struct font_descriptor *fd;
+  int y=0;
+  int h;
+  struct font_metrics m;
+  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
-   fd->lib->getmetrics(fd,&m);
-   h = m.lineheight;
+  rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
+  fd->lib->getmetrics(fd,&m);
+  h = m.lineheight;
    
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
    
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("Black -> White"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0xFFFFFF,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("Black -> White"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0x000000,0xFFFFFF,
+		 PG_LGOP_NONE);
+  y+=2*h;
 
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("White -> Black"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0xFFFFFF,0x000000,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("White -> Black"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0xFFFFFF,0x000000,
+		 PG_LGOP_NONE);
+  y+=2*h;
 
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("Black -> Red"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0xFF0000,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("Black -> Red"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0x000000,0xFF0000,
+		 PG_LGOP_NONE);
+  y+=2*h;
    
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("Black -> Green"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0x00FF00,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("Black -> Green"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0x000000,0x00FF00,
+		 PG_LGOP_NONE);
+  y+=2*h;
    
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("Black -> Blue"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x000000,0x0000FF,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("Black -> Blue"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0x000000,0x0000FF,
+		 PG_LGOP_NONE);
+  y+=2*h;
 
-   fd->lib->draw_string(fd,vid->display,xy_to_pair(0,y),fg,
-			pgstring_tmpwrap("Blue -> Red"),NULL,PG_LGOP_NONE,0);
-   y+=h;
-   VID(gradient) (vid->display,0,y,vid->lxres,h*2,0,0x0000FF,0xFF0000,
-		  PG_LGOP_NONE);
-   y+=2*h;
+  fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(0,y),fg,
+		       pgstring_tmpwrap("Blue -> Red"),&clip,PG_LGOP_NONE,0);
+  y+=h;
+  VID(gradient) (VID(window_debug)(),0,y,vid->lxres,h*2,0,0x0000FF,0xFF0000,
+		 PG_LGOP_NONE);
+  y+=2*h;
 
 }
 
 /************ Blit/unblit test pattern */
 
 void testpat_unblit(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   hwrcolor fg = VID(color_pgtohwr) (0x000000);
-   struct font_descriptor *fd;
-   int patx,paty,patw;
-   int patxstart;
-   int i;
-   hwrbitmap bit;
-   char buf[20];
+  hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+  hwrcolor fg = VID(color_pgtohwr) (0x000000);
+  struct font_descriptor *fd;
+  int patx,paty,patw;
+  int patxstart;
+  int i;
+  hwrbitmap bit;
+  char buf[20];
+  struct quad clip = {0,0,vid->xres-1,vid->yres-1};
    
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
+  rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
    
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
 
-   /* test pattern bounding box */
-   patw = 50;
-   patx = patxstart = 10;
-   VID(bar) (vid->display,patw+25,0,vid->lyres,fg,PG_LGOP_NONE);
+  /* test pattern bounding box */
+  patw = 50;
+  patx = patxstart = 10;
+  VID(bar) (VID(window_debug)(),patw+25,0,vid->lyres,fg,PG_LGOP_NONE);
    
-   /* Repeat for different pixel alignments */
-   for (paty=10;paty+patw<vid->lyres;paty+=patw+15,patx=++patxstart,patw--) {
+  /* Repeat for different pixel alignments */
+  for (paty=10;paty+patw<vid->lyres;paty+=patw+15,patx=++patxstart,patw--) {
       
-      /* Draw little alignment marks, a 1-pixel gap from the test pattern */
-      VID(slab) (vid->display,patx-5,paty,4,fg,PG_LGOP_NONE);
-      VID(slab) (vid->display,patx-5,paty+patw,4,fg, PG_LGOP_NONE);
-      VID(slab) (vid->display,patx+patw+2,paty,4,fg, PG_LGOP_NONE);
-      VID(slab) (vid->display,patx+patw+2,paty+patw,4,fg, PG_LGOP_NONE);
-      VID(bar) (vid->display,patx,paty-5,4,fg, PG_LGOP_NONE);
-      VID(bar) (vid->display,patx+patw,paty-5,4,fg, PG_LGOP_NONE);
-      VID(bar) (vid->display,patx,paty+patw+2,4,fg, PG_LGOP_NONE);
-      VID(bar) (vid->display,patx+patw,paty+patw+2,4,fg, PG_LGOP_NONE);
+    /* Draw little alignment marks, a 1-pixel gap from the test pattern */
+    VID(slab) (VID(window_debug)(),patx-5,paty,4,fg,PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),patx-5,paty+patw,4,fg, PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),patx+patw+2,paty,4,fg, PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),patx+patw+2,paty+patw,4,fg, PG_LGOP_NONE);
+    VID(bar) (VID(window_debug)(),patx,paty-5,4,fg, PG_LGOP_NONE);
+    VID(bar) (VID(window_debug)(),patx+patw,paty-5,4,fg, PG_LGOP_NONE);
+    VID(bar) (VID(window_debug)(),patx,paty+patw+2,4,fg, PG_LGOP_NONE);
+    VID(bar) (VID(window_debug)(),patx+patw,paty+patw+2,4,fg, PG_LGOP_NONE);
       
-      /* Line thingies within the box */
-      VID(rect) (vid->display,patx,paty,patw+1,patw+1,fg, PG_LGOP_NONE);
-      VID(rect) (vid->display,patx+1,paty+1,patw-1,patw-1,bg, PG_LGOP_NONE);
-      for (i=0;i<=patw;i+=3)
-	VID(line) (vid->display,patx+i,paty+patw,patx+patw,paty+i,
-		   fg, PG_LGOP_NONE);
-      snprintf(buf,sizeof(buf)-1,"%d/%d",patx&7,patw);
-      buf[sizeof(buf)-1]=0;
-      fd->lib->draw_string(fd,vid->display,xy_to_pair(patx+2,paty+2),fg,
-			   pgstring_tmpwrap(buf),NULL,PG_LGOP_NONE,0);
+    /* Line thingies within the box */
+    VID(rect) (VID(window_debug)(),patx,paty,patw+1,patw+1,fg, PG_LGOP_NONE);
+    VID(rect) (VID(window_debug)(),patx+1,paty+1,patw-1,patw-1,bg, PG_LGOP_NONE);
+    for (i=0;i<=patw;i+=3)
+      VID(line) (VID(window_debug)(),patx+i,paty+patw,patx+patw,paty+i,
+		 fg, PG_LGOP_NONE);
+    snprintf(buf,sizeof(buf)-1,"%d/%d",patx&7,patw);
+    buf[sizeof(buf)-1]=0;
+    fd->lib->draw_string(fd,VID(window_debug)(),xy_to_pair(patx+2,paty+2),fg,
+			 pgstring_tmpwrap(buf),&clip,PG_LGOP_NONE,0);
       
-      /* Blit the bounding box */
-      VID(bitmap_new) (&bit,patw+1,patw+1,vid->bpp);
-      VID(blit) (bit,0,0,patw+1,patw+1,vid->display,patx,paty,PG_LGOP_NONE);
+    /* Blit the bounding box */
+    VID(bitmap_new) (&bit,patw+1,patw+1,vid->bpp);
+    VID(blit) (bit,0,0,patw+1,patw+1,VID(window_debug)(),patx,paty,PG_LGOP_NONE);
       
-      /* Same pattern, shifted to the side in various alignments */
-      for (patx=patw+40,i=0;patx+patw<vid->lxres;patx=((patx+patw+25)&(~7))+(i++)) {
+    /* Same pattern, shifted to the side in various alignments */
+    for (patx=patw+40,i=0;patx+patw<vid->lxres;patx=((patx+patw+25)&(~7))+(i++)) {
 	 
-	 VID(slab) (vid->display,patx-5,paty,4,fg,PG_LGOP_NONE);
-	 VID(slab) (vid->display,patx-5,paty+patw,4,fg,PG_LGOP_NONE);
-	 VID(slab) (vid->display,patx+patw+2,paty,4,fg,PG_LGOP_NONE);
-	 VID(slab) (vid->display,patx+patw+2,paty+patw,4,fg,PG_LGOP_NONE);
-	 VID(bar) (vid->display,patx,paty-5,4,fg,PG_LGOP_NONE);
-	 VID(bar) (vid->display,patx+patw,paty-5,4,fg,PG_LGOP_NONE);
-	 VID(bar) (vid->display,patx,paty+patw+2,4,fg,PG_LGOP_NONE);
-	 VID(bar) (vid->display,patx+patw,paty+patw+2,4,fg,PG_LGOP_NONE);
+      VID(slab) (VID(window_debug)(),patx-5,paty,4,fg,PG_LGOP_NONE);
+      VID(slab) (VID(window_debug)(),patx-5,paty+patw,4,fg,PG_LGOP_NONE);
+      VID(slab) (VID(window_debug)(),patx+patw+2,paty,4,fg,PG_LGOP_NONE);
+      VID(slab) (VID(window_debug)(),patx+patw+2,paty+patw,4,fg,PG_LGOP_NONE);
+      VID(bar) (VID(window_debug)(),patx,paty-5,4,fg,PG_LGOP_NONE);
+      VID(bar) (VID(window_debug)(),patx+patw,paty-5,4,fg,PG_LGOP_NONE);
+      VID(bar) (VID(window_debug)(),patx,paty+patw+2,4,fg,PG_LGOP_NONE);
+      VID(bar) (VID(window_debug)(),patx+patw,paty+patw+2,4,fg,PG_LGOP_NONE);
 	 
-	 VID(blit) (vid->display,patx,paty,patw+1,patw+1,bit,0,0,PG_LGOP_NONE);
-      }
+      VID(blit) (VID(window_debug)(),patx,paty,patw+1,patw+1,bit,0,0,PG_LGOP_NONE);
+    }
 
-      VID(bitmap_free) (bit);
-   }
+    VID(bitmap_free) (bit);
+  }
 }
 
 /************ Slab test pattern */
 
 void testpat_slab(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   hwrcolor fg = VID(color_pgtohwr) (0x000000);
-   int i;
+  hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+  hwrcolor fg = VID(color_pgtohwr) (0x000000);
+  int i;
 
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
 
-   for (i=0;i<16;i++) {
-      VID(slab) (vid->display,5+i,5+(i<<1),12,fg,PG_LGOP_NONE);
-      VID(slab) (vid->display,35+i,5+(i<<1),8,fg,PG_LGOP_NONE);
-      VID(slab) (vid->display,65+i,5+(i<<1),5,fg,PG_LGOP_NONE);
+  for (i=0;i<16;i++) {
+    VID(slab) (VID(window_debug)(),5+i,5+(i<<1),12,fg,PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),35+i,5+(i<<1),8,fg,PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),65+i,5+(i<<1),5,fg,PG_LGOP_NONE);
 
-      VID(slab) (vid->display,5,45+(i<<1),i+1,fg,PG_LGOP_NONE);
-      VID(slab) (vid->display,35+i,45+(i<<1),i+1,fg,PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),5,45+(i<<1),i+1,fg,PG_LGOP_NONE);
+    VID(slab) (VID(window_debug)(),35+i,45+(i<<1),i+1,fg,PG_LGOP_NONE);
 
-      VID(bar) (vid->display,80+(i<<1),5+i,10,fg,PG_LGOP_NONE);
-   }
+    VID(bar) (VID(window_debug)(),80+(i<<1),5+i,10,fg,PG_LGOP_NONE);
+  }
 }
 
 /************ Stipple rectangle test pattern */
 
 void testpat_stipple(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   hwrcolor fg = VID(color_pgtohwr) (0x000000);
-   int i;
-   int h = vid->lyres/16;
+  hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+  hwrcolor fg = VID(color_pgtohwr) (0x000000);
+  int i;
+  int h = vid->lyres/16;
 
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres>>1,vid->lyres,bg,PG_LGOP_NONE);
-   VID(rect) (vid->display,vid->lxres>>1,0,vid->lxres>>1,vid->lyres,
-	      fg,PG_LGOP_NONE);
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres>>1,vid->lyres,bg,PG_LGOP_NONE);
+  VID(rect) (VID(window_debug)(),vid->lxres>>1,0,vid->lxres>>1,vid->lyres,
+	     fg,PG_LGOP_NONE);
 
-   for (i=0;i<16;i++) {
-      VID(rect) (vid->display,i,i*h,
-		vid->lxres-(i<<1),h,i&1 ? fg:bg,PG_LGOP_STIPPLE);
+  for (i=0;i<16;i++) {
+    VID(rect) (VID(window_debug)(),i,i*h,
+	       vid->lxres-(i<<1),h,i&1 ? fg:bg,PG_LGOP_STIPPLE);
 
-   }
+  }
 }
 
 /************ Text test pattern */
 
 void testpat_text(void) {
-   hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
-   struct font_descriptor *fd;
-   struct pair p;
-   u8 c;
-   struct font_metrics m;
-   
-   rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
-   fd->lib->getmetrics(fd,&m);
-   
-   /* Background */
-   VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+  hwrcolor bg = VID(color_pgtohwr) (0xFFFFFF);
+  struct font_descriptor *fd;
+  struct pair p;
+  u8 c;
+  struct font_metrics m;
+  struct quad clip = {0,0,vid->xres-1,vid->yres-1};   
 
-   /* Draw characters! */
-   p.x=p.y=0;
-   c=' ';
-   while (1) {
-      if (p.x + m.charcell.w > vid->xres) {
-	 p.y += m.lineheight;
-	 p.x = 0;
-      }
-      if (p.y + m.lineheight > vid->yres)
-	return;
-      if (c>'~')
-	c = ' ';
-      fd->lib->draw_char(fd,vid->display,&p,0,c++,NULL,PG_LGOP_NONE,0);
-   }
+  rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,res[PGRES_DEFAULT_FONT]);
+  fd->lib->getmetrics(fd,&m);
+   
+  /* Background */
+  VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,bg,PG_LGOP_NONE);
+
+  /* Draw characters! */
+  p.x=p.y=0;
+  c=' ';
+  while (1) {
+    if (p.x + m.charcell.w > vid->xres) {
+      p.y += m.lineheight;
+      p.x = 0;
+    }
+    if (p.y + m.lineheight > vid->yres)
+      return;
+    if (c>'~')
+      c = ' ';
+    fd->lib->draw_char(fd,VID(window_debug)(),&p,0,c++,&clip,PG_LGOP_NONE,0);
+  }
 }
 
 /************ alpha blit test pattern */
@@ -319,11 +323,11 @@ void testpat_alpha() {
     if (iserror(vid->bitmap_load(&alphatest_bitmap, alpha_png_bits, alpha_png_len))) {
       printf("Alpha channel test requires PNG loader\n");
     }
-    VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,
+    VID(rect) (VID(window_debug)(),0,0,vid->lxres,vid->lyres,
 	       VID(color_pgtohwr)(0xFFFFFF),PG_LGOP_NONE);
   }
   
-  VID(blit) (vid->display,
+  VID(blit) (VID(window_debug)(),
 	     (vid->lxres - alpha_png_width)>>1,
 	     (vid->lyres - alpha_png_height)>>1,
 	     alpha_png_width,alpha_png_height,alphatest_bitmap,
@@ -334,25 +338,25 @@ void testpat_alpha() {
 /************ blur */
 
 void testpat_blur() {
-  VID(blur) (vid->display, 0,0, vid->lxres, vid->lyres, 1);
+  VID(blur) (VID(window_debug)(), 0,0, vid->lxres, vid->lyres, 1);
 }
 
 
 /************ Front-end */
 
 void videotest_help(void) {
-   puts("\nVideo test modes:\n"
-	"\t1\tLine test pattern\n"
-   	"\t2\tColor test pattern\n"
-	"\t3\tBlit/unblit test pattern\n"
-	"\t4\tSlab alignment test pattern\n"
-	"\t5\tStippled rectangle test pattern\n"
-	"\t6\tText test pattern\n"
-	"\t7\tAlpha channel test\n"
-	"\t8\tblur test\n"
-	"\t99\tAll tests\n"
-	"\tnegative value: repeat test in a loop\n"
-	);
+  puts("\nVideo test modes:\n"
+       "\t1\tLine test pattern\n"
+       "\t2\tColor test pattern\n"
+       "\t3\tBlit/unblit test pattern\n"
+       "\t4\tSlab alignment test pattern\n"
+       "\t5\tStippled rectangle test pattern\n"
+       "\t6\tText test pattern\n"
+       "\t7\tAlpha channel test\n"
+       "\t8\tblur test\n"
+       "\t99\tAll tests\n"
+       "\tnegative value: repeat test in a loop\n"
+       );
 }
 
 
@@ -382,12 +386,12 @@ static void videotest_run_one(int number,int update) {
   case 8:
     testpat_blur();
     break;
-default:
+  default:
     printf("Unknown video test mode");
     exit(1);
   }
   if (update)
-     VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
 }
 
 
@@ -413,7 +417,7 @@ void videotest_run(s16 number) {
 
     if(loop || cycle) {
       if (sleep(delay))    /* If sleep is interrupted, exit -- micah */
-	 exit(0);
+	exit(0);
       if(cycle) {
 	if(++nr>NUM_PATTERNS) {
 	  if(!loop) break;

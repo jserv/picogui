@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.103 2002/10/22 23:08:11 micahjd Exp $
+/* $Id: video.h,v 1.104 2002/10/23 02:09:04 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -38,6 +38,7 @@ struct rect;
 struct pair;
 struct groprender;
 struct gropnode;
+struct divtree;
 
 /* Hardware-specific color value */
 typedef u32 hwrcolor;
@@ -112,7 +113,8 @@ struct bitformat {
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
   hwrbitmap *bitmap,*mask,backbuffer;
-  s16 x,y;   /* Current coordinates */
+  struct divtree *dt;  /* The divtree this sprite exists above */
+  s16 x,y;   /* Current coordinates, relative to the display */
   s16 ox,oy; /* Coordinates last time it was drawn */
   s16 w,h;   /* Dimensions of all buffers */
   s16 ow,oh; /* The blit last time, with clipping */
@@ -216,7 +218,9 @@ struct vidlib {
   s16 xres,yres,bpp;
   u32 flags;
 
-  /* Logical screen size, read-only outside of driver */
+  /* Logical screen size, read-only outside of driver.
+   * Even in a rootless driver, this should return the size of the whole screen.
+   */
   s16 lxres,lyres;
    
   /* fb_mem and fb_bpl are no longer here. Use display->bits and
@@ -237,22 +241,50 @@ struct vidlib {
 
 
   /* Optional
-   *   This is the bitmap rendered to by default. If the driver is
-   *   rootless, this will only be used for debugging purposes,
-   *   and the driver should create a debugging window at the mode
-   *   specified in setmode whenever this function is first called.
-   * 
-   * Default implementation: returns vid->display
-   */
-  hwrbitmap (*default_display)(void);  
-
-  /* Optional
-   *   In a rootless driver, create a new window and return a hwrbitmap
-   *   describing it.
+   *   Return a bitmap used for drawing debug information.
+   *   On a normal driver, this should be one full screen.
+   *   On a rootless driver, this should probably be a window created
+   *   if it does not exist, and closed when the user requests.
+   *
+   *   The returned hwrbitmap will not be deleted. It may be deleted
+   *   by the driver when the user requests so, as long as it is recreated
+   *   the next time this function is called.
    *
    * Default implementation: returns vid->display
    */
-  hwrbitmap (*window_new)(void);
+  hwrbitmap (*window_debug)(void);  
+
+  /* Optional
+   *   Return a bitmap used for drawing to the whole screen.
+   *   On a multi-display system, the display to use is at the
+   *   discretion of the driver. (Probably the display with the highest
+   *   resolution and color depth) On a rootless system this should be
+   *   a new window created to cover all others, or possibly a full
+   *   screen mode in the host system.
+   *
+   *   NOTE: This function is very likely to change when pgserver
+   *         needs to get real multiple display support!
+   *         This is also not really useful for fullscreen in rootless
+   *         drivers yet, as there would need to be a way for the
+   *         driver to know when to go in and out of fullscreen mode.
+   *
+   *   The returned hwrbitmap will not be deleted. It is expected
+   *   to be a persistent resource.
+   *
+   * Default implementation: returns vid->display
+   */
+  hwrbitmap (*window_fullscreen)(void);  
+
+  /* Optional
+   *   In a rootless driver, create a new window and return a hwrbitmap
+   *   describing it. The divtree this window is housing is specified,
+   *   as it should be resized when the window is.
+   *
+   *   The returned hwrbitmap will be freed with window_free
+   *
+   * Default implementation: returns vid->display
+   */
+  hwrbitmap (*window_new)(struct divtree *dt);
 
   /* Optional
    *   In a rootless driver, create a new window and return a hwrbitmap
@@ -278,6 +310,14 @@ struct vidlib {
   void (*window_set_size)(hwrbitmap window, s16 w, s16 h);
   void (*window_get_position)(hwrbitmap window, s16 *x, s16 *y);
   void (*window_get_size)(hwrbitmap window, s16 *w, s16 *h);
+
+  /* Optional
+   *   Return nonzero if the driver is rootless. This indicates to the
+   *   rendering engine that it needs to update all divtrees, not just the topmost one.
+   *
+   * Default implementation: return 0
+   */
+  int (*is_rootless)(void);
 
 
   /******************************************** Hooks */
@@ -670,20 +710,15 @@ g_error (*find_videodriver(const u8 *name))(struct vidlib *v);
 g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags);
 
 /* Sprite helper functions */
-g_error new_sprite(struct sprite **ps,s16 w,s16 h);
+g_error new_sprite(struct sprite **ps,struct divtree *dt,s16 w,s16 h);
 void free_sprite(struct sprite *s);
 
 /* All sprites onscreen, sorted from back to front. */
 extern struct sprite *spritelist;
 
-/* Helper functions for keeping an update region, used
-   for double-buffering by the video drivers */
-extern s16 upd_x;
-extern s16 upd_y;
-extern s16 upd_w;
-extern s16 upd_h;
-void add_updarea(s16 x,s16 y,s16 w,s16 h);
-void realize_updareas(void);
+/* Update region union/realize for a divtree */
+void add_updarea(struct divtree *dt, s16 x,s16 y,s16 w,s16 h);
+void realize_updareas(struct divtree *dt);
 
 /* Iterator functions to convert between pgcolor arrays and hwrcolor arrays */
 g_error array_pgtohwr(u32 **array);

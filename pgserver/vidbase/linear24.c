@@ -1,4 +1,4 @@
-/* $Id: linear24.c,v 1.4 2002/06/18 19:20:49 micahjd Exp $
+/* $Id: linear24.c,v 1.5 2002/10/23 02:09:07 micahjd Exp $
  *
  * Video Base Library:
  * linear24.c - For 24bpp linear framebuffers
@@ -35,7 +35,7 @@
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>
 
-/* Macros to easily access the members of vid->display */
+/* Macros to easily access the destination bitmap */
 #define FB_MEM     (((struct stdbitmap*)dest)->bits)
 #define FB_BPL     (((struct stdbitmap*)dest)->pitch)
 #define FB_ISNORMAL(bmp,lgop) (lgop == PG_LGOP_NONE && ((struct stdbitmap*)bmp)->bpp == vid->bpp)

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.90 2002/10/11 11:58:43 micahjd Exp $
+/* $Id: div.c,v 1.91 2002/10/23 02:09:03 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -481,6 +481,12 @@ g_error divtree_new(struct divtree **dt) {
   errorcheck;
   e = newdiv(&(*dt)->head,NULL);
   errorcheck;
+  (*dt)->display = VID(window_new)(*dt);
+
+  /* Default to lxres,lyres for this divtree's size.
+   * In a rootless driver, this should be set by the driver when
+   * the window is resized.
+   */
   (*dt)->head->calc.w = vid->lxres;
   (*dt)->head->calc.h = vid->lyres;
   (*dt)->head->r.w = vid->lxres;
@@ -495,6 +501,7 @@ void divtree_free(struct divtree *dt) {
   r_divnode_free(dt->head);               /* Delete the tree of divnodes */
   if (dt->hotspot_cursor)
     pointer_free(-1,dt->hotspot_cursor);  /* Delete the hotspot cursor   */
+  VID(window_free)(dt->display);
   g_free(dt);                             /* Delete the divtree */
 }
 
@@ -511,39 +518,60 @@ void r_divnode_free(struct divnode *n) {
 }
 
 void update(struct divnode *subtree,int show) {
+  struct divtree *dt;
+
   if (VID(update_hook)())
     return;
 
-  if (subtree) {
-    /* Subtree update */
-    
-    if (subtree->owner->dt != dts->top) {
-      /* Well, it's not from around here. Only allow it if the popups
-       * are in the nontoolbar area and the update is in a toolbar */
+  if (VID(is_rootless)()) {
+    /* Rootless mode, disregard whether a divtree is topmost or not */
 
-      if (!popup_toolbar_passthrough())
-	return;
-      if (!divnode_in_toolbar(subtree))
-	return;
+    if (subtree) {
+      /* Rootless subtree update */
+      divnode_recalc(&subtree,NULL);
+      divnode_redraw(subtree,0);
+    }
+    else {
+      /* Full update, all divtrees */
+      for (dt=dts->top;dt;dt=dt->next)
+	r_dtupdate(dt);
     }
 
-    divnode_recalc(&subtree,NULL);
-    divnode_redraw(subtree,0);
-  }
-  else 
-    /* Full update */
-    r_dtupdate(dts->top);
-  
-  if (show) {
-    VID(sprite_showall) ();
-    
-    /* NOW we update the hardware */
-    realize_updareas();
+    if (show) {
+      VID(sprite_showall) ();
+      for (dt=dts->top;dt;dt=dt->next)
+	realize_updareas(dt);
+    }	
   }
 
-#ifdef DEBUG_VIDEO
-  printf("****************** Update (sub: %p)\n",subtree);
-#endif
+  else {
+    /* Normal mode, only render the topmost divtree */
+
+    if (subtree) {
+      /* Subtree update */
+      
+      if (subtree->owner->dt != dts->top) {
+	/* Well, it's not from around here. Only allow it if the popups
+	 * are in the nontoolbar area and the update is in a toolbar */
+	
+	if (!popup_toolbar_passthrough())
+	  return;
+	if (!divnode_in_toolbar(subtree))
+	  return;
+      }
+      
+      divnode_recalc(&subtree,NULL);
+      divnode_redraw(subtree,0);
+    }
+    else 
+      /* Full update */
+      r_dtupdate(dts->top);
+    
+    if (show) {
+      VID(sprite_showall) ();
+      realize_updareas(dts->top);
+    }
+  }
 }
 
 void divtree_size_and_calc(struct divtree *dt) {
@@ -1018,6 +1046,61 @@ void r_div_unscroll(struct divnode *div) {
   }
   r_div_unscroll(div->div);
   r_div_unscroll(div->next);
+}
+
+/* Add an area to the update rectangle for this divtree */
+void add_updarea(struct divtree *dt, s16 x,s16 y,s16 w,s16 h) {
+
+  /* Clip to logical display */
+  if (x<0) {
+    w -= x;
+    x = 0;
+  }
+  if (y<0) {
+    h -= y;
+    y = 0;
+  }
+  if ((x+w) > dt->head->r.w)
+    w = dt->head->r.w - x;
+  if ((y+h) > dt->head->r.h)
+    h = dt->head->r.h - y;
+
+  /* Is this a bogus update rectangle? */
+  if (w<=0 || h<=0)
+    return;
+
+  if (dt->update_rect.w) {
+    if (x < dt->update_rect.x) {
+      dt->update_rect.w += dt->update_rect.x - x;
+      dt->update_rect.x = x;
+    }
+    if (y < dt->update_rect.y) {
+      dt->update_rect.h += dt->update_rect.y - y;
+      dt->update_rect.y = y;
+    }
+    if ((w+x) > (dt->update_rect.x+dt->update_rect.w))
+      dt->update_rect.w = w+x-dt->update_rect.x;
+    if ((h+y) > (dt->update_rect.y+dt->update_rect.h))
+      dt->update_rect.h = h+y-dt->update_rect.y;
+  }
+  else {
+    dt->update_rect.x = x;
+    dt->update_rect.y = y;
+    dt->update_rect.w = w;
+    dt->update_rect.h = h;
+  }
+}
+
+/* Realize the update rectangle for this divtree */
+void realize_updareas(struct divtree *dt) {
+  if (dt->update_rect.w) {
+    VID(update) (dt->display, 
+		 dt->update_rect.x,
+		 dt->update_rect.y,
+		 dt->update_rect.w,
+		 dt->update_rect.h);
+    memset(&dt->update_rect,0,sizeof(dt->update_rect));
+  } 
 }
 
 /* The End */

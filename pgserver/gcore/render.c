@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.45 2002/10/22 23:08:10 micahjd Exp $
+/* $Id: render.c,v 1.46 2002/10/23 02:09:03 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -37,6 +37,7 @@
 #include <pgserver/appmgr.h>    /* for res[PGRES_DEFAULT_FONT] */
 #include <pgserver/pgstring.h>
 #include <pgserver/paragraph.h>
+#include <pgserver/widget.h>
 
 int display_owner;
 int disable_output;   /* can be used by the video driver to disable rendering,
@@ -62,14 +63,16 @@ void grop_render(struct divnode *div, struct quad *clip) {
   struct groprender rend;
   s16 dtx,dty;
 
-  /* Don't render if an app has exclusive display access */
-  if (display_owner || disable_output)
+  /* Don't render if an app has exclusive display 
+   * access, or we have nothing to render 
+   */
+  if (display_owner || disable_output || !div->grop)
     return;
 
   /* default render values */
   memset(&rend,0,sizeof(rend));
   rend.lgop = PG_LGOP_NONE;
-  rend.output = vid->display;
+  rend.output = div->owner->dt->display;
   rend.hfont = res[PGRES_DEFAULT_FONT];
    
   /* Allow the video driver to override */
@@ -124,7 +127,8 @@ void grop_render(struct divnode *div, struct quad *clip) {
     VID(sprite_protectarea) (&rend.clip,spritelist);
      
     /* "dirty" this region of the screen so the blits notice it */
-    add_updarea(rend.clip.x1,rend.clip.y1,rend.clip.x2-
+    add_updarea(div->owner->dt,
+		rend.clip.x1,rend.clip.y1,rend.clip.x2-
 		rend.clip.x1+1,rend.clip.y2-rend.clip.y1+1);
   }
 
@@ -212,7 +216,7 @@ void grop_render(struct divnode *div, struct quad *clip) {
 	lcr.y2 = yy2;
 	 
 	/* "dirty" this region of the screen so the blits notice it */
-	add_updarea(xx,yy,xx2-xx+1,yy2-yy+1);
+	add_updarea(div->owner->dt,xx,yy,xx2-xx+1,yy2-yy+1);
       }
       else {
 	lcr.x1 = node.r.x;
@@ -221,7 +225,7 @@ void grop_render(struct divnode *div, struct quad *clip) {
 	lcr.y2 = node.r.y+node.r.h-1;
 	 
 	/* "dirty" this region of the screen so the blits notice it */
-	add_updarea(node.r.x,node.r.y,node.r.w,node.r.h);
+	add_updarea(div->owner->dt,node.r.x,node.r.y,node.r.w,node.r.h);
       }
        
       VID(sprite_protectarea) (&lcr,spritelist);	  
@@ -323,7 +327,8 @@ void groplist_scroll(struct groprender *r, struct divnode *div) {
   
   /* Prepare the whole area for drawing */
   VID(sprite_protectarea) (&r->clip,spritelist);
-  add_updarea(r->clip.x1,r->clip.y1,r->clip.x2-
+  add_updarea(div->owner->dt,
+	      r->clip.x1,r->clip.y1,r->clip.x2-
 	      r->clip.x1+1,r->clip.y2-r->clip.y1+1);
 
   /* Now shift the existing pixels to where they need to be.
@@ -948,8 +953,7 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
     break; 
 
   case PG_GROP_VIDUPDATE:
-    if (r->output == vid->display)
-      VID(update)(vid->display,n->r.x,n->r.y,n->r.w,n->r.h);
+    VID(update)(r->output,n->r.x,n->r.y,n->r.w,n->r.h);
     break;
 	
   case PG_GROP_FPOLYGON:
