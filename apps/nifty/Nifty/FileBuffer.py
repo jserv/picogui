@@ -5,10 +5,10 @@ class FileBuffer(Buffer):
     "Represents a file"
 
     def __init__(self, path=''):
-        self.path = path
+        self.path = os.path.expanduser(os.path.expandvars(path))
         self.changed = False
-        if os.path.exists(path):
-            f = file(path, 'r')
+        if os.path.exists(self.path):
+            f = file(self.path, 'r')
             text=f.read()
             f.close()
         else:
