@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.13 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: sdlfb.c,v 1.14 2001/04/29 18:17:20 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -176,6 +176,18 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 #ifdef CONFIG_VBL_LINEAR16
    case 16:
      setvbl_linear16(vid);
+     break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR24
+   case 24:
+     setvbl_linear24(vid);
+     break;
+#endif
+
+#ifdef CONFIG_VBL_LINEAR32
+   case 32:
+     setvbl_linear32(vid);
      break;
 #endif
 

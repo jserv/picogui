@@ -44,6 +44,8 @@ add_if_true linear2.c  $CONFIG_VBL_LINEAR2
 add_if_true linear4.c  $CONFIG_VBL_LINEAR4
 add_if_true linear8.c  $CONFIG_VBL_LINEAR8
 add_if_true linear16.c $CONFIG_VBL_LINEAR16
+add_if_true linear24.c $CONFIG_VBL_LINEAR24
+add_if_true linear32.c $CONFIG_VBL_LINEAR32
 
 close_section
 

@@ -11,7 +11,9 @@ EXTRA_libvidbase_a_SOURCES = \
 	linear2.c	\
 	linear4.c	\
 	linear8.c	\
-	linear16.c
+	linear16.c      \
+	linear24.c      \
+	linear32.c
 
 libvidbase_a_LIBADD       = $(VIDBASE:%.c=%.o)
 libvidbase_a_DEPENDENCIES = $(VIDBASE:%.c=%.o)
