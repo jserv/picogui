@@ -113,14 +113,7 @@ class DomFactory(BaseFactory):
       if node is None: return l
   #
   def axisfun_attribute(self,node,nodetest=None):
-    # HACK- the 'attributes' attribute doesn't work as we'd
-    #       expect in our SCons XML node, because SCons defines
-    #       its own 'attributes' attribute. Thus we have to explicitly
-    #       get the one for DOM, not for SCons.
-    if hasattr(node, 'dom'):
-      attrs= node.dom.attributes
-    else:
-      attrs= node.attributes
+    attrs= node.attributes
 
     l= []
     if attrs is None: return l

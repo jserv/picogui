@@ -46,13 +46,13 @@ The extra rules imposed on the XML:
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.Node.XML
+import PGBuild.XMLUtil
 import PGBuild.Errors
 import re
 
 def getElementSig(x):
     """Return a string signature that can be used to compare two elements"""
-    return repr([x.nodeName, x.parentNode, x.getAttrDict()])
+    return repr([x.nodeName, x.parentNode, PGBuild.XMLUtil.getAttrDict(x)])
 
 def mergeElements(root):
     """Merge all identical elements under the given one,
@@ -63,19 +63,18 @@ def mergeElements(root):
     d = {}
     for child in root.childNodes:
         sig = getElementSig(child)
+        print sig
         if d.has_key(sig):
             # This is a duplicate! Prepend all the children from
             # the first one, and delete it.
             old = d[sig]
-            while old.dom.childNodes:
-                last = old.dom.lastChild
-                if child.dom.childNodes:
-                    child.dom.insertBefore(last, child.dom.childNodes[0])
+            while old.childNodes:
+                last = old.lastChild
+                if child.childNodes:
+                    child.insertBefore(last, child.childNodes[0])
                 else:
-                    child.dom.appendChild(last)
-            print "Before: %s" % default.xpath("/pgbuild/packages")
-            old.dom.parentNode.removeChild(old.dom)
-            print " After: %s" % default.xpath("/pgbuild/packages")
+                    child.appendChild(last)
+            #old.parentNode.removeChild(old)
         d[sig] = child
     del d
 
@@ -87,30 +86,19 @@ def stripElements(root):
     """Recursively trim whitespace from text elements"""
     for child in root.childNodes:
         if child.nodeType == child.TEXT_NODE:
-            child.dom.data = child.data.strip()
+            child.data = child.data.strip()
         else:
             stripElements(child)
 
-class DefaultDocument:
-    """Default contents of the config tree, passable to
-       PGBuild.Node.XML.Document()
-       """
-    def get_contents(self):
-        # The title of this <pgbuild> node is probably only important
-        # if we call toxml() on the tree itself.
-        return """<?xml version="1.0" ?>
-        <pgbuild title="Merged configuration tree"/>
-        """
-
-class MountedDocument:
+class MountInfo(PGBuild.XMLUtil.Document):
     """Object defining the file and mode of a mounted
        document, attached to each node in the tree.
        """
-    def __init__(self, file, mode):
+    def __init__(self, file, mode, attributes, dom):
         self.file = file
         self.mode = mode
-        self.attributes = None
-        self.dom = None
+        self.attributes = attributes
+        self.dom = dom
 
     def __str__(self):
         # This makes deciphering the mounts array of the Tree much easier
@@ -127,13 +115,16 @@ class MountedDocument:
     def __repr__(self):
         return self.__str__()
 
-class Tree(PGBuild.Node.XML.Document):
+class Tree(PGBuild.XMLUtil.Document):
     """Configuration tree- an XML document with a <pgbuild> root
        that supports merging in other documents with a <pgbuild>
        root, then saving changes back to those documents.
        """
     def __init__(self):
-        PGBuild.Node.XML.Document.__init__(self, DefaultDocument())
+        PGBuild.XMLUtil.Document.__init__(self,
+                                          """<?xml version="1.0" ?>
+                                          <pgbuild title="Merged configuration tree"/>
+                                          """)
         self.mounts = []
 
     def mount(self, file, mode="r"):
@@ -142,8 +133,7 @@ class Tree(PGBuild.Node.XML.Document):
            The default mode of "r" prevents writing changes back,
            a mode of "w" allows writing back changes.
            """
-        mdoc = MountedDocument(file, mode)
-        dom = PGBuild.Node.XML.Document(file)
+        dom = PGBuild.XMLUtil.Document(file)
         stripElements(dom)
         dom.normalize()
 
@@ -157,13 +147,12 @@ class Tree(PGBuild.Node.XML.Document):
                 "Trying to mount a config file without a <pgbuild> root")
 
         # Save the document's attributes and it's original DOM in the
-        # MountedDocument for later access via mounts[]
-        mdoc.attributes = domPgb.dom.attributes
-        mdoc.dom = dom
+        # MountInfo for later access via mounts[]
+        mdoc = MountInfo(file, mode, domPgb.attributes, dom)
         self.mounts.append(mdoc)
 
         # Recursively tag all objects in the
-        # new DOM with their MountedDocument
+        # new DOM with their MountInfo
         def rTag(element, mdoc):
             element.mdoc = mdoc
             for child in element.childNodes:
@@ -181,24 +170,24 @@ class Tree(PGBuild.Node.XML.Document):
                 # Delete any existing instruction with the same name
                 for oldNode in self.childNodes:
                     if oldNode.nodeType == newNode.nodeType and oldNode.nodeName == newNode.nodeName:
-                        self.dom.removeChild(oldNode.dom)
+                        self.removeChild(oldNode)
                 # The reason for messing with parentNode is explained below
                 # in the main appending code.
                 newNode.parentNode = None
-                self.dom.insertBefore(newNode.dom, selfPgb.dom)
+                self.insertBefore(newNode, selfPgb)
 
         # This implements the semantics described in sources.xml for the
         # /pgbuild/@root attribute. If it's not present, the document
         # is mounted at the pgbuild element. Otherwise it's an XPath
         # relative to the pgbuild element.
         try:
-            mountPath = domPgb.dom.attributes['root'].value
+            mountPath = domPgb.attributes['root'].value
         except KeyError:
             mountPath = '.'
 
         # Now we need to resolve the mount path to exactly one element.
         while 1:
-            matches = selfPgb.xpath(mountPath)
+            matches = self.xpath(mountPath, selfPgb)
 
             # Only one match? We're done
             if len(matches) == 1:
@@ -209,7 +198,7 @@ class Tree(PGBuild.Node.XML.Document):
             if len(matches) > 1:
                 mergeElements(self)
                 # Still multiple matches? We can't continue
-                if len(selfPgb.xpath(mountPath)) > 1:
+                if len(self.xpath(mountPath, selfPgb)) > 1:
                     raise PGBuild.Errors.UserError("Ambiguous mount point")
 
             # No match? Create elements as needed to match the path.
@@ -234,7 +223,7 @@ class Tree(PGBuild.Node.XML.Document):
                         newN = self.createElement(tag)
                         n.appendChild(newN)
                         n = newN
-                if len(selfPgb.xpath(mountPath)) == 0:
+                if len(self.xpath(mountPath, selfPgb)) == 0:
                     raise PGBuild.Errors.InternalError("Automatic mount point creation failed")
 
         # Now that we have the source and destination resolved, we can
