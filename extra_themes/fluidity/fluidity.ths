@@ -494,7 +494,8 @@ object menuitem {
 
 object menuitem.hilight {
   parent = PGTH_O_BASE_DISPLAY;
-  align = PG_A_LEFT;
+  align = PG_A_LEFT;	
+  bitmap1 = LoadBitmap("data/gold_square.png");	
 }
 
 /********************************** Label */
