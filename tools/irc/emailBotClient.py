@@ -43,7 +43,12 @@ badChannels = ("#!~!raisin!!",
                "test12",
                "[alpha]",
                "\247\246\247\246\247",
-               "\247\247\247")
+               "\247\247\247",
+
+               # Commits is in here, since the bot is in it by
+               # default and shouldn't be able to leave
+               "commits",
+               )
 
 def incrementProjectCommits(project):
     if project.find(os.sep) >= 0:
