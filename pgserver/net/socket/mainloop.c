@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.10 2000/06/04 08:53:14 micahjd Exp $
+/* $Id: mainloop.c,v 1.11 2000/06/07 06:15:47 micahjd Exp $
  *
  * mainloop.c - initializes and shuts down everything, main loop
  *
@@ -28,7 +28,7 @@
 #include <video.h>
 #include <divtree.h>
 #include <handle.h>
-#include <request.h>
+#include <pgnet.h>
 #include <g_error.h>
 #include <appmgr.h>
 #include <input.h>

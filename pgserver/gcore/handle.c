@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.5 2000/04/24 02:38:36 micahjd Exp $
+/* $Id: handle.c,v 1.6 2000/06/07 06:15:47 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -36,17 +36,6 @@ struct handlenode sentinel = {0,0,0,NIL,NIL,0};
 
 struct handlenode *htree = NIL;
 
-#ifdef DEBUG
-void treedump(struct handlenode *n,char *s,int d) {
-  char c = 'B';
-  if (!n || n==NIL) return;
-  if (n->type & HFLAG_RED) c = 'R';
-  treedump(n->left,s,d+1);
-  printf("#tree(%s)# id = 0x%04X, [%c] depth = %*d\n",s,n->id,c,d+1,d+1);
-  treedump(n->right,s,d+1);
-}
-#endif
-
 /************ Internal functions */
 
 /* Standard red-black tree implementation for the handle tree   :-O  */
@@ -72,10 +61,6 @@ void htree_rotleft(struct handlenode *x) {
   /* link x and y */
   y->left = x;
   if (x != NIL) x->parent = y;
-
-#ifdef DEBUG
-  treedump(htree,"rotleft",0);
-#endif
 }
 
 void htree_rotright(struct handlenode *x) {
@@ -99,10 +84,6 @@ void htree_rotright(struct handlenode *x) {
   /* link x and y */
   y->right = x;
   if (x != NIL) x->parent = y;
-
-#ifdef DEBUG
-  treedump(htree,"rotright",0);
-#endif
 }
 
 void htree_insertfix(struct handlenode *x) {
@@ -159,10 +140,6 @@ void htree_insertfix(struct handlenode *x) {
     }
   }
   htree->type &= ~HFLAG_RED;
-
-#ifdef DEBUG
-  treedump(htree,"insertfix",0);
-#endif
 }
 
 void htree_insert(struct handlenode *x) {
@@ -191,11 +168,6 @@ void htree_insert(struct handlenode *x) {
   } else {
     htree = x;
   }
-
-#ifdef DEBUG
-  treedump(htree,"insert",0);
-#endif
-  
 
   htree_insertfix(x);
 }
@@ -261,10 +233,6 @@ void htree_deletefix(struct handlenode *x) {
     }
   }
   x->type &= ~HFLAG_RED;
-
-#ifdef DEBUG
-  treedump(htree,"deletefix",0);
-#endif
 }
 
 void htree_delete(struct handlenode *z) {
@@ -304,14 +272,7 @@ void htree_delete(struct handlenode *z) {
     z->obj = y->obj;
     z->type &= HFLAG_RED | HFLAG_NFREE;
     z->type |= y->type & ~(HFLAG_RED|HFLAG_NFREE);
-#ifdef DEBUG
-    printf("-- htree_delete : y != z\n");
-#endif
   }  
-
-#ifdef DEBUG
-  treedump(htree,"delete",0);
-#endif
 
   if ((!(y->type & HFLAG_RED)) && x!=NIL)
     htree_deletefix(x);

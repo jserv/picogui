@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2000/06/04 08:53:14 micahjd Exp $
+# $Id: Makefile,v 1.15 2000/06/07 06:15:47 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -108,9 +108,15 @@ CFLAGS := $(CFLAGS) \
 
 # Set any necessary flags peculiar to a hardware library
 ifeq ($(strip $(VIDLIB)),sdl)
+	# Which sdl-config?
+	SDLCONFIG := sdl-config
+	ifeq ($(strip $(PLATFORM)),windows)
+		SDLCONFIG := i386-mingw32-sdl-config
+	endif
+
 	# Libraries and includes for SDL
-	CFLAGS := $(CFLAGS) $(shell sdl-config --cflags)
-	LDFLAGS := $(LDFLAGS) $(shell sdl-config --libs)
+	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags)
+	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
 endif
 ifeq ($(strip $(VIDLIB)),svgalib)
 	# SVGAlib and vgagl
@@ -123,9 +129,10 @@ CFLAGS := $(CFLAGS) -Ivideo/$(VIDLIB)/$(VIDMODE)
 HDR := $(HDR) video/$(VIDLIB)/$(VIDMODE)/mode.h
 
 # Network-specific source files
-SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c net/$(NET)/eventq.c
+SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c \
+       net/$(NET)/eventq.c net/$(NET)/dispatch.c
 CFLAGS := $(CFLAGS) -Inet/$(NET)
-HDR := $(HDR) net/$(NET)/request.h
+HDR := $(HDR) net/$(NET)/pgnet.h
 
 # Input-specific source files
 SRC := $(SRC) input/$(INPUT)/input.c

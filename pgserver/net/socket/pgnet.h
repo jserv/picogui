@@ -1,7 +1,6 @@
-/* $Id: request.h,v 1.12 2000/06/02 07:41:32 micahjd Exp $
+/* $Id: pgnet.h,v 1.1 2000/06/07 06:15:47 micahjd Exp $
  *
- * request.h - this connection is for sending requests to the server
- *             and passing return values back to the client
+ * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -26,11 +25,18 @@
  * 
  */
 
-#ifndef _H_REQUEST
-#define _H_REQUEST
+#ifndef _H_PGNET
+#define _H_PGNET
 
 #include <g_error.h>
 #include <divtree.h>
+#include <video.h>
+#include <g_malloc.h>
+#include <handle.h>
+#include <widget.h>
+#include <appmgr.h>
+#include <widget.h>
+#include <theme.h>
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
@@ -46,8 +52,10 @@
 #include <dirent.h>
 #include <signal.h>
 #include <unistd.h>
+#include <errno.h>
 #endif
 
+/* Which clients are waiting for events */
 extern fd_set evtwait;
 
 #define REQUEST_PORT    30450
@@ -61,6 +69,7 @@ struct uipkt_request {
   unsigned short id;  /* Just to make sure requests match up with responses */
   unsigned long size; /* The request is followed by size bytes of data */
 };  
+#define MAX_RESPONSE_SZ 12  /* in bytes */
 #define RESPONSE_ERR 1
 struct response_err {
   unsigned short type;    /* RESPONSE_ERR - error code */
@@ -90,28 +99,72 @@ struct uipkt_hello {
   char title[50];
 };
 
-/* 'public' functions */
+/********* Functions provided by dispatch.c */
+
+int dispatch_packet(int from,struct uipkt_request *req,void *data);
+
+/********* Functions provided by request.c */
+
 g_error req_init(void);
 void req_free(void);
 int reqproc(void);
 void post_event(int event,struct widget *from,long param);
+int send_response(int to,const void *data,size_t len);
 
-/* These are definitions for the event queue's ring buffer */
+/********* Buffers needed by each connection (packet and event) */
 
-#define EVENTQ_LEN 10   /* The size of each app's buffer */
+#define EVENTQ_LEN 10   /* Number of events that can be backlogged */
+#define PKTBUF_LEN 64   /* Should be large enough for a typical packet */
+
 /* One event */
 struct event {
   int event;
   handle from;
   long param;
 };
-/* An event queue */
-struct eventq {
+
+/* A connection buffer node */
+struct conbuf {
   int owner;
+  
+  /* Event ring buffer */
   struct event q[EVENTQ_LEN];
   struct event *in,*out;
-  struct eventq *next;
+
+  /* Request header */
+  struct uipkt_request req;
+
+  /* If non-null, the packet was larger than PKTBUF_LEN and this is a
+     dynamically allocated data buffer
+  */
+  unsigned char *data_dyn;
+
+  /* Static data buffer */
+  unsigned char data_stat[PKTBUF_LEN];
+
+  /* The amount of data received.  When this equals req.size, the packet
+     is ready for dispatching
+  */
+  unsigned long data_size; 
+
+  /* Amount of the header received.  When this equals sizeof(req), data
+     can be received */
+  unsigned int header_size;
+
+  /* If the prep work for receiving data is done, this is either
+     equal to data_stat or data_dyn.  NULL if the prep hasn't been done yet
+  */
+  unsigned char *data;
+
+  struct conbuf *next;
 };
+
+/* Linked list of connection buffers */
+extern struct conbuf *conbufs;
+
+/* Retrieves the buffers associated with a connection */
+struct conbuf *find_conbuf(int fd);
+
 /* Gets the next pending event for 'owner' and if 'remove' is nonzero
    takes it out of the queue
 */
@@ -235,7 +288,7 @@ struct rqhd_mkpopup {
   unsigned short h;
 };
 
-#endif /* __H_REQUEST */
+#endif /* __H_PGNET */
 /* The End */
 
 

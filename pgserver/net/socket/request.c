@@ -1,7 +1,9 @@
-/* $Id: request.c,v 1.14 2000/06/03 00:03:38 micahjd Exp $
+/* $Id: request.c,v 1.15 2000/06/07 06:15:47 micahjd Exp $
  *
- * request.c - this connection is for sending requests to the server
- *             and passing return values back to the client
+ * request.c - Sends and receives request packets. dispatch.c actually
+ *             processes packets once they are received.
+ *             Welcome to the UNIXy side of PicoGUI...
+ *             strace is your friend!
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -26,69 +28,7 @@
  * 
  */
 
-#include <request.h>
-#include <video.h>
-#include <g_malloc.h>
-#include <handle.h>
-#include <widget.h>
-#include <appmgr.h>
-#include <widget.h>
-#include <theme.h>
-
-/* This is the size of the statically-allocated request buffer.
-   It should be big enough to hold your average request, but anything
-   too big for this buffer will be dynamically allocated.
-*/
-#define STATICBUF_SIZE 64
-unsigned char staticbuf[STATICBUF_SIZE];
-
-/*#define NONBLOCKING*/
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <ctype.h>
-
-/* Table of request handlers */
-DEF_REQHANDLER(ping)
-DEF_REQHANDLER(update)
-DEF_REQHANDLER(mkwidget)
-DEF_REQHANDLER(mkbitmap)
-DEF_REQHANDLER(mkfont)
-DEF_REQHANDLER(mkstring)
-DEF_REQHANDLER(free)
-DEF_REQHANDLER(set)
-DEF_REQHANDLER(get)
-DEF_REQHANDLER(setbg)
-DEF_REQHANDLER(in_key)
-DEF_REQHANDLER(in_point)
-DEF_REQHANDLER(in_direct)
-DEF_REQHANDLER(wait)
-DEF_REQHANDLER(themeset)
-DEF_REQHANDLER(register)
-DEF_REQHANDLER(mkpopup)
-DEF_REQHANDLER(undef)
-g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
-  TAB_REQHANDLER(ping)
-  TAB_REQHANDLER(update)
-  TAB_REQHANDLER(mkwidget)
-  TAB_REQHANDLER(mkbitmap)
-  TAB_REQHANDLER(mkfont)
-  TAB_REQHANDLER(mkstring)
-  TAB_REQHANDLER(free)
-  TAB_REQHANDLER(set)
-  TAB_REQHANDLER(get)
-  TAB_REQHANDLER(setbg)
-  TAB_REQHANDLER(in_key)
-  TAB_REQHANDLER(in_point)
-  TAB_REQHANDLER(in_direct)
-  TAB_REQHANDLER(wait)
-  TAB_REQHANDLER(themeset)
-  TAB_REQHANDLER(register)
-  TAB_REQHANDLER(mkpopup)
-  TAB_REQHANDLER(undef)
-};
+#include <pgnet.h>
 
 /* Socket */
 int s = 0;
@@ -100,7 +40,16 @@ int    con_n;
 /* The connections waiting for an event */
 fd_set evtwait;
 
+/* Linked list of connection buffers */
+struct conbuf *conbufs = NULL;
+
+/************* Functions used only in this file **/
+/* Stuff that actually does the work, and gets called by the select loop */
+
+/* Close a connection and clean up */
 void closefd(int fd) {
+  struct conbuf *p,*condemn=NULL;
+
 #ifdef DEBUG 
   printf("Close. fd = %d\n",fd);
 #endif
@@ -108,6 +57,183 @@ void closefd(int fd) {
   close(fd);
   FD_CLR(fd,&con);
   update();
+
+  /* Free the connection buffers */
+  if (conbufs->owner==fd) {
+    condemn = conbufs;
+    conbufs = conbufs->next;
+  }
+  else {
+    p = conbufs;
+    while (p->next) {
+      if (p->next->owner==fd) {
+	condemn = p->next;
+	p->next = p->next->next;
+	break;
+      }
+      else
+	p = p->next;
+    }
+  }
+  if (condemn) {
+    if (condemn->data_dyn)
+      g_free(condemn->data_dyn);
+    g_free(condemn);
+  }
+}
+
+void newfd(int fd) {
+  struct uipkt_hello hi;
+  struct conbuf *mybuf;
+  memset(&hi,0,sizeof(hi));
+
+  /* Allocate connection buffers */
+  if (prerror(g_malloc((void **)&mybuf,sizeof(struct conbuf)))
+      .type != ERRT_NONE) {
+    closefd(fd);
+    return;
+  }
+  memset(mybuf,0,sizeof(struct conbuf));
+  mybuf->owner = fd;
+  mybuf->in = mybuf->out = mybuf->q;
+  mybuf->next = conbufs;
+  conbufs = mybuf;
+
+  /* Say Hi!  Send a structure with information about the server */
+  hi.magic = htonl(REQUEST_MAGIC);
+  hi.protover = htons(PROTOCOL_VER);
+  hi.width = htons(HWR_WIDTH);
+  hi.height = htons(HWR_HEIGHT);
+  hi.bpp = htons(HWR_BPP);
+  strcpy(hi.title,HWR);
+  if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
+}
+
+void readfd(int from) {
+  struct conbuf *buf = find_conbuf(from);
+  int r;
+  
+  /* Do we have a header yet? */
+  if (buf->header_size < sizeof(buf->req)) {
+    errno = 0;
+    r = recv(from,((unsigned char*)(&buf->req))+buf->header_size,
+	     sizeof(buf->req)-buf->header_size,0);
+#ifdef DEBUG
+    printf("recv header = %d (have %d out of %d)\n",r,buf->header_size,
+	   sizeof(buf->req));
+#endif
+    if (r<=0) {
+      if (errno!=EAGAIN)
+	/* Something bad happened, (the client probably disconnected)
+	   close it down */
+	closefd(from);
+      return;
+    }
+    else {
+      buf->header_size += r;
+    }
+  }
+  
+  /* Yep, get data */
+  if (buf->header_size >= sizeof(buf->req)) {
+    /* need prep to receive data? */
+    if (!buf->data) {
+      /* Reorder the bytes in the header */
+      buf->req.type = ntohs(buf->req.type);
+      buf->req.id = ntohs(buf->req.id);
+      buf->req.size = ntohl(buf->req.size);
+
+#ifdef DEBUG
+      printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
+	     buf->req.id,buf->req.size);
+#endif
+      /* Will the data fit in the static buffer? */
+      if (buf->req.size < PKTBUF_LEN) {
+	buf->data = buf->data_stat;
+      }
+      else {
+	/* Allocate and use a dynamic buffer */
+	if (prerror(g_malloc((void**)&buf->data_dyn,buf->req.size+1))
+	    .type!=ERRT_NONE) {
+	  /* Oops, the client asked for too much memory!
+	     Bad client!
+	     Make them disappear.
+	  */
+	  closefd(from);
+	  return;
+	}
+#ifdef DEBUG
+	printf("Using a dynamic packet buffer\n");
+#endif
+	buf->data = buf->data_dyn;
+      }
+      
+      /* Null-terminate it. Only YOU can prevent runaway strings! */
+      buf->data[buf->req.size] = 0;
+    }
+
+    if (buf->data_size < buf->req.size) {
+      /* NOW we can get the packet data */
+      
+      errno = 0;
+      r = recv(from,buf->data+buf->data_size,
+	       buf->req.size-buf->data_size,0);      
+#ifdef DEBUG
+      printf("recv data = %d\n",r);
+#endif
+      if (r<=0) {
+	if (errno!=EAGAIN)
+	  /* Something bad happened, (the client probably disconnected)
+	     close it down */
+	  closefd(from);
+	return;
+      }
+      else {
+	buf->data_size += r;
+      }
+    }
+
+    /* Are we there yet? */
+    if (buf->data_size >= buf->req.size) {
+      /* Yahoo! */
+      if (dispatch_packet(from,&buf->req,buf->data))
+	closefd(from);
+      else {
+	/* Reset the structure for another packet */
+	g_free(buf->data_dyn);
+	buf->data_dyn = NULL;
+	buf->data_size = buf->header_size = 0;
+	buf->data = NULL;
+      }
+    }   
+  }
+}
+
+/****************** 'public' functions */
+
+/* Retrieves the buffers associated with a connection */
+struct conbuf *find_conbuf(int fd) {
+  struct conbuf *p=conbufs;
+  while (p) {
+    if (p->owner==fd)
+      return p;
+    p = p->next;
+  }
+  return NULL;
+}
+
+/* Like send, but with some error checking stuff.  Returns nonzero
+   on error.
+*/
+int send_response(int to,const void *data,size_t len) {
+  if (send(to,data,len,0)!=len) {
+#ifdef DEBUG
+    printf("Error in send()\n");
+#endif
+    closefd(to);
+    return 1;
+  }
+  return 0;
 }
 
 /* Bind the socket and start listening */
@@ -125,7 +251,9 @@ g_error req_init(void) {
   signal(SIGPIPE, SIG_IGN);
 #endif
 
-#ifdef WINDOWS
+#ifdef WINDOWS    /* Windows - compatible enough with BSD sockets that
+		     programmers would accept WinSock, but incompatible enough
+		     to break everything.  Another Microsoft 'innovation' */
   if (WSAStartup(MAKEWORD(2,0),&wsad))
     return mkerror(ERRT_NETWORK,"Error in WSAStartup()");
 #endif
@@ -143,7 +271,8 @@ g_error req_init(void) {
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 
      sizeof(server_sockaddr)) == -1)
-    return mkerror(ERRT_NETWORK,"Error in bind()");
+    return mkerror(ERRT_NETWORK,
+	   "Error in bind() - Is there already a PicoGUI server running?");
 
   if(listen(s, REQUEST_BACKLOG) == -1)
     return mkerror(ERRT_NETWORK,"Error in listen()");
@@ -160,7 +289,9 @@ void req_free(void) {
 
   if (!s) return;
   for (i=0;i<con_n;i++)
-    if (FD_ISSET(i,&con)) close(i);
+    if (FD_ISSET(i,&con)) close(i);  /* Dont worry about cleaning up
+					individual connections here,
+					a global cleanup is pending */
   close(s);
   s = 0;
 
@@ -169,25 +300,15 @@ void req_free(void) {
   #endif
 }
 
+/* Yay, a big select loop! */
 int reqproc(void) {
   int fd;
   int len;
   struct sockaddr_in ec;
   int i;
-#ifdef NONBLOCKING
   int argh=1;
-#endif
   fd_set rfds;
   struct timeval tv;
-  char c;
-  struct uipkt_request req;
-  struct response_err rsp_err;
-  struct response_ret rsp_ret;
-  void *data;
-  g_error e;
-  int fatal;
-  long remaining,de;
-  unsigned char *pd;
   
   /* Get ready to select() the socket itself and all open connections */
   FD_ZERO(&rfds);
@@ -201,6 +322,8 @@ int reqproc(void) {
      not putting the GUI in a seperate task.
      Instead of putting the input in a seperate thread, we have to poll
      both the input and the network, sucking up CPU.
+
+     C? Portable?  Hah!
   */
 #ifdef WINDOWS
   tv.tv_sec = 0;
@@ -220,8 +343,6 @@ int reqproc(void) {
 
     if (FD_ISSET(s,&rfds)) {
       /* New connection */
-      struct uipkt_hello hi;
-      memset(&hi,0,sizeof(hi));
 
       len = sizeof(struct sockaddr_in);
       if((fd = accept(s, (void *)&ec, &len)) == -1) {
@@ -234,148 +355,41 @@ int reqproc(void) {
 	return 0;
       }
 
-#ifdef NONBLOCKING
       /* Make it non-blocking */
       ioctl(fd,FIONBIO,&argh);
-#endif
       
-      /* Say Hi!  Send a structure with information about the server */
-      hi.magic = htonl(REQUEST_MAGIC);
-      hi.protover = htons(PROTOCOL_VER);
-      hi.width = htons(HWR_WIDTH);
-      hi.height = htons(HWR_HEIGHT);
-      hi.bpp = htons(HWR_BPP);
-      strcpy(hi.title,HWR);
-      send(fd,&hi,sizeof(hi),0); /* Say Hi! */
-
       /* Save it for later */
       FD_SET(fd,&con);
       if ((fd+1)>con_n) con_n = fd+1;
+
 #ifdef DEBUG
       printf("Accepted. fd = %d, con_n = %d\n",fd,con_n);
 #endif
+      
+      newfd(fd);
 
       return 1;  /* Proceed */
     }
     else {
       /* An existing connection needs attention */
-      for (fd=0;fd<con_n;fd++)
+      for (fd=0;fd<con_n;fd++) {
 	if (FD_ISSET(fd,&rfds) && FD_ISSET(fd,&con)) {
-
+	  
 	  /* Well, we're not waiting now! */
 	  FD_CLR(fd,&evtwait);
-
+	  
 #ifdef DEBUG
 	  printf("Incoming. fd = %d\n",fd);
 #endif
-
-	  /* Attempt reading the packet header */
-	  remaining = sizeof(req);
-	  pd = (unsigned char *) &req;
-	  while (remaining) {
-	    de = recv(fd,pd,remaining,0);
-	    if (de<=0) {
-	      /* Connection close? */
-	      closefd(fd);
-	      return 1;
-	    }	  
-	    pd += de;
-	    remaining -= de;
-	  }
 	  
-	  req.type = ntohs(req.type); 
-	  req.size = ntohl(req.size);
-
-#ifdef DEBUG
-	  printf("Request. fd = %d, type = %d, id = 0x%04X, size = 0x%08X\n",
-		 fd,req.type,req.id,req.size);
-#endif
-
-	  if (req.size) {
-	    if (req.size<STATICBUF_SIZE) {
-	      /* Use the static buffer */
-	      data = staticbuf;
-	    }
-	    else if (prerror(g_malloc((void **) &data, req.size+1)
-			     ).type != ERRT_NONE) {
-	      /* The request's size is too big. Be gone with this client,
-	       * either it thinks we have more memory than we do, in which
-	       * case its not much use anyway, or the packets are scrambled
-	       * in which case we couldn't salvage the connection 
-	       */ 
-	      closefd(fd);
-	      return 1;
-	    }	  
-#ifdef DEBUG
-	    else {
-	      printf("Using dynamic request buffer\n");
-	    }
-#endif
-
-	    /* Attempt reading the packet content */
-	    remaining = req.size;
-	    pd = data;
-	    while (remaining) {
-	      de = recv(fd,pd,remaining,0);
-	      if (de<=0) {
-		/* Connection close? */
-		if (data != staticbuf) g_free(data);
-		closefd(fd);
-		return 1;
-	      }	  
-	      pd += de;
-	      remaining -= de;
-	    }
-	    /* Tack on a null terminator */
-	    ((char *)data)[req.size] = 0;
-	  }
-	  else
-	    data = NULL;
-
-	  /* Call the request handler, and send a response packet */
-	  if (req.type>RQH_UNDEF) req.type = RQH_UNDEF;
-	  fatal = 0;
-
-	  rsp_ret.data = 0;
-	  e = (*rqhtab[req.type])(fd,&req,data,&rsp_ret.data,&fatal);
-	  if (data != staticbuf) g_free(data);
-
-	  /* Send an error packet if there was an error */
-	  if (e.type != ERRT_NONE) {
-	    int errlen;
-	    errlen = strlen(e.msg);
-
-	    rsp_err.type = htons(RESPONSE_ERR);
-	    rsp_err.id = req.id;
-	    rsp_err.errt = htons(e.type);
-	    rsp_err.msglen = htons(errlen);
-
-	    /* Send the error */
-	    if (send(fd,&rsp_err,sizeof(rsp_err),0)<sizeof(rsp_err))   
-	      fatal = 1;
-	    if (send(fd,e.msg,errlen,0)<errlen)   
-	      fatal = 1;
-	  }
-	  else if (req.type != RQH_WAIT) { /*WAIT packet gets no response yet*/
-	    /* Send a normal response packet */
-
-	    rsp_ret.type = htons(RESPONSE_RET);
-	    rsp_ret.id = req.id;
-	    rsp_ret.data = htonl(rsp_ret.data);
-
-	    /* Send the return packet */
-	    if (send(fd,&rsp_ret,sizeof(rsp_ret),0)<sizeof(rsp_ret))   
-	      fatal = 1;
-	  }
-
-	  if (fatal)
-	    closefd(fd);
-	  return 1; /* Proceed */
+	  readfd(fd);
+	  return 1;
 	}
+      }
     }
   }
   else if (i==0) {
-    /* No activity within 5 seconds */
+    /* No activity before the timeout, just try again */
     return 1;
   }
   else {
@@ -384,303 +398,5 @@ int reqproc(void) {
   }
 }
 
-/***************** Request handlers *******/
-
-g_error rqh_ping(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  return sucess;
-}
-
-g_error rqh_update(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  update();
-  return sucess;
-}
-
-g_error rqh_mkwidget(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_mkwidget *arg = (struct rqhd_mkwidget *) data;
-  struct widget *w,*parent;
-  handle h;
-  g_error e;
-
-  if (req->size < sizeof(struct rqhd_mkwidget)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkwidget too small");
-
-  /* Don't allow direct creation of 'special' widgets that must
-     be created by other means (app registration, popup boxes)
-  */
-  switch (ntohs(arg->type)) {
-  case WIDGET_PANEL:
-  case WIDGET_POPUP:
-    return mkerror(ERRT_BADPARAM,"Cannot create special widget with mkwidget");
-  }
-
-  e = rdhandle((void**) &parent,TYPE_WIDGET,owner,ntohl(arg->parent));
-  if (e.type != ERRT_NONE) return e;
-  if (!parent) return mkerror(ERRT_BADPARAM,"NULL parent widget");
-
-  /* Don't let an app put stuff outside its root widget */
-  if (owner>=0 && parent->isroot && ntohs(arg->rship)!=DERIVE_INSIDE)
-    return mkerror(ERRT_BADPARAM,
-		   "App attempted to derive before or after a root widget");
-
-  e = widget_derive(&w,ntohs(arg->type),parent,ntohs(arg->rship));
-  if (e.type != ERRT_NONE) return e;
-
-  e = mkhandle(&h,TYPE_WIDGET,owner,w);
-  if (e.type != ERRT_NONE) return e;
-  
-  *ret = h;
-
-  return sucess;
-}
-
-g_error rqh_mkbitmap(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_mkbitmap *arg = (struct rqhd_mkbitmap *) data;
-  struct bitmap *bmp;
-  unsigned char *bits;
-  long bitsz;
-  handle h;
-  g_error e;
-  int w;
-
-  if (req->size <= sizeof(struct rqhd_mkbitmap)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkbitmap too small");
-
-  bits = ((unsigned char *)data)+sizeof(struct rqhd_mkbitmap);
-  bitsz = req->size - sizeof(struct rqhd_mkbitmap);
-
-  if (arg->w && arg->h) {
-    /* XBM */
-    w = ntohs(arg->w);
-    if (w%8)
-      w = w/8 + 1;
-    else
-      w = w/8;
-#ifdef DEBUG
-    printf("new XBM: bitsz = %d, calculated = %d\n",bitsz,
-	   (w*ntohs(arg->h)));
-#endif
-    if (bitsz < (w*ntohs(arg->h)))
-      return mkerror(ERRT_BADPARAM,"XBM data too small");
-    e = hwrbit_xbm(&bmp,bits,ntohs(arg->w),ntohs(arg->h),
-		   cnvcolor(ntohl(arg->fg)),cnvcolor(ntohl(arg->bg)));
-  }
-  else {
-    /* PNM */
-    e = hwrbit_pnm(&bmp,bits,bitsz);
-  }
-  if (e.type != ERRT_NONE) return e;
-
-  e = mkhandle(&h,TYPE_BITMAP,owner,bmp);
-  if (e.type != ERRT_NONE) return e;
-  
-  *ret = h;
-
-  return sucess;
-}
-
-g_error rqh_mkfont(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_mkfont *arg = (struct rqhd_mkfont *) data;
-  handle h;
-  g_error e;
-
-  if (req->size <= sizeof(struct rqhd_mkfont)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkfont too small");
-
-  e = findfont(&h,owner,arg->name,ntohs(arg->size),ntohl(arg->style));
-  if (e.type != ERRT_NONE) return e;
-
-  *ret = h;
-  return sucess;
-}
-
-g_error rqh_mkstring(int owner, struct uipkt_request *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  char *buf;
-  handle h;
-  g_error e;
-
-  e = g_malloc((void **) &buf, req->size+1);
-  if (e.type != ERRT_NONE) return e;
-  memcpy(buf,data,req->size);
-  buf[req->size] = 0;  /* Null terminate it if it isn't already */
-
-  e = mkhandle(&h,TYPE_STRING,owner,buf);
-  if (e.type != ERRT_NONE) return e;
-
-  *ret = h;
-  return sucess;
-}
-
-g_error rqh_free(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_free *arg = (struct rqhd_free *) data;
-  if (req->size < sizeof(struct rqhd_free)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_free too small");
-  
-  return handle_free(owner,ntohl(arg->h));
-}
-
-g_error rqh_set(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_set *arg = (struct rqhd_set *) data;
-  struct widget *w;
-  g_error e;
-
-  if (req->size < sizeof(struct rqhd_set)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_set too small");
-  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
-  if (e.type != ERRT_NONE) return e;
-
-  return widget_set(w,ntohs(arg->property),ntohl(arg->glob));
-}
-
-g_error rqh_get(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_get *arg = (struct rqhd_get *) data;
-  struct widget *w;
-  g_error e;
-
-  if (req->size < sizeof(struct rqhd_get)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_get too small");
-  e = rdhandle((void**) &w,TYPE_WIDGET,owner,ntohl(arg->widget));
-  if (e.type != ERRT_NONE) return e;
-
-  *ret = widget_get(w,ntohs(arg->property));
-
-  return sucess;
-}
-
-g_error rqh_setbg(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_setbg *arg = (struct rqhd_setbg *) data;
-  if (req->size < sizeof(struct rqhd_setbg)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_setbg too small");
-  
-  return appmgr_setbg(owner,ntohl(arg->h));
-}
-
-g_error rqh_undef(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  return mkerror(ERRT_BADPARAM,"Undefined request type");
-}
-
-g_error rqh_in_key(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_in_key *arg = (struct rqhd_in_key *) data;
-  if (req->size < sizeof(struct rqhd_in_key)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_key too small");
-  dispatch_key(ntohl(arg->type),(int) ntohl(arg->key));
-  return sucess;
-}
-
-g_error rqh_in_point(int owner, struct uipkt_request *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_in_point *arg = (struct rqhd_in_point *) data;
-  if (req->size < sizeof(struct rqhd_in_point)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_point too small");
-  dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
-		    ntohs(arg->btn));
-  return sucess;
-}
-
-g_error rqh_themeset(int owner, struct uipkt_request *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_themeset *arg = (struct rqhd_themeset *) data;
-  if (req->size < sizeof(struct rqhd_themeset)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_themeset too small");
-
-  /* Don't worry about errors here.  If they try to set a nonexistant
-     theme, its no big deal.  Just means that the theme is a later
-     version than this widget set.
-  */
-  
-  themeset(ntohs(arg->element),ntohs(arg->state),ntohs(arg->param),
-	   ntohl(arg->value));
-
-  /* Do a global recalc (Yikes!) */
-  dts->top->head->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
-  dts->top->flags |= DIVTREE_NEED_RECALC;
-
-  return sucess;
-}
-
-g_error rqh_in_direct(int owner, struct uipkt_request *req,
-		   void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_in_direct *arg = (struct rqhd_in_direct *) data;
-  if (req->size < (sizeof(struct rqhd_in_direct)+1)) 
-    return mkerror(ERRT_BADPARAM,"rqhd_in_direct too small");
-  dispatch_direct(((char*)arg)+sizeof(struct rqhd_in_direct),
-		  ntohl(arg->param));
-  return sucess;
-}
-
-g_error rqh_wait(int owner, struct uipkt_request *req,
-		 void *data, unsigned long *ret, int *fatal) {
-  
-  FD_SET(owner,&evtwait);
-  return sucess;
-}
-
-g_error rqh_register(int owner, struct uipkt_request *req,
-		     void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_register *arg = (struct rqhd_register *) data;
-  struct app_info i;
-  g_error e;
-  memset(&i,0,sizeof(i));
-  if (req->size < (sizeof(struct rqhd_register))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_register too small");
-
-  i.owner = owner;
-  i.name = ntohl(arg->name);
-  i.type = ntohs(arg->type);
-  i.side = ntohs(arg->side);
-  i.sidemask = ntohs(arg->sidemask);
-  i.w = ntohs(arg->w);
-  i.h = ntohs(arg->h);
-  i.minw = ntohs(arg->minw);
-  i.maxw = ntohs(arg->maxw);
-  i.minh = ntohs(arg->minh);
-  i.maxh = ntohs(arg->maxh);
- 
-  e = appmgr_register(&i);
-
-  *ret = i.rootw;
-
-  return e;
-}
-
-g_error rqh_mkpopup(int owner, struct uipkt_request *req,
-		  void *data, unsigned long *ret, int *fatal) {
-  struct rqhd_mkpopup *arg = (struct rqhd_mkpopup *) data;
-  struct widget *w;
-  handle h;
-  g_error e;
-
-  if (req->size < (sizeof(struct rqhd_mkpopup))) 
-    return mkerror(ERRT_BADPARAM,"rqhd_mkpopup too small");
-
-  e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w);
-  if (e.type != ERRT_NONE) return e;
-
-  e = mkhandle(&h,TYPE_WIDGET,owner,w);
-  if (e.type != ERRT_NONE) return e;
-  
-  *ret = h;
-
-  return sucess;
-}
-
 /* The End */
-
-
-
-
-
-
-
 

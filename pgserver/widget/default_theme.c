@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.3 2000/06/02 22:02:46 micahjd Exp $
+/* $Id: default_theme.c,v 1.4 2000/06/07 06:15:47 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -76,7 +76,7 @@ struct element current_theme[E_NUM] = {
   EL_FLAT(0,mkcolor(220,255,220)),  
 
   /* 12 indicator.overlay */
-  EL_FLAT(0,mkcolor(255,255,0)),  
+  EL_FLAT(0,mkcolor(128,128,255)),  
 
   /* 13 panel.border */
   EL_NULL,
@@ -99,6 +99,12 @@ struct element current_theme[E_NUM] = {
 };
 
 /* The End */
+
+
+
+
+
+
 
 
 
