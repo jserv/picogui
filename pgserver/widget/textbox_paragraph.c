@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.20 2002/10/31 20:33:59 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.21 2002/10/31 23:25:45 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -543,18 +543,17 @@ g_error paragraph_wrap_line(struct paragraph *par, struct paragraph_line **line,
 
   /* All done. If there were more lines after this, delete them all.
    */
-  deadline = *line;
-  *line = (*line)->next;
-  deadline->next = NULL;
-  while (*line) {
-    deadline = *line;
-    *line = (*line)->next;
+  while ((*line)->next) {
+    deadline = (*line)->next;
+    (*line)->next = deadline->next;
 
     /* Delete the height the line we're about to delete had */
     par->height -= deadline->height;
-
+    if (par->cursor.line == deadline)
+      par->cursor.line = NULL;
     g_free(deadline);
   }
+  *line = NULL;
 
   return success;
 }
