@@ -1,4 +1,4 @@
-/* $Id: magicbutton.c,v 1.2 2002/01/22 12:25:08 micahjd Exp $
+/* $Id: magicbutton.c,v 1.3 2002/01/28 08:50:52 lonetech Exp $
  *
  * magicbutton.c - CTRL-ALT-foo is magical
  *
@@ -231,7 +231,7 @@ void magic_button(s16 key) {
   case PGKEY_g:           /* Just for fun :) */
     guru("GURU MEDITATION #%08X\n\nCongratulations!\n"
 	 "    Either you have read the source code or\n"
-	 "    you have very persistantly banged your\n"
+	 "    you have very persistently banged your\n"
 	 "    head on the keyboard ;-)",div_under_crsr);
     return;
     
