@@ -1,4 +1,34 @@
 <?xml version="1.0" ?>
-<pgbuild title="Application packages for the PicoGUI 1.x architecture" root="packages">
+<pgbuild title="Client library packages for the PicoGUI 1.x architecture" root="packages">
+
+	<package name="pg1/client/c">
+		<description><summary>PicoGUI client library for C</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/c"/>
+	</package>
+
+	<package name="pg1/client/lua">
+		<description><summary>PicoGUI client library for lua</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/lua"/>
+	</package>
+
+	<package name="pg1/client/perl">
+		<description><summary>PicoGUI client library for perl</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/perl"/>
+	</package>
+
+	<package name="pg1/client/python">
+		<description><summary>PicoGUI client library for Python</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/python"/>
+	</package>
+
+	<package name="pg1/client/tcl">
+		<description><summary>PicoGUI client library for tcl</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/tcl"/>
+	</package>
+
+	<package name="pg1/client/waba">
+		<description><summary>PicoGUI client library for waba</summary></description>
+		<versiongroup name="picogui-versions" path="pg1/client/waba"/>
+	</package>
 
 </pgbuild>
