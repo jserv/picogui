@@ -101,6 +101,7 @@ endmenu
 mainmenu_option next_comment
 comment 'Input Drivers'
 bool 'SDL input driver'                    DRIVER_SDLINPUT
+bool 'X Window System input driver'        DRIVER_X11INPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
 bool 'Ncurses/GPM input driver (also for framebuffer)' DRIVER_NCURSESINPUT
 bool 'ChipSlice touchscreen input driver'  DRIVER_CHIPSLICETS

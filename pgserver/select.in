@@ -91,6 +91,7 @@ add_if_true tuxts.c        $DRIVER_TUXTS
 add_if_true ttykb.c        $DRIVER_TTYKB
 add_if_true remorakb.c     $DRIVER_REMORAKB
 add_if_true serialmouse.c  $DRIVER_SERIALMOUSE
+add_if_true x11input.c     $DRIVER_X11INPUT
 
 close_section
 

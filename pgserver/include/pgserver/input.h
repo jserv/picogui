@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.21 2001/11/09 17:31:06 pney Exp $
+/* $Id: input.h,v 1.22 2001/11/19 18:46:24 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -137,6 +137,7 @@ g_error tuxts_regfunc(struct inlib *i);
 g_error ttykb_regfunc(struct inlib *i);
 g_error remorakb_regfunc(struct inlib *i);
 g_error serialmouse_regfunc(struct inlib *i);
+g_error x11input_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {

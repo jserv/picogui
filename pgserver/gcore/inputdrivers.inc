@@ -49,4 +49,8 @@
   DRV("serialmouse",&serialmouse_regfunc)
 #endif
 
+#ifdef DRIVER_X11INPUT
+  DRV("x11input",&x11input_regfunc)
+#endif
+
 /* The End */

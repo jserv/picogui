@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.1 2001/11/19 09:50:13 micahjd Exp $
+/* $Id: x11.c,v 1.2 2001/11/19 18:46:24 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -30,12 +30,13 @@
 #include <pgserver/configfile.h>
 #include <pgserver/appmgr.h>
 #include <pgserver/render.h>
+#include <pgserver/input.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
 
+/* Global X display- shared with x11input driver */
 Display *xdisplay;
-Visual *xvisual;
 
 /* Redefine PicoGUI's hwrbitmap so it references an X11 Drawable */
 struct x11bitmap {
@@ -54,7 +55,9 @@ g_error x11_init(void) {
   xdisplay = XOpenDisplay(NULL);
   if (!xdisplay)
     return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
-  return sucess;
+
+  /* Load the matching input driver */
+  return load_inlib(&x11input_regfunc,&inlib_main);
 }
 
 /* Create a window */
@@ -64,6 +67,7 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
   XTextProperty titleprop;
   char title[80];
   g_error e;
+  Visual *xvisual;
 
   /* Default resolution is 640x480 
    */
@@ -147,7 +151,9 @@ void x11_close(void) {
 #ifdef CONFIG_X11_DOUBLEBUFFER
   vid->bitmap_free(vid->display);
 #endif
+  unload_inlib(inlib_main);   /* Take out our input driver */
   XCloseDisplay(xdisplay);
+  xdisplay = NULL;
 }
 
 void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
@@ -243,13 +249,13 @@ hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   return 0;
 }
 
-/* Blit the backbuffer to the display, and flush X requests */
+/* Blit the backbuffer to the display */
 void x11_update(s16 x,s16 y,s16 w,s16 h) {
 #ifdef CONFIG_X11_DOUBLEBUFFER
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
 #endif
-  XSync(xdisplay,True);
+  XSync(xdisplay,False);
 }
 
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {

@@ -16,7 +16,8 @@ EXTRA_libinput_a_SOURCES = \
 	tuxts.c \
 	ttykb.c \
 	remorakb.c \
-	serialmouse.c
+	serialmouse.c \
+	x11input.c
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)

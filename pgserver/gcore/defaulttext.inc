@@ -41,7 +41,7 @@
 /* 33 */  "The bitmap you specify for a button can not be found",
 /* 34 */  "Button bitmask is missing!",
 /* 35 */  "Button font can't be found",
-/* 36 */  NULL,
+/* 36 */  "Input driver not loaded with matching video driver",
 /* 37 */  "Unable to open configuration file",
 /* 38 */  "Missing ']' in configuration file",
 /* 39 */  "Key/value line in undefined configuration file section",
