@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.9 2002/11/08 05:02:02 micahjd Exp $
+/* $Id: x11_window.c,v 1.10 2002/11/11 09:46:50 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -330,6 +330,7 @@ void x11_acknowledge_resize(hwrbitmap window, int w, int h) {
 void x11_window_set_flags(hwrbitmap window, int flags) {
   struct x11bitmap *xb = XB(window)->frontbuffer ? XB(window)->frontbuffer : XB(window);
   XSetWindowAttributes attr;
+  xb->window_flags = flags;
 
   /* If this is an unmanaged window or the background,
    * use OverrideRedirect to keep the window manager from messing with it.
@@ -337,8 +338,11 @@ void x11_window_set_flags(hwrbitmap window, int flags) {
   attr.override_redirect = (flags & (PG_WINDOW_UNMANAGED | PG_WINDOW_BACKGROUND)) != 0;
   XChangeWindowAttributes(x11_display, xb->d, CWOverrideRedirect, &attr);
 
-  /* The rest of the flags don't apply until later, save them */
-  xb->window_flags = flags;
+  /* Background windows sit below everything else and take the whole screen */
+  if (flags & PG_WINDOW_BACKGROUND) {
+    XLowerWindow(x11_display, xb->d);
+    VID(window_set_size)(dts->top->display,vid->lxres,vid->lyres);
+  }
 }
 
 /* The End */

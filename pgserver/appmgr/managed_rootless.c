@@ -1,4 +1,4 @@
-/* $Id: managed_rootless.c,v 1.5 2002/11/06 09:28:39 micahjd Exp $
+/* $Id: managed_rootless.c,v 1.6 2002/11/11 09:46:50 micahjd Exp $
  *
  * managed_rootless.c - Application management for rootless modes 
  *                      managed by a host GUI
@@ -30,6 +30,8 @@
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 
+struct divtree *managed_rootless_background;
+
 
 /**************************************** Public interface */
 
@@ -45,6 +47,29 @@ g_error appmgr_managed_rootless_init(void) {
   e = dts_new();
   errorcheck;
 
+  /* We can optionally create a background window holding a
+   * background widget and any toolbar apps.
+   */
+  if (get_param_int("appmgr-managed-rootless","background",0)) {
+    struct widget *bgwidget;
+
+    /* New divtree for the background */
+    e = dts_push();
+    errorcheck;
+    managed_rootless_background = dts->top;
+    VID(window_set_flags)(dts->top->display, PG_WINDOW_BACKGROUND);
+
+    /* Make the background widget */
+    e = widget_create(&bgwidget,&res[PGRES_BACKGROUND_WIDGET],
+		      PG_WIDGET_BACKGROUND,dts->top, 0, -1);
+    errorcheck;
+    e = widget_attach(bgwidget, dts->top, &dts->top->head->next,0);
+    errorcheck;   
+
+    /* Turn off the background's DIVNODE_UNDERCONSTRUCTION flags */
+    activate_client_divnodes(-1);
+  }
+
   return success;
 }
 
@@ -52,11 +77,26 @@ g_error appmgr_managed_rootless_reg(struct app_info *i) {
   struct widget *w;
   g_error e;
   
-  /* FIXME: this needs to handle toolbar apps correctly */
+  if (i->type == PG_APP_TOOLBAR && managed_rootless_background) {
+    /* Toolbars are added to the background divtree, if we have one */
 
+    e = widget_create(&w,&i->rootw,PG_WIDGET_TOOLBAR,managed_rootless_background, 0, i->owner);
+    errorcheck;
+    e = widget_attach(w,managed_rootless_background,&managed_rootless_background->head->next,0);
+    errorcheck;
+
+    e = widget_set(w,PG_WP_SIDE,i->side);
+    errorcheck;
+
+    w->isroot = 1;
+
+    return success;
+  }
+  
+  /* All other apps have normal managed windows */
   e = widget_create(&w,&i->rootw,PG_WIDGET_MANAGEDWINDOW,dts->root, 0, i->owner);
   errorcheck;
-
+  
   e = widget_set(w,PG_WP_TEXT,i->name);
   errorcheck;
 

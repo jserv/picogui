@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.13 2002/11/11 08:17:09 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.14 2002/11/11 09:46:50 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -254,7 +254,7 @@ void x11_update(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h) {
 
 void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
-  GC g;
+  GC g = x11_gctab[lgop];
   
   /* Use the default multiblit if:
    *   1. The source isn't the entire bitmap. X can't handle this case
@@ -262,9 +262,10 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
    *      would be a conflict and the stipple GC would be reset incorrectly.
    *   3. The destination rectangle isn't larger than the source. In this case the
    *      extra setup work here isn't worth it.
+   *   4. We're using another LGOP that X can't do
    */
   if (sx!=0 || sy!=0 || sw!=XB(src)->sb.w || sh!=XB(src)->sb.h || 
-      lgop==PG_LGOP_STIPPLE || (w<=sw && h<=sh)) {
+      lgop==PG_LGOP_STIPPLE || (w<=sw && h<=sh) || !g) {
     def_multiblit(dest,x,y,w,h,src,sx,sy,sw,sh,xo,yo,lgop);
     return;
   }
@@ -273,7 +274,6 @@ void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
    * tiled with a complete pixmap, so it will be efficiently handled by X (we hope)
    */
   set_shm1(dest,0);
-  g = x11_gctab[lgop];
   XSetTile(x11_display,g,XB(src)->d);
   XSetTSOrigin(x11_display,g,x-xo,y-yo);
   XSetFillStyle(x11_display,g,FillTiled);

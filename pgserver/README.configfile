@@ -592,5 +592,12 @@ quoted appropriately. For example:
   If this is nonzero, run tests with every lgop
   Default is off
 
+[appmgr-managed-rootless]
+
+- background
+  If this is nonzero, create a background window to hold a
+  background widget and toolbar apps.
+  Default is off
+
 --- The End ---
 
