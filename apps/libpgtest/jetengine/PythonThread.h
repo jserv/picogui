@@ -10,19 +10,19 @@ extern "C" {
 
 class PythonThread {
  public:
-  PythonThread(void);
+  PythonThread(char *path="script", char *modulename="game");
   ~PythonThread();
 
-  void addPath(char *path);
   void addObject(char *name, PyObject *object);
-  void run(char *modulename);
+  void run(char *function="thread");
 
-  int threadHandler(void);
+  void threadHandler(void);
 
  private:
+  void addPath(char *path);
   SDL_Thread *thread;
-  PyObject *globals;
-  char *modulename;
+  PyObject *module;
+  char *function;
 };
 
 

@@ -27,11 +27,13 @@ ScriptableObject::ScriptableObject() {
   ob_type = &Type;
   _Py_NewReference(this);
 
-  pyobj_mutex = SDL_CreateMutex();
+  dict_mutex = SDL_CreateMutex();
+  dict = PyDict_New();
 }
 
 ScriptableObject::~ScriptableObject() {
-  SDL_DestroyMutex(pyobj_mutex);
+  Py_DECREF(dict);
+  SDL_DestroyMutex(dict_mutex);
 }
 
 /* Called from the Python thread when an attribute is set */
@@ -40,19 +42,17 @@ void ScriptableObject::onAttrSet(char *name, PyObject *value) {
 
 PyObject *ScriptableObject::getAttr(char *name) {
   PyObject *o;
-  SDL_mutexP(pyobj_mutex);
-  printf("GetAttr '%s'\n",name);
-  //  o = PyObject_GetAttrString(pyobj,name);
-  SDL_mutexV(pyobj_mutex);
+  SDL_mutexP(dict_mutex);
+  o = PyDict_GetItemString(dict,name);
+  SDL_mutexV(dict_mutex);
   return o;
 }
 
 int ScriptableObject::setAttr(char *name, PyObject *value) {
   int r;
-  SDL_mutexP(pyobj_mutex);
-  printf("SetAttr '%s'\n",name);
-  //  r = PyObject_SetAttrString(pyobj,name,value);
-  SDL_mutexV(pyobj_mutex);
+  SDL_mutexP(dict_mutex);
+  r = PyDict_SetItemString(dict,name,value);
+  SDL_mutexV(dict_mutex);
   if (r>=0)
     onAttrSet(name,value);
   return r;

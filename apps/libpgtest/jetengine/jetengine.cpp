@@ -10,14 +10,13 @@
 
 
 int main(int argc, char **argv) {
+  PythonInterpreter py(argc, argv);
   try {
-    PythonInterpreter py(argc, argv);
     EmbeddedPGserver pgserver(argc, argv);
     PythonThread pythread;
     
     pythread.addObject("foo",new ScriptableObject);
-    pythread.addPath("script");
-    pythread.run("game");
+    pythread.run();
 
     glViewport(0, 0, 640, 480);
     glMatrixMode(GL_PROJECTION);
@@ -94,4 +93,6 @@ int main(int argc, char **argv) {
     e.show();
     return 1;
   }
+  return 0;
 }
+

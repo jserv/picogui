@@ -13,21 +13,42 @@ extern "C" {
 /* Wrapper so C code can call our handler */
 int PythonThreadCallback(void *data) {
   PythonThread *t = (PythonThread*) data;
-  return t->threadHandler();
+
+  try {
+    t->threadHandler();
+  }
+  catch (PythonException &e) {
+    e.show();
+  }
+
+  /* Signal the main thread to terminate 
+   * FIXME: This is an ugly method, we should have a callback or something
+   *        so this is handled by the EmbeddedPGserver class.
+   */
+  pgserver_mainloop_stop();
+  
+  return 0;
 }
 
-PythonThread::PythonThread(void) {
+PythonThread::PythonThread(char *path, char *modulename) {
   thread = NULL;
-  globals = PyDict_New();
+  
+  addPath(path);
+
+  module = PyImport_ImportModule(modulename);
+  if (!module)
+    throw PythonException();
 }
 
 PythonThread::~PythonThread() {
-  SDL_KillThread(thread);
-  Py_DECREF(globals);
+  if (thread)
+    SDL_KillThread(thread);
+  if (module)
+    Py_DECREF(module);
 }
 
-void PythonThread::run(char *modulename_) {
-  modulename = modulename_;
+void PythonThread::run(char *function_) {
+  function = function_;
   thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
 
@@ -54,22 +75,25 @@ void PythonThread::addPath(char *path) {
   Py_DECREF(newpath);
 }
 
-int PythonThread::threadHandler(void) {
-  /* FIXME: Pass errors like this back to the other thread */
-  if (!PyImport_ImportModuleEx(modulename,globals,NULL,NULL))
-    PyErr_Print();
+void PythonThread::threadHandler(void) {
+  PyObject *func, *args, *ret;
 
-  /* Signal the main thread to terminate 
-   * FIXME: This is an ugly method, we should have a callback or something
-   *        so this is handled by the EmbeddedPGserver class.
-   */
-  pgserver_mainloop_stop();
-  
-  return 0;
+  func = PyObject_GetAttrString(module, function);
+  if (!func)
+    throw PythonException();
+
+  args = Py_BuildValue("()");
+  ret = PyEval_CallObject(func,args);
+  if (!ret)
+    throw PythonException();
+
+  Py_DECREF(args);
+  Py_DECREF(ret);
+  Py_DECREF(func);
 }
 
 void PythonThread::addObject(char *name, PyObject *object) {
-  if (PyDict_SetItemString(globals, name, object) < 0)
+  if (PyModule_AddObject(module, name, object)<0)
     throw PythonException();
 }
 

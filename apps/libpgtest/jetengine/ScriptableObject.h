@@ -26,8 +26,8 @@ class ScriptableObject : public PyObject {
   
  private:
   /* Python dictionary shared between python and C++ threads */
-  PyObject *pyobj;
-  SDL_mutex *pyobj_mutex;
+  PyObject *dict;
+  SDL_mutex *dict_mutex;
 
   /* Python interface */
   static PyObject *PyGetAttr(PyObject * PyObj, char *attr);

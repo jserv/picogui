@@ -1,12 +1,14 @@
 import PicoGUI
 
-print "Starting python thread..."
+print "Imporing python module"
 
-#print "About to run foo.bleh = 42"
-#foo.bleh = 42
-#print "Ran foo.bleh = 42"
+def thread():
+    print "Starting python thread..."
 
-app = PicoGUI.TemplateApp(open("data/hud.wt").read())
-app.run()
-
-print "Python thread ending"
+    print "foo is a " + repr(foo)
+    foo.bleh = 42
+    
+    app = PicoGUI.TemplateApp(open("data/hud.wt").read())
+    app.run()
+    
+    print "Python thread ending"
