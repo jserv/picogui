@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.43 2001/10/03 19:53:53 micahjd Exp $
+/* $Id: network.h,v 1.44 2001/10/04 09:37:44 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -141,8 +141,9 @@ struct pghello {
 #define PGREQ_FINDWIDGET   42  /* Get widget handle by name      |   chars */
 #define PGREQ_CHECKEVENT   43  /* Return number of queued events |    none */
 #define PGREQ_SIZEBITMAP   44  /* Find the size of a bitmap      |  handle */
+#define PGREQ_APPMSG       45  /* Send PG_WE_APPMSG to any widget|  struct */
 
-#define PGREQ_UNDEF        45  /* types > this will be truncated. return error */
+#define PGREQ_UNDEF        46  /* types > this will be truncated. return error */
 
 /******* Request data structures */
 

@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.16 2001/08/01 11:05:30 micahjd Exp $
+/* $Id: handle.h,v 1.17 2001/10/04 09:37:44 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -71,6 +71,9 @@ struct handlenode {
   void *obj;
   struct handlenode *left,*right,*parent;  /* For the red-black tree */
 };
+
+/* Find the handlenode associated with a handle ID */
+struct handlenode *htree_find(handle id);
 
 /* Allocates a new handle for obj 
  * Owner = -1, system owns it

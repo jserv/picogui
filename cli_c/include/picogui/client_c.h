@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.69 2001/09/10 18:02:19 micahjd Exp $
+/* $Id: client_c.h,v 1.70 2001/10/04 09:37:44 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -559,6 +559,17 @@ struct pgmodeinfo *pgGetVideoMode(void);
  */
 void pgDriverMessage(unsigned long message, unsigned long param);
 
+/*!
+ * \brief Send a message to a widget owned by any application
+ *
+ * \param dest Handle of the destination widget
+ * \param data A pgmemdata structure containing the data, as returned by a pgFrom* function
+ *
+ * The \p data parameter is sent as the \p data in a PG_WP_APPMSG
+ * event on behalf of the \p dest widget.
+ */
+void pgAppMessage(pghandle dest, struct pgmemdata data);
+
 /*! 
  * \brief Evaluate a PicoGUI request packet
  *
@@ -1026,7 +1037,7 @@ unsigned long pgGetPayload(pghandle object);
  * \brief Write data to a widget
  *
  * \param widget The handle of the widget to receive data
- * \param A pgmemdata structure containing the data, as returned by a pgFrom* function
+ * \param data A pgmemdata structure containing the data, as returned by a pgFrom* function
  * 
  * Write a chunk of widget-defined data to a widget. For example, this can be used to send
  * text to a terminal widget or commands to a canvas widget. (For canvas drawing pgWriteCmd or PGFX

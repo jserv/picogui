@@ -1,4 +1,4 @@
-/* $Id: api.c,v 1.28 2001/09/10 18:02:19 micahjd Exp $
+/* $Id: api.c,v 1.29 2001/10/04 09:37:44 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
@@ -338,7 +338,7 @@ pghandle pgRegisterApp(short int type,const char *name, ...) {
     va_end(v);
     
     /* Allocate */
-    if (!(arg = malloc(sizeof(struct pgreqd_register)+numspecs*4)))
+    if (!(arg = alloca(sizeof(struct pgreqd_register)+numspecs*4)))
       return;
     /* Move pointer */
     spec = (short int *)(((char*)arg)+sizeof(struct pgreqd_register));
@@ -780,6 +780,23 @@ void pgEventPoll(void) {
     struct pgEvent evt = *pgGetEvent();
     pgDispatchEvent(&evt);
   }
+}
+
+/* This is almost exacly like pgWriteData */
+void pgAppMessage(pghandle dest, struct pgmemdata data) {
+  unsigned long *buf;
+
+  /* FIXME: Shouln't be recopying this... */
+
+  if (!data.pointer) return;
+  if (!(buf = _pg_malloc(data.size+4))) return;
+  *buf = htonl(dest);
+  memcpy(buf+1,data.pointer,data.size);
+
+  _pg_add_request(PGREQ_APPMSG,buf,data.size+4);
+
+  _pg_free_memdata(data);
+  free(buf);
 }
 
 /* The End */

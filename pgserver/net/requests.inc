@@ -46,6 +46,7 @@ RQH(getfstyle)
 RQH(findwidget)
 RQH(checkevent)
 RQH(sizebitmap)
+RQH(appmsg)
 RQH(undef)        /* undef must be last */
 
 /* The End */

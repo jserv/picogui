@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.59 2001/10/03 19:53:53 micahjd Exp $
+/* $Id: dispatch.c,v 1.60 2001/10/04 09:37:44 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -1046,6 +1046,27 @@ g_error rqh_sizebitmap(int owner, struct pgrequest *req,
   
   /* Pack w and h into ret */
   *ret = (((u32)w)<<16) | h;
+
+  return sucess;
+}
+
+g_error rqh_appmsg(int owner, struct pgrequest *req,
+		   void *data, unsigned long *ret, int *fatal) {
+  g_error e;
+  struct widget *w;
+  reqarg(handlestruct);
+
+  /* Everything after the handlestruct is data to send */
+  data += sizeof(struct pgreqd_handlestruct);
+  req->size -= sizeof(struct pgreqd_handlestruct);
+  
+  /* Is the handle good? */
+  e = rdhandle((void **) &w, PG_TYPE_WIDGET,-1,ntohl(arg->h));
+  errorcheck;
+
+  /* Send it */
+  if (req->size > 0)
+    post_event(PG_WE_APPMSG,w,req->size,0,data);
 
   return sucess;
 }

@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.10 2001/09/18 21:52:10 micahjd Exp $
+# $Id: Makefile.am,v 1.11 2001/10/04 09:37:44 micahjd Exp $
 
 noinst_PROGRAMS = \
 	abstest 		\
@@ -20,7 +20,9 @@ noinst_PROGRAMS = \
 	galaxy                  \
 	bouncyball              \
 	flyingtux               \
-	textdemo
+	textdemo                \
+	message_receiver        \
+	message_transmitter
 
 noinst_SCRIPTS = Demo.app
 
