@@ -16,7 +16,7 @@ TMPDIR=/tmp/svn_snapshot.$$
 mkdir $TMPDIR
 
 for package in `svn list $URL | sed 's/\///'`; do
-     svn export $URL/$package $TMPDIR/$package
+     /usr/bin/env svn export $URL/$package $TMPDIR/$package
      (cd $TMPDIR; tar jcvf $package.tar.bz2 $package)
      mv $TMPDIR/$package.tar.bz2 $DEST/$PREFIX$package.tar.bz2
 done
