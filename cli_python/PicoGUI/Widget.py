@@ -30,7 +30,18 @@ class Widget(object):
         self._notify_new_widget(new)
         return new
 
-    def writeTo(self, data):
+    def detach(self):
+        self.attach(0)
+
+    def attach(self, parent, relationship=None):
+        self.server.attachwidget(parent.handle, self.handle, relationship or self.default_relationship)
+
+    def find(self, name):
+        # FIXME: This should find only widgets below this one in the hierarchy.
+        #        This can be implemented here pending a protocol change in pgserver.
+        return Widget(self.server,self.server.findwidget(name),self.parent)
+
+    def write(self, data):
         self.server.writeto(self.handle,data)
 
     def __setattr__(self, name, value):
@@ -48,3 +59,4 @@ class Widget(object):
             return Server.unresolve_constant(result, ns, self.server) 
         else:
             raise AttributeError(name)
+

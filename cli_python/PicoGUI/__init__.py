@@ -24,3 +24,4 @@ application = Application
 Application = application.Application
 ToolbarApp = application.ToolbarApp
 InvisibleApp = application.InvisibleApp
+TemplateApp = application.TemplateApp

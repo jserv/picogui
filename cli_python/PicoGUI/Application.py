@@ -49,13 +49,13 @@ class EventRegistry(object):
 class Application(Widget.Widget):
     _type = 1 # apptype parameter for the register request
     
-    def __init__(self, title='', server=None):
+    def __init__(self, title='', server=None, handle=0):
         if not server:
             server = Server.Server()
         if self._type:
             Widget.Widget.__init__(self, server, server.register(title, self._type))
         else:
-            Widget.Widget.__init__(self, server, 0)
+            Widget.Widget.__init__(self, server, handle)
         self.default_relationship = 'inside'
         self._widget_registry = {self.handle: self}
         self._event_registry = EventRegistry()
@@ -142,7 +142,7 @@ class Application(Widget.Widget):
                     self._event_registry.dispatch(ev)
                 except EventHandled:
                     continue
-                if ev.widget is self and ev.name in ('close', 'stop'):
+            if ev.widget is self and ev.name in ('close', 'stop'):
                     return
 
     def shutdown(self):
@@ -155,3 +155,21 @@ class InvisibleApp(Application):
     _type = 0  # do not register a window
     def addWidget(self, wtype, relationship=None):
         raise ValueError, "Invisible applications can't have widgets, silly!"
+
+class TemplateApp(Application):
+    # It's tricky to create an application from a widget template when
+    # you need the server to load the template. This makes things easier.
+    # It also gives you a handy way to import a list of widget names from
+    # the template into properties of this object
+
+    _type = 0  # do not register a window
+    def __init__(self, wt, importList=[], server=None):
+        if not server:
+            server = Server.Server()
+        self.template = server.mktemplate(wt)
+        h = server.dup(self.template)
+        Application.__init__(self,'',server,h)
+        for name in importList:
+            attrName = name.replace(' ','_')
+            setattr(self,attrName,self.find(name))
+    
