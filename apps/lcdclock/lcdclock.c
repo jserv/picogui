@@ -1,4 +1,4 @@
-/* $Id: lcdclock.c,v 1.6 2003/01/01 03:42:48 micahjd Exp $
+/* $Id: lcdclock.c,v 1.7 2003/01/20 22:51:33 micahjd Exp $
  * 
  * lcdclock.c - Clock application designed for use with a wall-mounted
  *              LCD (see README) but maybe with other uses
@@ -53,10 +53,6 @@ void sysIdle(void) {
 int main(int argc, char **argv) {
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"Clock",0);
-   pgSetWidget(PGDEFAULT,
-	       PG_WP_SIDE,PG_S_LEFT,
-	       PG_WP_SIZE,-1,   /* auto size */
-	       0);
 
    /* Small text along the side */
    wSmallClock = pgNewWidget(PG_WIDGET_LABEL,0,0);
