@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.14 2000/10/29 08:16:44 micahjd Exp $
+/* $Id: svga.c,v 1.15 2000/10/29 09:06:39 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -50,7 +50,7 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
      PicoGUI compliant...
   */
 
-#define VGA_MODE G640x480x256
+#define VGA_MODE G640x480x64K
 
   /* In a GUI environment, we don't want VC switches,
      plus they usually crash on my system anyway,
@@ -151,19 +151,30 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
 
   if (w>(src->w-src_x) || h>(src->h-src_y)) {
     int i,j;
-
     /* Do a tiled blit */
     for (i=0;i<w;i+=src->w)
       for (j=0;j<h;j+=src->h)
         svga_blit(src,0,0,dest_x+i,dest_y+j,src->w,src->h,lgop);
-
     return;
   }
-#ifdef DOUBLEBUFFER
-  else
-    add_updarea(dest_x,dest_y,w,h);
-#endif
 
+  if ((dest_x+w-1)>vid->clip_x2) w = vid->clip_x2-dest_x+1;
+  if ((dest_y+h-1)>vid->clip_y2) h = vid->clip_y2-dest_y+1;
+  if (dest_x<vid->clip_x1) {
+    w -= vid->clip_x1 - dest_x;
+    src_x += vid->clip_x1 - dest_x;
+    dest_x = vid->clip_x1;
+  }
+  if (dest_y<vid->clip_y1) {
+    h -= vid->clip_y1 - dest_y;
+    src_y += vid->clip_y1 - dest_y;
+    dest_y = vid->clip_y1;
+  }
+  if (w<=0 || h<=0) return;
+
+#ifdef DOUBLEBUFFER
+  add_updarea(dest_x,dest_y,w,h);
+#endif
   
   if (lgop==PG_LGOP_NONE) {
     gl_putboxpart(dest_x,dest_y,w,h,src->w,src->h,src->bits,src_x,src_y);
@@ -179,11 +190,11 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
     */
     s = src->bits+src_x+src_y*WIDTH;
     bytew = w*BYTESPERPIXEL;
+    lo = (src->w-w)*BYTESPERPIXEL;
     switch (lgop) {
       
     case PG_LGOP_OR:
-      lo = src->w-w;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
@@ -192,8 +203,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_AND:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
@@ -202,8 +212,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_XOR:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
@@ -212,8 +221,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_INVERT:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         for (iw=bytew;iw;iw--)
           *(b++) = *(s++);
         gl_putbox(dest_x,dest_y,w,1,svga_buf);
@@ -221,8 +229,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_INVERT_OR:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) |= *(s++);
@@ -231,8 +238,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_INVERT_AND:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) &= *(s++);
@@ -241,8 +247,7 @@ void svga_blit(struct stdbitmap *src,int src_x,int src_y,
       break;
       
     case PG_LGOP_INVERT_XOR:
-      lo = (src->w-w)*BYTESPERPIXEL;
-      for (;h;h--,dest_y++,b+=lo) {
+      for (;h;h--,dest_y++,s+=lo) {
         gl_getbox(dest_x,dest_y,w,1,b=svga_buf);
         for (iw=bytew;iw;iw--)
           *(b++) ^= *(s++);
