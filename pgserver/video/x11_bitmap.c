@@ -1,4 +1,4 @@
-/* $Id: x11_bitmap.c,v 1.1 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11_bitmap.c,v 1.2 2002/11/07 04:48:56 micahjd Exp $
  *
  * x11_bitmap.c - Utilities for dealing with bitmaps in X
  *
@@ -28,6 +28,11 @@
 #include <pgserver/common.h>
 #include <pgserver/x11.h>
 
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+
 
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   return def_bitmap_get_groprender(&XB(bmp)->sb,rend);
@@ -47,6 +52,7 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
   memset(*pxb,0,sizeof(struct x11bitmap));
   (*pxb)->sb.w = w;
   (*pxb)->sb.h = h;
+  (*pxb)->sb.bpp = bpp;
 
   e = x11_new_bitmap_pixmap(*pxb);
   errorcheck;
@@ -71,6 +77,24 @@ g_error x11_new_backbuffer(struct x11bitmap **backbuffer, struct x11bitmap *fron
 }
 
 g_error x11_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
+  if (!XB(bmp)->sb.shm_id)
+    return mkerror(PG_ERRT_IO,145);   /* SHM bitmaps not supported */
+
+  shm->shm_key     = htonl(XB(bmp)->shm_key);
+  shm->shm_length  = htonl(XB(bmp)->sb.pitch * XB(bmp)->sb.h);
+  shm->width       = htons(XB(bmp)->sb.w);
+  shm->height      = htons(XB(bmp)->sb.h);
+  shm->bpp         = htons(XB(bmp)->sb.bpp);
+  shm->pitch       = htons(XB(bmp)->sb.pitch);
+
+  /* Default color space information. Detect an alpha channel
+   * if this bitmap has one.
+   */
+  def_shm_colorspace(XB(bmp)->sb.bpp,
+		     XB(bmp)->sb.w && XB(bmp)->sb.h && 
+		     (*(u32*)XB(bmp)->sb.bits & PGCF_ALPHA),
+		     shm);
+  return success;
 }
 
 /* Free the internal representation of a bitmap without freeing
@@ -89,29 +113,61 @@ void x11_internal_bitmap_free(struct x11bitmap *xb) {
   }
 
   if (xb->sb.shm_id) {
+    XShmDetach(x11_display,&xb->shminfo);
+    XSync(x11_display, False);
     os_shm_free(xb->sb.bits, xb->sb.shm_id);
     xb->sb.shm_id = 0;
   }
 
-  if (xb->is_window)
-    XDestroyWindow(x11_display,xb->d);
-  else
-    XFreePixmap(x11_display,xb->d);
+  if (xb->d) {
+    if (xb->is_window)
+      XDestroyWindow(x11_display,xb->d);
+    else
+      XFreePixmap(x11_display,xb->d);
+  }
 }
 
 /* Allocate a pixmap for internal representation
  * of the given bitmap, using SHM if possible.
  */
 g_error x11_new_bitmap_pixmap(struct x11bitmap *xb) {
-  int w=xb->sb.w, h=xb->sb.h;
+  g_error e;
 
-  /* X doesn't like 0 dimensions */
-  if (!w) w = 1;
-  if (!h) h = 1;
+  /* Nothing to create? */
+  if (!(xb->sb.w && xb->sb.h && xb->sb.bpp))
+    return success;
   
-  /* Allocate a corresponding X pixmap */
-  xb->d = XCreatePixmap(x11_display,RootWindow(x11_display, x11_screen),w,h,vid->bpp);
+  if (x11_using_shm) {
+    xb->sb.pitch = (xb->sb.w * xb->sb.bpp) >> 3;
 
+    /* Set up us the SHM segment! 
+     * FIXME: These SHM segments are insecure! Is there any way to have the X server,
+     *        pgserver, and the client all share the segments without making them
+     *        accessable to everyone?
+     */
+    memset(&xb->shminfo, 0, sizeof(xb->shminfo));
+    e = os_shm_alloc(&xb->sb.bits, xb->sb.pitch * xb->sb.h, 
+		     &xb->sb.shm_id, &xb->shm_key, 0);
+    errorcheck;
+
+    xb->shminfo.shmaddr  = xb->sb.bits;
+    xb->shminfo.shmid    = xb->sb.shm_id;
+    xb->shminfo.readOnly = False;
+
+    /* Get the X server to attach this segment to a pixmap */
+    XShmAttach(x11_display, &xb->shminfo);
+    xb->d = XShmCreatePixmap(x11_display, RootWindow(x11_display, x11_screen),
+			     xb->sb.bits,&xb->shminfo,xb->sb.w,xb->sb.h,
+			     DefaultDepth(x11_display,x11_screen));
+  }
+   
+  else {
+    /* No SHM, allocate a normal pixmap */
+    xb->d = XCreatePixmap(x11_display,RootWindow(x11_display, x11_screen),
+			  xb->sb.w,xb->sb.h,DefaultDepth(x11_display, x11_screen));
+  }
+  
+  return success;
 }
 
 /* The End */

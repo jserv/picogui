@@ -1,4 +1,4 @@
-/* $Id: os.h,v 1.5 2002/11/04 00:04:04 micahjd Exp $
+/* $Id: os.h,v 1.6 2002/11/07 04:48:56 micahjd Exp $
  *
  * os.h - Interface to OS-specific functions used by pgserver, independent
  *        of the actual OS in use. Functions that only exist in a particular
@@ -60,9 +60,14 @@ u32 os_get_timer(void);
  * The key is passed to the client so it can attach to the section, the id
  * is passed to os_shm_free(), and the pointer is self explanatory.
  * The segment will have ownership set to the supplied uid.
+ *
+ * If the 'secure' flag is set when calling os_shm_alloc, then only
+ * the process set with os_shm_set_uid() can access the shm segment.
+ * Otherwise, any process can connect to it.
  */
-g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 pid);
-void os_shm_free(u8 *shmaddr, u32 id);
+g_error os_shm_alloc(u8 **shmaddr, u32 size, s32 *id, s32 *key, int secure);
+void os_shm_set_uid(s32 id, u32 uid);
+void os_shm_free(u8 *shmaddr, s32 id);
 
 /* Recursively scan through all files and directories in the given path,
  * calling the callback for each file found. The callback is given the

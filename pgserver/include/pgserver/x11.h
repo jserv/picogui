@@ -1,4 +1,4 @@
-/* $Id: x11.h,v 1.9 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11.h,v 1.10 2002/11/07 04:48:56 micahjd Exp $
  *
  * x11.h - Header shared by all the x11 driver components in picogui
  *
@@ -35,6 +35,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/extensions/XShm.h>
 
 #ifdef __SVR4
 #include <X11/Sunkeysym.h>
@@ -52,14 +53,16 @@
  * offscreen bitmaps.
  */
 struct x11bitmap {
-  /* Standard picogui bitmap functionality.
-   * There will only be valid bitmap data in here if this is
-   * a pixmap with SHM support.
+  /* Client-side representation used when we have SHM support.
+   * The stdbitmap here is also used to store common parameters,
+   * like size and groprender context.
    */
-  struct stdbitmap sb;          
+  struct stdbitmap sb;
+  s32 shm_key;
+  XShmSegmentInfo shminfo;
 
-  /* X server-side representation */
-  Drawable d;                    /* This can be a Pixmap or a Window */
+  /* X server-side representation, either a pixmap or window */
+  Drawable d;
 
   /* Windows */
   unsigned int is_window:1;      /* Flag indicating if this is a window */
@@ -94,10 +97,13 @@ extern hwrbitmap x11_debug_window;
 extern struct x11bitmap *x11_window_list;
 
 /* A region specifying the entire display */
-Region x11_display_region;
+extern Region x11_display_region;
 
 /* A region specifying the area we're currently rendering to */
-Region x11_current_region;
+extern Region x11_current_region;
+
+/* We're using SHM if nonzero */
+extern int x11_using_shm;
 
 
 /******************************************************** Shared utilities */

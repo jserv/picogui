@@ -1,4 +1,4 @@
-/* $Id: posix.c,v 1.7 2002/11/04 00:04:04 micahjd Exp $
+/* $Id: posix.c,v 1.8 2002/11/07 04:48:56 micahjd Exp $
  *
  * posix.c - Implementation of OS-specific functions for POSIX-compatible systems
  *
@@ -49,6 +49,11 @@ static struct timeval os_posix_first_tick;
 
 /* Value set with os_set_timer */
 u32 os_posix_timer;
+
+/* Magic number used to generate SHM keys
+ * (Anybody nerdy enough to know where it comes from should be punished ;)
+ */
+int os_posix_magic = 3263827;
 
 void r_os_dir_scan(const char *directory, int base_len, 
 		   void (*callback)(const char *file, int pathlen));
@@ -149,18 +154,15 @@ u32 os_get_timer(void) {
  * is passed to os_shm_free(), and the pointer is self explanatory.
  * The segment will have ownership set to the supplied uid.
  */
-g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 uid) {
-  struct shmid_ds ds;
-
-  /* Find an unused SHM key, starting with a magic number.
-   * (Anybody nerdy enough to know where it comes from should be punished ;)
-   */
-  *key = 3263827;
-  while ((*id = shmget(*key,size,IPC_CREAT | IPC_EXCL | 0600)) < 0) {
+g_error os_shm_alloc(u8 **shmaddr, u32 size, s32 *id, s32 *key, int secure) {
+  /* Find an unused SHM key, starting with a magic number. */
+  while ((*id = shmget(os_posix_magic,size,IPC_CREAT | IPC_EXCL | 
+		       (secure ? 0600 : 0666))) < 0) {
     if (errno != EEXIST)
       return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
-    (*key)++;
+    os_posix_magic++;
   }
+  *key = os_posix_magic;
 
   /* Attach it to our address space */
   *shmaddr = shmat(*id,NULL,0);
@@ -169,15 +171,17 @@ g_error os_shm_alloc(u8 **shmaddr, u32 size, u32 *id, u32 *key, u32 uid) {
     return mkerror(PG_ERRT_IO,5);     /* Error creating SHM segment */
   }
 
-  /* Assign ownership */
-  shmctl(*id,IPC_STAT,&ds);
-  ds.shm_perm.uid = uid;
-  shmctl(*id,IPC_SET,&ds);
-
   return success;
 }
 
-void os_shm_free(u8 *shmaddr, u32 id) {
+void os_shm_set_uid(s32 id, u32 uid) {
+  struct shmid_ds ds;
+  shmctl(id,IPC_STAT,&ds);
+  ds.shm_perm.uid = uid;
+  shmctl(id,IPC_SET,&ds);
+}
+
+void os_shm_free(u8 *shmaddr, s32 id) {
   /* Unmap this segment and remove the key itself */
   shmdt(shmaddr);
   shmctl(id, IPC_RMID, NULL);

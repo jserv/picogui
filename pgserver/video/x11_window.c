@@ -1,4 +1,4 @@
-/* $Id: x11_window.c,v 1.1 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11_window.c,v 1.2 2002/11/07 04:48:56 micahjd Exp $
  *
  * x11_util.c - Utility functions for picogui's driver for the X window system
  *
@@ -192,7 +192,7 @@ void x11_internal_window_resize(hwrbitmap window, int w, int h) {
   a = XInternAtom(x11_display, "WM_DELETE_WINDOW", False);
   XSetWMProtocols(x11_display, xb->d, &a, 1);
 
-  XFlush(x11_display);
+  x11_acknowledge_resize(window,w,h);
 }
 
 void x11_window_get_position(hwrbitmap window, s16 *x, s16 *y) {

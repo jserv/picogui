@@ -150,3 +150,4 @@
 /* 142 */ "This application manager requres a rootless capable video driver",
 /* 143 */ "Unknown application manager specified",
 /* 144 */ "Badly formed command line",
+/* 145 */ "Shared memory bitmaps are not supported with current settings",

@@ -1,4 +1,4 @@
-/* $Id: dvbl_bitmap.c,v 1.16 2002/11/03 23:52:26 micahjd Exp $
+/* $Id: dvbl_bitmap.c,v 1.17 2002/11/07 04:48:56 micahjd Exp $
  *
  * dvbl_bitmap.c - This file is part of the Default Video Base Library,
  *                 providing the basic video functionality in picogui but
@@ -529,8 +529,9 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   if (!b->freebits)
     return mkerror(PG_ERRT_BUSY,4);     /* Bitmap is already mapped */
 
-  e = os_shm_alloc(&shmaddr, size, &id, &key, uid);
+  e = os_shm_alloc(&shmaddr, size, &id, &key, 1);
   errorcheck;
+  os_shm_set_uid(id,uid);
 
   /* Copy over the bitmap data and delete the original */
   memcpy(shmaddr, b->bits, size);
@@ -549,18 +550,24 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
   shm->height      = htons(b->h);
   shm->bpp         = htons(b->bpp);
   shm->pitch       = htons(b->pitch);
-  shm->width       = htons(b->w);
 
-  /* The rest of this is kind of a set of heuristics for guessing the format...
-   * the other VBLs can always override this when it's not enough.
+  /* Default color space information. Detect an alpha channel
+   * if this bitmap has one.
    */
+  def_shm_colorspace(b->bpp,
+		     size >= 4 && (*(u32*)shmaddr & PGCF_ALPHA),
+		     shm);
+  return success;
+}
 
-  if (b->bpp < 8) {
+/* Default heuristics for reporting color information in SHM bitmaps */
+void def_shm_colorspace(int bpp, int alpha, struct pgshmbitmap *shm) {
+  if (bpp < 8) {
     /* Grayscale if less than 8bpp 
      */
     shm->format = htonl(PG_BITFORMAT_GRAYSCALE);
   }
-  else if (b->bpp == 32 && size >= 4 && (*(u32*)shmaddr & PGCF_ALPHA)) {
+  else if (bpp == 32 && alpha) {
     /* Is this an ARGB image? 
      */
     shm->format       = htonl(PG_BITFORMAT_TRUECOLOR | PG_BITFORMAT_ALPHA);
@@ -576,7 +583,7 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
     shm->blue_length  = htons(8);
     shm->alpha_length = htons(7);
   }
-  else if (b->bpp == 16) {
+  else if (bpp == 16) {
     /* Assume 5-6-5 color in 16bpp mode
      */
     shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
@@ -589,7 +596,7 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
     shm->green_length = htons(6);
     shm->blue_length  = htons(5);
   }
-  else if (b->bpp >= 24) {
+  else if (bpp >= 24) {
     shm->format       = htonl(PG_BITFORMAT_TRUECOLOR);
     shm->red_mask     = htonl(0x00FF0000);
     shm->green_mask   = htonl(0x0000FF00);
@@ -600,7 +607,7 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
     shm->green_length = htons(8);
     shm->blue_length  = htons(8);
   }
-  else if (b->bpp == 8) { 
+  else if (bpp == 8) { 
     /* A few different choices in 8bpp mode.. 
      */
 #ifdef CONFIG_PAL8_222
@@ -629,8 +636,6 @@ g_error def_bitmap_getshm(hwrbitmap bmp, u32 uid, struct pgshmbitmap *shm) {
     shm->format       = htonl(PG_BITFORMAT_INDEXED);
 #endif
   }
-
-  return success;
 }
 
 /* The End */

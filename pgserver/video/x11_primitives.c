@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.7 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.8 2002/11/07 04:48:56 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -35,6 +35,7 @@
 
 void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   GC g = x11_gctab[lgop];
+
   if (!g) {
     def_pixel(dest,x,y,c,lgop);
     return;
@@ -47,6 +48,9 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
 hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
   XImage *img;
   hwrcolor c;
+
+  /* XXXXXXXX */
+  //  return linear32_getpixel(&XB(src)->sb,x,y);
 
 #ifdef CONFIG_X11_NOPIXEL
   return VID(color_pgtohwr)(0xFF0000);

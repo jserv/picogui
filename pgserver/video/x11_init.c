@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.11 2002/11/07 00:44:57 micahjd Exp $
+/* $Id: x11_init.c,v 1.12 2002/11/07 04:48:56 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -48,10 +48,21 @@ hwrbitmap x11_debug_window;
 /* A list of all allocated windows */
 struct x11bitmap *x11_window_list;
 
+/* A region specifying the entire display */
+Region x11_display_region;
+
+/* A region specifying the area we're currently rendering to */
+Region x11_current_region;
+
+/* We're using SHM if nonzero */
+int x11_using_shm;
+
 
 /******************************************************** Initialization */
 
 g_error x11_init(void) {
+  int major,minor;
+  Bool pixmaps;
 
   /* Connect to the default X server */
   x11_display = XOpenDisplay(NULL);
@@ -60,9 +71,22 @@ g_error x11_init(void) {
   x11_screen = DefaultScreen(x11_display);
 
   x11_fd = ConnectionNumber(x11_display);
-  vid->bpp  = DefaultDepth(x11_display, x11_screen);
   vid->display = NULL;
   x11_gc_setup(RootWindow(x11_display, x11_screen));
+
+  /* X counts only the color itself in the depth, while
+   * picogui counts the space allocated for the color. So
+   * if the X server says the display is 24bpp, it's really
+   * 32bpp in our terminology. It doesn't seem that the X
+   * server uses 24bpp.
+   */  
+  vid->bpp  = DefaultDepth(x11_display, x11_screen);
+  if (vid->bpp == 24)
+    vid->bpp = 32; 
+
+  /* Are SHM pixmaps supported? */
+  x11_using_shm = XShmQueryVersion(x11_display, &major, &minor, &pixmaps) && pixmaps;
+  x11_using_shm = get_param_int("video-x11","shm",x11_using_shm);
   
   /* Load the matching input driver */
   return load_inlib(&x11input_regfunc,&inlib_main);
@@ -200,6 +224,7 @@ g_error x11_regfunc(struct vidlib *v) {
   v->window_get_position   = &x11_window_get_position;
   v->window_get_size       = &x11_window_get_size;
   v->multiblit             = &x11_multiblit;
+  v->bitmap_getshm         = &x11_bitmap_getshm;
 
   return success;
 }

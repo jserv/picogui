@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.111 2002/11/04 10:29:33 micahjd Exp $
+/* $Id: video.h,v 1.112 2002/11/07 04:48:56 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -909,6 +909,9 @@ void drivermessage(u32 message, u32 param, u32 *ret);
 extern pgcolor palette8_custom[256];
 g_error load_custom_palette(const char *name);
 #endif
+
+/* Default heuristics for reporting color information in SHM bitmaps */
+void def_shm_colorspace(int bpp, int alpha, struct pgshmbitmap *shm);
 
 #endif /* __H_VIDEO */
 

@@ -163,6 +163,10 @@ quoted appropriately. For example:
   Use XBell to handle PGDM_SOUNDFX events.
   This is off by default
 
+- shm
+  Boolean value indicating whether to use shared memory pixmaps
+  By default it will use SHM if it is available.
+
 [input-x11]
 
 - scrolldistance
