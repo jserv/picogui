@@ -7,6 +7,10 @@ plenty of time to code :)
       
       * Removed some obsolete themes
 
+      * video/sdlfb.c: Added SDL_RESIZABLE flag
+
+      * video/sdlinput.c: Added call to video_setmode() on window resize
+
 
 2001-03-23    Micah Dowty <micahjd@users.sourceforge.net>
 

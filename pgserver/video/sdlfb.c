@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.11 2001/03/22 00:20:38 micahjd Exp $
+/* $Id: sdlfb.c,v 1.12 2001/03/26 05:35:35 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -64,7 +64,7 @@ g_error sdlfb_init(int xres,int yres,int bpp,unsigned long flags) {
 }
 
 g_error sdlfb_setmode(int xres,int yres,int bpp,unsigned long flags) {
-  unsigned long sdlflags = 0;
+  unsigned long sdlflags = SDL_RESIZABLE;
   char str[80];
   SDL_Color palette[256];
   int i;

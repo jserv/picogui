@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.14 2001/03/21 05:21:18 micahjd Exp $
+/* $Id: sdlinput.c,v 1.15 2001/03/26 05:35:35 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -92,6 +92,11 @@ void sdlinput_poll(void) {
       
   case SDL_QUIT:
     request_quit();
+    break;
+
+  case SDL_VIDEORESIZE:
+    video_setmode(evt.resize.w,evt.resize.h,vid->bpp,PG_FM_SET,vid->flags);
+    update(NULL,1);
     break;
   }
 }
