@@ -22,6 +22,8 @@ Utilities for manipulating version numbers
 # 
 _svn_id = "$Id$"
 
+import PGBuild.Errors
+
 
 def decomposeVersion(version):
     """Utility for version number manipulation- separate a version number into
@@ -145,11 +147,29 @@ def scanIds(package):
     return moduleDict
 
 
-def findLatestRevision(idList):
-    """Given a list of Id tags, returns the latest revision number"""
+def findLatestRevision(idDict):
+    """Given a module->id dictionary, returns the latest revision number"""
     latest = 0
-    for id in idList:
-        rev = int(id.split(" ", 3)[2])
+    for module in idDict:
+        id = idDict[module]
+
+        # Id tag not expanded?
+        if len(id)==4:
+            raise PGBuild.Errors.InternalError(("Module %s has an unexpanded Id tag even " +
+                                                "though the main package presumably has one. " +
+                                                "There could be an error in your source checkout, " +
+                                                "or a missing svn:keywords property on this module.") % module)
+        idSplit = id.split(" ", 3)
+
+        # Id tag filename doesn't match the module name?
+        if (not idSplit[1].startswith("__")) and idSplit[1][:-3] != module.split(".")[-1]:
+            raise PGBuild.Errors.InternalError(("Module %s has an Id tag with the wrong filename. " +
+                                                "This probably means there is no svn:keywords tag " +
+                                                "for that module, or that your current source isn't "
+                                                "up to date.") % module)
+
+        # Extract the revision
+        rev = int(idSplit[2])
         if rev > latest:
             latest = rev
     return latest
@@ -178,7 +198,7 @@ def determineVersion():
 
     # Scan the project's $Id$ tags and get the latest revision
     PGBuild.svn_id_dict = scanIds(PGBuild)
-    PGBuild.revision = findLatestRevision(PGBuild.svn_id_dict.values())
+    PGBuild.revision = findLatestRevision(PGBuild.svn_id_dict)
     return "svn-r%d" % PGBuild.revision
 
 
