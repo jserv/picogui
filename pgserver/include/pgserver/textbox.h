@@ -1,4 +1,4 @@
-/* $Id: textbox.h,v 1.11 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: textbox.h,v 1.12 2002/02/03 16:07:58 lonetech Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
@@ -121,6 +121,8 @@ struct txtformat {
  */
 g_error text_load(struct textbox_cursor *c, const char *fmt_code,
 		  const u8 *data, u32 datalen);
+g_error text_save(struct textbox_cursor *c, const char *fmt_code,
+		  u8 **data, u32 *datalen);
 
 /* Clear out the existing data and reset the cursor */
 g_error text_nuke(struct textbox_cursor *c);
@@ -135,6 +137,10 @@ extern struct txtformat text_formats[];
 g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
 g_error plaintext_load(struct textbox_cursor *c, const u8 *data, u32 datalen);
 
+/* Format saver functions */
+#ifdef CONFIG_FORMAT_TEXTSAVE
+g_error plaintext_save(struct textbox_cursor *c, u8 **data, u32 *datalen);
+#endif
 
 #endif /* __H_TEXTBOX */   
 

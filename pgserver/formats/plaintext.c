@@ -1,4 +1,4 @@
-/* $Id: plaintext.c,v 1.6 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: plaintext.c,v 1.7 2002/02/03 16:07:58 lonetech Exp $
  *
  * plaintext.c - Load plain text into the textbox widget
  *
@@ -27,12 +27,61 @@
 
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
+#ifdef CONFIG_FORMAT_TEXTSAVE
+#include <pgserver/divtree.h>
+#include <pgserver/widget.h>
+#endif
 
 #include <ctype.h>
 #include <string.h>
 
 g_error plaintext_word(struct textbox_cursor *c, const u8 *start,
 		       const u8 *end);
+
+#ifdef CONFIG_FORMAT_TEXTSAVE
+g_error plaintext_save(struct textbox_cursor *c, u8 **data, u32 *datalen)
+ {
+  g_error e;
+  const u8 *str;
+  struct divnode *line, *word;
+  struct gropctxt gctx;
+  int wordlen;
+
+  *datalen=0;
+  e = g_malloc((void**)data, 1);
+  errorcheck;
+  (*data)[0]=0;
+  line=c->head;
+  while(line)
+   {
+    word=line->div;
+    while(word)
+     {
+      gropctxt_init(&gctx, word->div);
+      if(gctx.current && gctx.current->type==PG_GROP_TEXT)
+       {
+	e = rdhandle((void**)&str, PG_TYPE_STRING, c->widget->owner,
+	    gctx.current->param[0]);
+	errorcheck;
+	wordlen=strlen(str);
+	e = g_realloc((void**)data, *datalen+wordlen+2);
+	errorcheck;
+	strcpy(*data+*datalen, str);
+	*datalen+=wordlen;
+	(*data)[(*datalen)++]=' ';
+	(*data)[*datalen]=0;
+       }
+      word=word->next;
+     }
+    e = g_realloc((void**)data, *datalen+2);
+    errorcheck;
+    (*data)[(*datalen)++]='\n';
+    (*data)[*datalen]=0;
+    line=line->next;
+   }
+  return success;
+ }
+#endif
 
 g_error plaintext_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
   const u8 *start = data;

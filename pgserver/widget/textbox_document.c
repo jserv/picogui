@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.28 2002/02/02 20:01:23 lonetech Exp $
+/* $Id: textbox_document.c,v 1.29 2002/02/03 16:07:58 lonetech Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -37,7 +37,11 @@
 
 struct txtformat text_formats[] = {
 
+#ifdef CONFIG_FORMAT_TEXTSAVE
+  { {'T','E','X','T'}, &plaintext_load, &plaintext_save },
+#else
   { {'T','E','X','T'}, &plaintext_load, NULL },
+#endif
 #ifdef CONFIG_FORMAT_HTML
   { {'H','T','M','L'}, &html_load, NULL },
 #endif
@@ -304,7 +308,7 @@ g_error text_insert_string(struct textbox_cursor *c, const char *str,
     size_t ol, nl;
 
     hstr=c->c_gctx.current->param[0];
-    e=rdhandlep(&oldstr, PG_TYPE_STRING | hflag, c->widget->owner, hstr);
+    e=rdhandlep(&oldstr, PG_TYPE_STRING, c->widget->owner, hstr);
     errorcheck;
     ol=strlen(*oldstr);
     nl=strlen(str);
@@ -470,10 +474,24 @@ g_error text_load(struct textbox_cursor *c, const char *fmt_code,
   while (f->name[0] && strncmp(f->name,fmt_code,4))
     f++;
 
-  if (!f->name[0])
+  if (!f->load)
     return mkerror(PG_ERRT_BADPARAM,51);  /* Unsupported text format */
 
   return (*f->load)(c,data,datalen);
+}
+
+/* Save text of the specified format */
+g_error text_save(struct textbox_cursor *c, const char *fmt_code,
+		  u8 **data, u32 *datalen) {
+  struct txtformat *f = text_formats;
+
+  while (f->name[0] && strncmp(f->name,fmt_code,4))
+    f++;
+
+  if (!f->save)
+    return mkerror(PG_ERRT_BADPARAM,51);  /* Unsupported text format */
+
+  return (*f->save)(c,data,datalen);
 }
 
 /* The End */

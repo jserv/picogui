@@ -179,6 +179,7 @@ bool 'JPEG: lossy compression (needs libjpeg)'           CONFIG_FORMAT_JPEG
 bool 'BMP: windows bitmap'                               CONFIG_FORMAT_BMP
 bool 'PNG: portable network graphic (needs libpng)'      CONFIG_FORMAT_PNG
 bool 'GIF: graphics interchange format'                  CONFIG_FORMAT_GIF
+bool 'TEXTSAVE: Plain text saving'			 CONFIG_FORMAT_TEXTSAVE
 bool 'HTML: hypertext markup'                            CONFIG_FORMAT_HTML
 endmenu
 

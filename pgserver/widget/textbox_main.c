@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.30 2002/02/02 20:52:52 lonetech Exp $
+/* $Id: textbox_main.c,v 1.31 2002/02/03 16:07:58 lonetech Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -164,6 +164,11 @@ g_error textbox_set(struct widget *self,int property, glob data) {
 }
 
 glob textbox_get(struct widget *self,int property) {
+  handle h;
+  u8 *data, *fmt;
+  u32 datalen;
+  g_error e;
+
   switch (property) {
 
   case PG_WP_TEXTFORMAT:
@@ -172,6 +177,27 @@ glob textbox_get(struct widget *self,int property) {
   case PG_WP_AUTOSCROLL:
     return (glob) DATA->autoscroll;
 
+  case PG_WP_TEXT:
+    /* Load handles */
+    if (DATA->textformat) {
+      if (iserror(rdhandle((void **)&fmt,PG_TYPE_STRING,-1,DATA->textformat))) 
+	return mkerror(PG_ERRT_HANDLE,61); /* bad textformat handle */
+    }    
+    else
+      fmt = "TEXT";   /* Default to plaintext */
+
+    /* Using the '+' modifier? */
+    if (*fmt == '+') {
+      /* Lose the + */
+      fmt++;
+    }
+
+    /* Create string */
+    e = text_save(&DATA->c, fmt, &data, &datalen);
+    errorcheck;
+    e = mkhandle(&h, PG_TYPE_STRING, self->owner, data);
+    errorcheck;
+    return (glob) h;
   }
   return 0;
 }
