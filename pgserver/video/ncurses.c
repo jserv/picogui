@@ -1,5 +1,5 @@
 
-/* $Id: ncurses.c,v 1.2 2001/01/14 23:32:48 micahjd Exp $
+/* $Id: ncurses.c,v 1.3 2001/01/14 23:42:24 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -114,15 +114,15 @@ static struct font ncurses_font = {
 
 /* Bogus fontstyle node */
 static struct fontstyle_node ncurses_font_style = {
-   /* name = */ NULL,
+   /* name = */ "Ncurses Pseudofont",
    /* size = */ 1,
    /* flags = */ PG_FSTYLE_FIXED,
    /* next = */ NULL,
    /* normal = */ &ncurses_font,
-   /* bold = */ &ncurses_font,
-   /* italic = */ &ncurses_font,
-   /* bolditalic = */ &ncurses_font,
-   /* ulineh = */ 0,
+   /* bold = */ NULL,
+   /* italic = */ NULL,
+   /* bolditalic = */ NULL,
+   /* ulineh = */ 1,
    /* slineh = */ 0,
    /* boldw = */ 0
 };
@@ -214,7 +214,7 @@ void ncurses_charblit(unsigned char *chardat,int dest_x,
    
    /* Logically or to combine the attribute (c) and the 
     * character (in the bitmap table) */
-   mvaddch(dest_y,dest_x,attr | (*chardat));   
+   mvaddch(dest_y,dest_x,(*chardat));   
 }
 
 /**** We use a ncurses character cell as our hwrcolor */
