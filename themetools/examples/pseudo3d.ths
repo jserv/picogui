@@ -1,4 +1,4 @@
-/* $Id: pseudo3d.ths,v 1.4 2001/03/30 05:53:52 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.5 2001/03/30 06:11:09 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
@@ -43,7 +43,7 @@ object base.interactive {
 /* Check boxes */
 object checkbox {
    bgfill = fillstyle {
-      Bitmap(x,y+((h-12)>>1)-1,12,12,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1,PG_LGOP_NONE,0,0);
       x = x + 16;
    };
    bitmap1 = LoadBitmap("data/check_unchecked.pnm");
