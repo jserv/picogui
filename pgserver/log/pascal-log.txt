@@ -1,0 +1,13 @@
+2001-03-19    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+
+	* config.in: Supports XCOPILOT as target
+	
+	* debug/videotest.c: Tests can run in a loop and/or cycle
+	
+	* include/pgserver/mc68328digi.h: New version to reflect drivers
+	changes in the kernel
+
+	* input/tsinput.c: Ditto
+
+	* video/ez328.c: Works with XCOPILOT
+
