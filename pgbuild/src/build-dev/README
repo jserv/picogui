@@ -1,5 +1,6 @@
-This directory is expected to be in the python path when
-using PGBuild. It is comprised of sources from multiple locations:
+This directory is expected to be at the beginning of the python
+path when using PGBuild. It is comprised of sources from
+multiple locations:
 
   - SCons
     v0.13
@@ -23,6 +24,7 @@ using PGBuild. It is comprised of sources from multiple locations:
     The command line frontend for PGBuild uses Optik as its command
     line parser. Note that SCons already includes a copy of Optik,
     but it's been modified.
+    See http://optik.sourceforge.net/
 
   - PGBuild
     dev
@@ -30,4 +32,4 @@ using PGBuild. It is comprised of sources from multiple locations:
     This directory contains the new code for the PGBuild system.
     It is maintained in-place in the PicoGUI repository.
 
-  
+
