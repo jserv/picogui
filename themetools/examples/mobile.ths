@@ -1,4 +1,4 @@
-/* $Id: mobile.ths,v 1.5 2001/09/02 19:10:26 micahjd Exp $
+/* $Id: mobile.ths,v 1.6 2001/09/02 19:20:26 micahjd Exp $
  *
  * Theme for small mobile communications devices with very limited screen space
  * and only a keypad for input. This would be good for a cell phone, credit
@@ -88,7 +88,7 @@ object field {
    * At 128x64, this can fit 17 characters horizontally. The largest credit
    * card numbers are 16 digits.
    */
-  height = 24;
+  height = 22;
   font = Font("Helvetica",12,0);
 }
 
