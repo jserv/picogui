@@ -1,4 +1,4 @@
-/* $Id: stddialog.h,v 1.6 2001/08/01 12:12:02 micahjd Exp $
+/* $Id: stddialog.h,v 1.7 2001/08/02 22:19:38 micahjd Exp $
  *
  * picogui/stddialog.h - Various preconstructed dialog boxes the application
  *                       may use. These are implemented 100% client-side using
@@ -152,7 +152,7 @@ int pgDatePicker(int *year, int *month, int *day, const char *title);
  * \param deftxt  If nonzero, a string handle for default field text
  *
  * \returns A string handle with the value of the input field
- *          upon clicking "Ok" or NULL if the dialog was cancelled.
+ *          upon clicking "Ok" or zero if the dialog was cancelled.
  *          It is the app's responsibility to use pgDelete or contexts to
  *          delete this handle.
  *
@@ -161,6 +161,19 @@ int pgDatePicker(int *year, int *month, int *day, const char *title);
 pghandle pgInputDialog(const char *title, const char *message,
 		       pghandle deftxt);
 
+/*! 
+ * \brief Allow the user to select any font
+ *
+ * \param title   The title string displayed across the dialog's top
+ * 
+ * \returns A font handle describing the selected font
+ *          upon clicking "Ok" or zero if the dialog was cancelled.
+ *          It is the app's responsibility to use pgDelete or contexts to
+ *          delete this handle.
+ *
+ * \sa pgNewFont, pgDialogBox
+ */
+pghandle pgFontPicker(const char *title);
 
 //! \}
 

@@ -13,7 +13,22 @@
 pghandle wDate;
 int year,month,day;
 
-pghandle wInputBtn;
+pghandle wInputBtn,wFontBtn;
+
+/******************* Font picker */
+
+int btnFont(struct pgEvent *evt) {
+  pghandle fnt;
+
+  fnt = pgFontPicker("Pick a new font");
+
+  if (fnt) {
+    /* Delete the old font, and set the new font */
+    
+    pgDelete(pgGetWidget(wFontBtn,PG_WP_FONT));
+    pgSetWidget(wFontBtn,PG_WP_FONT,fnt,0);
+  }
+}
 
 /******************* String input */
 
@@ -156,6 +171,14 @@ int main(int argc,char **argv) {
 	      PG_WP_SIDE,PG_S_TOP,
 	      0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnInput,NULL);
+
+  /* Text input */
+  wFontBtn = pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("pgFontPicker: Select a font"),
+	      PG_WP_SIDE,PG_S_TOP,
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnFont,NULL);
 
 
   pgEventLoop();

@@ -11,6 +11,7 @@ libpgui_la_SOURCES = \
 	pgfx_bitmap.c \
 	stddialog.c \
 	dlg_datepicker.c \
+	dlg_fontpicker.c \
 	$(PLATFORM)
 
 EXTRA_libpgui_la_SOURCES = platform.c
