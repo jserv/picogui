@@ -14,7 +14,7 @@ license = ''' GNU GPL '''
 
 prefix = '/'
 
-depends = [ 'picoguiclient' ]
+depends = [ 'picoguiclient', 'processmanager' ]
 
 asserts = [
     (S ('module/picoguiapps/pgboard_run_us_qwerty') |
@@ -36,6 +36,7 @@ runtime = [
                           'share/Terminal.app' ],
               help = "PicoGUI terminal" ),
     Runtime ( 'pgboard', 'Virtual Keyboard',
+              depends = [ 'picoguiclient/library' ],
               content = [ 'bin/pgboard' ],
               help = "Virtual Keyboard for PicoGUI" ),
     Runtime ( 'fitaly', 'Fitaly Keymap',
@@ -139,8 +140,8 @@ def prepare (module, platform, project):
     command = command + " --with-picogui=%s" % \
               project ['module/picoguiclient'].path ['dfl']
 
-    command = command + " --with-rm=%s" % \
-              project ['module/resourcemanager'].path ['dfl']
+    command = command + " --with-pm=%s" % \
+              project ['module/processmanager'].path ['dfl']
 
     if project.value ['option/picoguiapps/debug'] :
         command += ' --enable-debug'

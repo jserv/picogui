@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.13 2002/02/05 15:46:34 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.14 2002/09/20 12:01:38 cgrigis Exp $
  *
  * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -42,25 +42,7 @@
 #include "pgboard.h"
 #include "pgboard_api.h"
 
-#ifdef USE_RM
-
-#include <rm_client.h>
-
-#endif /* USE_RM */
-
-#ifdef USE_RM
-
-/* Status code for all RM operations */
-RMStatus rm_status;
-
-#endif /* USE_RM */
-
 /* Prototype declarations */
-
-/*
- * Run the 'pgboard' process
- */
-static int run_pgboard ();
 
 /*
  * Test the presence of a physical keyboard.
@@ -77,46 +59,6 @@ static int physical_keyboard_available ();
  *               1 --> the command is always sent to the virtual keyboard
  */
 static void send_command (struct keyboard_command * cmd, int force);
-
-
-/*
- * Run the 'pgboard' process
- *
- * return : 1 if success, 0 if an error occurred
- */
-int run_pgboard ()
-{
-  int retValue = 0;
-
-#ifdef POCKETBEE  
-
-#  ifdef USE_RM
-
-  /* Initialize RM */
-  if ( (rm_status = rm_init ()) != RM_OK ) {
-    DPRINTF ("cannot init RM (error: %d)\n", rm_status);
-  }
-
-  DPRINTF ("about to wait on RM\n");
-
-  /* Wait on the RM to start 'pgboard' */
-  if ( (rm_status = rm_monitor_wait ("pgboard", 5, NULL)) == RM_OK ) {
-    /* 'pgboard' properly started */
-    retValue = 1;
-  } else if (rm_status == RM_ERR_TIMEOUT) {
-    /* 'pgboard' did not start within the timeout limit */
-    DPRINTF ("timeout expired waiting on RM\n");
-  } else {
-    /* RM returned an error */
-    DPRINTF ("error waiting on RM (error: %d)\n", rm_status);
-  }
-
-#  endif /* USE_RM */
-
-#endif /* POCKETBEE */
-
-  return retValue;
-}
 
 
 /*
@@ -157,31 +99,11 @@ void send_command (struct keyboard_command * cmd, int force)
       DPRINTF ("sending command: %d\n", cmd->type);
       cmd->type = htons (cmd->type);
 
-      if ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
+      while ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
 	{
-	  DPRINTF ("'pgboard' not running, attempting to start it ...\n");
+	  DPRINTF ("'pgboard' not running, please start it ...\n");
 
-	  /* Start the virtual keyboard */
- 	  if (!run_pgboard ()) return;
-
-	  /* Wait until it has started */
-	  while ( !(kb = pgFindWidget (PG_KEYBOARD_APPNAME)) )
-	    {
-	      DPRINTF ("Waiting for pgboard ...\n");
-	      sleep (1);
-	    }
-
-	  /* 
-	   * If the user command is TOGGLE, send a HIDE command first, so as
-	   * to have the intended result.
-	   */
-	  if (cmd->type == PG_KEYBOARD_TOGGLE)
-	    {
-	      struct keyboard_command hide_cmd = {htons (PG_KEYBOARD_HIDE)};
-	      pgAppMessage (kb, pgFromMemory (&hide_cmd, sizeof (struct keyboard_command)));
-	    }
-
-	  DPRINTF ("done.\n");
+	  sleep (2);
 	}
 
       /* Send the user command */

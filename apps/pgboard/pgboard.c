@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.29 2002/07/03 22:03:25 micahjd Exp $
+/* $Id: pgboard.c,v 1.30 2002/09/20 12:01:38 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -39,9 +39,9 @@
 #  include <signal.h>
 #  include <sys/stat.h>
 #  include <fcntl.h>
-#  ifdef USE_RM
-#    include <rm_client.h>
-#  endif /* USE_RM */
+#  ifdef USE_PM
+#    include <pm_client.h>
+#  endif /* USE_PM */
 #endif /* POCKETBEE */
 #include <netinet/in.h>
 #include <picogui.h>
@@ -66,13 +66,6 @@ static int enable_status = 1;
 static unsigned short current_patnum;
 /* Flag indicating whether the keyboard is blocked */
 static int blocked = 0;
-
-#ifdef USE_RM
-
-/* Status code for all RM operations */
-RMStatus rm_status;
-
-#endif /* USE_RM */
 
 
 /* Structure to hold the current keyboard context */
@@ -401,14 +394,6 @@ void drawDisabledKeyboard ()
 void proper_exit ()
 {
 
-#ifdef USE_RM
-
-  if ( (rm_status = rm_exit ()) != RM_OK ) {
-    DPRINTF ("cannot exit RM (error: %d)\n", rm_status);
-  }
-
-#endif /* USE_RM */
-
 }
 
 /*
@@ -511,21 +496,16 @@ int main(int argc,char **argv) {
 
 #ifdef POCKETBEE
 
-#  ifdef USE_RM
+#  ifdef USE_PM
 
-  /* Initialize RM */
-  if ( (rm_status = rm_init ()) != RM_OK ) {
-    DPRINTF ("cannot init RM (error: %d)\n", rm_status);
-  }
+  DPRINTF ("about to tell PM we are ready\n");
   
-  DPRINTF ("about to tell RM we are ready\n");
-  
-  /* Signal the RM of a proper start */
-  if ( (rm_status = rm_monitor_ready ()) != RM_OK ) {
-    DPRINTF ("cannot signal RM (error: %d)\n", rm_status);
+  /* Signal the PM of a proper start */
+  if (pm_ready () == -1) {
+    DPRINTF ("cannot signal PM (error during pm_ready)\n");
   }
 
-#  endif /* USE_RM */
+#  endif /* USE_PM */
 
   /* Find the public box in the finder */
   {

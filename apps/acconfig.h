@@ -1,10 +1,10 @@
-/* $Id: acconfig.h,v 1.2 2002/02/05 15:46:34 cgrigis Exp $ */
+/* $Id: acconfig.h,v 1.3 2002/09/20 12:01:35 cgrigis Exp $ */
 
 /* If set, we are compiling for PocketBee */
 #undef POCKETBEE
 
-/* If set, use the PocketBee Resource Manager */
-#undef USE_RM
+/* If set, use the PocketBee Process Manager */
+#undef USE_PM
 
 /* To enable debug */
 #undef DEBUG
