@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.22 2002/02/02 22:37:46 micahjd Exp $
+/* $Id: linear4.c,v 1.23 2002/02/02 23:28:59 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -313,10 +313,10 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
       w2 = w;
       if (x&1) {
 #ifdef SWAP_NYBBLES
-	 *p &= 0xF0;
+	 *p &= 0x0F;
 	 *p |= c<<4;
 #else
-	 *p &= 0x0F;
+	 *p &= 0xF0;
 	 *p |= c;
 #endif
 	 p++;
@@ -326,10 +326,10 @@ void linear4_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
       if (w2&1) {
 	 p  += (w2>>1);
 #ifdef SWAP_NYBBLES
-	 *p &= 0x0F;
+	 *p &= 0xF0;
 	 *p |= c;
 #else
-	 *p &= 0xF0;
+	 *p &= 0x0F;
 	 *p |= c << 4;
 #endif
       }
