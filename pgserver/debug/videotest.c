@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.30 2002/10/12 15:13:31 micahjd Exp $
+/* $Id: videotest.c,v 1.31 2002/10/14 10:22:11 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -75,7 +75,7 @@ void testpat_line(void) {
    fd->lib->draw_string(fd,vid->display, xy_to_pair(7,7),
 			fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),NULL,PG_LGOP_NONE,0);
    fd->lib->draw_string(fd,vid->display, xy_to_pair(7,vid->lyres-8),
-			fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),NULL,PG_LGOP_NONE,0);
+			fg,pgstring_tmpwrap("PicoGUI Video Test Pattern #1"),NULL,PG_LGOP_NONE,90);
 
    /* Center the test pattern bounding box */
    patw = ((vid->lxres<vid->lyres)?vid->lxres:vid->lyres) - 40;

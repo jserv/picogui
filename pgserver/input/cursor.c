@@ -1,4 +1,4 @@
-/* $Id: cursor.c,v 1.4 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: cursor.c,v 1.5 2002/10/14 10:22:12 micahjd Exp $
  *
  * cursor.c - Cursor abstraction and multiplexing layer 
  *
@@ -81,7 +81,8 @@ g_error cursor_new(struct cursor **crsr, handle *h, int owner) {
 
 void cursor_delete(struct cursor *crsr) {
   cursor_hide(crsr);
-  free_sprite(crsr->sprite);
+  if (crsr->sprite)
+    free_sprite(crsr->sprite);
   cursor_list_remove(crsr);
   g_free(crsr);
 }
@@ -230,7 +231,7 @@ void cursor_move(struct cursor *crsr, int x, int y) {
 void cursor_hide(struct cursor *crsr) {
   handle old_under = crsr->ctx.widget_under;
 
-  if (!crsr->sprite->visible)
+  if (!crsr->sprite || !crsr->sprite->visible)
     return;
 
   crsr->sprite->visible = 0;
