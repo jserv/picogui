@@ -403,3 +403,17 @@ CONFIG_VBL_SLOWVBL
       There are a couple important config file options that control this.
       You need to enable the VBL with your video driver's config.
       The VBL itself takes some options controlling the amount of delay.
+
+CONFIG_FAST_ALPHA
+      This puts the color conversion code directly into the blitter and uses
+      a look up table for the actual blending. The table takes 32k of RAM
+      while in use, and the color conversion ties the blitter to one color
+      representation, which you must select here.
+
+DRIVER_SDLGL
+      This is an experimental driver that is designed to merge PicoGUI and
+      OpenGL to give a partially 3D user interface with several opportunities
+      for cool special effects :)
+      To use this you'll need a hardware-accelerated OpenGL implementation,
+      SDL, the SDL_ttf library, and the sdlinput driver. See README.opengl
+      for more information.

@@ -1,0 +1,43 @@
+-------------------- OpenGL support in PicoGUI --
+
+PicoGUI now has a driver for doing OpenGL video, sdlgl. At this time the
+driver is experimental.
+
+Required libraries:
+ - SDL
+ - SDL_ttf
+ - OpenGL
+ - GLU
+
+Required PicoGUI components:
+ - sdlinput
+ - linear32
+
+In addition, you will need some TrueType fonts installed. By default it
+will search for them in /usr/share/fonts/truetype. I have been using the
+fonts in the "ttf-openoffice" Debian package.
+
+The sdlgl driver supports several config file options, documented in
+the README.configfile. It also adds several keyboard commands you can
+use for debugging while PicoGUI is running:
+
+ - CTRL-ALT-Q: camera zoom/pan mode. While in this mode, you can pan the
+               camera using the arrow keys or the mouse, and zoom using
+               the W and S keys or the mouse wheel. Exit this with space,
+               escape, or CTRL-ALT-Q.
+
+ - CTRL-ALT-E: camera rotate mode. While in this mode, you can rotate
+               the screen about the X and Y axes using the mouse or
+               arrow keys, and you can rotate it about the Z axis using
+               the W and S keys or the mouse wheel. Exit this with space,
+               escape, or CTRL-ALT-E.
+
+ - CTRL-ALT-R: Reset the camera to its original position
+
+ - CTRL-ALT-G: Toggle the grid. With this off, unused areas of the screen
+               will not be drawn at all. With it on, you'll get a green
+               32x32 pixel grid.
+
+ - CTRL-ALT-F: Toggle the frames per second display :)
+
+--- The End ---
