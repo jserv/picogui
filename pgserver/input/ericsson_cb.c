@@ -1,4 +1,4 @@
-/* $Id: ericsson_cb.c,v 1.4 2002/03/07 18:05:38 bauermeister Exp $
+/* $Id: ericsson_cb.c,v 1.5 2002/03/07 18:20:57 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
@@ -660,6 +660,8 @@ static void __dispatch_key(u32 type,s16 key,s16 mods)
   printf("\r\t\t\t\t\t\tMODS:[");
   print_pgmods(mods);
   printf("]"NL);
+
+  dispatch_key(type, key, mods);
 }
 
 # define dispatch_key __dispatch_key
