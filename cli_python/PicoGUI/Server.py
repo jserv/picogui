@@ -177,8 +177,7 @@ constants = {
         }),
         'thobj':			(25, {	# set a widget's theme object
         }),
-        'name':				(26, {	# a widget's name (for named containers, etc)
-        }),
+        'name':				(26, _getString), # a widget's name (for named containers, etc)
         'publicbox':			(27, {	# set to 1 to allow other apps to make widgets in this container
         }),
         'disabled':			(28, {	# for buttons, grays out text and prevents clicking
