@@ -9,4 +9,4 @@ pgui waitevent
 
 pgwidget create type ?options?
 pgwidget attach widget before|inside|after parent
-pgwidget set -side side -text text
+pgwidget set -side side -text text -bitmap bitmapid

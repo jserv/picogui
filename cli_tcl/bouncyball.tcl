@@ -32,7 +32,8 @@ pgwidget attach $bmp after $ok
 set i 0
 set d 1
 while { 1 } {
-	pgSetBitmap $bmp $img($i)
+	pgwidget set $bmp -bitmap $img($i)
+#	pgSetBitmap $bmp $img($i)
 	pgui update
 	if { [pgui checkevent] >0 } {
 		array set event [pgui waitevent]

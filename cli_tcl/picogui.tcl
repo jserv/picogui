@@ -126,10 +126,6 @@ proc isInteger {test} {
 	}
 	return 0
 }
-proc pgSetBitmap {widget bitmap} {
-	global pg_wp
-	pgSetWidget $widget $pg_wp(bitmap) $bitmap
-}
 proc pgNewFont {name style size} {
 	global pg_request
 	set len [string length $name]
@@ -211,6 +207,8 @@ proc pgwidget {command arg1 args} {
 			} elseif {$prop=="-text"} {
 				set id [pgNewString $aa(-text)]
 				pgSetWidget $arg1 $pg_wp(text) $id
+			} elseif {$prop=="-bitmap"} {
+				pgSetWidget $arg1 $pg_wp(bitmap) $aa(-bitmap)
 			} else {
 				puts $prop
 			}
