@@ -326,3 +326,8 @@ CONFIG_KEY_ALPHA
       numeric keypad. This key allows the user to cycle
       through letters after pressing a number key.
 
+CONFIG_ROTATIONBASE_0
+      The base rotation angle is added to the rotation set by
+      the client or the config file. This is useful when the
+      display hardware must be rotated, but the user and
+      applications shouldn't be aware of it.

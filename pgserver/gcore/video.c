@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.46 2001/11/12 00:06:18 bauermeister Exp $
+/* $Id: video.c,v 1.47 2001/11/16 00:35:42 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -248,8 +248,79 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
      }
    }
      
-   /* Add wrapper libraries if necessary */
-   
+   /* Add wrapper libraries if necessary. At compile-time, support adding
+    * 90, 180, or 270 degrees as a hardware rotation
+    */
+
+#ifdef CONFIG_ROTATIONBASE_90                  /***** 90 degree default */
+#ifdef CONFIG_ROTATE180
+   if (vid->flags & PG_VID_ROTATE90) {
+      vidwrap_rotate180(vidwrap);
+      vid->lxres = vid->xres;
+      vid->lyres = vid->yres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE270
+   if (vid->flags & PG_VID_ROTATE180) {
+      vidwrap_rotate270(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE
+   if (!(vid->flags & PG_VID_ROTATEMASK)) {
+      vidwrap_rotate90(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif
+#else
+#ifdef CONFIG_ROTATIONBASE_180                  /***** 180 degree default */
+#ifdef CONFIG_ROTATE
+   if (vid->flags & PG_VID_ROTATE270) {
+      vidwrap_rotate90(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE270
+   if (vid->flags & PG_VID_ROTATE90) {
+      vidwrap_rotate270(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE180
+   if (!(vid->flags & PG_VID_ROTATEMASK)) {
+      vidwrap_rotate180(vidwrap);
+      vid->lxres = vid->xres;
+      vid->lyres = vid->yres;
+   }
+#endif
+#else
+#ifdef CONFIG_ROTATIONBASE_270                  /***** 270 degree default */
+#ifdef CONFIG_ROTATE
+   if (vid->flags & PG_VID_ROTATE180) {
+      vidwrap_rotate90(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE180
+   if (vid->flags & PG_VID_ROTATE270) {
+      vidwrap_rotate180(vidwrap);
+      vid->lxres = vid->xres;
+      vid->lyres = vid->yres;
+   }
+#endif   
+#ifdef CONFIG_ROTATE270
+   if (!(vid->flags & PG_VID_ROTATEMASK)) {
+      vidwrap_rotate270(vidwrap);
+      vid->lxres = vid->yres;
+      vid->lyres = vid->xres;
+   }
+#endif
+#else                                           /***** 0 degree default */
 #ifdef CONFIG_ROTATE
    if (vid->flags & PG_VID_ROTATE90) {
       vidwrap_rotate90(vidwrap);
@@ -257,7 +328,6 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       vid->lyres = vid->xres;
    }
 #endif   
-
 #ifdef CONFIG_ROTATE180
    if (vid->flags & PG_VID_ROTATE180) {
       vidwrap_rotate180(vidwrap);
@@ -265,7 +335,6 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       vid->lyres = vid->yres;
    }
 #endif   
-
 #ifdef CONFIG_ROTATE270
    if (vid->flags & PG_VID_ROTATE270) {
       vidwrap_rotate270(vidwrap);
@@ -273,6 +342,9 @@ g_error video_setmode(u16 xres,u16 yres,u16 bpp,u16 flagmode,u32 flags) {
       vid->lyres = vid->xres;
    }
 #endif   
+#endif
+#endif
+#endif
 
    /* Since changing video modes pretty much obliterates all onscreen
     * sprites, and the previous location might be offscreen now,

@@ -128,6 +128,11 @@ bool 'Linear framebuffer @ 32bpp' CONFIG_VBL_LINEAR32
 bool '90 degree video rotation'   CONFIG_ROTATE
 bool '180 degree video rotation'  CONFIG_ROTATE180
 bool '270 degree video rotation'  CONFIG_ROTATE270
+choice 'Base rotation angle' \
+   	"0                      CONFIG_ROTATIONBASE_0 \
+	 90	       		CONFIG_ROTATIONBASE_90 \
+	 180	       		CONFIG_ROTATIONBASE_180 \
+	 270			CONFIG_ROTATIONBASE_270" 0
 endmenu
 
 mainmenu_option next_comment

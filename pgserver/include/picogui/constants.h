@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.99 2001/11/15 11:17:41 micahjd Exp $
+/* $Id: constants.h,v 1.100 2001/11/16 00:35:42 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -730,6 +730,7 @@ typedef unsigned long pghandle;
 #define PG_VID_ROTATE90       0x0004  //!< Rotate flags are mutually exclusive
 #define PG_VID_ROTATE180      0x0008
 #define PG_VID_ROTATE270      0x0010
+#define PG_VID_ROTATEMASK     0x001C  //!< Mask of all rotate flags
 
 #define PG_FM_SET             0      //!< Sets all flags to specified value
 #define PG_FM_ON              1      //!< Turns on specified flags
