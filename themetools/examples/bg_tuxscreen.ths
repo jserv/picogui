@@ -1,0 +1,34 @@
+/* Background theme-
+ * This one is designed for the TuxScreen. It uses a big Tux like
+ * Microwindows does, and a small PicoGUI logo in the corner.
+ *
+ * Version 1.0
+ */
+
+obj default name = "TuxScreen Background";
+
+object background {
+  
+  /* Big 257x303 Tux picture, dithered to 2-3-3 color */
+  bitmap1 = LoadBitmap("data/tux.rgb233.bmp");
+
+  /* 96x96 "pG" logo */
+  bitmap2 = LoadBitmap("data/pglogo.rgb233.bmp");
+
+  bgcolor = 0x00496D;
+  fgcolor = 0xFFFFFF;
+  font = Font(NULL,15,PG_FSTYLE_BOLD);
+  text = "PicoGUI on the TuxScreen";
+
+  bgfill = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+    Bitmap(x+(w>>1)-128,y+(h>>1)-151,257,303,bitmap1);
+    Bitmap(5,y+h-101,96,96,bitmap2);
+    SetColor(fgcolor);
+    SetFont(font);
+    Text(106,y+h-25,1,1,text);
+  };
+}
+
+/* The End */
