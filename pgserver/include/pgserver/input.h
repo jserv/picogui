@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.31 2002/01/10 13:50:44 micahjd Exp $
+/* $Id: input.h,v 1.32 2002/01/20 09:56:16 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -152,6 +152,9 @@ struct inputinfo {
 extern struct inputinfo inputdrivers[];
 
 g_error (*find_inputdriver(const char *name))(struct inlib *i);
+
+/* If this is 1, no user input is taken. */
+extern int disable_input;
 
 #endif /* __H_INPUT */
 /* The End */

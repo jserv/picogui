@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.24 2002/01/19 03:12:50 micahjd Exp $
+/* $Id: fbdev.c,v 1.25 2002/01/20 09:56:16 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -33,6 +33,8 @@
 #include <pgserver/video.h>
 #include <pgserver/render.h>
 #include <pgserver/configfile.h>
+#include <pgserver/timer.h>
+#include <pgserver/input.h>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -156,6 +158,8 @@ int fbdev_getvt(void) {
 void fbdev_enable(void) {
   struct divtree *p;
   disable_output = 0;
+  disable_timers = 0;
+  disable_input  = 0;
   
   DBG("on VT %d\n",fbdev_getvt());
 
@@ -166,7 +170,10 @@ void fbdev_enable(void) {
 void fbdev_disable(void) {
   DBG("on VT %d\n",fbdev_getvt());
 
+  inactivity_reset();
   disable_output = 1;
+  disable_timers = 1;
+  disable_input = 1;
 }
 
 /* Indirectly, this is the signal handler. A few extra

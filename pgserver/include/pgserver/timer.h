@@ -1,4 +1,4 @@
-/* $Id: timer.h,v 1.5 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: timer.h,v 1.6 2002/01/20 09:56:16 micahjd Exp $
  *
  * timer.h - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -50,6 +50,10 @@ u32 inactivity_get();
  * inactivity_set(0) is equivalent to inactivity_reset().
  */
 void inactivity_set(u32 t);
+
+/* If this is nonzero, timers may not trigger
+ */
+extern int disable_timers;
 
 #endif /* __H_TIMER */
 

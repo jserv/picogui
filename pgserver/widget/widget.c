@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.146 2002/01/19 09:18:21 micahjd Exp $
+/* $Id: widget.c,v 1.147 2002/01/20 09:56:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -33,6 +33,7 @@
 #include <pgserver/pgnet.h>
 #include <pgserver/hotspot.h>
 #include <pgserver/timer.h>
+#include <pgserver/input.h>
 #include <pgserver/configfile.h>
 #ifdef CONFIG_KEY_ALPHA
 #include <string.h>	/* strchr() */
@@ -842,6 +843,9 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   s16 physx,physy;
   memset(&param,0,sizeof(param));
 
+  if (disable_input)
+    return;
+
   inactivity_reset();
 
   if (type == TRIGGER_DOWN &&
@@ -1149,6 +1153,9 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 #ifdef DEBUG_INPUT
   printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
 #endif
+
+  if (disable_input)
+    return;
 
   inactivity_reset();
 

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.38 2002/01/18 11:53:12 micahjd Exp $
+/* $Id: request.c,v 1.39 2002/01/20 09:56:16 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -439,11 +439,13 @@ void net_iteration(void) {
   tv.tv_usec = 0;
 
   /* Give the input driver(s) a chance to modify things */
-  n = inlib_list;
-  while (n) {
-    if (n->fd_init)
-      (*n->fd_init)(&con_n,&rfds,&tv);
-    n = n->next;
+  if (!disable_input) {
+    n = inlib_list;
+    while (n) {
+      if (n->fd_init)
+	(*n->fd_init)(&con_n,&rfds,&tv);
+      n = n->next;
+    }
   }
 
   /* The only time we allow interruptions is during a select.

@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.20 2002/01/16 19:47:25 lonetech Exp $
+/* $Id: timer.c,v 1.21 2002/01/20 09:56:16 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -63,6 +63,10 @@ void inactivity_init(void);
    precision of the TRIGGER_TIMER */
 #define TIMERINTERVAL 50   /* In milliseconds */
 
+/* If this is nonzero, timers may not trigger
+ */
+int disable_timers;
+
 /* All this code is OS-specific */
 
 #ifdef WINDOWS
@@ -73,6 +77,9 @@ static UINT ntimer;
 
 static void CALLBACK HandleAlarm(UINT uID,  UINT uMsg, DWORD dwUser,
 				 DWORD dw1, DWORD dw2) {
+  if (disable_timers)
+    return;
+
   inactivity_check();
   trigger_timer();
 }
@@ -111,6 +118,9 @@ u32 getticks(void) {
 static struct timeval first_tick;
 
 static void sigalarm(int sig) {
+  if (disable_timers)
+    return;
+
   inactivity_check();
   trigger_timer();
 }
@@ -179,6 +189,8 @@ void inactivity_reset() {
 
 /* retrieve the number of milliseconds since the last activity */
 u32 inactivity_get() {
+  
+
   return getticks() - lastactivity;
 }
 
