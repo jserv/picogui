@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.5 2001/04/04 18:05:53 pney Exp $
+/* $Id: tsinput.c,v 1.6 2001/04/16 13:00:45 pney Exp $
  *
  * tsinput.c - input driver for touch screen
  *
@@ -31,6 +31,8 @@
 
 #ifdef DRIVER_TSINPUT
 
+#include <unistd.h>
+
 #include <pgserver/input.h>
 #include <pgserver/widget.h>    /* for dispatch_pointing */
 #include <pgserver/pgnet.h>
@@ -38,18 +40,24 @@
 #include <pgserver/mc68328digi.h>
 
 
-#define POLL_USEC 100
+#define POLL_USEC               100
+#define BACKLIGHT_IDLE_MAX_SEC    5
+#define SLEEP_IDLE_MAX_SEC       10
 
 static const char *DEVICE_FILE_NAME = "/dev/ts";
 static const char *_file_ = __FILE__; 
 
 static int fd=0;
 static int bytes_transfered=0;
+static int iIsPenUp = 1;
+static struct timeval lastEvent;
+static struct timeval lastIdle;
 
 /******************************************** Implementations */
 
 void tsinput_poll(void) {
   struct ts_pen_info pen_info;
+  pid_t  pid;
   
   pen_info.x = -1; pen_info.y = -1;
   
@@ -60,15 +68,23 @@ void tsinput_poll(void) {
     switch(pen_info.event) {
     case EV_PEN_UP:
       dispatch_pointing(TRIGGER_UP,pen_info.x,pen_info.y,0);
+      gettimeofday(&lastEvent,NULL);
+      iIsPenUp = 1;
       break;
       
     case EV_PEN_DOWN:
       dispatch_pointing(TRIGGER_DOWN,pen_info.x,pen_info.y,1);
+      gettimeofday(&lastEvent,NULL);
+      iIsPenUp = 0;
       break;
       
     case EV_PEN_MOVE:
       dispatch_pointing(TRIGGER_MOVE,pen_info.x,pen_info.y,0);
+      gettimeofday(&lastEvent,NULL);
+      iIsPenUp = 0;
       break;
+
+    default:
     }
 
 #ifdef DEBUG_EVENT
@@ -79,6 +95,31 @@ void tsinput_poll(void) {
 	   '?',
 	   pen_info.x, pen_info.y);
 #endif
+  }
+
+  /* If pen is up, test if there is some activity or not */
+  if(iIsPenUp) {
+    gettimeofday(&lastIdle,NULL);
+printf("time: %d\n",lastIdle.tv_sec - lastEvent.tv_sec);
+//  if((lastIdle.tv_sec - lastEvent.tv_sec) > BACKLIGHT_IDLE_MAX_SEC)
+//    printf("Switching backlight off\n");
+    if((lastIdle.tv_sec - lastEvent.tv_sec) > SLEEP_IDLE_MAX_SEC) {
+      printf("Going to sleep mode\n");
+      switch(pid = vfork()) {
+      case -1:                      /* error */
+        printf("vfork failed\n");
+        exit(1);
+        break;
+      case 0:                       /* child */
+        execlp("/opt/raw_sleep","raw_sleep","-b",(char *)0);
+        printf("execlp failed\n");
+        exit(1);
+        break;
+      default:                      /* parent */
+        wait((int *)0);
+        printf("ok, child finished. Now going on...\n");
+      }
+    }
   }
 }
 
@@ -112,7 +153,7 @@ g_error tsinput_init(void) {
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
     ts_params.mv_thrs        = 5;
-    ts_params.xy_swap        = 0;
+    ts_params.xy_swap        = 1;
 
 #ifdef CONFIG_XCOPILOT
     ts_params.y_max          = 159 + 66;  /* to allow scribble area */
@@ -147,8 +188,8 @@ g_error tsinput_init(void) {
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
 
-    mx1 = 567;  ux1 =   0;
-    my1 = 202;  uy1 =   0;
+    mx1 = 490;  ux1 =   0;
+    my1 = 315;  uy1 =   0;
     mx2 = 3485; ux2 = 320;
     my2 = 3766; uy2 = 240;
 #endif
@@ -169,6 +210,7 @@ g_error tsinput_init(void) {
       goto error_close;
     }
 
+    gettimeofday(&lastEvent,NULL);
     return sucess;
 
   error_close:
