@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.9 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: remorakb.c,v 1.10 2001/12/21 17:57:56 cgrigis Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -50,7 +50,7 @@
 
 /*****************************************************************************/
 
-#define LOCAL_INFO  1
+#define LOCAL_INFO  0
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
 
@@ -921,8 +921,21 @@ static int kb_fd_activate(int fd)
     dispatch_key(pg_type, pg_code, pg_mods);
     if(pg_type==TRIGGER_CHAR) {
       switch(pg_code) {
-      case ' ':  dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods); break;
-      case '\r': dispatch_key(TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods); break;
+      case ' ':
+	dispatch_key(TRIGGER_KEYDOWN, PGKEY_SPACE, pg_mods);
+	dispatch_key(TRIGGER_KEYUP, PGKEY_SPACE, pg_mods);
+	break;
+      case '\r':
+	dispatch_key(TRIGGER_KEYDOWN, PGKEY_RETURN, pg_mods);
+	dispatch_key(TRIGGER_KEYUP, PGKEY_RETURN, pg_mods);
+	break;
+      }
+    }
+    else {
+      switch(pg_code) {
+      case PGKEY_ESCAPE:
+	dispatch_key(TRIGGER_KEYUP, PGKEY_ESCAPE, pg_mods);
+	break;
       }
     }
     drivermessage(PGDM_CURSORVISIBLE, pg_type!=TRIGGER_CHAR, NULL);

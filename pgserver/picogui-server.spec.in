@@ -4,7 +4,7 @@
 Summary: PicoGUI server
 Name: @PACKAGE@
 Version: @VERSION@
-Release: sd.6
+Release: sd.8
 Copyright: GPL
 Group: PicoGUI/Server
 Packager: Olivier Bornet <Olivier.Bornet@smartdata.ch>

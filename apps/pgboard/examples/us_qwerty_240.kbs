@@ -1,0 +1,468 @@
+#
+# This keyboard uses the QWERTY layout, optimized for the small displays of
+# handheld computers. The keyboard is bitmapped, designed for 240x320 displays.
+#
+# The bitmaps here were drawn using the 18-pixel high Lucida font, using
+# The GIMP.
+#
+# This code is released into the public domain. Feel free to use it in whole
+# or in part for your own keyboard layouts.
+#
+# -- Christian Grigis <christian.grigis@smartdata.ch>
+#    Heavily based on "us_fitaly_160.kbs", 
+#    designed by Micah Dowty <micahjd@users.sourceforge.net>
+#
+
+$option{'side'} = PG_S_BOTTOM;
+$option{'size'} = 80;
+$option{'sizemode'} = PG_SZMODE_NORMAL;
+$option{'path'} = './img/';
+
+####################################### Subroutines
+
+# Table with the position of all buttons
+@btn_positions = ("1,1,26,19",
+                  "28,1,18,19",
+                  "47,1,18,19",
+                  "66,1,18,19",
+                  "85,1,18,19",
+                  "104,1,18,19",
+                  "123,1,18,19",
+                  "142,1,18,19",
+                  "161,1,18,19",
+                  "180,1,18,19",
+                  "199,1,18,19",
+                  "218,1,21,19",
+
+                  "1,21,28,19",
+                  "30,21,18,19",
+                  "49,21,18,19",
+                  "68,21,18,19",
+                  "87,21,18,19",
+                  "106,21,18,19",
+                  "125,21,18,19",
+                  "144,21,18,19",
+                  "163,21,18,19",
+                  "182,21,18,19",
+                  "201,21,18,19",
+                  "220,21,18,19",
+
+                  "1,41,30,19",
+                  "32,41,18,19",
+                  "51,41,18,19",
+                  "70,41,18,19",
+                  "89,41,18,19",
+                  "108,41,18,19",
+                  "127,41,18,19",
+                  "146,41,18,19",
+                  "165,41,18,19",
+                  "184,41,18,19",
+                  "203,41,18,19",
+                  "222,41,17,19",
+
+                  "1,61,21,18",
+                  "23,61,20,18",
+                  "44,61,22,18",
+                  "67,61,61,18",
+                  "129,61,21,18",
+                  "151,61,21,18",
+                  "173,61,21,18",
+                  "195,61,44,18");
+
+@btn_positions_num = ("1,1,21,19",
+                      "23,1,21,19",
+                      "45,1,21,19",
+                      "73,1,24,19",
+                      "98,1,24,19",
+                      "129,1,21,19",
+                      "151,1,21,19",
+                      "173,1,21,19",
+                      "195,1,22,19",
+                      "218,1,21,19",
+
+                      "1,21,21,19",
+                      "23,21,21,19",
+                      "45,21,21,19",
+                      "73,21,24,19",
+                      "98,21,24,19",
+                      "129,21,21,19",
+                      "151,21,21,19",
+                      "173,21,21,19",
+                      "195,21,22,19",
+                      "218,21,21,19",
+                  
+                      "1,41,21,19",
+                      "23,41,21,19",
+                      "45,41,21,19",
+                      "73,41,24,19",
+                      "98,41,24,19",
+                      "129,41,21,19",
+                      "151,41,21,19",
+                      "173,41,21,19",
+                      "195,41,22,19",
+                      "218,41,21,19",
+                  
+                      "1,61,21,18",
+                      "23,61,21,18",
+                      "45,61,21,18",
+                      "73,61,49,18",
+#                      "98,61,24,18",
+                      "129,61,21,18",
+                      "151,61,21,18",
+                      "173,61,21,18",
+                      "195,61,44,18");
+                  
+sub pattern_bitmap {
+    # init pattern
+    newpattern;
+    clear;
+
+    # Draw the bitmap
+    bitmap(0,0,240,80,loadfile(@_));
+
+    # Checkerboard pattern in the unused space, if any
+    setcolor(0);
+    rect(240,0,0x7FFF,80);    # 0x7FFF is infinity as far as we're concerned
+    setcolor(0xFFFFFF);
+    setlgop(PG_LGOP_STIPPLE);
+    rect(240,1,0x7FFF,78);
+
+    $defaultmods = $defaultpat = 0;
+}
+
+sub pattern_keys {
+    my ($pos, @keys) = @_;
+
+    $j = 0;
+    
+    foreach (@{$pos}) {
+	($key,$pgkey,$mods,$pat) = split /:/, $keys[$j++];
+	
+	$key =~ s/colon/:/;
+	$key = chr(substr($key,1)) if (length($key) > 1 && $key=~/^#/);
+
+	$mods = $defaultmods if (!defined $mods);
+	$pat = $defaultpat if (!defined $pat);
+
+	hotspot( split(/,/,$_), 0, ord($key), $pgkey, $mods, $pat);
+    }
+}
+
+####################################### Main pattern (1)
+
+pattern_bitmap ("us_qwerty_240_alpha.pbm");
+pattern_keys (\@btn_positions,
+              "\t:PGKEY_TAB",
+	      "q:PGKEY_q",
+	      "w:PGKEY_w",
+	      "e:PGKEY_e",
+	      "r:PGKEY_r",
+	      "t:PGKEY_t",
+	      "y:PGKEY_y",
+	      "u:PGKEY_u",
+	      "i:PGKEY_i",
+	      "o:PGKEY_o",
+	      "p:PGKEY_p",
+	      "\b:PGKEY_BACKSPACE",
+
+	      ":::3",
+	      "a:PGKEY_a",
+	      "s:PGKEY_s",
+	      "d:PGKEY_d",
+	      "f:PGKEY_f",
+	      "g:PGKEY_g",
+	      "h:PGKEY_h",
+	      "j:PGKEY_j",
+	      "k:PGKEY_k",
+	      "l:PGKEY_l",
+	      ";:PGKEY_SEMICOLON",
+	      "':PGKEY_QUOTE",
+
+	      ":::2",
+	      "z:PGKEY_z",
+	      "x:PGKEY_x",
+	      "c:PGKEY_c",
+	      "v:PGKEY_v",
+	      "b:PGKEY_b",
+	      "n:PGKEY_n",
+	      "m:PGKEY_m",
+	      ",:PGKEY_COMMA",
+	      ".:PGKEY_PERIOD",
+	      "/:PGKEY_SLASH",
+	      "\\:PGKEY_BACKSLASH",
+
+	      ":::4",
+	      ":::5",
+	      ":::6",
+	      " :PGKEY_SPACE",
+	      ":PGKEY_LEFT",
+	      ":PGKEY_RIGHT",
+	      "-:PGKEY_MINUS",
+	      "\r:PGKEY_RETURN");
+
+####################################### Shift pattern (2)
+
+pattern_bitmap("us_qwerty_240_shift.pbm");
+$defaultpat = 1;
+$defaultmods = PGMOD_SHIFT;
+pattern_keys (\@btn_positions,
+              "\t:PGKEY_TAB",
+	      "Q:PGKEY_q",
+	      "W:PGKEY_w",
+	      "E:PGKEY_e",
+	      "R:PGKEY_r",
+	      "T:PGKEY_t",
+	      "Y:PGKEY_y",
+	      "U:PGKEY_u",
+	      "I:PGKEY_i",
+	      "O:PGKEY_o",
+	      "P:PGKEY_p",
+	      "\b:PGKEY_BACKSPACE",
+
+	      ":::3",
+	      "A:PGKEY_a",
+	      "S:PGKEY_s",
+	      "D:PGKEY_d",
+	      "F:PGKEY_f",
+	      "G:PGKEY_g",
+	      "H:PGKEY_h",
+	      "J:PGKEY_j",
+	      "K:PGKEY_k",
+	      "L:PGKEY_l",
+	      "colon:PGKEY_COLON",
+	      "\":PGKEY_QUOTEDBL",
+
+	      "",
+	      "Z:PGKEY_z",
+	      "X:PGKEY_x",
+	      "C:PGKEY_c",
+	      "V:PGKEY_v",
+	      "B:PGKEY_b",
+	      "N:PGKEY_n",
+	      "M:PGKEY_m",
+	      "<:PGKEY_LESS",
+	      ">:PGKEY_GREATER",
+	      "?:PGKEY_QUESTION",
+              "|:124",
+
+	      ":::4",
+	      ":::5",
+	      ":::6",
+	      "PGKEY_SPACE",
+	      ":PGKEY_LEFT",
+	      ":PGKEY_RIGHT",
+	      "_:PGKEY_UNDERSCORE",
+	      "\r:PGKEY_RETURN");
+
+####################################### Caps lock pattern (3)
+
+pattern_bitmap("us_qwerty_240_cap.pbm");
+$defaultmods = PGMOD_SHIFT;
+pattern_keys (\@btn_positions,
+              "\t:PGKEY_TAB",
+	      "Q:PGKEY_q",
+	      "W:PGKEY_w",
+	      "E:PGKEY_e",
+	      "R:PGKEY_r",
+	      "T:PGKEY_t",
+	      "Y:PGKEY_y",
+	      "U:PGKEY_u",
+	      "I:PGKEY_i",
+	      "O:PGKEY_o",
+	      "P:PGKEY_p",
+	      "\b:PGKEY_BACKSPACE",
+
+	      ":::1",
+	      "A:PGKEY_a",
+	      "S:PGKEY_s",
+	      "D:PGKEY_d",
+	      "F:PGKEY_f",
+	      "G:PGKEY_g",
+	      "H:PGKEY_h",
+	      "J:PGKEY_j",
+	      "K:PGKEY_k",
+	      "L:PGKEY_l",
+	      ";:PGKEY_SEMICOLON",
+	      "':PGKEY_QUOTE",
+
+	      ":::1",
+	      "Z:PGKEY_z",
+	      "X:PGKEY_x",
+	      "C:PGKEY_c",
+	      "V:PGKEY_v",
+	      "B:PGKEY_b",
+	      "N:PGKEY_n",
+	      "M:PGKEY_m",
+	      ",:PGKEY_COMMA",
+	      ".:PGKEY_PERIOD",
+	      "/:PGKEY_SLASH",
+	      "\\:PGKEY_BACKSLASH",
+
+	      ":::4",
+	      ":::5",
+	      ":::6",
+	      " :PGKEY_SPACE",
+	      ":PGKEY_LEFT",
+	      ":PGKEY_RIGHT",
+	      "-:PGKEY_MINUS",
+	      "\r:PGKEY_RETURN");
+
+####################################### Control pattern (4)
+
+pattern_bitmap("us_qwerty_240_ctrl.pbm");
+$defaultmods = PGMOD_CTRL;
+$defaultpat = 1;
+pattern_keys (\@btn_positions,
+              "\t:PGKEY_TAB",
+	      "#17:PGKEY_q",
+	      "#23:PGKEY_w",
+	      "#5:PGKEY_e",
+	      "#18:PGKEY_r",
+	      "#20:PGKEY_t",
+	      "#25:PGKEY_y",
+	      "#21:PGKEY_u",
+	      "#9:PGKEY_i",
+	      "#15:PGKEY_o",
+	      "#16:PGKEY_p",
+	      "\b:PGKEY_BACKSPACE",
+
+	      ":::3",
+	      "#1:PGKEY_a",
+	      "#19:PGKEY_s",
+	      "#4:PGKEY_d",
+	      "#6:PGKEY_f",
+	      "#7:PGKEY_g",
+	      "#8:PGKEY_h",
+	      "#10:PGKEY_j",
+	      "#11:PGKEY_k",
+	      "#12:PGKEY_l",
+	      ";:PGKEY_SEMICOLON",
+	      "':PGKEY_QUOTE",
+
+	      ":::2",
+	      "#26:PGKEY_z",
+	      "#24:PGKEY_x",
+	      "#3:PGKEY_c",
+	      "#22:PGKEY_v",
+	      "#2:PGKEY_b",
+	      "#14:PGKEY_n",
+	      "#13:PGKEY_m",
+	      ",:PGKEY_COMMA",
+	      ".:PGKEY_PERIOD",
+	      "/:PGKEY_SLASH",
+	      "\\:PGKEY_BACKSLASH",
+
+	      "",
+	      ":::5",
+	      ":::6",
+	      " :PGKEY_SPACE",
+	      ":PGKEY_LEFT",
+	      ":PGKEY_RIGHT",
+	      "-:PGKEY_MINUS",
+	      "\r:PGKEY_RETURN");
+
+####################################### Numbers pattern (5)
+
+pattern_bitmap("us_qwerty_240_num.pbm");
+pattern_keys (\@btn_positions_num,
+              "7:PGKEY_KP7",
+              "8:PGKEY_KP8",
+              "9:PGKEY_KP9",
+              "+:PGKEY_KP_PLUS",
+              "-:PGKEY_KP_MINUS",
+              "d:PGKEY_d:PGMOD_SHIFT",
+              "e:PGKEY_e:PGMOD_SHIFT",
+              "f:PGKEY_f:PGMOD_SHIFT",
+              ":PGKEY_INSERT",
+              "\b:PGKEY_BACKSPACE",
+
+              "4:PGKEY_KP4",
+              "5:PGKEY_KP5",
+              "6:PGKEY_KP6",
+              "*:PGKEY_KP_MULTIPLY",
+              "/:PGKEY_KP_DIVIDE",
+              "a:PGKEY_a:PGMOD_SHIFT",
+              "b:PGKEY_b:PGMOD_SHIFT",
+              "c:PGKEY_c:PGMOD_SHIFT",
+              "^:PGKEY_6:PGMOD_SHIFT",
+              ":PGKEY_PAGEUP",
+
+              "1:PGKEY_KP1",
+              "2:PGKEY_KP2",
+              "3:PGKEY_KP3",
+              "colon:PGKEY_COLON",
+              "=:PGKEY_KP_EQUALS",
+              ":PGKEY_HOME",
+              ":PGKEY_UP",
+              ":PGKEY_END",
+              "%:PGKEY_5:PGMOD_SHIFT",
+              ":PGKEY_PAGEDOWN",
+
+              "0:PGKEY_KP0",
+              ":::1",
+              ".:PGKEY_KP_PERIOD",
+              " :PGKEY_SPACE",
+              ":PGKEY_LEFT",
+              ":PGKEY_DOWN",
+              ":PGKEY_RIGHT",
+              "\r:PGKEY_RETURN");
+
+####################################### Symbols pattern (6)
+    
+pattern_bitmap("us_qwerty_240_sym.pbm");
+$defaultpat = 1;
+pattern_keys (\@btn_positions,
+              "\e:PGKEY_ESCAPE",
+	      "1:PGKEY_1",
+	      "2:PGKEY_2",
+	      "3:PGKEY_3",
+	      "4:PGKEY_4",
+	      "5:PGKEY_5",
+	      "6:PGKEY_6",
+	      "7:PGKEY_7",
+	      "8:PGKEY_8",
+	      "9:PGKEY_9",
+	      "0:PGKEY_0",
+	      "\b:PGKEY_BACKSPACE",
+
+	      ":::3",
+	      "!:PGKEY_1:PGMOD_SHIFT",
+	      "\@:PGKEY_2:PGMOD_SHIFT",
+	      "#:PGKEY_3:PGMOD_SHIFT",
+	      "\$:PGKEY_4:PGMOD_SHIFT",
+	      "%:PGKEY_5:PGMOD_SHIFT",
+	      "^:PGKEY_6:PGMOD_SHIFT",
+	      "&:PGKEY_7:PGMOD_SHIFT",
+	      "*:PGKEY_8:PGMOD_SHIFT",
+	      "(:PGKEY_9:PGMOD_SHIFT",
+	      "):PGKEY_0:PGMOD_SHIFT",
+	      "`:PGKEY_BACKQUOTE",
+
+	      ":::2",
+	      "{:123",
+	      "}:125",
+	      "[:PGKEY_LEFTBRACKET",
+	      "]:PGKEY_RIGHTBRACKET",
+	      "+:PGKEY_PLUS",
+	      "=:PGKEY_EQUALS",
+	      "~:126",
+	      ",:PGKEY_COMMA",
+	      ".:PGKEY_PERIOD",
+	      "/:PGKEY_SLASH",
+	      "\\:PGKEY_BACKSLASH",
+
+	      ":::4",
+	      ":::5",
+	      "",
+	      " :PGKEY_SPACE",
+	      ":PGKEY_LEFT",
+	      ":PGKEY_RIGHT",
+	      "-:PGKEY_MINUS",
+	      "\r:PGKEY_RETURN");
+
+### The End ###
+
+
+
+
+

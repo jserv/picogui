@@ -15,6 +15,8 @@ CONFIG_CHIPSLICE=y
 # CONFIG_XCOPILOT is not set
 # ASM_68000 is not set
 # CONFIG_UNIX_SOCKET is not set
+# CONFIG_OPTIMIZE_SIZE is not set
+CONFIG_OPTIMIZE_SPEED=y
 
 #
 # Debugging
@@ -22,7 +24,6 @@ CONFIG_CHIPSLICE=y
 # CONFIG_TEXT is not set
 # DEBUG_KEYS is not set
 # CONFIG_VIDEOTEST is not set
-# CONFIG_NO_OPTIMIZE is not set
 # CONFIG_EFENCE is not set
 # CONFIG_GCOV is not set
 # CONFIG_GPROF is not set

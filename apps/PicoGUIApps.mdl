@@ -27,6 +27,10 @@ runtime = [
               depends = [ 'picoguiapps/pgboard' ],
               content = [ 'share/pgboard/us_qwerty_scalable.kb' ],
               help = "US QWERTY keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'us_qwerty_bitmap', 'US QWERTY Keymap (Bitmap 240x80)',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_qwerty_240.kb' ],
+              help = "US QWERTY keymap for the PicoGUI Virtual Keyboard (Bitmap 240x80)" ),
     Runtime ( 'ch_qwertz', 'CH QWERTZ Keymap',
               depends = [ 'picoguiapps/pgboard' ],
               content = [ 'share/pgboard/ch_qwertz_scalable.kb' ],
@@ -42,6 +46,12 @@ runtime = [
                           'picoguiapps/us_qwerty',
                           'pocketguiapps/sd_finder_run' ],
                rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_qwerty_scalable.kb&\n\n" % \
+                          ( prefix, prefix )),
+    Runtime ( 'pgboard_run_us_qwerty_bitmap', 'Run PGBoard with US QWERTY keymap (Bitmap 240x80)',
+              depends = [ 'picoguiserver/server',
+                          'picoguiapps/us_qwerty_bitmap',
+                          'pocketguiapps/sd_finder_run' ],
+               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_qwerty_240.kb&\n\n" % \
                           ( prefix, prefix )),
     Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
               depends = [ 'picoguiserver/server',

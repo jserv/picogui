@@ -15,6 +15,8 @@ CONFIG_CHIPSLICE=y
 # CONFIG_XCOPILOT is not set
 # ASM_68000 is not set
 CONFIG_UNIX_SOCKET=y
+# CONFIG_OPTIMIZE_SIZE is not set
+CONFIG_OPTIMIZE_SPEED=y
 
 #
 # Debugging
@@ -22,7 +24,6 @@ CONFIG_UNIX_SOCKET=y
 CONFIG_TEXT=y
 # DEBUG_KEYS is not set
 CONFIG_VIDEOTEST=y
-# CONFIG_NO_OPTIMIZE is not set
 # CONFIG_EFENCE is not set
 # CONFIG_GCOV is not set
 # CONFIG_GPROF is not set
@@ -76,10 +77,12 @@ DRIVER_EZ328=y
 #
 # Input Drivers
 #
+# CONFIG_TOUCHSCREEN is not set
 # DRIVER_SDLINPUT is not set
 # DRIVER_X11INPUT is not set
 # DRIVER_SVGAINPUT is not set
 # DRIVER_NCURSESINPUT is not set
+# DRIVER_GPM is not set
 DRIVER_CHIPSLICETS=y
 DRIVER_EVENTBROKER=y
 # DRIVER_R3912TS is not set

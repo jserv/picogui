@@ -1,4 +1,4 @@
-/* $Id: pgboard_api.c,v 1.10 2001/11/23 15:11:26 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.11 2001/12/21 18:00:15 cgrigis Exp $
  *
  * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
@@ -116,6 +116,7 @@ int run_pgboard ()
 	{
 	  perror ("pgboard_api/run_pgboard()/execl()");
 	}
+      exit (1);
       break;
 
     case -1:

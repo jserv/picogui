@@ -1,4 +1,4 @@
-/* $Id: common.h,v 1.6 2001/11/15 06:22:27 micahjd Exp $
+/* $Id: common.h,v 1.7 2001/12/21 17:57:56 cgrigis Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -43,5 +43,4 @@ typedef unsigned char    bool;
 #include <pgserver/autoconf.h>
 #include <pgserver/g_error.h>
 #include <pgserver/g_malloc.h>
-
 /* The End */

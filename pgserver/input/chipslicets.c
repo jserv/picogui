@@ -1,4 +1,4 @@
-/* $Id: chipslicets.c,v 1.11 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: chipslicets.c,v 1.12 2001/12/21 17:57:56 cgrigis Exp $
  *
  * chipslicets.c - input driver for touch screen
  *
@@ -210,7 +210,7 @@ g_error chipslicets_init(void)
     ts_params.deglitch_ms    = 20;
     ts_params.sample_ms      = 10;
     ts_params.follow_thrs    = 2;
-    ts_params.mv_thrs        = 5;
+    ts_params.mv_thrs        = 3;
     ts_params.xy_swap        = 1;
 
 #ifdef CONFIG_XCOPILOT
@@ -260,6 +260,8 @@ g_error chipslicets_init(void)
     ts_params.x_max          = 240-1;
     ts_params.x_min          = 0;
     ts_params.y_max          = 400;
+    ts_params.sample_ms      = 40;
+
     mx1 = 3680; ux1 =   0;
     my1 = 3350; uy1 =   0;
     mx2 =  440; ux2 = 240;

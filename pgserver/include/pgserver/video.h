@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.64 2001/12/05 15:38:55 micahjd Exp $
+/* $Id: video.h,v 1.65 2001/12/21 17:57:56 cgrigis Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -590,6 +590,10 @@ g_error chipslice_video_regfunc(struct vidlib *v);
 g_error ez328_regfunc(struct vidlib *v);
 g_error ez328vga_regfunc(struct vidlib *v);
 g_error ncurses_regfunc(struct vidlib *v);
+void def_coord_keyrotate(s16 *k);
+void rotate90_coord_keyrotate(s16 *k);
+void rotate180_coord_keyrotate(s16 *k);
+void rotate270_coord_keyrotate(s16 *k);
 g_error null_regfunc(struct vidlib *v);
 g_error nullfb_regfunc(struct vidlib *v);
 g_error fbdev_regfunc(struct vidlib *v);

@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.25 2001/11/21 15:17:40 cgrigis Exp $
+/* $Id: pgboard.c,v 1.26 2001/12/21 18:00:15 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -286,6 +286,7 @@ int evtMouse(struct pgEvent *evt) {
 	pgSendKeyInput(PG_TRIGGER_CHAR,clickkey->key,clickkey->mods);
       if (clickkey->pgkey)
 	pgSendKeyInput(PG_TRIGGER_KEYDOWN,clickkey->pgkey,clickkey->mods);
+      pgFlushRequests ();
     }
   }
   else {
@@ -298,6 +299,7 @@ int evtMouse(struct pgEvent *evt) {
       if (clickkey) {
 	if (clickkey->pgkey)
 	  pgSendKeyInput(PG_TRIGGER_KEYUP,clickkey->pgkey,clickkey->mods);
+	pgFlushRequests ();
 	if (clickkey->pattern) {
 	  selectPattern (clickkey->pattern);
 	  keydown = NULL;

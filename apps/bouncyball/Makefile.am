@@ -1,5 +1,7 @@
-bin_PROGRAMS = canvastst
-canvastst_SOURCES = canvastst.c
+SUBDIRS = data
+
+bin_PROGRAMS = bouncyball
+bouncyball_SOURCES = bouncyball.c
 
 LDFLAGS += @PICOGUI_LDFLAGS@
 LDADD = @PICOGUI_LIBS@ -lm

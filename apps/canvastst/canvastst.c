@@ -6,6 +6,9 @@ void animate(void);
 pghandle wCanvas;
 int width,height;
 
+/* if we want to limit the number of iterations */
+long nbOfIterations;
+
 /* Called by the PG_WE_BUILD handler when
  * the widget is resized or initially created */
 
@@ -111,11 +114,24 @@ void animate(void) {
    /* Yay! */
    frames++;
    pgSubUpdate(wCanvas);
+
+   /* if the counter is now 0, we can stop the program */
+   if(( nbOfIterations >= 0 ) && ( frames >= nbOfIterations )) {
+     exit(0);
+   }
 }
 
 /* main(), sets a few things up */
 
 int main(int argc, char **argv) {
+
+   /* init the number of iteration we want */
+   if( argc == 2 ) {
+     nbOfIterations = atoi( argv[1] ) ;
+   } else {
+     nbOfIterations = -1;
+   }
+
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"Canvas Animation Test",0);
 
