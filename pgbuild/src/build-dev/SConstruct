@@ -2,30 +2,21 @@
 # Currently just a scratchpad for testing whatever happens to need it
 #
 
-import SCons.Builder
-import SCons.Node.Alias
-import SCons.Node.FS
 import PGBuild.Node.XML
-
 env = Environment()
 
-testFile = env.fs.Entry("../conf-dev/sources.xml")
+# Create a node to represent a tag in an XML file. Note
+# how the Document object can be addressed in standard DOM fashion.
+testFile = env.fs.Entry("test.xml")
 doc = PGBuild.Node.XML.Document(testFile)
+tag = doc.childNodes[0].getElementsByTagName("important")[0]
 
-print doc.childNodes[0].getElementsByTagName("sites")[0]
+# Build a 'hello world'
+prog = env.Program('hello', 'hello.c')
+Default(prog)
 
-#b = SCons.Node.Alias.default_ans.Alias("squeegie")
-#
-#import PGBuild.Node.XML
-#testDoc = PGBuild.Node.XML.Document(testFile)
-#
-#quux = Builder(action = lambda: None,
-#               target_factory = SCons.Node.Alias.default_ans.Alias,
-#               source_factory = SCons.Node.FS.default_fs.Entry,
-#               multi = 1)
-#
-#a = quux(env, testDoc, testFile)
-#
-#Default(a)
-
+# Add a dependency, so the hello world should be rebuilt
+# when we change the <important/> part of the XML document,
+# but not when we change other parts.
+env.Depends(prog, tag)
 

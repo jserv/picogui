@@ -41,7 +41,7 @@ class NodeWrapper:
                 out.append(self.unwrap(item))
             return out
         return x
-
+    
     def __getitem__(self, pos):
         return self.unwrap(self.wrapped[pos])
 
@@ -74,13 +74,19 @@ class Element(SCons.Node.Node):
     def sconsign(self):
         pass
 
+    def exists(self):
+        return 1
+
+    def rexists(self):
+        return 1
+    
     def is_under(self, dir):
         """This object doesn't exist in the filesystem, always use it"""
         return 1
 
     def get_contents(self):
         """This returns the data used for the content signature"""
-        return self.dom.to_xml()
+        return self.toxml()
 
     def domExpand(self):
         """Recursively attach nodes to children in the DOM tree"""
