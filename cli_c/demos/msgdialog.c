@@ -1,4 +1,4 @@
-/* $Id: msgdialog.c,v 1.4 2000/11/12 21:52:56 micahjd Exp $
+/* $Id: msgdialog.c,v 1.5 2001/02/02 07:42:06 micahjd Exp $
  *
  * msgdialog.c - message dialog box demo
  *
@@ -27,7 +27,7 @@
 
 #include <picogui.h>
 
-int rundemo(short event,pghandle from,long param) {
+int rundemo(struct pgEvent *evt) {
   if (PG_MSGBTN_OK ==
       pgMessageDialog("msgdialog.c test program",
 		      "This is a test dialog box.\n\n"
@@ -39,7 +39,7 @@ int rundemo(short event,pghandle from,long param) {
   return 0;
 }
 
-int btnExit(short event,pghandle from,long param) {
+int btnExit(struct pgEvent *evt) {
   exit(0);
 }
 
@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("Run"),
 	      PG_WP_SIDE,PG_S_LEFT,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&rundemo);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&rundemo,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("X"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit,NULL);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,

@@ -1,4 +1,4 @@
-/* $Id: calc.c,v 1.1 2000/11/18 07:45:17 micahjd Exp $
+/* $Id: calc.c,v 1.2 2001/02/02 07:42:06 micahjd Exp $
  *
  * calc.c - Calculator application for PicoGUI
  *
@@ -27,25 +27,28 @@
 
 #include <picogui.h>
 
-static char *buttongrid[] = {
-   NULL,"1","2","3",
-   NULL,"4","5","6",
-   NULL,"7","8","9",
-   NULL,NULL
-};
-
-pghandle wDisplay;
-
-int btnHandler(short event,pghandle from,long param) {
-   pgReplaceTextFmt(wDisplay,"%s%s",
-		    pgGetString(pgGetWidget(wDisplay,PG_WP_TEXT)),
-		    pgGetPayload(from));
+/* The widget to display the character on is sent in the event's
+ * 'extra' parameter
+ */
+int btnHandler(struct pgEvent *evt) {
+   pghandle *label = (pghandle *) evt->extra;
+   
+   pgReplaceTextFmt(*label,"%s%s",
+		    pgGetString(pgGetWidget(*label,PG_WP_TEXT)),
+		    pgGetPayload(evt->from));
 }
 
 int main(int argc, char **argv) {
    int i;
    char *s;
    pghandle wRow = 0,wButton = 0;
+   pghandle wDisplay;
+   static char *buttongrid[] = {
+      NULL,"1","2","3",
+      NULL,"4","5","6",
+      NULL,"7","8","9",
+      NULL,NULL
+   };
    
    pgInit(argc,argv);
    pgRegisterApp(PG_APP_NORMAL,"Calculator",0);
@@ -65,7 +68,7 @@ int main(int argc, char **argv) {
 			       wButton ? PG_DERIVE_AFTER : PG_DERIVE_INSIDE,
 			       wButton ? wButton : wRow);
 	 pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString(s),0);
-	 pgSetPayload(PGDEFAULT,s);
+	 pgSetPayload(PGDEFAULT,(unsigned long) s);
       }
       else {     /* Add a row */
 	 if (!buttongrid[i+1])  /* Two consecutive NULLs, exit */
@@ -77,8 +80,10 @@ int main(int argc, char **argv) {
       }
    }
 
-   /* Use one handler for all the buttons */
-   pgBind(PGBIND_ANY,PG_WE_ACTIVATE,&btnHandler);
+   /* Use one handler for all the buttons, send our label
+    * (wDisplay) through the 'extra' parameter
+    */
+   pgBind(PGBIND_ANY,PG_WE_ACTIVATE,&btnHandler,&wDisplay);
    
    pgEventLoop();
    return 0;

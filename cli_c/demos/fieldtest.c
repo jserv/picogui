@@ -1,19 +1,16 @@
 #include <picogui.h>
 
-pghandle myfield;
-
-int fieldActivate(short event,pghandle from,long param) {
+int fieldActivate(struct pgEvent *evt) {
   pgMessageDialog("You typed:",
-		  pgGetString(pgGetWidget(myfield,PG_WP_TEXT)),0);
+		  pgGetString(pgGetWidget(evt->from,PG_WP_TEXT)),0);
   return 0;
 }
 
-int btnExit(short event,pghandle from,long param) {
+int btnExit(struct pgEvent *evt) {
   exit(0);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char **argv) {
   pgInit(argc,argv);
 
   /* Register app, and but a button on it */
@@ -25,7 +22,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("X"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit,NULL);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,
@@ -33,9 +30,8 @@ int main(int argc, char *argv[])
 	      PG_WP_SIDE,PG_S_LEFT,
 	      0);
 
-  myfield = pgNewWidget(PG_WIDGET_FIELD,0,0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&fieldActivate);
-
+  pgNewWidget(PG_WIDGET_FIELD,0,0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&fieldActivate,NULL);
    
   /* Run it */
   pgEventLoop();

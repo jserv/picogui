@@ -1,50 +1,52 @@
 #include <picogui.h>
 
-int drawStuff(short event, pghandle from, long param);
+int drawStuff(struct pgEvent *evt);
 void animate(void);
 
 pghandle wCanvas;
 int width,height;
 
-/* Called by the PG_WE_BUILD handler when the widget is resized or initially created */
+/* Called by the PG_WE_BUILD handler when
+ * the widget is resized or initially created */
 
-int drawStuff(short event, pghandle from, long param) {
+int drawStuff(struct pgEvent *evt) {
 
    /* Turn off the animation while we're busy */
    pgSetIdle(0,NULL);
 
    /* If we're rolled up, don't bother starting the animation again
     * or even rebuilding the groplist. Save memory and CPU. */
-   if (!PG_W || !PG_H)
+   if (!evt->e.size.w || !evt->e.size.h)
       return;
    
    /* Save new width and height for later */
-   width  = PG_W;
-   height = PG_H;
+   width  = evt->e.size.w;
+   height = evt->e.size.h;
    
    /* Clear the groplist */
-   pgWriteCmd(from,PGCANVAS_NUKE,0);
+   pgWriteCmd(evt->from,PGCANVAS_NUKE,0);
    
    /* Black background */
-   pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,PG_W,PG_H);
-   pgWriteCmd(from,PGCANVAS_SETGROP,1,0x000000);
-   pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_RECT,0,0,
+	      evt->e.size.w,evt->e.size.h);
+   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x000000);
+   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
 
    /* Green trail behind the line */
-   pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
-   pgWriteCmd(from,PGCANVAS_SETGROP,1,0x008000);
-   pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
-   pgWriteCmd(from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
+   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0x008000);
+   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
    
    /* Draw line */
-   pgWriteCmd(from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
-   pgWriteCmd(from,PGCANVAS_SETGROP,1,0xFFFF80);
-   pgWriteCmd(from,PGCANVAS_COLORCONV,1,1);
-   pgWriteCmd(from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
+   pgWriteCmd(evt->from,PGCANVAS_GROP,5,PG_GROP_LINE,0,0,0,0);
+   pgWriteCmd(evt->from,PGCANVAS_SETGROP,1,0xFFFF80);
+   pgWriteCmd(evt->from,PGCANVAS_COLORCONV,1,1);
+   pgWriteCmd(evt->from,PGCANVAS_GROPFLAGS,1,PG_GROPF_INCREMENTAL);
 
    /* Draw the background (grops not marked as incremental) */
-   pgWriteCmd(from,PGCANVAS_REDRAW,1);
-   pgSubUpdate(from);
+   pgWriteCmd(evt->from,PGCANVAS_REDRAW,1);
+   pgSubUpdate(evt->from);
 
    /* Start the animation timer */
    pgSetIdle(1,&animate);
@@ -121,7 +123,7 @@ int main(int argc, char **argv) {
    pgRegisterApp(PG_APP_NORMAL,"Canvas Animation Test",0);
 
    wCanvas = pgNewWidget(PG_WIDGET_CANVAS,0,0);
-   pgBind(PGDEFAULT,PG_WE_BUILD,&drawStuff);
+   pgBind(PGDEFAULT,PG_WE_BUILD,&drawStuff,NULL);
    
    pgEventLoop();
    return 0;

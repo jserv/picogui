@@ -8,7 +8,7 @@
 #include <malloc.h>      /* Dynamic memory is used for the array */
 
 /* The simplest way to make a menu */
-int btnMenuFromString(short event,pghandle from,long param) {
+int btnMenuFromString(struct pgEvent *evt) {
   pgMessageDialogFmt("Menu results",0,"pgMenuFromString() returned %d",
 		     pgMenuFromString("Hello World!|This is a test...|1\n2\n3"));
   return 0;
@@ -16,7 +16,7 @@ int btnMenuFromString(short event,pghandle from,long param) {
 
 /* A little more work, but the best way to make dynamic menus.
  * This example makes a directory listing into a menu */
-int btnMenuFromArray(short event,pghandle from,long param) {
+int btnMenuFromArray(struct pgEvent *evt) {
   pghandle *items;
   struct dirent *dent;
   int i,num = 0;
@@ -26,7 +26,7 @@ int btnMenuFromArray(short event,pghandle from,long param) {
 
   /* Count the items and allocate the array */
   while (readdir(d)) num++;
-  items = malloc(sizeof(pghandle) * num);
+  items = alloca(sizeof(pghandle) * num);
   
   /* Enter a new context before making the handles */
   pgEnterContext();
@@ -47,7 +47,6 @@ int btnMenuFromArray(short event,pghandle from,long param) {
 		       i,i-1,pgGetString(items[i-1]));
 
   /* Free memory for the item array and get rid of the handles. */
-  free(items);
   pgLeaveContext();
 
   closedir(d);
@@ -58,7 +57,7 @@ int btnMenuFromArray(short event,pghandle from,long param) {
 /* The most difficult way to make menus, but this allows
    you to put any arbitrary widgets in the menu and
    customize to your heart's content */
-int btnCustomMenu(short event,pghandle from,long param) {
+int btnCustomMenu(struct pgEvent *evt) {
   pghandle result,toolbar;
 
   /* Do our own context management */
@@ -124,7 +123,7 @@ int btnCustomMenu(short event,pghandle from,long param) {
 	      0);
 
   /* Run it */
-  result = pgGetWidget(pgGetEvent(NULL,NULL),PG_WP_TEXT);
+  result = pgGetWidget(pgGetEvent()->from,PG_WP_TEXT);
 
   /* Instead of mucking about with payloads, 
      just get the menu item's text property */
@@ -139,7 +138,7 @@ int btnCustomMenu(short event,pghandle from,long param) {
   return 0;
 }
 
-int btnExit(short event,pghandle from,long param) {
+int btnExit(struct pgEvent *evt) {
   exit(0);
 }
 
@@ -157,7 +156,7 @@ int main(int argc, char *argv[])
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromString);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromString,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
@@ -165,7 +164,7 @@ int main(int argc, char *argv[])
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromArray);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnMenuFromArray,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
@@ -173,14 +172,14 @@ int main(int argc, char *argv[])
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnCustomMenu);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnCustomMenu,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("X"),
 	      PG_WP_SIDE,PG_S_RIGHT,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnExit,NULL);
 
   pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,

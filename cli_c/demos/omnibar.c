@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.7 2000/12/29 21:24:42 micahjd Exp $
+/* $Id: omnibar.c,v 1.8 2001/02/02 07:42:06 micahjd Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -47,7 +47,7 @@ pghandle wClock,wLoad;
  * This whole thing's a kludge, I will write
  * something better (using custom menus) soon
  */
-int btnAppMenu(short event,pghandle from,long param) {
+int btnAppMenu(struct pgEvent *evt) {
   pghandle *items;
   struct dirent *dent;
   int i,l;
@@ -56,7 +56,7 @@ int btnAppMenu(short event,pghandle from,long param) {
   d = opendir("demos");
 
   /* FIXME : Count the items and allocate the array */
-  items = malloc(sizeof(pghandle) * 40);
+  items = alloca(sizeof(pghandle) * 40);
   
   /* Enter a new context before making the handles */
   pgEnterContext();
@@ -93,8 +93,7 @@ int btnAppMenu(short event,pghandle from,long param) {
     }
   }
 
-  /* Free memory for the item array and get rid of the handles. */
-  free(items);
+  /* Free the server memory and destroy our menu */
   pgLeaveContext();
 
   closedir(d);
@@ -103,7 +102,7 @@ int btnAppMenu(short event,pghandle from,long param) {
 }
 
 /* System menu */
-int btnSysMenu(short event,pghandle from,long param) {
+int btnSysMenu(struct pgEvent *evt) {
   switch (pgMenuFromString("About PicoGUI...|Scotty, beam me out!")) {
      
    case 1:
@@ -179,14 +178,14 @@ int main(int argc, char **argv) {
 	      PG_WP_TEXT,pgNewString("Applications"),
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnAppMenu);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnAppMenu,NULL);
 
   pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("System"),
 	      PG_WP_EXTDEVENTS,PG_EXEV_PNTR_DOWN,
 	      0);
-  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnSysMenu);
+  pgBind(PGDEFAULT,PG_WE_PNTR_DOWN,&btnSysMenu,NULL);
 
   wClock = pgNewWidget(PG_WIDGET_LABEL,0,0);
   pgSetWidget(PGDEFAULT,

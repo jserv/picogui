@@ -1,4 +1,4 @@
-/* $Id: demo.c,v 1.17 2001/01/10 04:29:27 micahjd Exp $
+/* $Id: demo.c,v 1.18 2001/02/02 07:42:06 micahjd Exp $
  *
  * demo.c -   source file for testing PicoGUI
  *
@@ -34,7 +34,7 @@ pghandle wLabel,wIndicator;
 
 /*** Event handlers */
 
-int btnHello(short event,pghandle from,long param) {
+int btnHello(struct pgEvent *evt) {
   static int i=0;
 
   pgReplaceTextFmt(wLabel,"Hello World\n#%d",++i);
@@ -43,15 +43,15 @@ int btnHello(short event,pghandle from,long param) {
   return 0;
 }
 
-int myDebugEvtHandler(short event,pghandle from,long param) {
+int myDebugEvtHandler(struct pgEvent *evt) {
   printf("Received event in myDebugEvtHandler: "
 	 "#%d from 0x%08X, param = 0x%08X\n",
-	 event,from,param);
+	 evt->type,evt->from,evt->e.param);
   
   return 0;
 }
 
-int closeboxHandler(short event,pghandle from,long param) {
+int closeboxHandler(struct pgEvent *evt) {
   /* Present a dialog box. If the user doesn't want to close,
      return 1 to prevent further handling of the event */
 
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	      PG_WP_TEXT,pgNewString("Hello, World!"),
 	      0);
   /* this button gets an event handler */
-  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnHello);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&btnHello,NULL);
 
   /**** Text inside the box */
   
@@ -174,11 +174,11 @@ int main(int argc, char *argv[])
 
   /**** Add a handler that catches everything and prints it */
 
-  pgBind(PGBIND_ANY,PGBIND_ANY,&myDebugEvtHandler);
+  pgBind(PGBIND_ANY,PGBIND_ANY,&myDebugEvtHandler,NULL);
 
   /**** A handler to confirm closing the app */
 
-  pgBind(PGBIND_ANY,PG_WE_CLOSE,&closeboxHandler);
+  pgBind(PGBIND_ANY,PG_WE_CLOSE,&closeboxHandler,NULL);
 
   /**** Run it! ****/
   pgEventLoop();

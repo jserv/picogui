@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2001/01/24 03:08:20 micahjd Exp $
+# $Id: Makefile,v 1.17 2001/02/02 07:42:05 micahjd Exp $
 #
 # C client library (libpgui) makefile
 #
@@ -51,7 +51,7 @@ CFLAGS := -Iinclude
 
 ######## Flags and Tools
 
-DEMOCFLAGS := $(CFLAGS) -O3
+DEMOCFLAGS := $(CFLAGS) -O3 -g
 CFLAGS := $(CFLAGS) -O3 -g -c
 LDFLAGS := $(LDFLAGS) -rpath $(RPATH)
 
@@ -105,6 +105,7 @@ demos : $(DEMOBIN)
 	ln -fs calc "demos/Calculator.app"
 	ln -fs canvastst "demos/Canvas Test.app"
 	ln -fs ../../apps/pterm/pterm "demos/Terminal (pterm).app"
+	ln -fs ../../apps/blackout/blackout "demos/Blackout.app"
 
 # Demo object files (each one to a seperate binary)
 % : %.c $(HDR) $(LIBNAME).la

@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.32 2001/01/24 00:31:03 micahjd Exp $
+/* $Id: client_c.h,v 1.33 2001/02/02 07:42:06 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -36,17 +36,46 @@
 
 /******************** Client-specific constants and data types */
 
-/* Extract the width or height from a compound parameter such as that
- * passed to PG_WE_BUILD or PG_WE_RESIZE */
-#define PG_W            (param>>16)
-#define PG_H            (param&0xFFFF)
+/* Generic event structure passed to event handlers */
+struct pgEvent {
+   short type;      /* Event type, a PG_WE_* or PG_NWE_* constant */
+   pghandle from;   /* The widget it was recieved from (if applicable) */
+   void *extra;     /* Extra data passed to the event handler via pgBind */
+   
+   /* Event-specific parameters */
+   union {
+      
+      /* The generic parameter */
+      unsigned long param;
+      
+      /* Width and height, for resize and build events */
+      struct {
+	 short w;
+	 short h;
+      } size;
 
-/* Extract mouse data from the parameter of a PG_PNTR_* or PG_NWE_PNTR_*
- * event passed from a canvas or a pointer grab */
-#define PG_PNTR_X       (param&0x0FFF)
-#define PG_PNTR_Y       ((param>>12)&0x0FFF)
-#define PG_PNTR_CHBTN   ((param>>24)&0x000F)
-#define PG_PNTR_BTN     (param>>28)
+      /* Modifiers and key, for keyboard events */
+      struct {
+	 short mods;
+	 short key;
+      } kbd;
+      
+      /* Pointing device information, for PG_WE_PNTR_*
+       * and PG_NWE_PNTR_* events */
+      struct {
+	 short x,y;    /* Position */
+	 short btn;    /* Bitmask of pressed buttons */
+	 short chbtn;  /* Bitmask of buttons changed since last event */
+      } pntr;
+      
+      /* Streamed data, from the PG_WE_DATA event */
+      struct {
+	 unsigned long size;
+	 char *pointer;      /* Automatically freed */
+      } data;
+      
+   } e;
+};
 
 /* A wildcard value for pgBind */
 #define PGBIND_ANY      -1
@@ -61,11 +90,9 @@
 #define PGDEFAULT       0
 
 /* event handler used in pgBind */
-typedef int (*pgevthandler)(short event,pghandle from,long param);
+typedef int (*pgevthandler)(struct pgEvent *evt);
 /* event handler for pgSetIdle */
 typedef void (*pgidlehandler)(void);
-/* event handler for pgBindData */
-typedef int (*pgdataevthandler)(pghandle from,long size,char *data);
 #ifdef FD_SET
 /* event hander for pgCustomizeSelect */
 typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
@@ -161,9 +188,12 @@ void pgSubUpdate(pghandle widget);
  * handles/events. If a handler with these properties already
  * exists, it is not removed. If the widget a handler refers to
  * is deleted, the handler is deleted however.
+ * 
+ * The "extra" pointer is passed to the event handler invoked
+ * through this binding.
  */
 void pgBind(pghandle widgetkey,unsigned short eventkey,
-	    pgevthandler handler);
+	    pgevthandler handler,void *extra);
 
 /* This is how to wait for your own file descriptors during the
  * PicoGUI event loop's select(). If the handler is non-null,
@@ -280,18 +310,6 @@ void pgWriteData(pghandle widget,struct pgmemdata data);
  */
 void pgWriteCmd(pghandle widget,short command,short numparams, ...);
 
-/* Opposite of pgWriteData - set's up an event handler for data coming
- * from the widget.
- * 
- * Just like pgBind, 
- * A NULL widget uses the default, as usual. Either the handle or the
- * event (or both!) can be the wildcard PGBIND_ANY to match all
- * handles/events. If a handler with these properties already
- * exists, it is not removed. If the widget a handler refers to
- * is deleted, the handler is deleted however.
- */
-void pgBindData(pghandle widgetkey,pgdataevthandler handler);
-
 /******************** Data loading */
 
 /* Data already loaded in memory */
@@ -308,7 +326,7 @@ struct pgmemdata pgFromFile(const char *file);
    changes.
 
    This is just an idea, and I'll implement it later...
-   This while pgmemdata business is just my attempt to leave enough
+   This whole pgmemdata business is just my attempt to leave enough
    hooks to make this work.
 */
 
@@ -328,11 +346,8 @@ void pgExitEventLoop(void);
 /* Wait for a single event, then return it. This is good
  * for small dialog boxes, or other situations when pgBind and
  * pgEventLoop are overkill.
- *
- * Returns the originating widget, and if the supplied pointers
- * are non-NULL, it will return the event and parameter in them.
  */
-pghandle pgGetEvent(unsigned short *event, unsigned long *param);
+struct pgEvent *pgGetEvent(void);
 
 /* PicoGUI uses a context system, similar to contexts in C.
  * Whenever the program leaves a context, all objects created
