@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.22 2000/07/28 05:45:41 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.23 2000/07/31 20:46:10 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -31,7 +31,7 @@ use Carp;
 		NewFont NewBitmap delete SetBackground RestoreBackground
 		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
 		GetTextSize GrabKeyboard GrabPointingDevice GiveKeyboard
-		GivePointingDevice);
+		GivePointingDevice ExitEventLoop);
 
 ################################ Constants
 
@@ -639,17 +639,22 @@ sub NewBitmap {
 # bound to.
 sub EventLoop {
     my ($event,$from,$param,$r);
+    $eventloop_on = 1;
 
     # Good place for an update...  (probably the first update)
     Update();
 
-    while (1) {     # This never returns
+    while ($eventloop_on) {
 	($event, $from, $param) = _wait();
 	
 	# Call the code reference
 	$r = $bindings{$from.':'.$event};
 	&$r($param) if (defined $r);
     }
+}
+
+sub ExitEventLoop {
+    $eventloop_on = 0;
 }
 
 sub SendKey {
