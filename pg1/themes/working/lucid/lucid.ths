@@ -262,22 +262,36 @@ object scroll {
 object tab.page {
   margin = 4;
   bgfill = fillstyle {
+    var x1, y1, w1, h1;
+    fTranslucent(x,y,w,h);
     SetColor(frameColor);
     SetLgop(PG_LGOP_STIPPLE);
     Frame(x,y,w,h);
     SetLgop(PG_LGOP_NONE);
-    fTranslucent(x+1,y,w-2,h-1);
+    x1 = (widget::PG_WP_SIDE == PG_S_LEFT) ? x: x+1;
+    y1 = (widget::PG_WP_SIDE == PG_S_TOP)  ? y: y+1;
+    w1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w-1;
+    h1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? h-1: h-2;
+    fTranslucent(x1,y1,w1,h1);
   };
+  frameColor = button::fgcolor;
 }
 object tab.bar {
   margin = 0;
   bgfill = fillstyle {
+    var x1, y1, w1, h1;
+    fTranslucent(x,y,w,h);
     SetColor(frameColor);
     SetLgop(PG_LGOP_STIPPLE);
-    Line(x,y+h-1,w,0);
+    Frame(x,y,w,h);
     SetLgop(PG_LGOP_NONE);
-    fTranslucent(x,y,w,h-1);
+    x1 = (widget::PG_WP_SIDE == PG_S_RIGHT) ? x+1: x;
+    y1 = (widget::PG_WP_SIDE == PG_S_BOTTOM)  ? y+1: y;
+    w1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w-1;
+    h1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? h-1: h-2;
+    fTranslucent(x1,y1,w1,h1);
   };
+  frameColor = button::fgcolor;
 }
 
 object tab {
@@ -287,11 +301,18 @@ object tab {
 
 object tab.on {
   bgfill = fillstyle {
+    /* FIXME: there is probably a better way, look into setclip() - photonic uses that */
+    var x1, y1, w1, h1;
+    fTranslucent(x,y,w,h);
     SetColor(frameColor);
     SetLgop(PG_LGOP_STIPPLE);
     Frame(x,y,w,h);
     SetLgop(PG_LGOP_NONE);
-    fTranslucent(x+1,y+1,w-2,h-1);
+    x1 = (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x: x+1;
+    y1 = (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM)  ? y: y+1;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w-1;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? h-1: h-2;
+    fTranslucent(x1,y1,w1,h1);
   };
 }
 /* The End */

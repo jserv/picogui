@@ -141,15 +141,28 @@ object tab.page {
   offset = 4;
   margin = 4;
   bgfill = fillstyle {
-    fBeveledFlat(x,y-offset,w,h+offset);
+    var x1, y1, w1, h1;
+    x1 = (widget::PG_WP_SIDE == PG_S_LEFT) ? x-offset: x;
+    y1 = (widget::PG_WP_SIDE == PG_S_TOP)  ? y-offset: y;
+    w1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? w: w+offset;
+    h1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? h+offset: h;
+    fBeveledFlat(x1,y1,w1,h1);
   };
 }
 object tab.bar {
   parent = PGTH_O_TAB_PAGE;
   margin = 0;
   bgfill = fillstyle {
-    fBeveledFlat(x,y+h-offset,w,h);
-    fFlat(x,y,w,h-offset);
+    var x1, y1, w1, h1;
+    x1 = (widget::PG_WP_SIDE == PG_S_LEFT) ? x+w-offset: (widget::PG_WP_SIDE == PG_S_RIGHT) ? x-w+offset: x;
+    y1 = (widget::PG_WP_SIDE == PG_S_TOP)  ? y+h-offset: (widget::PG_WP_SIDE == PG_S_BOTTOM)  ? y-h+offset: y;
+    fBeveledFlat(x1,y1,w,h);
+    x1 = (widget::PG_WP_SIDE == PG_S_RIGHT) ? x+offset: x;
+    y1 = (widget::PG_WP_SIDE == PG_S_BOTTOM)  ? y+offset: y;
+    w1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? w: w-offset;
+    h1 = (widget::PG_WP_SIDE == PG_S_TOP || widget::PG_WP_SIDE == PG_S_BOTTOM) ? h-offset: h;
+    fFlat(x1,y1,w1,h1);
+    //fFlat(x,y,w,h-offset);
   };
 }
 
@@ -165,13 +178,25 @@ object tab.on {
   height = 24;
 
   bgfill = fillstyle {
-    x = x+1;
-    w = w-2;
+    var x1, y1, w1, h1;
+    x1 = (widget->container[1]::PG_WP_SIDE == PG_S_LEFT) ? x+w-3 : (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x : x+3;
+    y1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP) ? y+h-3 : (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? y : y+3;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-6: 4;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? 4: h-6;
     SetColor(bgcolor);
-    Rect(x+2,y+h-2,w-4,4);
-    SetClip(x+1,y+1,w-2,h-3);
-    fBeveledGradient(x,y,w,h);
-    SetClip(x+2,y+2,w-4,h-4);
+    Rect(x1,y1,w1,h1);
+    x  = (widget->container[1]::PG_WP_SIDE == PG_S_LEFT) ? x : (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x+3 : x+1;
+    y  = (widget->container[1]::PG_WP_SIDE == PG_S_TOP) ? y : (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? y+3 : y+1;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w-3;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? h-3: h-2;
+    SetClip(x,y,w1,h1);
+    x1 = (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x-3: x;
+    y1 = (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? y-3: y;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? h: h-2;
+    fBeveledGradient(x1,y1,w1,h1);
+    SetClip(x+2,y+2,w1-4,h1-4);
+    w = w-2;
     h = h-2;
   };
 }
@@ -180,15 +205,22 @@ object tab {
   parent = PGTH_O_TAB_ON;
 
   bgfill = fillstyle {
-    x = x+1;
+    var x1, y1, w1, h1;
+    x  = (widget->container[1]::PG_WP_SIDE == PG_S_LEFT) ? x : (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x+3 : x+1;
+    y  = (widget->container[1]::PG_WP_SIDE == PG_S_TOP) ? y : (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? y+3 : y+1;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w-3;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? h-3: h-2;
+    SetClip(x,y,w1,h1);
+    x1 = (widget->container[1]::PG_WP_SIDE == PG_S_RIGHT) ? x-3: x;
+    y1 = (widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? y-3: y;
+    w1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? w-2: w;
+    h1 = (widget->container[1]::PG_WP_SIDE == PG_S_TOP || widget->container[1]::PG_WP_SIDE == PG_S_BOTTOM) ? h: h-2;
+    fBeveledGradient(x1,y1,w1,h1);
+    SetClip(x+2,y+2,w1-4,h1-4);
     w = w-2;
-    SetClip(x,y,w,h-3);
-    fBeveledGradient(x,y,w,h);
-    SetClip(x+2,y+2,w-4,h-4);
     h = h-2;
   };
 
-  topleft_outer_color = 0xC0C0C0;
   bottomright_outer_color = 0xE0E0E0;
   topleft_inner_color = 0xFFFFFF;
   bottomright_inner_color = 0xB0B0B0;
