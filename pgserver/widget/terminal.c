@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.11 2001/01/13 06:18:28 micahjd Exp $
+/* $Id: terminal.c,v 1.12 2001/01/13 10:06:14 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -38,6 +38,9 @@
 #define FLASHTIME_ON   250
 #define FLASHTIME_OFF  125
 
+/* Inactivity time before cursor flashes */
+#define CURSOR_WAIT    500
+
 /* Size of buffer for VT102 escape codes */
 #define ESCAPEBUF_SIZE 32
 
@@ -46,6 +49,9 @@
 #define CSIARGS_SIZE   16
 
 struct termdata {
+  /* Time of the last update, used with CURSOR_WAIT */
+  unsigned long update_time;
+
   /* character info */
   handle font;
 
@@ -394,6 +400,9 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
 	term_char(self,*param->stream.data);
       
       term_realize(self);  /* Realize rects, but don't do a full update */
+
+      /* Reset the cursor timer */
+      DATA->update_time = getticks();
       return;
       
    case TRIGGER_CHAR:
@@ -420,11 +429,20 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
     case TRIGGER_TIMER:
       if (!DATA->focus) return;
       
-      /* Flash the cursor */
-      term_setcursor(self,!DATA->cursor_on);
-      
       /* Reset timer */
       install_timer(self,(DATA->cursor_on ? FLASHTIME_ON : FLASHTIME_OFF ));
+
+      /* Flash the cursor if it should be active */
+      if (getticks() > (DATA->update_time + CURSOR_WAIT))
+	term_setcursor(self,!DATA->cursor_on);
+      else {
+	/* Make sure the cursor is on */
+	if (DATA->cursor_on)
+	  return;
+	else
+	  term_setcursor(self,1);
+      }
+
       break;   /* Update */
       
    }
