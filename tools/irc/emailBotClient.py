@@ -10,9 +10,9 @@ from twisted.internet import reactor, protocol
 import sys, email, os
 import irc_colors
 
-logFile = "/home/commits/mail.log"
+mailLog = "/home/commits/mail.log"
+commandLog = "/home/commits/commands.log"
 statsDir = "/home/commits/stats"
-mtbcSubdir = "mtbc"
 statsSubdirs = ("forever", "daily", "weekly", "monthly")
 socketName = "/tmp/announceBot.socket"
 import re, time
@@ -85,13 +85,13 @@ def updateCommitTimes(project):
     currentTime = time.time()
     lastTime = None
     try:
-        lastTime = loadInt(os.path.join(statsDir, mtbcSubdir, project + '.lastTime'))
+        lastTime = loadInt(os.path.join(statsDir, 'mtbc', project + '.lastTime'))
     except IOError:
         pass
     if lastTime:
-        addIntToFile(os.path.join(statsDir, mtbcSubdir, project + '.numSamples'), 1)
-        addIntToFile(os.path.join(statsDir, mtbcSubdir, project + '.totalTime'), currentTime - lastTime)
-    saveInt(os.path.join(statsDir, mtbcSubdir, project + '.lastTime'), currentTime)
+        addIntToFile(os.path.join(statsDir, 'mtbc', project + '.numSamples'), 1)
+        addIntToFile(os.path.join(statsDir, 'mtbc', project + '.totalTime'), currentTime - lastTime)
+    saveInt(os.path.join(statsDir, 'mtbc', project + '.lastTime'), currentTime)
 
 def updateStats(project):
     incrementProjectCommits(project)
@@ -112,7 +112,7 @@ class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         import sys
         mailMsg  = email.message_from_file(sys.stdin)
-        f = open(logFile, "a")
+        f = open(mailLog, "a")
         f.write(mailMsg.as_string())
         f.close()
         subjectFields = mailMsg['Subject'].split(" ")
@@ -135,8 +135,11 @@ class AnnounceClient(protocol.Protocol):
                 for line in message.split("\n")[:40]:
                     line = line.strip()
                     if len(line) > 0:
-                        self.transport.write("%s %s %s\r\n" %
-                                             (subjectFields[0], subjectFields[1], line))
+                        commandLine = "%s %s %s\r\n" % (subjectFields[0], subjectFields[1], line)
+                        f = open(commandLog, "a")
+                        f.write(commandLine)
+                        f.close()
+                        self.transport.write(commandLine)
 
             # Send allowed control commands
             if subjectFields[0] in allowedControlCommands:
