@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.8 2000/09/04 04:21:55 micahjd Exp $
+/* $Id: pgmain.c,v 1.9 2000/09/04 05:00:19 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -143,7 +143,10 @@ int main(int argc, char **argv) {
 	break;
 
       case 'v':        /* Video */
-	viddriver = find_videodriver(optarg);
+	if (!(viddriver = find_videodriver(optarg))) {
+	  prerror(mkerror(ERRT_BADPARAM,77));
+	  exit(1);
+	}
 	break;
 
       case 'i':        /* Input */
@@ -180,7 +183,31 @@ int main(int argc, char **argv) {
       
     }
 
-    if (iserror(prerror(load_vidlib(sdl_regfunc,vidw,vidh,vidd,vidf)))) exit(1);  
+    if (viddriver) {
+      /* Force a specific driver */
+
+      if (iserror(prerror(
+			  load_vidlib(viddriver,vidw,vidh,vidd,vidf)
+			  ))) exit(1);  
+    }
+    else {
+      /* Try to detect a driver (see driverinfo.c) */
+      struct vidinfo *p = videodrivers;
+
+      while (p->name) {
+	if (!iserror(
+		     load_vidlib(p->regfunc,vidw,vidh,vidd,vidf)
+		     ))
+	  /* Yay, found one that works */
+	  break;
+	p++;
+      }
+      if (!p->name) {
+	/* Oh well... */
+	prerror(mkerror(ERRT_IO,78));
+	exit(1);
+      }
+    }
   }
 
   /*************************************** More Initialization */

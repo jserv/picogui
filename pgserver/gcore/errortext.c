@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.5 2000/09/04 04:21:55 micahjd Exp $
+/* $Id: errortext.c,v 1.6 2000/09/04 05:00:19 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -119,6 +119,8 @@ static const char *errors[] = {
   /* 74 */  "Error initializing mouse",
   /* 75 */  "Nonexistant input driver",
   /* 76 */  "This input driver is already loaded",
+  /* 77 */  "Nonexistant video driver",
+  /* 78 */  "All installed video drivers failed!",
 };
 
 #endif /* TINY_MESSAGES */

@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.7 2000/09/04 04:21:55 micahjd Exp $
+/* $Id: video.c,v 1.8 2000/09/04 05:00:19 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -28,6 +28,7 @@
 
 #include <pgserver/video.h>
 #include <pgserver/g_malloc.h>
+#include <pgserver/input.h>
 
 /******************************************** Utils */
 
@@ -807,6 +808,8 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
     vid = NULL;
     return e;
   }
+
+  inlib_main = NULL;
 
   /* Load new driver */
   e = (*vid->init)(xres,yres,bpp,flags);

@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.4 2000/09/04 04:21:55 micahjd Exp $
+/* $Id: input.c,v 1.5 2000/09/04 05:00:19 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -30,7 +30,7 @@
 /******************************************** Vars */
 
 /* Corresponding to the 'extern' definitions in input.h */
-struct inlib *inlib_list;
+struct inlib *inlib_list = NULL;
 struct inlib *inlib_main;
 
 /* Loads an input driver, and puts a pointer 
@@ -84,6 +84,8 @@ g_error load_inlib(g_error (*regfunc)(struct inlib *i),
 
 /* Unload a specific driver */
 void unload_inlib(struct inlib *inl) {
+  if (!inl) return;
+
   if (inlib_list==inl)
     inlib_list = inlib_list->next;
   else if (inlib_list) {
@@ -114,6 +116,8 @@ void cleanup_inlib(void) {
       (*condemn->close)();
     g_free(condemn);
   }
+  inlib_list = NULL;
+  inlib_main = NULL;
 }
 
 g_error (*find_inputdriver(const char *name))(struct inlib *i) {
