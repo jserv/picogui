@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.18 2002/10/09 17:27:15 micahjd Exp $
+/* $Id: rotate270.c,v 1.19 2002/10/11 12:38:20 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -182,7 +182,7 @@ void rotate270_charblit(hwrbitmap dest,u8 *chardat,s16 dest_x,s16 dest_y,
    angle %= 360;
    if (angle<0) angle += 360;
    
-   (*vid->charblit)(dest,chardat,dx-dest_y,dest_x,w,h,
+   (*vid->charblit)(dest,chardat,dx-dest_y-1,dest_x,w,h,
 		    lines,angle,c,rotate270_rotateclip(clip),lgop);
 }
 
