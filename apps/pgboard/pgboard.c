@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.16 2001/11/07 08:29:47 cgrigis Exp $
+/* $Id: pgboard.c,v 1.17 2001/11/07 13:34:52 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <netinet/in.h>
 #include <picogui.h>
 #include "pgboard.h"
@@ -236,7 +237,6 @@ void selectPattern (unsigned short pattern)
 
 int evtMouse(struct pgEvent *evt) {
   struct key_entry *clickkey = NULL;
-  short n;
 
   /* Ignore all but left mouse button */
   if (evt->e.pntr.chbtn != 1 && evt->type != PG_WE_PNTR_RELEASE)
@@ -336,6 +336,9 @@ void drawDisabledKeyboard ()
 }
 
 int main(int argc,char **argv) {
+  /* File data */
+  unsigned char * file_data;
+
   /* Make a 'toolbar' app */
   pgInit(argc,argv);
   wApp = pgRegisterApp(PG_APP_TOOLBAR,"Keyboard",0);
@@ -361,15 +364,18 @@ int main(int argc,char **argv) {
     pgMessageDialog(*argv,"Error loading keyboard file",0);
     return 1;
   }
-  if (kb_validate(fpat,&mpat)) {
+  file_data = kb_validate (fpat, &mpat);
+  fclose (fpat);
+  if (file_data == NULL) {
     pgMessageDialog(*argv,"Invalid keyboard file [kb_validate()]",0);
     return 1;
   }
-  if (kb_loadpatterns(fpat)) {
+  if (kb_loadpatterns(file_data)) {
+    free (file_data);
     pgMessageDialog(*argv,"Invalid keyboard file [kb_loadpatterns()]",0);
     return 1;
   }
-  fclose (fpat);
+  free (file_data);
 
   /* Resize app widget */
   pgSetWidget(wApp,

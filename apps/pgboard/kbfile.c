@@ -1,4 +1,4 @@
-/* $Id: kbfile.c,v 1.8 2001/11/02 15:47:35 cgrigis Exp $
+/* $Id: kbfile.c,v 1.9 2001/11/07 13:34:52 cgrigis Exp $
   *
   * kbfile.c - Functions to validate and load patterns from a keyboard file
   * 
@@ -26,6 +26,7 @@
   */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <picogui.h>
 #include <netinet/in.h>
 #include "kbfile.h"
@@ -46,27 +47,28 @@ static struct pattern_info * pattern_data = NULL;
 /* Current pattern info */
 static struct pattern_info * current_pat = NULL;
 
-/* Validate a pattern's header, fill in global data for mem_pattern */
-int kb_validate(FILE *f, struct mem_pattern ** user_pat) {
-   unsigned long checksum = 0;
-   unsigned char c;
+/* Validate a pattern's header, read the file data in memory, */
+/* fill in global data for mem_pattern */
+unsigned char * kb_validate(FILE *f, struct mem_pattern ** user_pat) {
+   unsigned long checksum;
    struct keyboard_header hdr;
    int i;
-   
+   unsigned char * file_buffer;
+
    /* Clear pattern info */
    memset (&pat, 0, sizeof (pat));
 
    /* Read in the header */
    rewind(f);
    if (!fread(&hdr,1,sizeof(hdr),f))
-     return 1;
+     return NULL;
    
    /* Check the magic */
    if (hdr.magic[0] != 'P' ||
        hdr.magic[1] != 'G' ||
        hdr.magic[2] != 'k' ||
        hdr.magic[3] != 'b')
-     return 1;
+     return NULL;
    
    /* Re-byteorder-ize the header */
    hdr.file_len = ntohl(hdr.file_len);
@@ -79,25 +81,34 @@ int kb_validate(FILE *f, struct mem_pattern ** user_pat) {
    
    /* Check file version */
    if (hdr.file_ver > PGKB_FORMATVERSION)
-     return 1;
+     return NULL;
    
    /* Measure file length, compare it */
    fseek(f,0,SEEK_END);
    if (ftell(f)!=hdr.file_len)
-     return 1;
+     return NULL;
+
+   /* Read the file in memory */
+   rewind(f);
+   file_buffer = (unsigned char *) malloc (sizeof (unsigned char) * hdr.file_len);
+   if (!file_buffer)
+     return NULL;
+   fread (file_buffer, sizeof (unsigned char), hdr.file_len, f);
    
    /* Measure the file's checksum */
-   rewind(f);
-   for (i=8;i;i--) {
-      fread(&c,1,1,f);
-      checksum += c;
-   }
-   /* Skip the checksum itself */
-   fseek(f,4,SEEK_CUR);
-   while (fread(&c,1,1,f))
-     checksum += c;
+   checksum = 0;
+   for (i = 0; i < hdr.file_len; i++, file_buffer++)
+     {
+       checksum += *file_buffer;
+     }
+   file_buffer -= hdr.file_len;
+   /* Don't count the checksum itself */
+   checksum -= file_buffer [8] + file_buffer [9] + file_buffer [10] + file_buffer [11];
    if (checksum!=hdr.file_sum32)
-     return 1;
+     {
+       free (file_buffer);
+       return NULL;
+     }
 
    /* Looks ok, store data */
    pat.num_patterns = hdr.num_patterns;
@@ -108,22 +119,21 @@ int kb_validate(FILE *f, struct mem_pattern ** user_pat) {
    /* Affect user mem_pattern variable */
    (*user_pat) = &pat;
 
-   return 0;
+   return file_buffer;
 }
 
-/* Load (and allocate memory for if necessary) all patterns from a file 
-   [adapted from former 'kb_loadpattern()' to load all data in memory for 
-   performance reasons] */
-int kb_loadpatterns (FILE *f)
+/* Load (and allocate memory for if necessary) all patterns from file data */
+/* Return nonzero on error */
+int kb_loadpatterns (unsigned char * file_buffer)
 {
    /* Number of current pattern */
    int npat;
    /* Current pattern */
    struct pattern_info * current_pat;
-
+   
    /* Skip the header */
-   fseek (f, sizeof (struct keyboard_header), SEEK_SET);
-
+   file_buffer += sizeof (struct keyboard_header);
+   
    /* Allocate space for the patterns */
    pattern_data = (struct pattern_info *) 
      malloc (pat.num_patterns * sizeof (struct pattern_info));
@@ -139,8 +149,8 @@ int kb_loadpatterns (FILE *f)
        struct key_entry * current_key;
 
        /* Read pattern header */
-       if (!fread (&pat_hdr, sizeof (pat_hdr), 1, f))
-	 return 1;
+       memcpy (&pat_hdr, file_buffer, sizeof (pat_hdr));
+       file_buffer += sizeof (pat_hdr);
 
        /* Byte-swap data */
        pat_hdr.canvasdata_len = ntohl (pat_hdr.canvasdata_len);
@@ -154,8 +164,8 @@ int kb_loadpatterns (FILE *f)
        current_pat->canvas_buffer = (char *) malloc (current_pat->canvasdata_len);
        if (!current_pat->canvas_buffer)
 	 return 1;
-       if (!fread (current_pat->canvas_buffer, sizeof (char), current_pat->canvasdata_len, f))
-	 return 1;
+       memcpy (current_pat->canvas_buffer, file_buffer, current_pat->canvasdata_len * sizeof (char));
+       file_buffer += current_pat->canvasdata_len * sizeof (char);
 
        /* Read requests */
        for ( ;pat_hdr.num_requests > 0; pat_hdr.num_requests--)
@@ -166,8 +176,8 @@ int kb_loadpatterns (FILE *f)
 	   pghandle result;
 
 	   /* Read request header */
-	   if (!fread (&kbrqh, sizeof (kbrqh), 1, f))
-	     return 1;
+	   memcpy (&kbrqh, file_buffer, sizeof (kbrqh));
+	   file_buffer += sizeof (kbrqh);
 
 	   /* Byte-swap data */
 	   kbrqh.canvasdata_offset = ntohl (kbrqh.canvasdata_offset);
@@ -177,26 +187,20 @@ int kb_loadpatterns (FILE *f)
 	     return 1;
 
 	   /* Read request */
-	   if (!fread (&req, sizeof (req), 1, f))
-	     return 1;
+	   memcpy (&req, file_buffer, sizeof (req));
+	   file_buffer += sizeof (req);
 
 	   /* Byte-swap data */
 	   req.type = ntohs (req.type);
 	   req.size = ntohl (req.size);
 
 	   /* Read request data */
-	   req_buf = (char *) malloc (req.size);
-	   if (!req_buf)
-	     return 1;
-	   if (!fread (req_buf, req.size, 1, f))
-	     return 1;
+	   req_buf = (char *) file_buffer;
+	   file_buffer += req.size;
 
 	   /* Evaluate request */
 	   result = pgEvalRequest (req.type, req_buf, req.size);
 	   
-	   /* Free request memory */
-	   free (req_buf);
-
 	   /* Link request to canvas data */
 	   *( (unsigned long *) 
 	      (current_pat->canvas_buffer + kbrqh.canvasdata_offset) 
@@ -208,9 +212,8 @@ int kb_loadpatterns (FILE *f)
 	 malloc (pat_hdr.num_keys * sizeof (struct key_entry));
        if (!current_pat->keys)
 	 return 1;
-       if (!fread (current_pat->keys, 
-		   sizeof (struct key_entry), pat_hdr.num_keys, f))
-	 return 1;
+       memcpy (current_pat->keys, file_buffer, pat_hdr.num_keys * sizeof (struct key_entry));
+       file_buffer += pat_hdr.num_keys * sizeof (struct key_entry);
 
        /* Byte-swap key data */
        current_key = current_pat->keys;

@@ -1,4 +1,4 @@
-/* $Id: kbfile.h,v 1.5 2001/11/02 15:47:35 cgrigis Exp $
+/* $Id: kbfile.h,v 1.6 2001/11/07 13:34:52 cgrigis Exp $
   *
   * kbfile.h - Definition of the PicoGUI keyboard file format 
   * 
@@ -111,13 +111,14 @@ struct mem_pattern {
    unsigned short app_sizemode;
 };
 
-/* These functions return nonzero on error */
 
-/* Validate a pattern's header, fill in global data for mem_pattern */
-int kb_validate(FILE *f, struct mem_pattern ** pat);
+/* Validate a pattern's header, read the file data in memory, */
+/* fill in global data for mem_pattern */
+unsigned char * kb_validate(FILE *f, struct mem_pattern ** pat);
 
-/* Load (and allocate memory for if necessary) all patterns from a file */
-int kb_loadpatterns (FILE *f);
+/* Load (and allocate memory for if necessary) all patterns from file data */
+/* Return nonzero on error */
+int kb_loadpatterns (unsigned char * file_buffer);
 
 /* Select a pattern from the ones loaded in memory, and load it into the
    specified canvas widget */
