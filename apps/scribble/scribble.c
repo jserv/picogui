@@ -1,4 +1,4 @@
-/* $Id: scribble.c,v 1.1 2001/10/13 22:39:40 micahjd Exp $
+/* $Id: scribble.c,v 1.2 2001/10/14 01:17:09 micahjd Exp $
  *
  * scribble.c - Simple paint program
  *
@@ -26,19 +26,27 @@
  */
 
 #include <picogui.h>
+#include <string.h>
 
-pghandle wCurrentColor, wMainCanvas, bScribbleBitmap;
+pghandle wCurrentColor, wMainCanvas, bScribbleBitmap, wApp;
 pgcontext gcCurrentColor, gcMain, gcBitmap;
 pgcolor currentColor;
+int needs_save;
+const char *currentFile = NULL;
 
 void makeColorSample(pghandle canvas, pgcolor color);
 void setCurrentColor(pgcolor color);
 void clearBackground(pgcolor color);
 void drawPenLine(pgcontext gc, pgu x1,pgu y1,pgu x2,pgu y2);
+void updateAppTitle(void);
 int evtColorSample(struct pgEvent *evt);
 int evtBtnOther(struct pgEvent *evt);
 int evtBtnClear(struct pgEvent *evt);
+int evtBtnLoad(struct pgEvent *evt);
+int evtBtnSave(struct pgEvent *evt);
+int evtBtnSaveAs(struct pgEvent *evt);
 int evtCanvas(struct pgEvent *evt);
+int evtClose(struct pgEvent *evt);
 
 #define APP_NAME "Scribble Pad"
 
@@ -50,7 +58,12 @@ int main(int argc, char **argv) {
   struct pgmodeinfo mi;
 
   pgInit(argc,argv);
-  pgRegisterApp(PG_APP_NORMAL,APP_NAME,0);
+  wApp = pgRegisterApp(PG_APP_NORMAL,APP_NAME,0);
+  pgBind(PGDEFAULT,PG_WE_CLOSE,&evtClose,NULL);
+
+  /* Get info about the current video mode- we use this to figure out
+   * what size the bitmap should be, and what type of palette to use.
+   */
   mi = *pgGetVideoMode();
 
   /* Top-level widgets- color toolbar and main canvas */
@@ -66,7 +79,7 @@ int main(int argc, char **argv) {
   pgBind(PGDEFAULT,PGBIND_ANY,&evtCanvas,NULL);
 
   /* Allocate a bitmap for the drawing. Since we don't have scrolling,
-   * so it is safe to make the bitmap the size of the display.
+   * it is safe to make the bitmap the size of the display.
    * When we draw, it goes to this bitmap and to the canvas. This way it is
    * drawn quickly, but if PicoGUI needs to repaint the screen it can use
    * the bitmap. Also, this will make loading and saving drawings very easy.
@@ -133,7 +146,22 @@ int main(int argc, char **argv) {
   }
 
   /* Add some buttons to the menu */
-  pgNewWidget(PG_WIDGET_FLATBUTTON,PG_DERIVE_INSIDE,wMenuTB);
+  pgNewWidget(PG_WIDGET_BUTTON,PG_DERIVE_INSIDE,wMenuTB);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Load..."),
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtBtnLoad,NULL);
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Save"),
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtBtnSave,NULL);
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_TEXT,pgNewString("Save As..."),
+	      0);
+  pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtBtnSaveAs,NULL);
+  pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Clear..."),
 	      0);
@@ -141,6 +169,7 @@ int main(int argc, char **argv) {
  
   setCurrentColor(0x000000);   /* Default foreground and background */
   clearBackground(0xFFFFFF);
+  updateAppTitle();
 
   pgEventLoop();
   return 0;
@@ -198,6 +227,104 @@ int evtBtnClear(struct pgEvent *evt) {
   return 0;
 }
 
+/* If they try to close with out saving, ask first */
+int evtClose(struct pgEvent *evt) {
+  if (!needs_save)
+    return 0;
+  
+  switch (pgMessageDialog(APP_NAME,"Save before closing?",
+			  PG_MSGBTN_YES | PG_MSGBTN_NO | PG_MSGBTN_CANCEL)) {
+    
+  case PG_MSGBTN_NO:       /* Go ahead and close */
+    return 0;
+
+  case PG_MSGBTN_CANCEL:   /* Stop the close event */
+    return 1;
+
+  case PG_MSGBTN_YES:      /* Save */
+    evtBtnSave(evt);
+    break;
+  }
+  return 1;                /* Shouldn't get here */
+}
+
+int evtBtnLoad(struct pgEvent *evt) {
+  const char *newfile;
+  pghandle bLoaded;
+  int loaded_w,loaded_h,scribble_w,scribble_h;
+
+  /* Select a file with the file picker */
+  newfile = pgFilePicker(NULL,NULL,currentFile,PG_FILEOPEN,
+			 "Load a " APP_NAME " file");
+  if (!newfile)
+    return 0;
+
+  /* It's the current file now */
+  if (currentFile)
+    free(currentFile);
+  currentFile = strdup(newfile);
+
+  /* Load it
+   * FIXME: Trap errors here and report them to the user in a less
+   * threatening way
+   */
+  bLoaded = pgNewBitmap(pgFromFile(currentFile));
+  pgSizeBitmap(&loaded_w,&loaded_h,bLoaded);
+  pgSizeBitmap(&scribble_w,&scribble_h,bScribbleBitmap);
+
+  /* Blit it */
+  pgBitmap(gcBitmap,0,0,loaded_w,loaded_h,bLoaded);
+
+  /* If the bitmap's size doesn't match the current scribble document,
+   * warn the user
+   */
+  if (loaded_w!=scribble_w || loaded_h!=scribble_h)
+    pgMessageDialog("Warning - " APP_NAME,
+		    "The size of the picture you are loading is\n"
+		    "different than the size of this scribble pad.\n"
+		    "\n"
+		    "If you save this file, it will be saved in this\n"
+		    "new format.",0);
+
+  /* Clean up */
+  pgDelete(bLoaded);
+
+  needs_save = 0;
+  updateAppTitle();
+  return 0;
+}
+
+int evtBtnSave(struct pgEvent *evt) {
+  /* Make sure we have a name */
+  if (!currentFile)
+    return evtBtnSaveAs(evt);
+
+  /* FIXME: Save not implemented */
+  pgMessageDialog(APP_NAME,"Save is not yet implemented",0);
+
+  needs_save = 0;
+  updateAppTitle();
+  return 0;
+}
+
+int evtBtnSaveAs(struct pgEvent *evt) {
+  const char *newfile;
+
+  /* Select a file with the file picker */
+  newfile = pgFilePicker(NULL,NULL,currentFile,PG_FILESAVE,
+			 "SAVE a " APP_NAME " file");
+  if (!newfile)
+    return 0;
+
+  /* It's the current file now */
+  if (currentFile)
+    free(currentFile);
+  currentFile = strdup(newfile);
+  
+  /* Normal save */
+  return evtBtnSave(evt);
+}
+
 /******************************************** Utilities */
 
 /* Turns the given widget into a color sample, it changes the current color
@@ -241,9 +368,13 @@ void setCurrentColor(pgcolor color) {
 }
 
 void drawPenLine(pgcontext gc, pgu x1,pgu y1,pgu x2,pgu y2) {
-  pgSetColor(gc,currentColor);
-    
+  if (!needs_save) {
+    needs_save = 1;
+    updateAppTitle();
+  }
+
   /* Draw multiple lines to make a thick line */
+  pgSetColor(gc,currentColor);
   pgLine(gc,x1  ,y1  ,x2  ,y2  );
   pgLine(gc,x1+1,y1  ,x2+1,y2  );
   pgLine(gc,x1-1,y1  ,x2-1,y2  );
@@ -260,5 +391,28 @@ void clearBackground(pgcolor color) {
   pgRect(gcBitmap,0,0,0x7FFF,0x7FFF);
   pgContextUpdate(gcMain);
 }
+
+void updateAppTitle(void) {
+  /* Update the app's title to reflect the current file */
+
+  /* Make a 'nice' filename- cut off the path if there is one, and if
+   * it hasn't been saved call it "Untitled"
+   */
+  const char *filename;
+  if (currentFile) {
+    filename = strrchr(currentFile,'/');
+    if (filename)
+      filename++;
+    else
+      filename = currentFile;
+  }
+  else
+    filename = "Untitled";
+
+  pgReplaceTextFmt(wApp,"%s - %s%s",filename,APP_NAME,
+		   needs_save ? " (modified)" : "");
+  pgSubUpdate(wApp);
+}
+
 
 /* The End */
