@@ -30,11 +30,11 @@ runtime = [
                      rcscript = '''
 # setup env vars
 echo  >/var/pgserver.dynconf "[pgserver]"
-echo >>/var/pgserver.dynconf "rotate = $SYSTEM_DISPLAY_HW_ORIENTATION"
-echo >>/var/pgserver.dynconf "[chipslicets]"
-echo >>/var/pgserver.dynconf "calibration = $PG_TS_CALIBRATION"
 
-if test "$PG_TS_REMORAKB_ON" = "1"
+# pre-calibrate the /dev/ts device using bios env var
+bioscall --ts-calibrate=PG_TS_CALIBRATION
+
+if bioscall --test PG_TS_REMORAKB_ON -eq 1
 then
   echo "/etc/rc: Using Remora keyboard on ttyS0"
   remorakb_checker --force=0 >>/var/pgserver.dynconf
