@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.32 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: scroll.c,v 1.33 2001/03/21 05:21:18 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -277,13 +277,15 @@ void scroll_trigger(struct widget *self,long type,union trigparam *param) {
     /* Same old value... */
     if (DATA->old_value==DATA->value) return;
 
-    /* If we haven't waited long enough since the last update,
-       go away */
-    tick = getticks();
-    if (tick < DATA->wait_tick) break;
-    DATA->wait_tick = tick + SCROLL_DELAY;
-
-    /* Only store the old value if we're actually redrawing this
+     /* If possible, use the input driver to see when we're behind
+      * and skip a frame. Otherwise, just use a timer as a throttle */
+     if (events_pending())
+       return;
+     tick = getticks();
+     if (tick < DATA->wait_tick) return;
+     DATA->wait_tick = tick + SCROLL_DELAY;
+     
+     /* Only store the old value if we're actually redrawing this
        time. Otherwise, scrolling to the top or bottom very fast
        will leave the last update somewhere in between */
     DATA->old_value = DATA->value;

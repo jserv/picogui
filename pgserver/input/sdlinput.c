@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.13 2001/02/17 05:18:41 micahjd Exp $
+/* $Id: sdlinput.c,v 1.14 2001/03/21 05:21:18 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -109,12 +109,19 @@ void sdlinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
   timeout->tv_usec = POLL_USEC;
 }
 
+/* Check the input queue */
+int sdlinput_ispending(void) {
+   sdlinput_poll();
+   return SDL_PollEvent(NULL);
+}
+
 /******************************************** Driver registration */
 
 g_error sdlinput_regfunc(struct inlib *i) {
   i->init = &sdlinput_init;
   i->poll = &sdlinput_poll;
   i->fd_init = &sdlinput_fd_init;
+  i->ispending = &sdlinput_ispending;
   return sucess;
 }
 

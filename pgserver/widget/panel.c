@@ -1,5 +1,5 @@
 
-/* $Id: panel.c,v 1.53 2001/03/19 05:59:28 micahjd Exp $
+/* $Id: panel.c,v 1.54 2001/03/21 05:21:18 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -62,8 +62,14 @@ struct paneldata {
   /* The split value while the panel is unrolled */
   int unrolled;
 
+   /* Because the divnode coordinates change when dragging in solid mode,
+    * the x,y coordinate must be saved before starting */
+  int x,y;
+   
+#ifndef CONFIG_DRAGSOLID
   /* Sprite for dragging the panelbar */
   struct sprite *s;
+#endif
 
   /* Text on the panelbar */
   handle text;
@@ -77,8 +83,39 @@ struct paneldata {
 #define DATA ((struct paneldata *)(self->data))
 
 void themeify_panel(struct widget *self);
-
+void panel_calcsplit(struct widget *self,int x,int y);
+   
 /**** Build and resize */
+
+void panel_calcsplit(struct widget *self,int x,int y) {
+   /* Now use grab_offset to calculate a new split value */
+   switch (self->in->flags & (~SIDEMASK)) {
+    case PG_S_TOP:
+      self->in->split =  y - DATA->grab_offset - DATA->y;
+      if (self->in->split + BARDIV->h > self->in->h)
+	self->in->split = self->in->h - BARDIV->h;
+      break;
+    case PG_S_BOTTOM:
+      self->in->split = DATA->y + self->in->h - 1 -
+	y - DATA->grab_offset;
+      if (self->in->split + BARDIV->h > self->in->h)
+	self->in->split = self->in->h - BARDIV->h;
+      break;
+    case PG_S_LEFT:
+      self->in->split =  x - DATA->grab_offset - DATA->x;
+      if (self->in->split + BARDIV->w > self->in->w)
+	self->in->split = self->in->w - BARDIV->w;
+      break;
+    case PG_S_RIGHT:
+      self->in->split = DATA->x + self->in->w - 1 -
+	x - DATA->grab_offset;
+      if (self->in->split + BARDIV->w > self->in->w)
+	self->in->split = self->in->w - BARDIV->w;
+      break;
+   }
+   if (self->in->split < 0) self->in->split = 0;
+   self->in->split += BARWIDTH;    /* Account for panelbar height */
+}
 
 void resize_panel(struct widget *self) {
   int s;
@@ -384,7 +421,12 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     DATA->osplit = self->in->split;
     DATA->on = 1;
-
+    DATA->x = self->in->x;
+    DATA->y = self->in->y;
+     
+#ifndef CONFIG_DRAGSOLID
+    /* Sprite dragging code */
+     
     /* Update the screen now, so we have an up-to-date picture
        of the panelbar stored in DATA->bar */
     themeify_panel(self);
@@ -405,6 +447,7 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 		   BARDIV->w,BARDIV->h);
     DATA->s->clip_to = self->in;
 
+#endif /* CONFIG_DRAGSOLID */
     break;
 
   case TRIGGER_UP:
@@ -412,34 +455,8 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     if (!DATA->on) return;
     if (param->mouse.chbtn != 1) return;
 
-    /* Now use grab_offset to calculate a new split value */
-    switch (self->in->flags & (~SIDEMASK)) {
-    case PG_S_TOP:
-      self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
-      if (self->in->split + BARDIV->h > self->in->h)
-	self->in->split = self->in->h - BARDIV->h;
-      break;
-    case PG_S_BOTTOM:
-      self->in->split = self->in->y + self->in->h - 1 -
-	param->mouse.y - DATA->grab_offset;
-      if (self->in->split + BARDIV->h > self->in->h)
-	self->in->split = self->in->h - BARDIV->h;
-      break;
-    case PG_S_LEFT:
-      self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
-      if (self->in->split + BARDIV->w > self->in->w)
-	self->in->split = self->in->w - BARDIV->w;
-      break;
-    case PG_S_RIGHT:
-      self->in->split = self->in->x + self->in->w - 1 -
-	param->mouse.x - DATA->grab_offset;
-      if (self->in->split + BARDIV->w > self->in->w)
-	self->in->split = self->in->w - BARDIV->w;
-      break;
-    }
-    if (self->in->split < 0) self->in->split = 0;
-    self->in->split += BARWIDTH;    /* Account for panelbar height */
-
+    panel_calcsplit(self,param->mouse.x,param->mouse.y);
+     
     if (abs(self->in->split - DATA->osplit) < MINDRAGLEN) {
       /* This was a click, not a drag */
       DATA->over = 0;
@@ -467,21 +484,28 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
 
+#ifndef CONFIG_DRAGSOLID
     free_sprite(DATA->s);
-
+#endif
+     
     DATA->on = 0;
     break;
 
+#ifndef CONFIG_DRAGSOLID
+     /* Sprite dragging code */
+
   case TRIGGER_DRAG:
     if (!DATA->on) return;
-    /* Ok, button 1 is dragging through our widget... */
-
-    /* If we haven't waited long enough since the last update,
-       go away */
-    tick = getticks();
-    if (tick < DATA->wait_tick) return;
-    DATA->wait_tick = tick + DRAG_DELAY;
-
+     /* Ok, button 1 is dragging through our widget... */
+     
+     /* If possible, use the input driver to see when we're behind
+      * and skip a frame. Otherwise, just use a timer as a throttle */
+     if (events_pending())
+       return;
+     tick = getticks();
+     if (tick < DATA->wait_tick) return;
+     DATA->wait_tick = tick + DRAG_DELAY;
+      
     /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {
     case PG_S_TOP:
@@ -504,9 +528,29 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
     /* Reposition sprite */
     VID(sprite_update) (DATA->s);
-
     return;
 
+#else /* CONFIG_DRAGSOLID */     
+     /* Solid dragging code, abuse the CPU */
+     
+   case TRIGGER_DRAG:
+     if (!DATA->on) return;
+
+     /* If possible, use the input driver to see when we're behind
+      * and skip a frame. Otherwise, just use a timer as a throttle */
+     if (events_pending())
+       return;
+     tick = getticks();
+     if (tick < DATA->wait_tick) return;
+     DATA->wait_tick = tick + DRAG_DELAY;
+	
+     panel_calcsplit(self,param->mouse.x,param->mouse.y);
+     self->in->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+     self->dt->flags |= DIVTREE_NEED_RECALC;
+     update(NULL,1);
+     return;
+     
+#endif /* CONFIG_DRAGSOLID */
   }
 
   themeify_panel(self);

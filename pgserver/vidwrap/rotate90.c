@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.5 2001/03/20 00:46:44 micahjd Exp $
+/* $Id: rotate90.c,v 1.6 2001/03/21 05:21:18 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -77,11 +77,23 @@ void rotate90_line(int x1,int y1,int x2,int y2,hwrcolor c) {
 }
 void rotate90_blit(hwrbitmap src,int src_x,int src_y,
 		   int dest_x,int dest_y,int w,int h,int lgop) {
-   (*vid->blit)(src,0,0,dest_y,vid->yres-dest_x-w,h,w,lgop);
+   int bw,sx2;
+
+   if (src) {
+      (*vid->bitmap_getsize)(src,&sx2,&bw);
+   }
+   else {
+      bw = vid->yres;
+   }
+   sx2 = bw-(w%bw)-src_x;
+   
+   (*vid->blit)(src,src_y,sx2,dest_y,vid->yres-dest_x-w,h,w,lgop);
 }
 void rotate90_unblit(int src_x,int src_y,hwrbitmap dest,int dest_x,
 		     int dest_y,int w,int h) {
- //  (*vid->unblit)(src_y,vid->yres-src_x-w,dest,dest_y,dest_x,h,w);
+   int bw,bh;
+   (*vid->bitmap_getsize)(dest,&bh,&bw);
+   (*vid->unblit)(src_y,vid->yres-src_x-w,dest,dest_y,bw-w-dest_x,h,w);
 }
 void rotate90_scrollblit(int src_x,int src_y,int dest_x,int dest_y,
 			 int w,int h) {
@@ -90,7 +102,10 @@ void rotate90_scrollblit(int src_x,int src_y,int dest_x,int dest_y,
 void rotate90_tileblit(hwrbitmap src,int src_x,int src_y,int src_w,
 		       int src_h,int dest_x,int dest_y,int dest_w,
 		       int dest_h) {
-   /* FIXME */
+   int bw,bh;
+   (*vid->bitmap_getsize)(src,&bh,&bw);
+   (*vid->tileblit)(src,src_y,bw-src_w-src_x,src_h,src_w,dest_y,
+		    vid->yres-dest_x-dest_w,dest_h,dest_w);
 }
 void rotate90_charblit(unsigned char *chardat,int dest_x,int dest_y,
 		       int w,int h,int lines,hwrcolor c,
@@ -131,8 +146,12 @@ void rotate90_charblit_v(unsigned char *chardat,int dest_x,int dest_y,
 
 /* Tack that rotation onto any bitmap loading */
 
+g_error rotate90_bitmap_new(hwrbitmap *bmp,int w,int h) {
+   return (*vid->bitmap_new)(bmp,h,w);
+}
+
 #ifdef CONFIG_FORMAT_XBM
-g_error rotate90_bitmap_loadxbm(struct stdbitmap **bmp,
+g_error rotate90_bitmap_loadxbm(hwrbitmap *bmp,
 				unsigned char *data,
 				int w,int h,
 				hwrcolor fg,
@@ -149,7 +168,11 @@ g_error rotate90_bitmap_load(hwrbitmap *bmp,u8 *data,u32 datalen) {
    errorcheck;
    return (*vid->bitmap_rotate90)(bmp);
 }
-   
+
+g_error rotate90_bitmap_getsize(hwrbitmap *bmp,int *w,int *h) {
+   return (*vid->bitmap_getsize)(bmp,h,w);
+}
+
 /******* Registration */
 
 void vidwrap_rotate90(struct vidlib *vid) {
@@ -173,6 +196,8 @@ void vidwrap_rotate90(struct vidlib *vid) {
    vid->coord_logicalize = &rotate90_coord_logicalize;
    vid->bitmap_loadxbm = &rotate90_bitmap_loadxbm;
    vid->bitmap_load = &rotate90_bitmap_load;
+   vid->bitmap_new = &rotate90_bitmap_new;
+   vid->bitmap_getsize = &rotate90_bitmap_getsize;
 }
 
 /* The End */

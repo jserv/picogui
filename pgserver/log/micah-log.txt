@@ -1,3 +1,15 @@
+---- Tuesday, March 20
+
+Rotation works well except for scrolling and rotated vertical character
+blits (which would now be upside down)
+
+Added a compile-time option for 'solid' panel dragging as opposed to the usual
+sprite-based stuff. It's CPU intensive, but fun.
+For proper handling of CPU-intensive processes that are driven by mouse
+movement, the input drivers should have a way to check if events are pending.
+
+
+
 ---- Sunday, March 18
 
 Starting rotation. I have the easy parts (no blits) working. No runtime mode

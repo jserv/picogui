@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.2 2001/03/17 04:16:34 micahjd Exp $
+/* $Id: pnm.c,v 1.3 2001/03/21 05:21:18 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -132,13 +132,11 @@ g_error pnm_load(struct stdbitmap **bmp, u8 *data, u32 datalen) {
   data++; datalen--;
 
   /* Check for a correct-sized data buffer */
-  if (datalen < ((((w*bpp)%8) ? (w*bpp+8) : (w*bpp))/8*h)) {
-    VID(bitmap_free) (*bmp);
+  if (datalen < ((((w*bpp)%8) ? (w*bpp+8) : (w*bpp))/8*h))
     return efmt;
-  }
 
   /* Set up the bitmap */
-  e = VID(bitmap_new) ((hwrbitmap *)bmp,w,h);
+  e = (*vid->bitmap_new) ((hwrbitmap *)bmp,w,h);
   errorcheck;
   pline = p = (*bmp)->bits;
 

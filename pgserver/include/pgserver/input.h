@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.9 2001/02/23 15:07:35 pney Exp $
+/* $Id: input.h,v 1.10 2001/03/21 05:21:18 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -85,6 +85,10 @@ struct inlib {
   */
   void (*poll)(void);
 
+  /* If the input device queues events, this should return nonzero
+   * when the queue is nonempty. */
+  int (*ispending)(void);
+   
   /* Do not touch (drivers) */
   g_error (*regfunc)(struct inlib *i);  /* For avoiding duplicates */
   struct inlib *next;
@@ -107,6 +111,10 @@ g_error load_inlib(g_error (*regfunc)(struct inlib *i),
 
 /* Unload a specific driver */
 void unload_inlib(struct inlib *inl);
+
+/* Check whether any drivers have a backlog of events.
+ * This calls the driver's ispending function */
+int events_pending(void);
 
 /* Unload all drivers */
 void cleanup_inlib(void);

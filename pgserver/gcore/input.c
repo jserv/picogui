@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.9 2001/02/17 05:18:40 micahjd Exp $
+/* $Id: input.c,v 1.10 2001/03/21 05:21:18 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -130,6 +130,19 @@ g_error (*find_inputdriver(const char *name))(struct inlib *i) {
     p++;
   }
   return NULL;
+}
+
+/* Check whether any drivers have a backlog of events.
+ * This calls the driver's ispending function */
+int events_pending(void) {
+   struct inlib *p = inlib_list;
+   while (p) {
+      if (p && p->ispending)
+	if ((*p->ispending)())
+	  return 1;
+      p = p->next;
+   }
+   return 0;
 }
 
 /* The End */
