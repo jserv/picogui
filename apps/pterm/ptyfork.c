@@ -1,4 +1,4 @@
-/* $Id: ptyfork.c,v 1.2 2001/01/13 06:32:49 micahjd Exp $
+/* $Id: ptyfork.c,v 1.3 2001/01/13 09:47:38 micahjd Exp $
  *
  * ptyfork.c - Create a subprocess running under a pty
  *
@@ -41,7 +41,7 @@
 #include <string.h>
 
 /* Error details when enabled */
-//#define DEBUG
+#define DEBUG
 
 /* Returns -1 on error, 0 for child, and a pid for parent 
  * For the parent, returns the pty's fd in *ptyfd
@@ -80,6 +80,15 @@ int ptyfork(int *ptyfd) {
 
       /* We have the master open. Change the 'pty' to a 'tty' */
       fname[5] = 't';
+
+      /* See if we can open the tty. (The permissions might be fubar) */
+      if ((slave = open(fname,O_RDWR)) < 0) {
+	fname[5] = 'p';
+	close(master);
+	continue;         /* Argh. Try again */
+      }
+      else
+	close(slave);     /* Good, but save this for later */
 
       /* Fork! */
       if ( (pid = fork()) < 0 ) {
