@@ -535,11 +535,6 @@ quoted appropriately. For example:
   make them look worse.
   Defaults on
 
-- no_autohint
-  Disables all autohinting, for situations when the hinted output
-  is better than the autohinter.
-  Defaults off
-
 - default_name
   Family name of the default font
   Defaults to "Helmet" (included in the OpenOffice fonts)
@@ -587,6 +582,9 @@ quoted appropriately. For example:
 - max_bytes
   Maximum number of bytes to use for cached data
   Defaults to the Freetype default
+
+- list
+  If nonzero, list all the fonts found at startup then exit
 
 --- The End ---
 

@@ -1,4 +1,4 @@
-/* $Id: font_freetype.c,v 1.14 2002/10/14 10:13:46 micahjd Exp $
+/* $Id: font_freetype.c,v 1.15 2002/10/14 11:00:45 micahjd Exp $
  *
  * font_freetype.c - Font engine that uses Freetype2 to render
  *                   spiffy antialiased Type1 and TrueType fonts
@@ -103,6 +103,7 @@ static FT_Error ft_face_requester(FTC_FaceID face_id, FT_Library library,
 void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g);
 void ft_subpixel_draw_char(struct font_descriptor *self, hwrbitmap dest, struct pair26_6 *position,
 			   hwrcolor col, int ch, struct quad *clip, s16 lgop, s16 angle);
+void ft_font_listing(void);
 
 /************************************************* Initialization ***/
 
@@ -138,15 +139,13 @@ g_error freetype_engine_init(void) {
     return mkerror(PG_ERRT_IO,66);  /* Can't find fonts */
 
   /* Custom glyph flags */
-  ft_glyph_flags = 0;
+  ft_glyph_flags = ftc_image_format_bitmap;
   if (get_param_int(CFGSECTION,"no_hinting",0))
-    ft_glyph_flags |= FT_LOAD_NO_HINTING;
+    ft_glyph_flags |= ftc_image_flag_unhinted;
   if (get_param_int(CFGSECTION,"no_bitmap",1))
-    ft_glyph_flags |= FT_LOAD_NO_BITMAP;
+    ft_glyph_flags |= ftc_image_flag_no_sbits;
   if (get_param_int(CFGSECTION,"force_autohint",1))
-    ft_glyph_flags |= FT_LOAD_FORCE_AUTOHINT;
-  if (get_param_int(CFGSECTION,"no_autohint",0))
-    ft_glyph_flags |= FT_LOAD_NO_AUTOHINT;
+    ft_glyph_flags |= ftc_image_flag_autohinted;
 
   /* Default font and sizing config */
   ft_default_size = get_param_int(CFGSECTION,"default_size",12);
@@ -480,7 +479,7 @@ g_error freetype_create(struct font_descriptor *self, const struct font_style *f
   if (DATA->flags & PG_FSTYLE_FLUSH)
     DATA->metrics.margin = 0;
   else
-    DATA->metrics.margin = DATA->metrics.descent;
+    DATA->metrics.margin = DATA->metrics.linegap;
 
   return success;
 }
@@ -528,7 +527,7 @@ void ft_load_image(struct font_descriptor *self, int ch, FT_Glyph *g) {
   imgd.font.face_id = DATA->face;
   imgd.font.pix_width = 0;
   imgd.font.pix_height = DATA->size;
-  imgd.type = 0;
+  imgd.type = ft_glyph_flags;
 
   FTC_ImageCache_Lookup(ft_image_cache, &imgd,
 			FTC_CMapCache_Lookup(ft_cmap_cache, &cmapd, ch),
