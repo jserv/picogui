@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.17 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: pgmain.c,v 1.18 2001/01/10 12:12:31 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -86,14 +86,11 @@ int main(int argc, char **argv) {
     /* Drivers */
     g_error (*viddriver)(struct vidlib *v) = NULL;
     
+    /* Note: command line args don't work in windows (yet?) */
+#ifndef WINDOWS 
+
     while (1) {
 
-      /* Note: I haven't tested or really cared about the windoze support
-	 lately, so this code probably breaks it.  If I need the windoze
-	 support in the future (or if people bug me about it) I'll
-	 fix it though
-      */
-      
       c = getopt(argc,argv,"fhlx:y:d:v:i:t:");
       if (c==-1)
 	break;
@@ -216,6 +213,8 @@ int main(int argc, char **argv) {
       
     }
 
+#endif /* WINDOWS */
+     
     if (viddriver) {
       /* Force a specific driver */
 
