@@ -30,41 +30,15 @@ runtime = [
 
             Runtime ('server', 'Run PicoGUI Server',
 
-                     content = [ 'etc/rm.d/picoguiserver' ],
+                     content = [ 'etc/rm.d/picoguiserver', 'bin/picogui-launcher.sh' ],
                      
                      depends = [ 'picoguiserver/install', 'resourcemanager/server',
                                  (S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/bioscall'),
                                  (S ('module/picoguiserver/server') & S ('platform/m68k-pic-coff')) >> S ('module/pocketapps/initenv'),
                                  ],
-                     rcscript = '''
-# setup env vars
-rm -f /var/pgserver.dynconf
 
-# pre-calibrate the /dev/ts device using bios env var
-bioscall --ts-calibrate=PG_TS_CALIBRATION
-
-if bioscall --test PG_REMORAKB_ON -eq 1
-then
-  if bioscall --test PLATFORM_NAME = "RemoraPilotRun"
-  then
-    echo "/etc/rc: Using Ericsson chatboard on ttyS0"
-    echo "[input-ericsson-chatboard]" >>/var/pgserver.dynconf
-    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
-  else
-    echo "/etc/rc: Using Remora keyboard on ttyS0"
-    echo "[remora-kb]" >>/var/pgserver.dynconf
-    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
-    if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
-    then
-      echo "baud_shift = 1" >>/var/pgserver.dynconf
-    fi
-  fi
-fi
-
-# start pgserver
-rm_task unblock picogui-server
-
-''',
+                     rcscript = 'picogui-launcher.sh',
+                     
                      help = "Start the PicoGUI Server" )
             ]
 
@@ -106,15 +80,63 @@ def install (module, platform, project):
     makedirs (os.path.dirname (file))
 
     fd = open (file, 'w')
+    
     fd.write ('''
 name = picogui-server
 argv = pgserver
 
 restart  = 1
 announce = 1
-blocked  = 1
-    ''')
+blocked  = %d
+    ''' % (platform.platform == 'm68k-pic-coff'))
+    
     fd.close ()
+
+    file = os.path.join (module.path ['frz'], 'bin', 'picogui-launcher.sh')
+    makedirs (os.path.dirname (file))
+
+    fd = open (file, 'w')
+
+    if platform.platform == 'm68k-pic-coff':
+        fd.write ('''#!/bin/sh
+    
+# setup env vars
+rm -f /var/pgserver.dynconf
+
+# pre-calibrate the /dev/ts device using bios env var
+bioscall --ts-calibrate=PG_TS_CALIBRATION
+
+if bioscall --test PG_REMORAKB_ON -eq 1
+then
+  if bioscall --test PLATFORM_NAME = "RemoraPilotRun"
+  then
+    echo "/etc/rc: Using Ericsson chatboard on ttyS0"
+    echo "[input-ericsson-chatboard]" >>/var/pgserver.dynconf
+    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
+  else
+    echo "/etc/rc: Using Remora keyboard on ttyS0"
+    echo "[remora-kb]" >>/var/pgserver.dynconf
+    echo "device = /dev/ttyS0" >>/var/pgserver.dynconf
+    if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
+    then
+      echo "baud_shift = 1" >>/var/pgserver.dynconf
+    fi
+  fi
+fi
+
+# start pgserver
+rm_task unblock picogui-server
+''')
+
+    else:
+        fd.write ('''#!/bin/sh
+
+# automatically launched by the resource manager
+''')
+        
+    fd.close ()
+    os.chmod (file, 0755)
+    
     return
 
 
