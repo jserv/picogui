@@ -64,6 +64,7 @@ add_if_true nullfb.c     $DRIVER_NULLFB
 add_if_true fbdev.c      $DRIVER_FBDEV
 add_if_true serial40x4.c $DRIVER_SERIAL40X4
 add_if_true scrshot.c    $DRIVER_SCRSHOT
+add_if_true s1d13806.c   $DRIVER_S1D13806
 
 close_section
 

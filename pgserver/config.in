@@ -88,6 +88,7 @@ bool '40x4 character serial LCD'           DRIVER_SERIAL40X4
 bool 'Screen shot driver'                  DRIVER_SCRSHOT
 bool 'Null driver'                         DRIVER_NULL
 bool 'Null framebuffer driver'             DRIVER_NULLFB
+bool 'Zukero EPSON S1D13806 driver'        DRIVER_S1D13806
 endmenu
 
 mainmenu_option next_comment

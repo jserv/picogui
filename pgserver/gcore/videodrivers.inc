@@ -49,5 +49,9 @@
 #ifdef DRIVER_NULL
   DRV("null",&null_regfunc)
 #endif DRIVER_NULL
+
+#ifdef DRIVER_S1D13806
+  DRV("s1d13806",&s1d13806_regfunc)
+#endif DRIVER_S1D13806
    
 /* The End */
