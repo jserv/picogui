@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.1 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.2 2002/10/05 11:31:38 micahjd Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -320,19 +320,14 @@ g_error textedit_set ( struct widget *self,
 
 glob textedit_get ( struct widget *self,
                     int property ) {
-     handle h;
      g_error e;
      switch (property) {
      case PG_WP_TEXT:
          text_backend_save(DATA);
-         e = mkhandle(&h, PG_TYPE_PGSTRING, self->owner, DATA->data);
-         errorcheck;
-         return (glob) h;
+         return (glob) DATA->client_data_h;
      case PG_WP_SELECTION:
          text_backend_store_selection(DATA);
-         e = mkhandle(&h, PG_TYPE_PGSTRING, self->owner, DATA->data);
-         errorcheck;
-         return (glob) h;
+         return (glob) DATA->client_data_h;
      case PG_WP_READONLY:
          return (glob) GET_FLAG(DATA->flags, TEXT_WIDGET_READONLY);
      default:

@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.2 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: textedit_logical.c,v 1.3 2002/10/05 11:31:38 micahjd Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -469,20 +469,27 @@ void text_backend_save ( text_widget * widget ) {
     u16 gap_len;
     block * b;
 
-    if (widget->data)
-        pgstring_delete(widget->data);
-    widget->data = NULL;
+    if (widget->client_data_h)
+        handle_free(widget->self->owner, widget->client_data_h);
+    widget->client_data = NULL;
+    widget->client_data_h = 0;
 
     for (len = 0, ll_b = widget->current; ll_b; ll_b = llist_next(ll_b))
         len += BLOCK(ll_b)->len;
 
-    pgstring_new(&widget->data, PGSTR_ENCODE_ASCII, len, NULL);
+    /* FIXME: need error checking here! */
+    pgstring_new(&widget->client_data, PGSTR_ENCODE_ASCII, len, NULL);
+    mkhandle(&widget->client_data_h, PG_TYPE_WIDGET, widget->self->owner, widget->client_data);
+
+    /* FIXME: This doesn't handle Unicode properly 
+     * (Is this an issue? I'm not sure if this widget makes any attempt at Unicode support)
+     */
     for (k = 0, ll_b = widget->current; ll_b; ll_b = llist_next(ll_b)) {
         b = BLOCK(ll_b);
         gap_len = b->data_size - b->len;
-        memcpy(widget->data->buffer + k, b->data, b->b_gap);
+        memcpy(widget->client_data->buffer + k, b->data, b->b_gap);
         k += b->b_gap;
-        strncpy(widget->data->buffer + k, 
+        strncpy(widget->client_data->buffer + k, 
                 b->data + b->b_gap + gap_len,  
                 b->len - b->b_gap);
         k += b->len - b->b_gap;

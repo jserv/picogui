@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.2 2002/10/05 11:21:05 micahjd Exp $
+/* $Id: textedit.h,v 1.3 2002/10/05 11:31:38 micahjd Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
@@ -137,9 +137,10 @@ struct texteditdata {
     hwrcolor         bg, fg, highlight;
     u8               border_h;
     u8               border_v; 
-    struct pgstring * data; /* When client requests text, copy into
-                               string here and pass the entire glob
-                               off */
+
+    /* Data being passed to the client */
+    struct pgstring *client_data;
+    handle client_data_h;
     
     /* Scrollbar */
     u16     thumbsize;
