@@ -321,6 +321,6 @@ g_error png_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 #endif
   return success;
 }
-#endif CONFIG_PNG_LOWLEVEL
+#endif /* CONFIG_PNG_LOWLEVEL */
 /* The End */
 
