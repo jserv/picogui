@@ -29,6 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/configfile.h>
 #include <picogui/version.h>
+#include <stdio.h>
 #include <unistd.h>            /* For getopt() */
 #include <string.h>
 
