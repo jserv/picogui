@@ -17,3 +17,5 @@ aclocal.m4
 .menuconfig.log
 libtool
 .swp
+.swn
+.swo
