@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.10 2002/09/28 06:25:05 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.11 2002/10/02 20:59:11 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -47,9 +47,8 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
   /* Scroll wheel event? */
   if (trigger==PG_TRIGGER_SCROLLWHEEL) {
     /* If it's nonzero, pass it on */
-    if ((param->mouse.x!=0) || (param->mouse.y!=0))
-      infilter_send(self,trigger,param);
-    return;
+    if ((param->mouse.x==0) && (param->mouse.y==0))
+      return;
   }
 
   /* Get physical cursor position for use later */
