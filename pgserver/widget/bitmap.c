@@ -111,7 +111,7 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
 
   case WP_BITMAP:
     if (!data) {
-      self->in->flags |= DIVNODE_NEED_REDRAW;
+      self->in->div->flags |= DIVNODE_NEED_REDRAW;
       self->dt->flags |= DIVTREE_NEED_REDRAW;
     }
     else if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
