@@ -1,4 +1,4 @@
-/* $Id: tsinput.c,v 1.1 2001/02/23 14:56:58 pney Exp $
+/* $Id: tsinput.c,v 1.2 2001/03/07 18:33:39 pney Exp $
  *
  * tsinput.h - input driver for touch screen
  *
@@ -44,7 +44,6 @@
 
 
 static int fd=0;
-static int isTSopen=0;
 static int  bytes_transfered=0;
 
 /******************************************** Implementations */
@@ -90,6 +89,9 @@ void tsinput_poll(void) {
 
 
 g_error tsinput_init(void) {
+  struct ts_drv_params  ts_params;
+  int                   ret_val;
+
   fd = open(DEVICE_FILE_NAME,O_RDWR | O_NONBLOCK);
   if(fd < 0) {
     printf("Can't open device file: %s\n",DEVICE_FILE_NAME);
@@ -98,7 +100,15 @@ g_error tsinput_init(void) {
   }
   else {
     printf("Device %s open\n");
-    isTSopen=1;
+
+    ret_val=ioctl(fd,TS_PARAMS_GET,&ts_params);
+    if(ret_val < 0) printf("ioctl read error: %s\n",strerror(errno));
+
+    ts_params.event_queue_on = 0;
+
+    ret_val=ioctl(fd,TS_PARAMS_SET,&ts_params);
+    if(ret_val < 0) printf("ioctl write error: %s\n",strerror(errno));
+
     return 0;
   }
 }
@@ -107,7 +117,6 @@ g_error tsinput_init(void) {
 void tsinput_close(void) {
   close(fd);
   printf("Device %s closed.\n",DEVICE_FILE_NAME);
-  isTSopen=0;
 }
 
 
