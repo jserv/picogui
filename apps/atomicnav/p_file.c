@@ -1,4 +1,4 @@
-/* $Id: p_file.c,v 1.4 2002/01/07 19:25:50 micahjd Exp $
+/* $Id: p_file.c,v 1.5 2002/02/04 15:23:02 bornet Exp $
  *
  * p_file.c - Local disk access for the Atomic Navigator web browser
  *
@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <alloca.h>
 #include <string.h>
 #include <errno.h>
 #include <malloc.h>
@@ -57,7 +56,14 @@ void p_file_connect(struct url *u) {
     len += strlen(u->path);
   if (u->server)
     len += strlen(u->server);
-  buf = alloca(len);
+
+  buf = malloc(len);
+  if( buf == NULL ) {
+    /* problem allocating buff */
+    url_setstatus(u,URL_STATUS_ERROR);
+    return;
+  }
+
   strcpy(buf,"/");
   if (u->server)
     strcat(buf,u->server);
@@ -78,6 +84,10 @@ void p_file_connect(struct url *u) {
 
   /* Normal file */
   f = fopen(buf,"r");
+
+  /* release the memory used by buf */
+  free( buf );
+  
   if (!f) {
     browserwin_errormsg(u->browser,strerror(errno));
     url_setstatus(u,URL_STATUS_ERROR);
@@ -88,6 +98,7 @@ void p_file_connect(struct url *u) {
 
   u->bytes_received = u->size;
   url_setstatus(u,URL_STATUS_DONE);
+
 }
 
 struct protocol p_file = {

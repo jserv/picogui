@@ -1,6 +1,6 @@
 if ENABLE_BEE
 
-SUBDIRS = pgboard pterm fieldtest omnibar pgtuxphone \
+SUBDIRS = pgboard pterm fieldtest omnibar pgtuxphone atomicnav \
 	  battleship galaxy imgview dialogdemo scribble canvastst hello
 
 else

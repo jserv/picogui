@@ -8,6 +8,6 @@ atomicnav_SOURCES = main.c \
                     p_file.c
 
 LDFLAGS += @PICOGUI_LDFLAGS@
-LDADD = @PICOGUI_LIBS@ -lefence
+LDADD = @PICOGUI_LIBS@
 
-CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@ -DDEBUG -g
+CFLAGS = @CFLAGS@ @PICOGUI_CFLAGS@

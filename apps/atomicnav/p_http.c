@@ -1,4 +1,4 @@
-/* $Id: p_http.c,v 1.6 2002/01/11 04:31:10 micahjd Exp $
+/* $Id: p_http.c,v 1.7 2002/02/04 15:23:02 bornet Exp $
  *
  * p_http.c - Local disk access for the Atomic Navigator web browser
  *
@@ -29,7 +29,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <alloca.h>
 #include <string.h>
 #include <errno.h>
 #include <malloc.h>
