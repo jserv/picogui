@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.5 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: video.c,v 1.6 2000/09/04 00:15:54 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -461,7 +461,7 @@ g_error def_bitmap_loadxbm(struct stdbitmap **bmp,
   unsigned char *p;
   g_error e;
 
-  e = (*vid->bitmap_new)(bmp,w,h);
+  e = (*vid->bitmap_new)((hwrbitmap *) bmp,w,h);
   errorcheck;
   p = (*bmp)->bits;
 
@@ -613,7 +613,7 @@ g_error def_bitmap_loadpnm(struct stdbitmap **bmp,
   }
 
   /* Set up the bitmap */
-  e = (*vid->bitmap_new)(bmp,w,h);
+  e = (*vid->bitmap_new)((hwrbitmap *)bmp,w,h);
   errorcheck;
   p = (*bmp)->bits;
 

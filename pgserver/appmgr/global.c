@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.17 2000/09/03 19:25:32 micahjd Exp $
+/* $Id: global.c,v 1.18 2000/09/04 00:15:53 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -116,7 +116,7 @@ void appmgr_free(void) {
 
 /* Set the background, or NULL to restore it */
 g_error appmgr_setbg(int owner,handle bitmap) {
-  struct bitmap *bgbits;
+  hwrbitmap bgbits;
   g_error e;
 
   if (!bitmap) {
