@@ -58,8 +58,9 @@ fi
         it doesn't spam the bot with the same message for every directory in the commit. It then emails the resulting message
         off to the bot. This assumes you're using ssh authentication, otherwise the username will always return the same thing.</p>
 
-    <p> Note that if you're using this on sourceforge you'll need to change the email address from commits@picogui.org to an alias,
-        cia@users.sf.net. This is because Sourceforge's CVS server is only allowed to send mail to other sourceforge domains. </p>
+    <p> If you're using sourceforge and you experience problems with sending email to non-sourceforge domains, you may want
+        to try changing the email address from commits@picogui.org to an alias, cia@users.sf.net. Note that this could make
+        the commit messages much slower, depending on how fast sourceforge's mail server is feeling. </p>
 
     <p> Now check out the CVSROOT module of your projects repository, and in the loginfo file, place this line:</p>
 
