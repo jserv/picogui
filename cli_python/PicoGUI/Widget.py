@@ -30,6 +30,9 @@ class Widget(object):
         self._notify_new_widget(new)
         return new
 
+    def writeTo(self, data):
+        self.server.writeto(self.handle,data)
+
     def __setattr__(self, name, value):
         pname = name.lower().replace('_', ' ')
         if pname in _propnames:

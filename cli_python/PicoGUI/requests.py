@@ -186,5 +186,5 @@ def register(name_id, apptype=1, id=None):
 def wait(id=None):
 	return request(13, id=id)
 
-def writeto(widget_id, property, value, id=None):
-	return request(8, pack('LLHxx', widget_id, value, property), id=id)
+def writeto(widget_id, data, id=None):
+	return request(31, pack('L', widget_id) + data, id=id)
