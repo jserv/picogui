@@ -25,8 +25,16 @@ int deleteMessage(struct pgEvent *evt) {
 }
 
 int readMessage(struct pgEvent *evt) {
+	pghandle mesgviewer, msgscroll, msgbox;
 	if (selectedMessage>0)
+	{
+		mesgviewer = pgRegisterApp(PG_APP_NORMAL,"PicoMail Message",0);
+   		msgscroll = pgNewWidget(PG_WIDGET_SCROLL,0,0);
+   		msgbox = pgNewWidget(PG_WIDGET_BOX,0,0);
+   		pgSetWidget(msgbox,PG_WP_SIDE,PG_S_ALL,0);
+		pgSetWidget(msgscroll,PG_WP_BIND,msgbox,0);
 		imap_getmesg(selectedMessage);
+	}
 	else
   	   pgMessageDialog (
 	       "PicoMail", 
