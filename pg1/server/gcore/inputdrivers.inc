@@ -113,4 +113,8 @@
   DRV("btkey", &btkey_regfunc)
 #endif
 
+#ifdef DRIVER_DIRECTFBINPUT
+  DRV("dfbinput",&directfbinput_regfunc)
+#endif
+   
 /* The End */

@@ -1,0 +1,52 @@
+-*- text -*-
+
+Lalo Martins <lalo@laranja.org> is the main developer of the DirectFB
+drivers, to his own surprise.  Contributions are gladly accepted, of
+course - specially considering my lack of skill in gfx programming.
+
+These are roughly the milestones:
+
+1. make it correctly render the divtree on dfb fullscreen (based on
+   "simple" from the DirectFB tutorials)
+
+   DONE 2003-11-15
+
+2. get pointer and keyboard evens in
+
+   DONE (minus bugs) 2003-11-15
+
+3. make hwrbitmaps use dfb surfaces
+
+4. move image loading to DFB side via DataBuffer/ImageProvider
+
+5. implement missing functionality and fix all FIXME's in the above
+   (please fill in the sub-todo-list below as items show up)
+
+   - lgops are currently ignored
+
+   - error checking should be smarter
+
+   - should correctly report display size and bpp, and implement
+     directfb_setmode()
+
+   - getpixel() is missing - I couldn't find any way to do it in
+     directfb short of reading the bytes and decoding the pixelformat
+
+   - should possibly load a few configuration options and pass them to dfb
+
+   - shutdown seems to be fricked up
+
+   - mouse warping is unimplemented
+
+   - combined keys don't work (for example, you can only input
+     uppercase by using capslock).  I can't figure why.
+
+   C++-style comments in the code signal stuff that should be fixed.
+
+6. make it rootless, and use dfb windows for our windows
+
+7. write a decorated_rootless appmgr
+
+8. delegate as many primitives as possible to directfb
+
+9. write a directfb font engine (?)

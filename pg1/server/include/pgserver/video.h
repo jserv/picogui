@@ -862,6 +862,7 @@ g_error sed133x_regfunc(struct vidlib *v);
 g_error x11_regfunc(struct vidlib *v);
 g_error mgl2fb_regfunc(struct vidlib *v);
 g_error vncserver_regfunc(struct vidlib *v);
+g_error directfb_regfunc(struct vidlib *v);
 
 /***************************************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);

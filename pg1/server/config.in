@@ -113,6 +113,7 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 	 Color			CONFIG_SDLEMU_COLOR" None
 fi
 bool 'X Window System driver'              DRIVER_X11
+bool 'DirectFB driver'                     DRIVER_DIRECTFB
 bool 'SDL OpenGL driver'                   DRIVER_SDLGL
 bool 'Embedded OpenGL context driver'      DRIVER_GLCONTEXT
 bool 'VNC Remote Framebuffer server (GPL)' DRIVER_VNCSERVER
@@ -145,6 +146,7 @@ bool 'Compaq iPAQ H3600 touchscreen input driver'	 DRIVER_H3600TS
 bool 'Psion touchscreen (adc7843) driver'               DRIVER_ADC7843
 bool 'SDL input driver'                                 DRIVER_SDLINPUT
 bool 'X Window System input driver'                     DRIVER_X11INPUT
+bool 'DirectFB input driver'                            DRIVER_DIRECTFBINPUT
 bool 'VNC Remote Framebuffer input driver'              DRIVER_VNCINPUT
 bool 'SVGAlib input driver'                             DRIVER_SVGAINPUT
 bool 'Ncurses input driver'                             DRIVER_NCURSESINPUT

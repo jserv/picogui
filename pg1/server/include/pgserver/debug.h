@@ -12,6 +12,7 @@
 
 #ifndef _MSC_VER
 #ifdef DEBUG_FILE
+#include <stdio.h>
 #define DBG(fmt, args...) fprintf(stderr, "%s: " fmt, __FUNCTION__ , ## args); fflush(stderr)
 #else
 #define DBG

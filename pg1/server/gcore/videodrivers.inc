@@ -18,6 +18,10 @@
   DRV("x11",&x11_regfunc)
 #endif
 
+#ifdef DRIVER_DIRECTFB
+  DRV("dfb",&directfb_regfunc)
+#endif
+
 #ifdef DRIVER_SDLGL
   DRV("sdlgl",&sdlgl_regfunc)
 #endif
