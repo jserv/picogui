@@ -41,6 +41,7 @@ static int xext=0, yext=0, xoffs=0, yoffs=0;
 static CALIBRATION_PAIRS cps;
 static CALIBRATION_PAIR* pcp = 0;
 static POINT current_target_location;
+static TRANSFORMATION_COEFFICIENTS tc;
 
 static int total_targets = 5;
 static int current_target = 0;
@@ -100,7 +101,6 @@ POINT GetTarget(int n)
 void showTransformations(void)
 {
   char str[256];
-  TRANSFORMATION_COEFFICIENTS tc;
 
 #if 0
   CalcTransformationCoefficientsSimple(&cps, &tc);
@@ -113,7 +113,7 @@ void showTransformations(void)
   printf("%d %d %d %d %d %d %d\n",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
 #endif
-  CalcTransformationCoefficientsBest(&cps, &tc);
+  CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
   sprintf(str, "COEFFv1 %d %d %d %d %d %d %d",
 	 tc.a, tc.b, tc.c, tc.d, tc.e, tc.f, tc.s);
   puts(str);
@@ -158,16 +158,15 @@ void DrawTarget(POINT p, unsigned long int c) {
 /* Redraw the game board */
 int evtDrawTarget(struct pgEvent *evt) {
 
-  POINT last = current_target_location;
-
-  if(!xext) {
+  CalcTransformationCoefficientsBest(&cps.center, &tc, total_targets);
+  if(evt->type==PG_WE_BUILD) {
     xext = evt->e.size.w;
     yext = evt->e.size.h;
     xoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEX);
     yoffs = pgGetWidget(evt->from, PG_WP_ABSOLUTEY);
   } else {
     /* erase the old target */
-    DrawTarget(last, 0xFFFFFF);
+    DrawTarget(current_target_location, 0xD0D0D0);
   }
 
   DBG((__FUNCTION__" current_target=%d (%dx%d)\n",current_target,xext,yext));
@@ -193,17 +192,29 @@ int evtPenUp(struct pgEvent *evt) {
 }
 
 int evtPenDown(struct pgEvent *evt) {
+  POINT hit;
+  int distance, target;
 
   DBG((__FUNCTION__ " (x=%d,y=%d)\n",evt->e.pntr.x,evt->e.pntr.y));
 
-  if (pcp != 0) {
-    pcp->screen.x = current_target_location.x + xoffs;
-    pcp->screen.y = current_target_location.y + yoffs;
-    pcp->device.x = evt->e.pntr.x;
-    pcp->device.y = evt->e.pntr.y;
-  }
+  if (pcp == 0)
+    return 0;
 
-  current_target++;
+  pcp->screen.x = current_target_location.x + xoffs;
+  pcp->screen.y = current_target_location.y + yoffs;
+  hit.x = pcp->device.x = evt->e.pntr.x;
+  hit.y = pcp->device.y = evt->e.pntr.y;
+  target=current_target++;
+
+  if(!CalcTransformationCoefficientsBest(&cps.center, &tc, current_target))
+   {
+    hit=pentoscreen(hit, &tc);
+    printf("Hit: %d,%d\n", hit.x, hit.y);
+    hit.x-=xoffs;
+    hit.y-=yoffs;
+    DrawTarget(hit, 0x808080);
+   }
+  DrawTarget(current_target_location, 0xD0D0D0);
 
   evtDrawTarget(evt);
 

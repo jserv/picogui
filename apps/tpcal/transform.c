@@ -21,6 +21,13 @@
 /*  #include "mou_tp.h" */
 #include "transform.h"
 
+POINT pentoscreen(POINT pt, TRANSFORMATION_COEFFICIENTS *ptc)
+ {
+  pt.x=(ptc->a*pt.x+ptc->b*pt.y+ptc->c)/ptc->s;
+  pt.y=(ptc->d*pt.x+ptc->e*pt.y+ptc->f)/ptc->s;
+  return pt;
+ }
+
 int CalcTransformationCoefficientsSimple(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc)
 {
 	/*
@@ -180,21 +187,16 @@ int CalcTransformationCoefficientsEvenBetter(CALIBRATION_PAIRS *pcp, TRANSFORMAT
 	return 0;
 }
 
-int CalcTransformationCoefficientsBest(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc)
+int CalcTransformationCoefficientsBest(CALIBRATION_PAIR *cp, TRANSFORMATION_COEFFICIENTS *ptc, int points)
 {
 	/*
 	 * Mike Klar <> came up with a best-fit solution that works best.
 	 */
 
-	const int first_point = 0;
-	const int last_point = 4;
 	int i;
 
 	double Sx=0, Sy=0, Sxy=0, Sx2=0, Sy2=0, Sm=0, Sn=0, Smx=0, Smy=0, Snx=0, Sny=0, S=0;
 	double t1, t2, t3, t4, t5, t6, q;
-
-	/* cast the struct to an array - hacky but ok */
-	CALIBRATION_PAIR *cp = (CALIBRATION_PAIR*)pcp;
 
 	/*
 	 * Do a best-fit calculation for as many points as we want, as
@@ -208,7 +210,7 @@ int CalcTransformationCoefficientsBest(CALIBRATION_PAIRS *pcp, TRANSFORMATION_CO
 	 * of 1).
 	 */
 
-	for (i = first_point; i < last_point + 1; i++) {
+	for (i = 0; i < points; i++) {
 		Sx += cp[i].device.x;
 		Sy += cp[i].device.y;
 		Sxy += cp[i].device.x * cp[i].device.y;

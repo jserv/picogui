@@ -20,7 +20,7 @@
 typedef struct  tagPOINT {
     int x;
     int y;
-} POINT, MWPOINT; 
+} POINT;
 
 #define TRANSFORMATION_UNITS_PER_PIXEL 4
 
@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-	MWPOINT screen, device;
+	POINT screen, device;
 } CALIBRATION_PAIR;
 
 typedef struct
@@ -55,7 +55,8 @@ typedef struct
 	CALIBRATION_PAIR ll;
 } CALIBRATION_PAIRS;
 
+POINT pentoscreen(POINT pt, TRANSFORMATION_COEFFICIENTS *ptc);
 int CalcTransformationCoefficientsSimple(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc);
 int CalcTransformationCoefficientsBetter(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc);
 int CalcTransformationCoefficientsEvenBetter(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc);
-int CalcTransformationCoefficientsBest(CALIBRATION_PAIRS *pcp, TRANSFORMATION_COEFFICIENTS *ptc);
+int CalcTransformationCoefficientsBest(CALIBRATION_PAIR *cp, TRANSFORMATION_COEFFICIENTS *ptc, int points);

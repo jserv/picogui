@@ -1,6 +1,6 @@
 if ENABLE_BEE
 
-SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone gridgame \
+SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone gridgame tpcal \
 	  battleship galaxy imgview dialogdemo scribble canvastst bouncyball \
 	  atomicnav
 
@@ -8,7 +8,7 @@ else
 
 SUBDIRS = pgboard pterm fieldtest vrcalc omnibar pgtuxphone blackout gridgame \
 	  battleship galaxy imgview dialogdemo scribble canvastst bouncyball \
-	  atomicnav
+	  atomicnav tpcal
 
 endif
 
