@@ -57,7 +57,6 @@ class Frame(object):
         page.textbox = t
         t.buffer = buffer
         t.text = buffer.text
-        t.tabpage.text = buffer.name
         t.frame = self
         buffer.add_observer(t)
 

@@ -22,6 +22,12 @@ class Buffer(object):
     def add_observer(self, o):
         self.observers.append(o)
         o.frame.link(self.notify_changed, o, 'changed')
+        o.tabpage.text = self.name
 
     def del_observer(self, o):
         self.observers.remove(o)
+
+    def change_name(self, name):
+        self.name = name
+        for o in self.observers:
+            o.tabpage.text = self.name
