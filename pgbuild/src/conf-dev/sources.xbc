@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<!-- 
+<!--
+  XML Build Configuration file
   Defines the sites and packages for the PicoGUI repository.
 
   This is a PGBuild config file: XML, with an additional twist-
@@ -32,6 +33,11 @@
               the main configuration tree at, specified as an
               XPath relative to the <pgbuild> node. Default
               is to mount at the <pgbuild> node.
+    mode    - Mount mode for this file, patterned after fopen() modes.
+              If the mode contains the letter "r", it is merged into
+	      the in-memory configuration tree. If the mode contains "w",
+	      this subtree at this document's root will be written back
+	      to the same file. The default mode is "r".
     author  - Author or maintainer of the configuration
     version - Configuration version
 -->

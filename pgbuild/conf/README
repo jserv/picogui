@@ -1,4 +1,0 @@
-This directory contains XML Build Configuration files with local modifications
-to the build environment. All files here with a .xbc extension are automatically
-mounted by PGBuild.
-

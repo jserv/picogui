@@ -1,5 +1,5 @@
 This is the 'conf' package, responsible for bootstrapping
 PGBuild's configuration database with project-specific data.
-Files in this directory are 'mounted' into the config
-database first.
-
+Any XML Build Configuration files (.xbc extension) in this
+directory are automatically loaded by PGBuild before
+any others.
