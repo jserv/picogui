@@ -17,7 +17,7 @@ FILE *tcp_connect( char *host, int port )
 {
     struct sockaddr_in serv_sock_addr;
     int socket_fd;
-    FILE *fp;
+    FILE *connfp;
 
     bzero((char *) &serv_sock_addr, sizeof(serv_sock_addr));
     serv_sock_addr.sin_family = AF_INET;
@@ -38,16 +38,16 @@ FILE *tcp_connect( char *host, int port )
         exit(1);
     }
 
-    if ( ( fp = fdopen( socket_fd, "r+" ) ) < 0 )
+    if ( ( connfp = fdopen( socket_fd, "r+" ) ) < 0 )
     {
         printf("tcp_connect: Could not open filepointer to socket...\n");
         exit(1);
     }
      
-    return fp;
+    return connfp;
 }
 
-void tcp_disconnect( FILE *fp )
+void tcp_disconnect( FILE *connfp )
 {
-    fclose( fp );
+    fclose( connfp );
 }

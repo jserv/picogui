@@ -18,7 +18,7 @@
 //#define LIST_FLAGS FULL
 
 /* Filepointer for the IMAP connection */
-FILE *fp;
+FILE *imapfp;
 
 /* How many messages in the folder? */
 int messages = 0;
@@ -37,7 +37,7 @@ getrow( )
     char row[BUFFERSIZE];
     char *newrow;
     
-    fgets( row, BUFFERSIZE, fp);
+    fgets( row, BUFFERSIZE, imapfp);
     newrow = (char *) malloc( strlen( row ) + 1 );
     strcpy(newrow, row);
     
@@ -73,7 +73,7 @@ sendcmd( char * command )
     
     getcmdid( cmdid );
     
-    fprintf(fp, "%s %s\n", cmdid, command );
+    fprintf(imapfp, "%s %s\n", cmdid, command );
     printf("DEBUG SND: %s %s\n", cmdid, command );
 }
 
@@ -157,7 +157,7 @@ donothing( char * line )
 }
 
 
-/* This function does nothing ;) */
+/* This function doesn't nothing ;) */
 int
 doheader( char * line )
 {
@@ -191,7 +191,7 @@ imap_init()
     char *command;
     
     printf("Connection to IMAP...\n");
-    fp = tcp_connect( get_param_str( "imap", "server", "127.0.0.1" ),
+    imapfp = tcp_connect( get_param_str( "imap", "server", "127.0.0.1" ),
                       get_param_int( "imap", "port", 143 ) );
     if (!check_ok())
         exit(2);
@@ -211,7 +211,7 @@ imap_init()
 void
 check_connection()
 {
-    if ( fp == NULL )
+    if ( imapfp == NULL )
         imap_init();
 }
 
@@ -257,5 +257,5 @@ void
 imap_disconnect()
 {
     docmd("LOGOUT", &mesgcount);
-    fclose(fp);
+    fclose(imapfp);
 }
