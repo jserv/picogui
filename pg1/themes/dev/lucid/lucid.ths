@@ -9,7 +9,7 @@
  */
 
 property fBackground,fTranslucent, fSolid, fFramedTranslucent;
-property fNop, frameColor, alpha;
+property fNop, frameColor, alpha, diamondShape;
 
 object default {
   name = "Lucid (incomplete)";
@@ -123,19 +123,61 @@ object checkbox {
       fTranslucent(x,y,w,h);
       x = x + 10;
    };
-   margin = 5;
    align = PG_A_LEFT;
 }
-object checkbox.hilight fgcolor = 0x0000FF;
-object checkbox.on bgfill = fillstyle {
-   var q;
-   fTranslucent(x,y,w,h);
-   SetColor(fgcolor);
-   Line(x+8,0,-4,h);
-   Line(x+4,h,-4,0-(h/2));
-   x = x + 10;
+object checkbox.hilight fgcolor = button::fgcolor;
+object checkbox.on {
+  bgfill = fillstyle {
+    fTranslucent(x,y,w,h);
+    SetColor(button::fgcolor);
+    Line(x+8,0,-4,h-1);
+    Line(x+4,h-1,-4,0-(h/2));
+    x = x + 10;
+  };
+};
+object checkbox.on.nohilight {
+  bgfill = Copy(checkbox.on::bgfill);
+  parent = PGTH_O_CHECKBOX;
 };
 
+
+object radiobutton bgfill = fillstyle {
+   var b;
+   fTranslucent(x,y,w,h);
+   SetColor(button::fgcolor);
+   b=y+(h/2);
+   Line(x+5,b-5,3,5);
+   Line(x+5,b-5,-3,5);
+   Line(x+5,b+5,3,-5);
+   Line(x+5,b+5,-3,-5);
+   x = x + 10;
+};
+object radiobutton.hilight {
+  fgcolor = button::fgcolor;
+  parent = PGTH_O_RADIOBUTTON;
+};
+object radiobutton.on {
+  fgcolor = button::fgcolor;
+  bgfill = fillstyle {
+    var b;
+    fTranslucent(x,y,w,h);
+    SetColor(button::fgcolor);
+    b=y+(h/2);
+    Line(x+5,b-5,3,5);
+    Line(x+5,b-5,-3,5);
+    Line(x+5,b+5,3,-5);
+    Line(x+5,b+5,-3,-5);
+    Line(x+1,b-6,8,12);
+    Line(x+1,b+6,8,-12);
+    x = x + 10;
+  };
+  parent = PGTH_O_RADIOBUTTON;
+};
+object radiobutton.on.nohilight {
+  bgfill = Copy(radiobutton.on::bgfill);
+};
+
+/* Items */
 object menuitem {
   bgfill = Copy(default::bgfill);
   align = PG_A_LEFT;
@@ -149,6 +191,7 @@ object listitem.hilight parent = PGTH_O_MENUITEM_HILIGHT;
 
 object listitem.on parent = PGTH_O_MENUITEM_HILIGHT;
 
+/* The panel */
 object panel {
   border.size = 10;
   bgfill = Copy(default::fNop);
