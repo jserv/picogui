@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.15 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.16 2002/10/30 05:44:25 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -350,6 +350,12 @@ void paragraph_movecursor(struct paragraph_cursor *crsr,
 
 /* Move the cursor in the paragraph, works like fseek() */
 void paragraph_seekcursor(struct paragraph_cursor *crsr, int offset, int whence) {
+  /* We have one extra virtual character at the end to facilitate adding text to the
+   * end of the paragraph.
+   */
+  if (whence == PGSEEK_END)
+    offset++;
+
   pgstring_seek(crsr->par->content, &crsr->iterator, offset, whence);
   paragraph_validate_cursor_line(crsr);
 }

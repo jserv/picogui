@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.49 2002/10/30 05:09:13 micahjd Exp $
+/* $Id: textbox_document.c,v 1.50 2002/10/30 05:44:25 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -143,18 +143,23 @@ g_error document_insert_char(struct textbox_document *doc, u32 ch, void *metadat
   g_error e;
 
   /* Insert us the paragraph! */
-  if (ch == '\n' || ch == '\r') {
+  if (ch == '\n') {
     int was_visible = doc->crsr->visible;
 
     e = textbox_new_par_div(&doc->crsr->par->next, &doc->crsr->par->div->next,
 			    doc->crsr->par->background);
     errorcheck;
     paragraph_hide_cursor(doc->crsr);
+    doc->crsr->par->next->prev = doc->crsr->par;
     doc->crsr->par->next->doc = doc;
     doc->crsr->par->div->owner->dt->flags |= DIVTREE_NEED_RESIZE;
     doc->crsr = &doc->crsr->par->next->cursor;
     if (was_visible)
       paragraph_show_cursor(doc->crsr);
+  }
+
+  else if (ch == '\r') {
+    /* Ignore \r */
   }
   
   /* Normal character */
@@ -185,12 +190,45 @@ g_error document_insert_string(struct textbox_document *doc, struct pgstring *st
  * If this seeks past the end of the stream, document_eof will return true
  */
 void document_seek(struct textbox_document *doc, s32 offset, int whence) {
+  struct paragraph *par;
+
+  /* Seek to the beginning or end of the document first if necessary */
   switch (whence) {
 
   case PGSEEK_SET:
+    doc->crsr = &doc->par_list->cursor;
+    paragraph_seekcursor(doc->crsr,0,PGSEEK_SET);
+    break;
+
+  case PGSEEK_END:
+    par = doc->par_list;
+    while (par->next)
+      par = par->next;
+    doc->crsr = &par->cursor;
+    paragraph_seekcursor(doc->crsr,0,PGSEEK_END);
+    break;
   }
 
-  paragraph_seekcursor(doc->crsr,offset,whence);
+  /* Now keep seeking through paragraphs as necessary */
+  while (offset) {
+    paragraph_seekcursor(doc->crsr,offset,whence);
+    offset = document_eof(doc);
+
+    if (offset > 0 && doc->crsr->par->next) {
+      doc->crsr = &doc->crsr->par->next->cursor;
+      paragraph_seekcursor(doc->crsr,0,PGSEEK_SET);
+      offset--;
+    }
+
+    else if (offset < 0 && doc->crsr->par->prev) {
+      doc->crsr = &doc->crsr->par->prev->cursor;
+      paragraph_seekcursor(doc->crsr,0,PGSEEK_END);
+      offset++;
+    }
+    
+    else
+      break;
+  }
 
 }
 
