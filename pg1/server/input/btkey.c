@@ -178,6 +178,12 @@ int btkey_fd_activate(int fd)
       case BTKEYREPORT_PHONE_KEY_FORWARDING_DISABLED:
 	pg_key = PG_PHONE_KEY_FORWARDING_DISABLED;
 	break;
+      case BTKEYREPORT_PHONE_KEY_BT_STOP:
+	pg_key = PG_PHONE_KEY_BT_STOP;
+	break;
+      case BTKEYREPORT_PHONE_KEY_BT_START:
+	pg_key = PG_PHONE_KEY_BT_START;
+	break;
       default:
 	goto end;
       }

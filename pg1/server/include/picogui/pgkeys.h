@@ -282,8 +282,10 @@
 #define PG_PHONE_NOT_CONNECTED            326
 #define PG_PHONE_KEY_FORWARDING_ENABLED   327
 #define PG_PHONE_KEY_FORWARDING_DISABLED  328
+#define PG_PHONE_KEY_BT_STOP              329
+#define PG_PHONE_KEY_BT_START             330
 
-#define PGKEY_MAX                         328
+#define PGKEY_MAX                         330
 
 /* Modifier keys (also from SDL) */
 #define PGMOD_LSHIFT  0x0001
