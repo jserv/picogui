@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.40 2001/04/11 16:42:10 micahjd Exp $
+/* $Id: client_c.h,v 1.41 2001/05/02 03:53:16 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -364,6 +364,11 @@ struct pgmemdata pgFromMemory(void *data,unsigned long length);
 
 /* Load from a normal disk file */
 struct pgmemdata pgFromFile(const char *file);
+
+#ifdef FILE
+/* Load from an already-opened stream */
+struct pgmemdata pgFromStream(FILE *f, unsigned long length);
+#endif
 
 /* TODO: Load from resource. Allow apps to package necessary bitmaps
    and things in a file, named after their binary but with a '.res'
