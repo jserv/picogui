@@ -1,4 +1,4 @@
-/* $Id: msgdialog.c,v 1.1 2000/10/29 21:05:43 micahjd Exp $
+/* $Id: msgdialog.c,v 1.2 2000/10/31 01:46:34 micahjd Exp $
  *
  * msgdialog.c - message dialog box demo
  *
@@ -28,12 +28,13 @@
 #include <picogui.h>
 
 void rundemo(short event,pghandle from,long param) {
-  printf("Dialog returned: %d\n",
-	 pgMessageDialog("msgdialog.c test program",
-			 "This is a test dialog box.\n\n"
-			 "Hello\n"
-			 "World!",
-			 PG_MSGBTN_OK | PG_MSGBTN_CANCEL));
+  if (PG_MSGBTN_OK ==
+      pgMessageDialog("msgdialog.c test program",
+		      "This is a test dialog box.\n\n"
+		      "Hello\n"
+		      "World!",
+		      PG_MSGBTN_OK | PG_MSGBTN_CANCEL))
+    pgMessageDialog("Yay!","You clicked 'Ok'",0);
 }
 
 /* a main() to make a little launcher for our demo */
