@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.31 2001/01/20 09:36:18 micahjd Exp $
+/* $Id: client_c.h,v 1.32 2001/01/24 00:31:03 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -40,6 +40,13 @@
  * passed to PG_WE_BUILD or PG_WE_RESIZE */
 #define PG_W            (param>>16)
 #define PG_H            (param&0xFFFF)
+
+/* Extract mouse data from the parameter of a PG_PNTR_* or PG_NWE_PNTR_*
+ * event passed from a canvas or a pointer grab */
+#define PG_PNTR_X       (param&0x0FFF)
+#define PG_PNTR_Y       ((param>>12)&0x0FFF)
+#define PG_PNTR_CHBTN   ((param>>24)&0x000F)
+#define PG_PNTR_BTN     (param>>28)
 
 /* A wildcard value for pgBind */
 #define PGBIND_ANY      -1
