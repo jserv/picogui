@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.50 2002/03/26 03:47:20 instinc Exp $
+/* $Id: popup.c,v 1.51 2002/03/26 17:33:02 instinc Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -29,6 +29,9 @@
  * 
  * 
  */
+
+/* for memset() */
+#include <string.h>
 
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
