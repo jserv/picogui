@@ -1,4 +1,4 @@
-/* $Id: mainloop.c,v 1.1 2002/11/03 04:54:24 micahjd Exp $
+/* $Id: mainloop.c,v 1.2 2002/11/08 02:46:35 micahjd Exp $
  *
  * mainloop.c - Process incoming stimuli from clients and drivers
  *
@@ -78,19 +78,21 @@ void mainloop_stop(void) {
 g_error childqueue_push(const char *cmdline) {
   g_error e;
   struct child_node *n;
-
-  e = g_malloc((void**)&n, sizeof(struct child_node));
-  errorcheck;
-  n->cmdline = cmdline;
-  n->next = NULL;
   
-  if (childlist_head) {
-    childlist_tail->next = n;
-    childlist_tail = n;
-  }
-  else {
-    childlist_head = n;
-    childlist_tail = n;
+  if (cmdline) {
+    e = g_malloc((void**)&n, sizeof(struct child_node));
+    errorcheck;
+    n->cmdline = cmdline;
+    n->next = NULL;
+    
+    if (childlist_head) {
+      childlist_tail->next = n;
+      childlist_tail = n;
+    }
+    else {
+      childlist_head = n;
+      childlist_tail = n;
+    }
   }
   return success;
 }
