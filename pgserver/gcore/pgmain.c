@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.11 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: pgmain.c,v 1.12 2000/10/12 16:41:42 pney Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -43,6 +43,11 @@ volatile int in_shutdown = 0;
 int use_sessionmgmt = 0;
 extern long memref;
 struct dtstack *dts;
+
+#ifdef UCLINUX
+extern char *optarg;
+extern int optind;
+#endif /* UCLINUX */
 
 #ifndef WINDOWS
 pid_t my_pid;
