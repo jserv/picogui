@@ -35,19 +35,19 @@ runtime = [
               depends = [ 'picoguiserver/server',
                           'picoguiapps/fitaly',
                           'pocketguiapps/sd_finder_run' ],
-              rcscript = "# start pgboard\nsleep 3\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
+              rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_fitaly_160.kb&\n\n" % \
                          ( prefix, prefix )),
     Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/us_qwerty',
                           'pocketguiapps/sd_finder_run' ],
-               rcscript = "# start pgboard\nsleep 2\n%s/bin/pgboard %s/share/pgboard/us_qwerty_scalable.kb&\n\n" % \
+               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/us_qwerty_scalable.kb&\n\n" % \
                           ( prefix, prefix )),
     Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
               depends = [ 'picoguiserver/server',
                           'picoguiapps/ch_qwertz',
                           'pocketguiapps/sd_finder_run' ],
-               rcscript = "# start pgboard\nsleep 2\n%s/bin/pgboard %s/share/pgboard/ch_qwertz_scalable.kb&\n\n" % \
+               rcscript = "# start pgboard\nsleep 4\n%s/bin/pgboard %s/share/pgboard/ch_qwertz_scalable.kb&\n\n" % \
                           ( prefix, prefix )),
     Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
               content = [ 'bin/pgboard_cmds' ],
