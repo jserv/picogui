@@ -14,118 +14,73 @@
       <xsl:attribute name="text">      
         <xsl:value-of select="@title"/>
       </xsl:attribute>
-      <scrollbox>
 
-        <xsl:apply-templates select="packages"/>
-        <xsl:apply-templates select="sites"/>
+      <xsl:apply-templates select="packages"/>
+      <xsl:apply-templates select="sites"/>
 
-      </scrollbox>
     </application>
   </xsl:template>
 
   <!--================================== Packages -->
 
   <xsl:template match="packages">
-    <label align="left">Packages:</label>
-    <box>
-      <xsl:apply-templates select="package">
-        <xsl:sort select="@name"/>
-      </xsl:apply-templates>
-    </box>
+    <tabpage text="Packages">
+      <scrollbox side="all">
+        <xsl:apply-templates select="package">
+          <xsl:sort select="@name"/>
+        </xsl:apply-templates>
+      </scrollbox>
+    </tabpage>
   </xsl:template>
 
   <xsl:template match="package">
-    <div class="row">
-      <xsl:apply-templates select="require"/>
-      <div class="item"><xsl:value-of select="@name"/></div>
-      <xsl:apply-templates select="description"/>
-      <span class="itemDetail">Versions</span>
-      <div class="itemDetail">
-        <xsl:apply-templates select="version">
-          <xsl:sort select="@name"/>
-        </xsl:apply-templates>
-      </div>
-    </div>
+    <checkbox>
+      <xsl:value-of select="@name"/>
+      <box side="right" size="75" sizemode="percent">
+        <xsl:apply-templates select="description"/>
+      </box>
+    </checkbox>
   </xsl:template>
-
-  <xsl:template match="require">
-    <span class="itemTag">Required</span>
-  </xsl:template>
-
-  <xsl:template match="version">
-    <div class="row">
-      <xsl:value-of select="../@name"/>-<xsl:value-of select="@name"/>
-      <ul>
-        <xsl:apply-templates select="a">
-          <xsl:sort select="@href"/>
-        </xsl:apply-templates>
-      </ul>
-    </div>
-  </xsl:template>
--->
 
   <!--================================== Download sites -->
 
   <xsl:template match="sites">
-    <span class="section">Download Sites</span>
-    <div class="section">
-      <div class="sectionTop"/>
-      <xsl:apply-templates select="site">
-        <xsl:sort select="@name"/>
-      </xsl:apply-templates>
-    </div>
+    <tabpage text="Download Sites">
+      <scrollbox side="all">
+        <xsl:apply-templates select="site">
+          <xsl:sort select="@name"/>
+        </xsl:apply-templates>
+      </scrollbox>
+    </tabpage>
   </xsl:template>
 
   <xsl:template match="site">
-    <div class="row">
-      <xsl:attribute name="id">site--<xsl:value-of select="@name"/></xsl:attribute>
-      <div class="item"><xsl:value-of select="@name"/></div>
-      <span class="itemDetail">Mirrors</span>
-      <div class="itemDetail">
-        <ul>
-          <xsl:apply-templates select="a">
-            <xsl:sort select="@href"/>
-          </xsl:apply-templates>
-        </ul>
-      </div>
-    </div>
+    <checkbox>
+      <xsl:value-of select="@name"/>
+    </checkbox>
   </xsl:template>
 
   <!--================================== Descriptions -->
 
   <xsl:template match="description">
-    <span class="itemDetail">Description</span>
-    <div class="itemDetail">
-      <div class="row">
-        <em><xsl:value-of select="summary"/></em>
-        <xsl:value-of select="detail"/>
-      </div>
-    </div>
+    <textbox readonly="1">
+      <xsl:value-of select="."/>
+    </textbox>
   </xsl:template>
 
   <!--================================== Links -->
 
   <xsl:template match="a">
-    <li>
-      <xsl:choose>
-        <xsl:when test="site">
-          <!-- Site link -->
-          <xsl:value-of select="@href"/>
-          <em> @ </em>
-          <a> 
-            <xsl:attribute name="href">#site--<xsl:value-of select="site/@name"/></xsl:attribute>
-            <xsl:value-of select="site/@name"/>
-          </a>
-        </xsl:when>
-        <xsl:otherwise>
-          <!-- Normal link -->
-          <a>
-            <xsl:attribute name="href"><xsl:value-of select="@href"/></xsl:attribute>
-            <xsl:value-of select="@href"/>
-          </a>
-        </xsl:otherwise>
-      </xsl:choose>
-    </li>
+    <xsl:choose>
+      <xsl:when test="site">
+        <!-- Site link -->
+        <xsl:value-of select="@href"/> @ <xsl:value-of select="site/@name"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Normal link -->
+        <xsl:value-of select="@href"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
 </xsl:transform>
