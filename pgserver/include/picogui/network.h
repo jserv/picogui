@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.1 2000/09/08 23:02:35 micahjd Exp $
+/* $Id: network.h,v 1.2 2000/09/08 23:56:26 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -102,7 +102,8 @@ struct pghello {
 #define PGREQ_IN_POINT     11     /* Dispatch pointing device input |  struct */
 #define PGREQ_IN_DIRECT    12     /* Dispatch direct input          |  struct */
 #define PGREQ_WAIT         13     /* Wait for an event              |  none   */
-#define PGREQ_THEMESET     14     /* Set an element in the theme    |  struct */
+#define PGREQ_THEMESET     14     /* Set an element in the theme    |  struct 
+				     DO NOT USE - theme subsystem _will_ change */
 #define PGREQ_REGISTER     15     /* Register a new application     |  struct */
 #define PGREQ_MKPOPUP      16     /* Create a popup root widget     |  struct */
 #define PGREQ_SIZETEXT     17     /* Find the size of text          |  struct */
@@ -128,6 +129,8 @@ struct pghello {
  * ntohl/ntohs/htonl/htons)
  *
  * All values referring to objects (text,widget,font...) are handles
+ * (also in network order)
+ *
  */
 struct pgreqd_mkwidget {
   unsigned short rship;
@@ -222,11 +225,3 @@ struct pgreqd_getstring {
 
 #endif /* __H_PG_NETWORK */
 /* The End */
-
-
-
-
-
-
-
-

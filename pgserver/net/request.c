@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.5 2000/09/04 21:46:56 micahjd Exp $
+/* $Id: request.c,v 1.6 2000/09/08 23:56:26 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -103,7 +103,7 @@ void closefd(int fd) {
 }
 
 void newfd(int fd) {
-  struct uipkt_hello hi;
+  struct pghello hi;
   struct conbuf *mybuf;
   memset(&hi,0,sizeof(hi));
 
@@ -122,8 +122,8 @@ void newfd(int fd) {
   conbufs = mybuf;
 
   /* Say Hi!  Send a structure with information about the server */
-  hi.magic = htonl(REQUEST_MAGIC);
-  hi.protover = htons(PROTOCOL_VER);
+  hi.magic = htonl(PG_REQUEST_MAGIC);
+  hi.protover = htons(PG_PROTOCOL_VER);
   if (send_response(fd,&hi,sizeof(hi))) closefd(fd);
 }
 
@@ -284,7 +284,7 @@ g_error net_init(void) {
     return mkerror(ERRT_NETWORK,51);
 
   server_sockaddr.sin_family = AF_INET;
-  server_sockaddr.sin_port = htons(REQUEST_PORT);
+  server_sockaddr.sin_port = htons(PG_REQUEST_PORT);
   server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
   if(bind(s, (struct sockaddr *)&server_sockaddr, 

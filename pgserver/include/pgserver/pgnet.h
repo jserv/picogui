@@ -1,6 +1,9 @@
-/* $Id: pgnet.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: pgnet.h,v 1.2 2000/09/08 23:56:26 micahjd Exp $
  *
- * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
+ * pgnet.h - definitions and stuff for the picogui server
+ *           networking code. Most of the interesting code
+ *           is needed by the client and the server, and is
+ *           in picogui/network.h
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -27,6 +30,8 @@
 
 #ifndef _H_PGNET
 #define _H_PGNET
+
+#include <picogui/network.h>
 
 #include <pgserver/g_error.h>
 #include <pgserver/divtree.h>
@@ -60,54 +65,11 @@
 /* Which clients are waiting for events */
 extern fd_set evtwait;
 
-#define REQUEST_PORT    30450
-#define PROTOCOL_VER    0x0001
-#define REQUEST_MAGIC   0x31415926
 #define REQUEST_BACKLOG 10  /* Should be high enough? */
-
-/* Packet structures */
-struct uipkt_request {
-  unsigned short type;
-  unsigned short id;  /* Just to make sure requests match up with responses */
-  unsigned long size; /* The request is followed by size bytes of data */
-};  
-#define MAX_RESPONSE_SZ 12  /* in bytes */
-#define RESPONSE_ERR 1
-struct response_err {
-  unsigned short type;    /* RESPONSE_ERR - error code */
-  unsigned short id;
-  unsigned short errt;
-  unsigned short msglen;  /* Length of following message */
-};
-#define RESPONSE_RET 2
-struct response_ret {
-  unsigned short type;    /* RESPONSE_RET - return value */
-  unsigned short id;
-  unsigned long data;
-};
-#define RESPONSE_EVENT 3
-struct response_event {
-  unsigned short type;    /* RESPONSE_EVENT */
-  unsigned short event;
-  unsigned long from;
-  unsigned long param;
-};
-#define RESPONSE_DATA 4
-struct response_data {
-  unsigned short type;    /* RESPONSE_DATA */
-  unsigned short id;
-  unsigned long size
-  /* 'size' bytes of data follow */;
-};
-struct uipkt_hello {
-  unsigned long  magic;
-  unsigned short protover;
-  unsigned short dummy;   /* padding */
-};
 
 /********* Functions provided by dispatch.c */
 
-int dispatch_packet(int from,struct uipkt_request *req,void *data);
+int dispatch_packet(int from,struct pgrequest *req,void *data);
 
 /********* Functions provided by request.c */
 
@@ -143,7 +105,7 @@ struct conbuf {
   struct event *in,*out;
 
   /* Request header */
-  struct uipkt_request req;
+  struct pgrequest req;
 
   /* If non-null, the packet was larger than PKTBUF_LEN and this is a
      dynamically allocated data buffer
@@ -191,135 +153,9 @@ struct event *get_event(int owner,int remove);
    fatal can be set to one.
 */
 /* Make a declaration for a handler */
-#define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct uipkt_request *req, void *data, unsigned long *ret, int *fatal);
+#define DEF_REQHANDLER(n) g_error rqh_##n(int owner, struct pgrequest *req, void *data, unsigned long *ret, int *fatal);
 /* Make a handler table entry */
 #define TAB_REQHANDLER(n) &rqh_##n ,
-
-/* Constants for request handlers                                 args  */
-#define RQH_PING         0      /* Simply returns if server is ok |   none  */
-#define RQH_UPDATE       1      /* Call update()                  |   none  */
-#define RQH_MKWIDGET     2      /* Makes a widget, returns handle |  struct */
-#define RQH_MKBITMAP     3      /* Makes a bitmap, returns handle |  struct */
-#define RQH_MKFONT       4      /* Makes a fontdesc, ret's handle |  struct */
-#define RQH_MKSTRING     5      /* Makes a string, returns handle |  chars  */
-#define RQH_FREE         6      /* Frees a handle                 |  struct */
-#define RQH_SET          7      /* Set a widget param             |  struct */
-#define RQH_GET          8      /* Get a widget param, return it  |  struct */
-#define RQH_SETBG        9      /* bequeath a new background bmp  |  struct */
-#define RQH_IN_KEY       10     /* Dispatch keyboard input        |  struct */
-#define RQH_IN_POINT     11     /* Dispatch pointing device input |  struct */
-#define RQH_IN_DIRECT    12     /* Dispatch direct input          |  struct */
-#define RQH_WAIT         13     /* Wait for an event              |  none   */
-#define RQH_THEMESET     14     /* Set an element in the theme    |  struct */
-#define RQH_REGISTER     15     /* Register a new application     |  struct */
-#define RQH_MKPOPUP      16     /* Create a popup root widget     |  struct */
-#define RQH_SIZETEXT     17     /* Find the size of text          |  struct */
-#define RQH_BATCH        18     /* Executes many requests         |  requests */
-#define RQH_GRABKBD      19     /* Become the keyboard owner      |  none */
-#define RQH_GRABPNTR     20     /* Own the pointing device        |  none */
-#define RQH_GIVEKBD      21     /* Give the keyboard back         |  none */
-#define RQH_GIVEPNTR     22     /* Give the pointing device back  |  none */
-#define RQH_MKCONTEXT    23     /* Enters a new context           |  none */
-#define RQH_RMCONTEXT    24     /* Cleans up and kills the context|  none */
-#define RQH_FOCUS        25     /* Force focus to specified widget|  struct */
-#define RQH_GETSTRING    26     /* Returns a RESPONSE_DATA        |  struct */
-#define RQH_RESTORETHEME 27     /* Restore theme defaults         |  none   */
-
-#define RQH_UNDEF        28     /* types > this will be truncated. return error */
-
-/* Structures passed to request handlers as 'data'.
- * Dummy variables pad it to a multiple of 4 bytes (compiler likes it?)
- */
-struct rqhd_mkwidget {
-  unsigned short rship;
-  unsigned short type;
-  unsigned long parent;
-};
-struct rqhd_free {
-  unsigned long h;
-};
-struct rqhd_mkbitmap {
-  unsigned short w;       /* If these are 0, the following data is a */
-  unsigned short h;       /* pnm bitmap.  Otherwise, these are the dimensions
-			     of xbm data following it. */
-  unsigned long fg;       /* Foreground and background colors if this is a */
-  unsigned long bg;       /* xbm bitmap. */
-};
-struct rqhd_mkfont {
-  char name[40];
-  unsigned long style;
-  unsigned short size;
-  unsigned short dummy;
-};
-struct rqhd_set {
-  unsigned long widget;
-  unsigned long glob;
-  unsigned short property;
-  unsigned short dummy;
-};
-struct rqhd_get {
-  unsigned long widget;
-  unsigned short property;
-  unsigned short dummy;
-};
-struct rqhd_setbg {
-  unsigned long h;   /* 0 to restore original */
-};
-struct rqhd_in_key {
-  unsigned long type;   /* A TRIGGER_* constant */
-  unsigned short key;
-  unsigned short mods;
-};
-struct rqhd_in_point {
-  unsigned long type;   /* A TRIGGER_* constant */
-  unsigned short x;
-  unsigned short y;
-  unsigned short btn;  /* button bitmask */
-  unsigned short dummy;
-};
-struct rqhd_in_direct {
-  unsigned long param;   /* The arbitrary parameter */
-  /* The rest of the packet is read as a string */
-};
-struct rqhd_themeset {
-  unsigned long value;
-  unsigned short element;
-  unsigned short state;
-  unsigned short param;
-  unsigned short dummy;
-};
-struct rqhd_register {
-  /* This is just a subset of app_info, organized for network
-     transmission */
-
-  unsigned long name;
-  unsigned short type;
-  unsigned short side;
-  unsigned short sidemask;
-  unsigned short w;
-  unsigned short h;
-  unsigned short minw;
-  unsigned short maxw;
-  unsigned short minh;
-  unsigned short maxh;
-  unsigned short dummy;
-};
-struct rqhd_mkpopup {
-  unsigned short x;
-  unsigned short y;
-  unsigned short w;
-  unsigned short h;
-};
-struct rqhd_sizetext {
-  unsigned long text;
-  unsigned long font;
-};
-struct rqhd_focus {
-  unsigned long h;
-};
-struct rqhd_getstring {
-  unsigned long h;
-};
 
 #endif /* __H_PGNET */
 /* The End */
