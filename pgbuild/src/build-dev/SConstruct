@@ -1,0 +1,31 @@
+#
+# Currently just a scratchpad for testing whatever happens to need it
+#
+
+import SCons.Builder
+import SCons.Node.Alias
+import SCons.Node.FS
+import PGBuild.Node.XML
+
+env = Environment()
+
+testFile = env.fs.Entry("../conf-dev/sources.xml")
+doc = PGBuild.Node.XML.Document(testFile)
+
+print doc.childNodes[0].getElementsByTagName("sites")[0]
+
+#b = SCons.Node.Alias.default_ans.Alias("squeegie")
+#
+#import PGBuild.Node.XML
+#testDoc = PGBuild.Node.XML.Document(testFile)
+#
+#quux = Builder(action = lambda: None,
+#               target_factory = SCons.Node.Alias.default_ans.Alias,
+#               source_factory = SCons.Node.FS.default_fs.Entry,
+#               multi = 1)
+#
+#a = quux(env, testDoc, testFile)
+#
+#Default(a)
+
+

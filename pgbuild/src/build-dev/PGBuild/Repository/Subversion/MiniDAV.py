@@ -38,9 +38,9 @@ if revision:
 class DavPropertyParser:
     """Utility to parse the XML responses from a PROPFIND request"""
 
-    # Note: this should probably be rewritten to use minidom. At the time I wrote this,
-    #       I was having trouble with the bug described in the source to PGBuild.XML
-    #       but I didn't have a solution for it.
+    # Note: this should probably be rewritten to use PGBuild.XML.dom.minidom. At the
+    #       time I wrote this, I was having trouble with the bug described in the
+    #       source to PGBuild.XML but I didn't have a solution for it.
     
     def __init__(self):
         self.elementStack = []
