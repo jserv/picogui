@@ -203,6 +203,12 @@ DRIVER_NULLFB
       Sets up a virtual framebuffer, and uses linear* VBLs to render.
       Produces no actual output. Good for benchmarking and profiling.
       
+DRIVER_S1D13806
+      Driver to control the Epson S1D13806 video chip. It is used by
+      the Dragonball version of the Zukero platform (the internal
+      Dragonball video controller is not used and the EZ328 video
+      driver must be hence disabled)
+
 DRIVER_SDLINPUT
       Input driver for the SDL event system
       
@@ -326,6 +332,19 @@ DRIVER_H3600TS
       compile PicoGUI to include this driver, you should have the
       header files for the official iPAQ kernel from www.handhelds.org.
 
+DRIVER_ERICSSON_CHATBOARD
+      Driver for the Ericsson Chatboard (a tiny keyboard designed for
+      cellular phones) connected to the serial port. This keyboard
+      sends AT commands simulating presses on the cell phone keypad.
+
+      For experimental purpose only.
+
+      Since the Chatboard tries to stay in sync whith the cell phone's
+      state, and sometimes looses the sync, the usage is not always
+      optimal. A better approach would be to remove the Chatboard
+      controller and directly read the matrix (but this requires more
+      GPIOs).
+
 CONFIG_SDLSKIN
       Adds extra config file options to the SDL video and input
       drivers for supporting 'skins' to make SDL look like a
@@ -385,6 +404,9 @@ CONFIG_X11_XFT
       that supports this, and you need the libXft library and headers
       installed. If you are using this option, there is no need to
       compile any fonts into pgserver.
+
+CONFIG_X11_ICON
+      Sets the imagery of the icon associated to pgserver's X11 window.
 
 CONFIG_ROTATIONBASE_NOKEYS
       This overrides rotating the coord_keyrotate function, so that even
