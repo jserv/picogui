@@ -1,4 +1,4 @@
-/* $Id: omnibar.c,v 1.1 2001/10/11 05:37:25 gork Exp $
+/* $Id: omnibar.c,v 1.2 2001/12/01 01:12:01 gork Exp $
  * 
  * omnibar.c - hopefully this will grow into a general interface
  *             for starting and manipulating applications, but
@@ -90,7 +90,7 @@ int btnAppMenu(struct pgEvent *evt) {
   /* Result? */
   if (i) {
     char buf[80];  /* FIXME: Buffer overflow 'sploit waiting to happen! */
-    strcpy(buf,"demos/");
+    strcpy(buf,"/usr/share/picogui/appmenu/");
     strcat(buf,pgGetString(items[i-1]));
     strcat(buf,".app");
     if (!vfork()) {
