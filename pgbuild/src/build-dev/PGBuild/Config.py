@@ -348,6 +348,14 @@ class Tree(PGBuild.XMLUtil.Document):
         # Mount in an XML representation of the bootstrap object
         self.mount(BootstrapXML(bootstrap))
 
+        # Try to make sure all our paths exist- in case pgbuild is distributed in an
+        # archive format that can't handle empty directories properly.
+        for path in bootstrap.paths.values():
+            try:
+                os.makedirs(path)
+            except OSError:
+                pass
+
         # Copy skeleton local files from the conf package if they haven't been
         # copied or manually created yet.
         skelPath = os.path.join(bootstrap.paths['confPackage'], 'local')
