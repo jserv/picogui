@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.129 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: widget.c,v 1.130 2001/12/15 00:19:58 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1010,7 +1010,10 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 
   long keycode = (mods<<16) | key;     /* Combines mods and the key */
 
+#ifdef DEBUG_INPUT
   printf(__FUNCTION__": type = %d, key = %d, mods = %d\n", type, key, mods);
+#endif
+
   inactivity_reset();
 
   /* For rotating arrow keys along with the rest of PicoGUI */
@@ -1207,7 +1210,9 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   if (suppress) return;
 
   /* All other keypresses go to the focused widget (if any) */
+#ifdef DEBUG_INPUT
   printf(__FUNCTION__": kbdfocus = 0x%x\n", kbdfocus);
+#endif
   if (kbdfocus) {
     param.kbd.key = key;
     param.kbd.mods = mods;
@@ -1263,10 +1268,14 @@ void reload_hotkeys(void) {
  */
 void global_hotkey(u16 key,u16 mods, u32 type) {
 
+#ifdef DEBUG_INPUT
    printf(__FUNCTION__": Enter\n");
+#endif
   if (type == TRIGGER_KEYDOWN) {
 
+#ifdef DEBUG_INPUT
      printf(__FUNCTION__": type == TRIGGER_KEYDOWN\n");
+#endif
     if (!mods) {
       /* Key down, no modifiers */
 
