@@ -21,13 +21,7 @@ def _getFont(str, server):
         return str, _getFont
     return server.getFont(str), _getFont
 
-constants = {
-    'attachwidget': {
-        'after':	(1, {}),
-        'inside':	(2, {}),
-        'before':	(3, {}),
-    },
-    'createwidget': {
+_wtype_consts = {
             'toolbar':		(0, {}),
             'label':		(1, {}),
             'scroll':		(2, {}),
@@ -50,6 +44,19 @@ constants = {
             'textbox':		(19, {}),	# client-side text layout
             'panelbar':		(20, {}),	# draggable bar and container
             'simplemenu':	(21, {}),	# create a simple menu from a string or array
+    }
+
+constants = {
+    'attachwidget': {
+        'after':	(1, {}),
+        'inside':	(2, {}),
+        'before':	(3, {}),
+    },
+    'createwidget': _wtype_consts,
+    'mkwidget': {
+        'after':	(1, _wtype_consts),
+        'inside':	(2, _wtype_consts),
+        'before':	(3, _wtype_consts),
     },
     'get': 'set',
     'mkfont': ( # first argument (family) is string and should pass trough
@@ -293,6 +300,9 @@ class Server(object):
         self._fonts = {}
         self._bitmaps = {}
 
+    def _mkrequest(self, handler, args, id=None):
+        return handler(*args)
+
     def send_and_wait(self, handler, args):
         # this is the only method that needs to be touched to add thread-safety.
         # It can send a self-incrementing id, or a thread id, as request id,
@@ -300,7 +310,7 @@ class Server(object):
         # However, responses that don't have ids would break this, so it would be
         # a waste of time to implement it now.
         #print 'calling %s%s' % (handler.__name__, args)
-        self._write(handler(*args))
+        self._write(self._mkrequest(handler, args))
         if self._wait:
             return responses.next(self._connection)
 
@@ -339,10 +349,37 @@ class Server(object):
 # support for writing to widget template files
 import wtfile
 
+_requests_to_save = (
+    # the requests that return a handle
+    requests.createwidget,
+    requests.dup,
+    requests.findwidget,
+    requests.loaddriver,	# why would a WT do this?
+    requests.mkbitmap,
+    requests.mkfillstyle,
+    requests.mkfont,
+    requests.mkpopup,
+    requests.mkstring,
+    requests.mktheme,		# why?
+    requests.mkwidget,		# ditto
+    requests.newbitmap,
+    requests.register,
+    requests.traversewidget,
+)
+
 class WTFile(Server):
     def __init__(self):
         stream = wtfile.stream()
         Server.__init__(self, stream=stream, stream_read=1)
+
+    def _mkrequest(self, handler, args, id=None):
+        if id is not None:
+            pass
+        elif handler in _requests_to_save:
+            id = 0 # any value suffices
+        else:
+            id = 0xFFFFFFFFL # discard
+        return handler(*args)
 
     def dump(self):
         return self._connection.dump()

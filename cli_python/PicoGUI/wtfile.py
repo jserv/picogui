@@ -15,7 +15,8 @@ null_response = struct.pack('!HxxLL', 2, 0, 0)
 
 class stream(object):
   def __init__(self):
-    self.s = ''
+    self.instance = ''
+    self.globals = ''
     self.pending_responses = ''
     self.next_handle = 0
     self.num_global = self.num_instance = 0
@@ -40,9 +41,10 @@ class stream(object):
     else:
       id = self.make_response(id)
       request = struct.pack('!L', id) + request[idsize:]
-    # FIXME: how to tell global from instance requests?
-    self.num_global += 1
-    self.s += request
+    # FIXME: mkstring, mkfont and mkbitmap are global
+    # (this requires decoding the packet, sigh
+    self.num_instance += 1
+    self.instance += request
 
   def recv(self, size):
     if size > len(self.pending_responses):
@@ -56,17 +58,17 @@ class stream(object):
     s = 'PGwt'
     fmt = '!LLHHHH'
     s1 = s
-    flen = len(self.s) + struct.calcsize(fmt)
     version = 1
-    s1 += struct.pack(fmt, flen, 0, version,
-                     self.num_global, self.num_instance, self.next_handle)
-    s1 += self.s
-    if zlib is None:
+    if zlib is not None:
+      flen = len(self.globals) + len(self.instance) + struct.calcsize(fmt)
+      s1 += struct.pack(fmt, flen, 0, version,
+                        self.num_global, self.num_instance, self.next_handle)
+      s1 += self.globals + self.instance
+      checksum = zlib.crc32(s1)
+    else:
       flen = 0
       checksum = 0
-    else:
-      checksum = zlib.crc32(s1)
     s += struct.pack(fmt, flen, checksum, version,
                      self.num_global, self.num_instance, self.next_handle)
-    s += self.s
+    s += self.globals + self.instance
     return s
