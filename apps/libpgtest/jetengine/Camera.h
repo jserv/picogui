@@ -7,7 +7,7 @@
 
 class Camera : public ScriptableObject {
  public:
-  Camera();
+  Camera(PythonInterpreter *py);
   void setMatrix(void);
 };
 

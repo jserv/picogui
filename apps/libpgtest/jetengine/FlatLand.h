@@ -8,7 +8,7 @@
 
 class FlatLand : public ScriptableObject {
  public:
-  FlatLand();
+  FlatLand(PythonInterpreter *py);
   virtual ~FlatLand();
 
   void draw(void);

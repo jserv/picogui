@@ -7,10 +7,11 @@ extern "C" {
 #include <SDL/SDL_thread.h>
 #include <Python.h>
 }
+#include "PythonInterpreter.h"
 
 class PythonThread {
  public:
-  PythonThread(char *path="script", char *modulename="game");
+  PythonThread(PythonInterpreter *py, char *path="script", char *modulename="game");
   ~PythonThread();
 
   void addObject(char *name, PyObject *object);
@@ -23,6 +24,8 @@ class PythonThread {
   SDL_Thread *thread;
   PyObject *module;
   char *function;
+  PythonInterpreter *py;
+  PyThreadState *threadState;
 };
 
 

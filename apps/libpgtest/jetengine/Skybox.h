@@ -6,7 +6,7 @@
 
 class Skybox : public ScriptableObject {
   public:
-    Skybox();
+    Skybox(PythonInterpreter *py);
     virtual ~Skybox();
 
     void draw(void);

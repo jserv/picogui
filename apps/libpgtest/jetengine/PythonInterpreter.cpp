@@ -5,9 +5,13 @@
 PythonInterpreter::PythonInterpreter(int argc, char **argv) {
   Py_SetProgramName(argv[0]);
   Py_Initialize();
+  PyEval_InitThreads();
+  mainThreadState = PyThreadState_Get();
+  PyEval_ReleaseLock();
 };
 
 PythonInterpreter::~PythonInterpreter() {
+  PyEval_AcquireLock();
   Py_Finalize();
 }
 

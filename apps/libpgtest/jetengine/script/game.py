@@ -1,11 +1,17 @@
 import PicoGUI, math
 
 
-def inputHandler(t, sender):
-    # Move the ship and camera in reaction to the mouse position
-    if t.dev == 'mouse' and t.name == 'move':
-         camera.yaw = -t.x
-         camera.pitch = t.y
+class input:
+    lastClick = (0,0,0,0)
+
+    def handler(self, t, sender):
+        # Move the ship and camera in reaction to the mouse position
+        if t.dev == 'mouse':
+            if t.name == 'down':
+                self.lastClick = (t.x, t.y, camera.yaw, camera.pitch)
+            if t.name == 'move' and t.buttons:
+                camera.yaw = float(t.x - self.lastClick[0] + self.lastClick[2])
+                camera.pitch = float(t.y - self.lastClick[1] + self.lastClick[3])
         
 def velocityChange(ev, widget):
     # Completely nonscientific equations to both set the velocity
@@ -35,7 +41,7 @@ def thread():
     # This adds a filter that recieves all events and absorbs none,
     # placed immediately after the input filter that dispatches pointing
     # events to picogui widgets.
-    app.link(inputHandler, app.addInfilter(
+    app.link(input().handler, app.addInfilter(
         app.server.getresource('infilter pntr dispatch')))
 
     app.run()

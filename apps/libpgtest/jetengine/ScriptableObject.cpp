@@ -1,7 +1,7 @@
 /* A base class that adds python scriptability. */
 
 #include "ScriptableObject.h"
-#include "PythonInterpreter.h"
+
 
 PyTypeObject ScriptableObject::Type = {
 	PyObject_HEAD_INIT(&PyType_Type)
@@ -23,86 +23,132 @@ PyTypeObject ScriptableObject::Type = {
 	0,				/*tp_call */
 };
 
-ScriptableObject::ScriptableObject() {
+ScriptableObject::ScriptableObject(PythonInterpreter *py_) {
+  py = py_;
   ob_type = &Type;
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   _Py_NewReference(this);
-
-  dict_mutex = SDL_CreateMutex();
   dict = PyDict_New();
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 ScriptableObject::~ScriptableObject() {
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   Py_DECREF(dict);
-  SDL_DestroyMutex(dict_mutex);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 /* C++ wrappers have exception handling */
 PyObject *ScriptableObject::getAttr(char *name) {
-  PyObject *o;
-  SDL_mutexP(dict_mutex);
-  o = PyDict_GetItemString(dict,name);
-  SDL_mutexV(dict_mutex);
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+  PyObject *o = PyDict_GetItemString(dict,name);
   if (!o)
     throw PythonException();
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
   return o;
 }
 
 void ScriptableObject::setAttr(char *name, PyObject *value) {
-  int r;
-  SDL_mutexP(dict_mutex);
-  r = PyDict_SetItemString(dict,name,value);
-  SDL_mutexV(dict_mutex);
-  if (r<0)
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+  if (PyDict_SetItemString(dict,name,value)<0)
     throw PythonException();
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 /* Several convenience functions for set/getattr */
 void ScriptableObject::setAttr(char *name, int value) {
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   PyObject *o = Py_BuildValue("i",value);
-  setAttr(name,o);
+  if (PyDict_SetItemString(dict,name,o)<0)
+    throw PythonException();
   Py_DECREF(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 void ScriptableObject::setAttr(char *name, char *value) {
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   PyObject *o = Py_BuildValue("s",value);
-  setAttr(name,o);
+  if (PyDict_SetItemString(dict,name,o)<0)
+    throw PythonException();
   Py_DECREF(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 void ScriptableObject::setAttr(char *name, float value) {
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   PyObject *o = Py_BuildValue("f",value);
-  setAttr(name,o);
+  if (PyDict_SetItemString(dict,name,o)<0)
+    throw PythonException();
   Py_DECREF(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 int ScriptableObject::getAttrInt(char *name) {
-  return PyInt_AsLong(getAttr(name));
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+  PyObject *o = PyDict_GetItemString(dict,name);
+  if (!o)
+    throw PythonException();  
+  int i = PyInt_AsLong(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
+  return i;
 }
 
 char *ScriptableObject::getAttrStr(char *name) {
-  return PyString_AsString(getAttr(name));
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+  PyObject *o = PyDict_GetItemString(dict,name);
+  if (!o)
+    throw PythonException();
+  char *s = PyString_AsString(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
+  return s;
 }
 
 float ScriptableObject::getAttrFloat(char *name) {
-  return PyFloat_AsDouble(getAttr(name));
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+  PyObject *o = PyDict_GetItemString(dict,name);
+  if (!o)
+    throw PythonException();
+  float f = PyFloat_AsDouble(o);
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
+  return f;
 }
 
 /* Python wrappers have no exception handling, and call our virtual methods */
 PyObject *ScriptableObject::PyGetAttr(PyObject * PyObj, char *attr) {
   ScriptableObject *my = (ScriptableObject*) PyObj;
   PyObject *o;
-  SDL_mutexP(my->dict_mutex);
+
   o = PyDict_GetItemString(my->dict,attr);
-  SDL_mutexV(my->dict_mutex);
+
   return o;
 }
 
 int ScriptableObject::PySetAttr(PyObject *PyObj, char *attr, PyObject *value) {
   ScriptableObject *my = (ScriptableObject*) PyObj;
   int r;
-  SDL_mutexP(my->dict_mutex);
+
   r = PyDict_SetItemString(my->dict,attr,value);
-  SDL_mutexV(my->dict_mutex);
+
   if (r>=0)
     my->onAttrSet(attr,value);
   return r;

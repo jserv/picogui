@@ -1,7 +1,7 @@
 #include <GL/glu.h>
 #include "Skybox.h"
 
-Skybox::Skybox() {
+Skybox::Skybox(PythonInterpreter *py) : ScriptableObject(py) {
   left = new PGTexture("skyboxes/malrav11/left");
   right = new PGTexture("skyboxes/malrav11/right");
   front = new PGTexture("skyboxes/malrav11/front");

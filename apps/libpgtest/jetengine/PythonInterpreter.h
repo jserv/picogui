@@ -12,6 +12,8 @@ class PythonInterpreter {
  public:
   PythonInterpreter(int argc, char **argv);
   ~PythonInterpreter();
+
+  PyThreadState *mainThreadState;
 };
 
 class PythonException : public SimpleException {

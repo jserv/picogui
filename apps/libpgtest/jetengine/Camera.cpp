@@ -3,7 +3,7 @@
 #include <GL/glu.h>
 #include "Camera.h"
 
-Camera::Camera() {
+Camera::Camera(PythonInterpreter *py) : ScriptableObject(py) {
   glViewport(0, 0, 640, 480);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();

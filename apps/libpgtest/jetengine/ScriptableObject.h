@@ -3,10 +3,7 @@
 #ifndef _H_SCRIPTABLEOBJECT
 #define _H_SCRIPTABLEOBJECT
 
-extern "C" {
-#include <SDL/SDL_thread.h>
-#include <Python.h>
-}
+#include "PythonInterpreter.h"
 
 
 class ScriptableObject : public PyObject {
@@ -14,7 +11,7 @@ class ScriptableObject : public PyObject {
   /* This lets our class be both a C++ class and a python object */
   static PyTypeObject Type;
 
-  ScriptableObject();
+  ScriptableObject(PythonInterpreter *py);
   virtual ~ScriptableObject();
 
   /* Called from the Python thread when an attribute is set */
@@ -33,9 +30,10 @@ class ScriptableObject : public PyObject {
   float getAttrFloat(char *name);
 
  private:
+  PythonInterpreter *py;
+
   /* Python dictionary shared between python and C++ interfaces */
   PyObject *dict;
-  SDL_mutex *dict_mutex;
 
   /* Python interface
    * Thread-safe wrapper with no C++ exceptions, calls onAttrSet

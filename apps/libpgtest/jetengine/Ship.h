@@ -8,7 +8,7 @@
 
 class Ship : public ScriptableObject {
  public:
-  Ship();
+  Ship(PythonInterpreter *py);
   virtual ~Ship();
 
   void draw(void);

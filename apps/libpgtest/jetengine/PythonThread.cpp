@@ -30,14 +30,21 @@ int PythonThreadCallback(void *data) {
   return 0;
 }
 
-PythonThread::PythonThread(char *path, char *modulename) {
+PythonThread::PythonThread(PythonInterpreter *py_, char *path, char *modulename) {
   thread = NULL;
+  py = py_;
   
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
+
   addPath(path);
 
   module = PyImport_ImportModule(modulename);
   if (!module)
     throw PythonException();
+  
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 PythonThread::~PythonThread() {
@@ -52,6 +59,7 @@ void PythonThread::run(char *function_) {
   thread = SDL_CreateThread(&PythonThreadCallback, this);
 }
 
+/* This must be run while the python lock is held */
 void PythonThread::addPath(char *path) {
   PyObject *sysmodule, *pathlist, *newpath;
 
@@ -78,6 +86,10 @@ void PythonThread::addPath(char *path) {
 void PythonThread::threadHandler(void) {
   PyObject *func, *args, *ret;
 
+  PyEval_AcquireLock();
+  threadState = PyThreadState_New(py->mainThreadState->interp);
+  PyThreadState_Swap(threadState);
+
   func = PyObject_GetAttrString(module, function);
   if (!func)
     throw PythonException();
@@ -90,11 +102,18 @@ void PythonThread::threadHandler(void) {
   Py_DECREF(args);
   Py_DECREF(ret);
   Py_DECREF(func);
+
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 
 void PythonThread::addObject(char *name, PyObject *object) {
+  PyEval_AcquireLock();
+  PyThreadState_Swap(py->mainThreadState);
   Py_INCREF(object);
   if (PyModule_AddObject(module, name, object)<0)
     throw PythonException();
+  PyThreadState_Swap(NULL);
+  PyEval_ReleaseLock();
 }
 

@@ -16,11 +16,11 @@ int main(int argc, char **argv) {
   PythonInterpreter py(argc, argv);
   try {
     EmbeddedPGserver pgserver(argc, argv);
-    PythonThread pythread;
-    FlatLand world;
-    Camera camera;
-    Ship ship;
-    Skybox skybox;
+    PythonThread pythread(&py);
+    FlatLand world(&py);
+    Camera camera(&py);
+    Ship ship(&py);
+    Skybox skybox(&py);
     u32 old_ticks, new_ticks;
     float frame_time;
 

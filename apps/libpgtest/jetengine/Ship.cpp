@@ -4,7 +4,7 @@
 #include "Ship.h"
 #include "PGTexture.h"
 
-Ship::Ship() {
+Ship::Ship(PythonInterpreter *py) : ScriptableObject(py) {
   shipTexture = new PGTexture("jetengine/ship");
   setAttr("pitch",20.0f);
   setAttr("roll",0.0f);

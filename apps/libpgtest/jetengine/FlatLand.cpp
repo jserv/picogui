@@ -4,7 +4,7 @@
 #include "FlatLand.h"
 #include "PGTexture.h"
 
-FlatLand::FlatLand() {
+FlatLand::FlatLand(PythonInterpreter *py) : ScriptableObject(py) {
   groundTexture = new PGTexture("jetengine/grass");
   setAttr("velocity",0.0f);
   setAttr("hrepeat",100.0f);
