@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.3 2001/04/20 23:45:18 micahjd Exp $
+/* $Id: sdlremote.c,v 1.4 2001/05/13 01:30:46 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -39,11 +39,20 @@ int main(int argc, char **argv) {
    SDL_Event evt;
    struct pgmodeinfo mi;
    int ox=0,oy=0,btnstate=0;
+   int scale = 1;
    
    /* Don't need an app, but a connection would be nice... */
    pgInit(argc,argv); 
    mi = *pgGetVideoMode();
-  
+
+   /* If the server is especially low resolution, magnify it */
+   if (mi.xres < 300 || mi.yres < 300) {
+      if (mi.xres > mi.yres)
+	scale = 300/mi.xres;
+      else
+	scale = 300/mi.yres;
+   }
+	
    /* Start up SDL */
    if (SDL_Init(SDL_INIT_VIDEO)) {
       printf("Error initializing SDL: %s\n",SDL_GetError());
@@ -51,7 +60,7 @@ int main(int argc, char **argv) {
    }
    
    /* Set a video mode to match the server's _physical_ resolution */
-   surf = SDL_SetVideoMode(mi.xres,mi.yres,8,0);
+   surf = SDL_SetVideoMode(mi.xres*scale,mi.yres*scale,8,0);
    if (!surf) {
       printf("Error setting video mode: %s\n",SDL_GetError());
       return 1;
@@ -65,6 +74,9 @@ int main(int argc, char **argv) {
       switch (evt.type) {
     
        case SDL_MOUSEMOTION:
+	 evt.motion.x /= scale;
+	 evt.motion.y /= scale;
+	 
 	 /* Skip false moves (like dragging outside the window edge)
 	  * and ignore moves we can't keep up with */
 	 if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
@@ -75,11 +87,17 @@ int main(int argc, char **argv) {
 	 break;
 	 
        case SDL_MOUSEBUTTONDOWN:
+	 evt.button.x /= scale;
+	 evt.button.y /= scale;
+	 
 	 pgSendPointerInput(PG_TRIGGER_DOWN,evt.button.x,
 			    evt.button.y,btnstate |= 1<<(evt.button.button-1));
 	 break;
 	 
        case SDL_MOUSEBUTTONUP:
+	 evt.button.x /= scale;
+	 evt.button.y /= scale;
+
 	 pgSendPointerInput(PG_TRIGGER_UP,evt.button.x,
 			    evt.button.y,btnstate &= ~(1<<(evt.button.button-1)));
 	 break;
