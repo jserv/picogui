@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.11 2000/10/30 12:46:30 micahjd Exp $
+/* $Id: dispatch.c,v 1.12 2000/10/31 01:46:48 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -711,14 +711,31 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   handle h,htb;
   struct widget *w,*tb;
   unsigned long flags;
+  int bw=0,bh=0;
+  struct fontdesc *fd;
+  char *str;
   reqarg(mkmsgdlg);
 
   /* If no flags were specified, use the defaults */
   flags = ntohl(arg->flags);
   if (!flags) flags = PG_MSGBTN_OK;
 
+  /*** Sorta size the popup box... This could definitely be improved :) */
+  /* Start with the body text size */
+  if (!iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,
+			theme_lookup(PGTH_O_LABEL_DLGTEXT,PGTH_P_FONT)))
+      && fd) 
+    if (!iserror(rdhandle((void **)&str,PG_TYPE_STRING,-1,ntohl(arg->text)))
+	&& str)
+      sizetext(fd,&bw,&bh,str);
+  /* Account for doohickeys */
+  bh += theme_lookup(PGTH_O_TOOLBAR,PGTH_P_HEIGHT) << 1;
+  /* Any additions the theme may have */
+  bw += theme_lookup(PGTH_O_POPUP,PGTH_P_WIDTH);
+  bh += theme_lookup(PGTH_O_POPUP,PGTH_P_HEIGHT);
+
   /* The popup box itself */
-  e = create_popup(-1,-1,250,150,&w,owner);
+  e = create_popup(-1,-1,bw,bh,&w,owner);
   errorcheck;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
   errorcheck;
@@ -735,6 +752,7 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   /* Text */
   e = widget_derive(&w,PG_WIDGET_LABEL,tb,htb,PG_DERIVE_AFTER,owner);
   errorcheck;
+  w->in->div->state = PGTH_O_LABEL_DLGTEXT;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
   errorcheck;
   e = widget_set(w,PG_WP_TEXT,ntohl(arg->text));
@@ -745,7 +763,10 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   /* Title */
   e = widget_derive(&w,PG_WIDGET_LABEL,tb,htb,PG_DERIVE_AFTER,owner);
   errorcheck;
+  w->in->div->state = PGTH_O_LABEL_DLGTITLE;
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
+  errorcheck;
+  e = widget_set(w,PG_WP_TRANSPARENT,0);
   errorcheck;
   e = widget_set(w,PG_WP_TEXT,ntohl(arg->title));
   errorcheck;

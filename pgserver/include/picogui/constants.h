@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.11 2000/10/29 20:52:35 micahjd Exp $
+/* $Id: constants.h,v 1.12 2000/10/31 01:46:47 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -192,10 +192,12 @@ typedef unsigned long pghandle;
 #define PGTH_O_PANELBAR_HILIGHT    22   /* A panelbar, when mouse is inside it */
 #define PGTH_O_PANELBAR_ON         23   /* A panelbar, when mouse is down */
 #define PGTH_O_BOX                 24   /* The box widget */
+#define PGTH_O_LABEL_DLGTITLE      25   /* A label, used for a dialog box title */
+#define PGTH_O_LABEL_DLGTEXT       26   /* A label, used for the body of a dialog */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                  25
+#define PGTH_ONUM                  27
 
 /*** Loaders */
 
