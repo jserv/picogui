@@ -293,8 +293,9 @@ constants = {
         'transparent':			(9, {}),
         'bordercolor':			(10,
             _color_consts),
-        'bitmap':			(12,
+        'image':			(12,
             _getBitmap),
+        'bitmap':			'image',
         'lgop':				(13, {
         }),
         'value':			(14, {
@@ -383,13 +384,14 @@ constants = {
         }),
         'panelbar zoom':		(48, {
         }),
-        'bitmapside':			(49, {
+        'imageside':			(49, {
             'top':	(1<<3, {}),	# stick to the top edge
             'bottom':	(1<<4, {}),	# stick to the bottom edge
             'left':	(1<<5, {}),	# stick to the left edge
             'right':	(1<<6, {}),	# stick to the right edge
             'all':	(1<<11, {}),	# occupy all available space
         }),
+        'bitmapside':			'imageside',
         'password':			(50, {
         }),
         'hotkey flags':			(51, {	# keyboard event flags for the hotkey
