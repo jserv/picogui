@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.92 2001/08/04 07:46:55 micahjd Exp $
+/* $Id: widget.c,v 1.93 2001/08/04 11:56:19 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -384,12 +384,6 @@ void redraw_bg(struct widget *self) {
 */
 void reset_widget_pointers(void) {
   lastclicked = under = prev_under = capture = NULL;
-}
-
-/*
-  FIXME: implement find_hotkey!
-*/
-long find_hotkey(void) {
 }
 
 /*

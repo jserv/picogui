@@ -1,3 +1,13 @@
+2001-08-04    Micah Dowty <micahjd@users.sourceforge.net>
+
+Yay, the file dialog is finally done. It has some powerful features: You can
+create directories, delete, and rename/move files right in the file dialog.
+I also use columns in the browser to display the name and size of each file.
+All that's left in standard dialog support (I think) is the color picker,
+standard icons, and good scrolling. Since the scrolling is by far the most
+difficult of these three, of course I decided to do it first :)
+
+
 2001-08-03    Micah Dowty <micahjd@users.sourceforge.net>
 
 While adding that PGREQ_DUP code, I fixed what I'm now almost positive was

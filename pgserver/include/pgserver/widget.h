@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.32 2001/08/04 07:46:54 micahjd Exp $
+/* $Id: widget.h,v 1.33 2001/08/04 11:56:19 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -270,14 +270,6 @@ glob widget_get(struct widget *w, int property);
    the container the widget is in, in order to redraw the background
 */
 void redraw_bg(struct widget *self);
-
-/* 
-   This function should be called by an interactive widget to allocate
-   a hotkey.  Its value does not need to be displayed unless there is
-   no current pointing device, but it finds the first available acceptable
-   hotkey.
-*/
-long find_hotkey(void);
 
 /* 
    Set the current hotkey (from find_hotkey or otherwise)
