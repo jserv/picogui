@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.51 2002/03/26 17:33:02 instinc Exp $
+/* $Id: popup.c,v 1.52 2002/04/11 08:51:43 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -125,7 +125,8 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
   struct divnode *ntb;
 
   /* Don't bother with it if the popup itself hasn't been sized yet */
-  if (!(self->in->div->w && self->in->div->h))
+  if (!(self->in->div->w && self->in->div->h) || 
+      self->in->div->x < 0 || self->in->div->y < 0)
     return;
 
   /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
@@ -152,6 +153,9 @@ void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) 
 
   /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
   exec_fillstyle(c,self->in->div->state,PGTH_P_BACKDROP);
+
+  /* Since the backdrop should only be rendered once, self-destruct this build handler */
+  self->in->build = NULL;
 }
 
 void build_popup(struct gropctxt *c,unsigned short state,struct widget *self) {
