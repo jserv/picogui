@@ -5,7 +5,7 @@
 int main(int argc, char **argv) {
   pghandle bitmap, bitmapwidget, fpswidget;
   struct pgshmbitmap shm;
-  unsigned short *bits, *p;
+  unsigned long *bits, *p;
   int x,y;
   int frames, then_frames;
   time_t now,then;
@@ -51,11 +51,11 @@ int main(int argc, char **argv) {
   frames = then_frames = 0;
   while (1) {
     /* Do some (cheesy) animation,
-     * This assumes 16bpp 5-5-5 color for now */
+     * This assumes 32bpp color for now */
     p = bits;
     for (y=0;y<240;y++)
       for (x=0;x<320;x++)
-	*(p++) = (x + y + frames) & 0x1F;
+	*(p++) = (x + y + frames) & 0xFF;
     frames++;
 
     /* Update frames per second every few seconds */
