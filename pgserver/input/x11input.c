@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.22 2002/11/04 12:11:32 micahjd Exp $
+/* $Id: x11input.c,v 1.23 2002/11/04 13:14:05 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -154,6 +154,10 @@ int x11input_fd_activate(int fd) {
 	p.mouse.y = x11input_scroll_distance;
 	infilter_send(NULL,PG_TRIGGER_SCROLLWHEEL,&p);
       }
+      p.mouse.x   = ev.xbutton.x;
+      p.mouse.y   = ev.xbutton.y;
+      p.mouse.btn = btn & 0x07;
+      infilter_send(NULL,PG_TRIGGER_DOWN,&p);
       break;
 
     case ButtonRelease:

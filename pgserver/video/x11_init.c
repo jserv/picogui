@@ -1,4 +1,4 @@
-/* $Id: x11_init.c,v 1.5 2002/11/04 12:49:22 micahjd Exp $
+/* $Id: x11_init.c,v 1.6 2002/11/04 13:14:05 micahjd Exp $
  *
  * x11_init.c - Initialization for picogui'x driver for the X window system
  *
@@ -69,16 +69,17 @@ g_error x11_init(void) {
 }
 
 g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
-  int x,y,w,h,border,depth;
+  int x,y,rootw,rooth,border,depth;
   Window root;
   XRectangle rect;
 
+  /* Get the display size */
+  XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
+	       &x, &y, &rootw, &rooth, &border, &depth);
+
   if (flags & PG_VID_ROOTLESS) {
-    /* Get the display size */
-    XGetGeometry(x11_display, RootWindow(x11_display, 0), &root,
-		 &x, &y, &w, &h, &border, &depth);
-    vid->xres = w;
-    vid->yres = h;
+    vid->xres = rootw;
+    vid->yres = rooth;
   }
   else {
     /* Default to 640x480 */
@@ -91,8 +92,8 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   /* Create the display_region */
   x11_display_region = XCreateRegion();
   rect.x = rect.y = 0;
-  rect.width = vid->xres;
-  rect.height = vid->yres;
+  rect.width = rootw;
+  rect.height = rooth;
   XUnionRectWithRegion(&rect,x11_display_region,x11_display_region);
 
   x11_monolithic_window_update();
