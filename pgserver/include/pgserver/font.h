@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.4 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: font.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -35,8 +35,8 @@ struct font;
 extern struct fontstyle_node *fontstyles;   /* Head of a linked list
 					       of font styles */
 
-#include <video.h>
-#include <handle.h>
+#include <pgserver/handle.h>
+#include <pgserver/video.h>
 
 typedef long stylet;
 

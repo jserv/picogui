@@ -1,4 +1,4 @@
-/* $Id: theme.h,v 1.13 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: theme.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -30,8 +30,8 @@
 #ifndef __THEME_H
 #define __THEME_H
 
-#include <divtree.h>
-#include <g_error.h>
+#include <pgserver/divtree.h>
+#include <pgserver/g_error.h>
 
 /* An element translates to both a gropnode, and a change in the
    current x,y,w,h. A permutation defines how the element is changed

@@ -1,5 +1,5 @@
 
-/* $Id: g_malloc.c,v 1.5 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: g_malloc.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -30,8 +30,8 @@
  */
 
 #include <stdlib.h>
-#include <g_malloc.h>
-#include <g_error.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/g_error.h>
 
 long memref = 0;
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.24 2000/09/03 18:28:06 micahjd Exp $
+# $Id: Makefile,v 1.25 2000/09/03 19:22:37 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -38,12 +38,9 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        video/sdlmin.c video/sdl.c input/sdlinput.c \
        video/svga.c
 
-HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
-       gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
-       appmgr/appmgr.h gcore/input.h widget/theme.h gcore/timer.h \
-       gcore/input.h gcore/pgmain.h net/pgnet.h
+HDR := include/pgserver/*.h
 
-CFLAGS := -Iwidget -Igcore -Iappmgr -Inet
+CFLAGS := -Iinclude
 
 ######## Flags and Tools
 

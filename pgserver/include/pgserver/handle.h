@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.7 2000/08/01 06:31:39 micahjd Exp $
+/* $Id: handle.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -30,7 +30,7 @@
 #ifndef __HANDLE_H
 #define __HANDLE_H
 
-#include <g_error.h>
+#include <pgserver/g_error.h>
 
 /* Flags for the handle's type */
 #define HFLAG_RED   0x80     /* This is a red-black tree */

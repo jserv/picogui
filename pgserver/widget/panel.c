@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.26 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: panel.c,v 1.27 2000/09/03 19:27:59 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -25,11 +25,9 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <g_malloc.h>
-#include <theme.h>
-#include <timer.h>
+#include <pgserver/widget.h>
+#include <pgserver/video.h>
+#include <pgserver/timer.h>
 
 #define PANELMARGIN (HWG_MARGIN<<1)
 

@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.5 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: toolbar.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -25,10 +25,7 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <g_malloc.h>
-#include <theme.h>
+#include <pgserver/widget.h>
 
 void toolbar(struct divnode *d) {
   int x,y,w,h;

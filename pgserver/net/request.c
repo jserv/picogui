@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: request.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -28,7 +28,7 @@
  * 
  */
 
-#include <pgnet.h>
+#include <pgserver/pgnet.h>
 
 /* Socket */
 int s = 0;

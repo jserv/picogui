@@ -1,6 +1,7 @@
-/* $Id: pgmain.h,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: timer.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
- * pgmain.h - just a few things related to the main loop
+ * timer.h - OS-specific stuff for setting timers and
+ *            figuring out how much time has passed
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -25,11 +26,20 @@
  * 
  */
 
-#ifndef _H_PGMAIN
-#define _H_PGMAIN
+#ifndef __H_TIMER
+#define __H_TIMER
 
-extern volatile int in_shutdown;
-void request_quit(void);
+#include <pgserver/g_error.h>
+#include <pgserver/widget.h>
 
-#endif /* _H_PGMAIN */
+g_error timer_init(void);
+void timer_release(void);
+
+/* General-purpose func to get the time
+   in milliseconds
+*/
+unsigned long getticks(void);
+
+#endif /* __H_TIMER */
+
 /* The End */

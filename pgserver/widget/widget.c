@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.39 2000/09/03 16:48:30 micahjd Exp $
+/* $Id: widget.c,v 1.40 2000/09/03 19:27:59 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -26,10 +26,8 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <g_malloc.h>
-#include <pgnet.h>
+#include <pgserver/widget.h>
+#include <pgserver/pgnet.h>
 
 /* Table of widgets */
 struct widgetdef widgettab[] = {

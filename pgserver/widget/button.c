@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.30 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: button.c,v 1.31 2000/09/03 19:27:59 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -25,12 +25,8 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <font.h>
-#include <g_malloc.h>
-#include <appmgr.h>
-#include <theme.h>
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
 
 /* Button content offsetted in X and Y coords by this much when on */
 #define ON_OFFSET 1

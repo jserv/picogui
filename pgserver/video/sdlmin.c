@@ -1,4 +1,4 @@
-/* $Id: sdlmin.c,v 1.2 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: sdlmin.c,v 1.3 2000/09/03 19:27:59 micahjd Exp $
  *
  * sdlmin.c - video driver wrapper for SDL.
  *            this 'min' version defines only the
@@ -35,7 +35,7 @@
  * 
  */
 
-#include <video.h>
+#include <pgserver/video.h>
 #include <SDL.h>
 
 SDL_Surface *sdlmin_vidsurf;

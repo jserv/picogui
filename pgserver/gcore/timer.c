@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.5 2000/08/06 05:56:31 micahjd Exp $
+/* $Id: timer.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -37,7 +37,7 @@
 #include <sys/time.h>
 #endif
 
-#include <timer.h>
+#include <pgserver/timer.h>
 
 /* This defines the maximum 
    precision of the TRIGGER_TIMER */

@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.12 2000/08/27 09:15:33 micahjd Exp $
+/* $Id: theme.c,v 1.13 2000/09/03 19:27:59 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -27,9 +27,9 @@
  * 
  */
 
-#include <theme.h>
-#include <divtree.h>
-#include <widget.h>
+#include <pgserver/theme.h>
+#include <pgserver/divtree.h>
+#include <pgserver/widget.h>
 
 struct element current_theme[E_NUM];
 

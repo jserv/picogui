@@ -1,4 +1,4 @@
-/* $Id: default_theme.c,v 1.8 2000/08/07 11:41:20 micahjd Exp $
+/* $Id: default_theme.c,v 1.9 2000/09/03 19:27:59 micahjd Exp $
  *
  * default_theme.h - Theme table initialized with the default theme
  *
@@ -25,8 +25,8 @@
  * 
  */
 
-#include <theme.h>
-#include <video.h>
+#include <pgserver/theme.h>
+#include <pgserver/video.h>
 
 /* Little macros for a theme element.
  * This format is more limiting than the actual theme definition format,

@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.5 2000/09/03 17:32:22 micahjd Exp $
+/* $Id: input.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -31,7 +31,7 @@
 #include <sys/time.h>    /* For timeval */
 #include <sys/types.h>   /* For fd_set */
 
-#include <g_error.h>
+#include <pgserver/g_error.h>
 
 /* Just like the video lib, use a structure of pointers
    to functions. These aren't called by much though, and

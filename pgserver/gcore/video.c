@@ -1,4 +1,4 @@
-/* $Id: video.c,v 1.4 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: video.c,v 1.5 2000/09/03 19:27:59 micahjd Exp $
  *
  * video.c - handles loading/switching video drivers, provides
  *           default implementations for video functions
@@ -26,8 +26,8 @@
  * 
  */
 
-#include <video.h>
-#include <g_malloc.h>
+#include <pgserver/video.h>
+#include <pgserver/g_malloc.h>
 
 /******************************************** Utils */
 

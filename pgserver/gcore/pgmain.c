@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: pgmain.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -27,15 +27,7 @@
  * 
  */
 
-#include <pgnet.h>
-#include <pgmain.h>
-#include <video.h>
-#include <divtree.h>
-#include <handle.h>
-#include <g_error.h>
-#include <appmgr.h>
-#include <input.h>
-#include <timer.h>
+#include <pgserver/all.h>
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
@@ -81,7 +73,7 @@ int main(int argc, char **argv) {
 	
       default:   /* Catches -, -h, --help, etc... */
 	puts("\nPicoGUI server (http://pgui.sourceforge.net)\n"
-	     "$Id: pgmain.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $\n\n"
+	     "$Id: pgmain.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $\n\n"
 	     "pgserver [-h] [--] [session manager prog]\n\n"
 	     "\t-h: Displays this usage screen\n"
 	     "\nIf a session manager program is specified, it will be run when PicoGUI\n"

@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: eventq.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -30,7 +30,7 @@
  * 
  */
 
-#include <pgnet.h>
+#include <pgserver/pgnet.h>
 
 /* Either the originating widget or the owner must be specified.
    If only 'from' is nonzero, the owner will be looked up, and the event

@@ -1,6 +1,8 @@
-/* $Id: g_error.c,v 1.4 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: all.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
- * g_error.h - Defines a format for errors
+ * pgserver/all.h - Includes all the pgserver files. Some files
+ *                  need so many includes that this just makes sense.
+ *                  Sometimes I'm lazy. Oh well.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -25,28 +27,19 @@
  * 
  */
 
+#include <pgserver/divtree.h>
 #include <pgserver/g_error.h>
-
-g_error prerror(g_error e) {
-  if (!iserror(e)) return e;
-#ifndef TINY_MESSAGES
-  printf("*** ERROR (");
-  switch (errtype(e)) {
-  case ERRT_MEMORY: printf("MEMORY"); break;
-  case ERRT_IO: printf("IO"); break;
-  case ERRT_NETWORK: printf("NETWORK"); break;
-  case ERRT_BADPARAM: printf("BADPARAM"); break;
-  case ERRT_HANDLE: printf("HANDLE"); break;
-  case ERRT_INTERNAL: printf("INTERNAL"); break;
-  case ERRT_BUSY: printf("BUSY"); break;
-  default: printf("?");
-  }
-  printf(") : %s\n",errortext(e));
-#else
-  puts(errortext(e));
-#endif
-  return e;
-}
+#include <pgserver/handle.h>
+#include <pgserver/pgkeys.h>
+#include <pgserver/pgnet.h>
+#include <pgserver/timer.h>
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
+#include <pgserver/font.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/input.h>
+#include <pgserver/pgmain.h>
+#include <pgserver/theme.h>
+#include <pgserver/video.h>
 
 /* The End */
-

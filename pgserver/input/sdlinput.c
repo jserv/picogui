@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.2 2000/09/03 16:48:29 micahjd Exp $
+/* $Id: sdlinput.c,v 1.3 2000/09/03 19:27:59 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -25,11 +25,10 @@
  * 
  */
 
-#include <input.h>
-#include <g_error.h>
-#include <widget.h>
-#include <pgnet.h>
-#include <video.h>
+#include <pgserver/input.h>
+#include <pgserver/widget.h>
+#include <pgserver/pgnet.h>
+#include <pgserver/video.h>
 
 #include <SDL.h>
 #include <SDL_thread.h>

@@ -1,7 +1,6 @@
-/* $Id: timer.h,v 1.3 2000/08/06 02:48:17 micahjd Exp $
+/* $Id: g_malloc.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
- * timer.h - OS-specific stuff for setting timers and
- *            figuring out how much time has passed
+ * g_malloc.h - malloc wrapper providing error handling
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -26,20 +25,15 @@
  * 
  */
 
-#ifndef __H_TIMER
-#define __H_TIMER
+#ifndef __H_GMALLOC
+#define __H_GMALLOC
 
-#include <g_error.h>
-#include <widget.h>
+#include <malloc.h>
+#include <pgserver/g_error.h>
 
-g_error timer_init(void);
-void timer_release(void);
+g_error g_malloc(void **p,size_t s);
+void g_free(void *p);
+g_error g_realloc(void **p,size_t s);
 
-/* General-purpose func to get the time
-   in milliseconds
-*/
-unsigned long getticks(void);
-
-#endif /* __H_TIMER */
-
+#endif /* __H_GMALLOC */
 /* The End */

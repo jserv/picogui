@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: pgnet.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -28,15 +28,15 @@
 #ifndef _H_PGNET
 #define _H_PGNET
 
-#include <g_error.h>
-#include <divtree.h>
-#include <video.h>
-#include <g_malloc.h>
-#include <handle.h>
-#include <widget.h>
-#include <appmgr.h>
-#include <widget.h>
-#include <theme.h>
+#include <pgserver/g_error.h>
+#include <pgserver/divtree.h>
+#include <pgserver/video.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/handle.h>
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
+#include <pgserver/widget.h>
+#include <pgserver/theme.h>
 
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS

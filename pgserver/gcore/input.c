@@ -1,4 +1,4 @@
-/* $Id: input.c,v 1.1 2000/09/02 17:19:15 micahjd Exp $
+/* $Id: input.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * input.c - Abstract input driver interface
  *
@@ -25,7 +25,7 @@
  * 
  */
 
-#include <input.h>
+#include <pgserver/input.h>
 
 /******************************************** Vars */
 

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.1 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: dispatch.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -29,7 +29,7 @@
  * 
  */
 
-#include <pgnet.h>
+#include <pgserver/pgnet.h>
 
 /* Table of request handlers */
 DEF_REQHANDLER(ping)

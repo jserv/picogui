@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.6 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: font.c,v 1.7 2000/09/03 19:27:59 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -25,10 +25,12 @@
  * 
  */
 
-#include <font.h>
 #include <string.h>
-#include <g_malloc.h>
-#include <g_error.h>
+
+#include <pgserver/font.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/g_error.h>
+#include <pgserver/video.h>
 
 /* This defines how italic the generated italic is */
 #define DEFAULT_SKEW 3

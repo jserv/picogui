@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.20 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: divtree.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -28,9 +28,9 @@
 #ifndef __DIVTREE_H
 #define __DIVTREE_H
 
-#include <video.h>
-#include <handle.h>
-#include <g_error.h>
+#include <pgserver/handle.h>
+#include <pgserver/g_error.h>
+#include <pgserver/video.h>
 
 struct widget;
 struct dtstack;

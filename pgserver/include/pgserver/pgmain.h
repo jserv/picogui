@@ -1,6 +1,6 @@
-/* $Id: g_malloc.h,v 1.3 2000/07/30 21:29:17 micahjd Exp $
+/* $Id: pgmain.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
- * g_malloc.h - malloc wrapper providing error handling
+ * pgmain.h - just a few things related to the main loop
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -25,15 +25,11 @@
  * 
  */
 
-#ifndef __H_GMALLOC
-#define __H_GMALLOC
+#ifndef _H_PGMAIN
+#define _H_PGMAIN
 
-#include <malloc.h>
-#include <g_error.h>
+extern volatile int in_shutdown;
+void request_quit(void);
 
-g_error g_malloc(void **p,size_t s);
-void g_free(void *p);
-g_error g_realloc(void **p,size_t s);
-
-#endif /* __H_GMALLOC */
+#endif /* _H_PGMAIN */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.16 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: grop.c,v 1.17 2000/09/03 19:27:59 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -25,11 +25,11 @@
  * 
  */
 
-#include <divtree.h>
-#include <video.h>
-#include <g_malloc.h>
-#include <font.h>
-#include <handle.h>
+#include <pgserver/divtree.h>
+#include <pgserver/video.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/font.h>
+#include <pgserver/handle.h>
 
 /* This renders a divnode's groplist using the x,y,w,h,tx,ty from 
  * the divnode. The grop is translated by (x+tx,y+ty) and clipped to

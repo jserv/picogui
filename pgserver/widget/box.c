@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.5 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: box.c,v 1.6 2000/09/03 19:27:59 micahjd Exp $
  *
  * box.c - Generic container for laying out widgets
  *
@@ -25,9 +25,7 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <g_malloc.h>
+#include <pgserver/widget.h>
 
 #define BOXMARGIN (HWG_MARGIN<<1)
 

@@ -1,4 +1,4 @@
-/* $Id: appmgr.h,v 1.7 2000/08/07 19:44:08 micahjd Exp $
+/* $Id: appmgr.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.21 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: div.c,v 1.22 2000/09/03 19:27:59 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -25,9 +25,9 @@
  * 
  */
 
-#include <divtree.h>
-#include <g_malloc.h>
-#include <widget.h>
+#include <pgserver/divtree.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/widget.h>
 
 /* Fill in the x,y,w,h of this divnode's children node based on it's
  * x,y,w,h and it's split. Also call the on_recalc members if present.

@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.30 2000/09/03 18:28:07 micahjd Exp $
+/* $Id: widget.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -30,13 +30,14 @@
 #ifndef __WIDGET_H
 #define __WIDGET_H
 
-#include <divtree.h>
-#include <font.h>
-#include <video.h>
-#include <g_error.h>
-#include <g_malloc.h>
-#include <pgmain.h>
-#include <pgkeys.h>
+#include <pgserver/divtree.h>
+#include <pgserver/font.h>
+#include <pgserver/video.h>
+#include <pgserver/g_error.h>
+#include <pgserver/g_malloc.h>
+#include <pgserver/pgmain.h>
+#include <pgserver/pgkeys.h>
+#include <pgserver/theme.h>
 
 struct blob;
 struct widgetdef;

@@ -1,4 +1,4 @@
-/* $Id: g_error.h,v 1.5 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: g_error.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -27,8 +27,6 @@
 
 #ifndef __H_GERROR
 #define __H_GERROR
-
-#include <stdio.h>
 
 /* Error type or'ed with error number */
 typedef unsigned int g_error;

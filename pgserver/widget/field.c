@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.11 2000/08/28 02:06:09 micahjd Exp $
+/* $Id: field.c,v 1.12 2000/09/03 19:27:59 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -27,11 +27,8 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <font.h>
-#include <g_malloc.h>
-#include <appmgr.h>
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
 
 /* Buffer allocation settings */
 #define FIELDBUF_DEFAULTMAX      512   /* Default setting for buffer maximum */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.13 2000/09/03 17:32:22 micahjd Exp $
+/* $Id: video.h,v 1.1 2000/09/03 19:27:59 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -29,7 +29,7 @@
 #ifndef __H_VIDEO
 #define __H_VIDEO
 
-#include <g_error.h>
+#include <pgserver/g_error.h>
 
 /* Flags used for 'flags' in init and setmode */
 #define PGVID_FULLSCREEN     0x0001

@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.19 2000/08/28 03:30:43 micahjd Exp $
+/* $Id: label.c,v 1.20 2000/09/03 19:27:59 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -26,11 +26,8 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <font.h>
-#include <g_malloc.h>
-#include <appmgr.h>
+#include <pgserver/widget.h>
+#include <pgserver/appmgr.h>
 
 struct labeldata {
   handle text,font;

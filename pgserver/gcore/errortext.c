@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.2 2000/08/27 05:54:27 micahjd Exp $
+/* $Id: errortext.c,v 1.3 2000/09/03 19:27:59 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -25,7 +25,7 @@
  * 
  */
 
-#include <g_error.h>
+#include <pgserver/g_error.h>
 
 #ifdef TINY_MESSAGES
 /* Eek! Cryptic, but saves lots of space */

@@ -1,4 +1,4 @@
-/* $Id: sdl.c,v 1.3 2000/09/02 22:33:34 micahjd Exp $
+/* $Id: sdl.c,v 1.4 2000/09/03 19:27:59 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
@@ -25,8 +25,8 @@
  * 
  */
 
-#include <video.h>
-#include <input.h>
+#include <pgserver/video.h>
+#include <pgserver/input.h>
 
 #include <SDL.h>
 

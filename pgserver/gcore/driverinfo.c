@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.1 2000/09/03 17:32:22 micahjd Exp $
+/* $Id: driverinfo.c,v 1.2 2000/09/03 19:27:59 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers
@@ -26,8 +26,8 @@
  * 
  */
 
-#include <video.h>
-#include <input.h>
+#include <pgserver/video.h>
+#include <pgserver/input.h>
 
 /* Video 
  * Order does matter here- if no driver is specified, the one listed 

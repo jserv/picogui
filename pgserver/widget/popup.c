@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.10 2000/08/27 05:54:28 micahjd Exp $
+/* $Id: popup.c,v 1.11 2000/09/03 19:27:59 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -28,10 +28,7 @@
  * 
  */
 
-#include <widget.h>
-#include <divtree.h>
-#include <g_malloc.h>
-#include <theme.h>
+#include <pgserver/widget.h>
 
 /* We have a /special/ function to create a popup widget from scratch. */
 g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {

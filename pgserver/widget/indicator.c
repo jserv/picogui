@@ -1,4 +1,4 @@
-/* $Id: indicator.c,v 1.11 2000/08/14 19:35:45 micahjd Exp $
+/* $Id: indicator.c,v 1.12 2000/09/03 19:27:59 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
@@ -25,8 +25,7 @@
  * 
  */
 
-#include <widget.h>
-#include <theme.h>
+#include <pgserver/widget.h>
 
 #define VALUE ((int)self->data)
 
