@@ -81,4 +81,8 @@
   DRV("zaurus", &zaurus_regfunc)
 #endif
 
+#ifdef DRIVER_ERICSSON_CHATBOARD
+  DRV("ericsson_chatboard", &ericsson_cb_regfunc)
+#endif
+
 /* The End */

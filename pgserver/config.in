@@ -135,6 +135,7 @@ bool 'TTY keyboard input driver (TuxScreen, fb)'        DRIVER_TTYKB
 bool 'Remora keyboard (Chipslice)'                      DRIVER_REMORAKB
 bool 'Serial mouse input driver'                        DRIVER_SERIALMOUSE
 bool 'MGL2 input driver'                                DRIVER_MGL2INPUT
+bool 'Ericsson chatboard driver (see input/README.ericsson_cb)' DRIVER_ERICSSON_CHATBOARD
 endmenu
 
 mainmenu_option next_comment

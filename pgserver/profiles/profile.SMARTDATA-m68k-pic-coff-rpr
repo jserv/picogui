@@ -90,8 +90,9 @@ DRIVER_EVENTBROKER=y
 # DRIVER_TUXTS is not set
 # DRIVER_UCB1X00 is not set
 # DRIVER_TTYKB is not set
-DRIVER_REMORAKB=y
+# DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
+DRIVER_ERICSSON_CHATBOARD=y
 
 #
 # Video Base Libraries

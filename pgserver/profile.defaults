@@ -103,6 +103,7 @@ DRIVER_SDLINPUT=y
 # DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
 # DRIVER_MGL2INPUT is not set
+# DRIVER_ERICSSON_CHATBOARD is not set
 
 #
 # Video Base Libraries

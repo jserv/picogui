@@ -22,7 +22,8 @@ EXTRA_libinput_a_SOURCES = \
 	x11input.c \
 	mgl2input.c \
 	adc7843.c \
-	zaurus.c
+	zaurus.c \
+        ericsson_cb.c 
 
 libinput_a_LIBADD       = $(INPUT:%.c=%.o)
 libinput_a_DEPENDENCIES = $(INPUT:%.c=%.o)
