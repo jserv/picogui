@@ -110,7 +110,8 @@ fi
 bool 'SDL input driver'                    DRIVER_SDLINPUT
 bool 'X Window System input driver'        DRIVER_X11INPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
-bool 'Ncurses/GPM input driver (also for framebuffer)' DRIVER_NCURSESINPUT
+bool 'Ncurses input driver (also for framebuffer)' DRIVER_NCURSESINPUT
+bool 'GPM input driver'			DRIVER_GPM
 bool 'ChipSlice touchscreen input driver'  DRIVER_CHIPSLICETS
 bool 'Event broker driver'                 DRIVER_EVENTBROKER
 bool 'R3912 (VTech Helio) touchscreen input driver'    DRIVER_R3912TS

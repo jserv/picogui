@@ -61,4 +61,7 @@
   DRV("palmaxts",&palmaxts_regfunc)
 #endif
 
+#ifdef DRIVER_GPM
+  DRV("gpm",&gpm_regfunc)
+#endif
 /* The End */

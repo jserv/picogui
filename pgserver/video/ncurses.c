@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.20 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: ncurses.c,v 1.21 2001/12/15 12:09:54 lonetech Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -30,7 +30,6 @@
  */
 
 #include <curses.h>
-#include <gpm.h>
 
 /* curses.h already defines bool, so tell disable the 
  * bool definition in pgserver/common.h
@@ -45,11 +44,17 @@
 #include <pgserver/font.h>
 #include <pgserver/render.h>
 
+#ifdef DRIVER_GPM
+#include <gpm.h>
+#endif
+
 /* Buffer with the current status of the screen */
 chtype *ncurses_screen;
 
-/* The most recent mouse event, exported by ncursesinput */
-extern Gpm_Event ncurses_last_event;
+#ifdef DRIVER_GPM
+/* The most recent mouse event, exported by the gpm input driver */
+extern Gpm_Event gpm_last_event;
+#endif
 
 /******************************************** Fake font */
 /* This is a little hack to trick PicoGUI's text rendering */
@@ -91,7 +96,7 @@ g_error ncurses_init(void) {
    unsigned long *p;
 
    /* Load the ncursesinput driver, and let it initialize
-    * ncurses and gpm for us. */
+    * ncurses for us. */
    e = load_inlib(&ncursesinput_regfunc,&inlib_main);
    errorcheck;
    
@@ -139,8 +144,11 @@ hwrcolor ncurses_getpixel(hwrbitmap src,s16 x,s16 y) {
 void ncurses_update(s16 x,s16 y,s16 w,s16 h) {
    refresh();
 
+#ifdef DRIVER_GPM
    /* Show the cursor */
-   GPM_DRAWPOINTER(&ncurses_last_event);
+   if(gpm_last_event.type)
+      GPM_DRAWPOINTER(&gpm_last_event);
+#endif
 }
 
 /**** Hack the normal font rendering a bit so we use regular text */
@@ -244,8 +252,11 @@ void ncurses_sprite_show(struct sprite *spr) {
    if (spr==cursor) {
       spr->visible = 0;
     
+#ifdef DRIVER_GPM
       /* Do it ourselves */
-      GPM_DRAWPOINTER(&ncurses_last_event);
+      if(gpm_last_event.type)
+         GPM_DRAWPOINTER(&gpm_last_event);
+#endif
    }
       
    def_sprite_show(spr);

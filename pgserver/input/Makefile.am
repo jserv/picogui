@@ -7,6 +7,7 @@ libinput_a_SOURCES = \
 
 EXTRA_libinput_a_SOURCES = \
 	ncursesinput.c \
+	gpm.c \
 	r3912ts.c \
 	sdlinput.c \
 	svgainput.c \

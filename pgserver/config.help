@@ -210,7 +210,7 @@ DRIVER_SVGAINPUT
       
       
 DRIVER_NCURSESINPUT
-      Uses ncurses for keyboard input and gpm for mouse
+      Uses ncurses for keyboard input
 
 
 DRIVER_EZ328VGA
@@ -287,6 +287,16 @@ CONFIG_MAX_ZOMBIEGROPS
       For complicated themes or heavy canvas widget use, this should
       be increased. In case you're wondering, each gropnode uses
       (at this writing) 36 bytes of memory plus allocation overhead.
+
+CONFIG_TOUCHSCREEN
+      Shared code for touchscreen drivers. Takes care of calibration.
+
+DRIVER_PALMAXTS
+      Touchscreen driver for Palmax mininotebooks
+      Requires CONFIG_TOUCHSCREEN
+
+DRIVER_GPM
+      Driver for reading mouse events from GPM
 
 DRIVER_CHIPSLICETS
       Touch screen input driver for uClinux/m68k devices

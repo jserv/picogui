@@ -1,10 +1,7 @@
-/* $Id: ncursesinput.c,v 1.16 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.17 2001/12/15 12:09:54 lonetech Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
- * Note that even though ncurses can provide a wrapper around gpm,
- * most distros get this all munged up, so we connect to gpm directly.
- *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
@@ -38,14 +35,7 @@
 #include <pgserver/appmgr.h>
 
 #include <curses.h>
-#include <gpm.h>
 
-Gpm_Event ncurses_last_event;
-
-/* the stupid gpm server scales down the input for text mode,
- * so we either have to deal with darn slow input or choppy
- * scaling cruft. */
-#define SCALEHACK 2
 
 /******************************************** Implementations */
 
@@ -56,11 +46,10 @@ void ncursesinput_sendkey(int key) {
 
 int ncursesinput_fd_activate(int fd) {
    int ch,mods;
-   Gpm_Event evt;
    static int savedbtn = 0;
    
    /* Keyboard activity? */
-   if (fd==3) {
+   if (fd==0) {
       switch (ch = getch()) {
 	 
        case ERR:    /* Nothing yet */
@@ -114,6 +103,12 @@ int ncursesinput_fd_activate(int fd) {
        case KEY_F(10):        ncursesinput_sendkey(PGKEY_F10); break;
        case KEY_F(11):        ncursesinput_sendkey(PGKEY_F11); break;
        case KEY_F(12):        ncursesinput_sendkey(PGKEY_F12); break;
+
+       case '\t':
+       case '\r':	/* control characters NOT to be sent as Ctrl+letter */
+	 ncursesinput_sendkey(ch);
+	 dispatch_key(TRIGGER_CHAR, ch, 0);
+	 break;
 	 
        default:     /* Normal key */
 	 
@@ -125,57 +120,6 @@ int ncursesinput_fd_activate(int fd) {
       }
    }
    
-   /* Mouse activity? */
-   else if (fd==gpm_fd)
-      if (Gpm_GetEvent(&evt) > 0) {
-	 int trigger;
-
-	 /* Generate our own coordinates and fit it within the
-	  * video driver's screen resolution */
-	 if (vid->xres>200) {    /* For stupid scale hack */
-	    evt.x = cursor->x + (evt.dx << SCALEHACK);
-	    evt.y = cursor->y + (evt.dy << SCALEHACK);
-	    gpm_mx = vid->xres;
-	    gpm_my = vid->yres;
-	    Gpm_FitEvent(&evt);
-	 }
-
-	 /* Maybe movement outside of window or on another VT */
-	 if ((evt.type & (GPM_MOVE|GPM_DRAG)) && 
-	     (evt.x==ncurses_last_event.x) &&
-	     (evt.y==ncurses_last_event.y))
-	   return 1;
-	 
-	 ncurses_last_event = evt;
-	 
-	 switch (evt.type & (GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN)) {
-	    
-	  case GPM_MOVE:
-	  case GPM_DRAG:
-	    trigger = TRIGGER_MOVE;
-	    savedbtn = evt.buttons;
-	    break;
-	    
-	  case GPM_UP:
-	    trigger = TRIGGER_UP;
-	    evt.buttons = savedbtn &= ~evt.buttons;
-	    break;
-	    
-	  case GPM_DOWN:
-	    trigger = TRIGGER_DOWN;
-	    savedbtn = evt.buttons;
-	    break;
-	    
-	  default:
-	    return 1;
-	 }
-
-	 dispatch_pointing(trigger,evt.x,evt.y,
-			   ((evt.buttons>>2)&1) ||
-			   ((evt.buttons<<2)&4) ||
-			   (evt.buttons&2));
-      }
-      
    /* Pass on the event if necessary */
    else
      return 0;
@@ -183,16 +127,12 @@ int ncursesinput_fd_activate(int fd) {
 }
 
 void ncursesinput_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
-   if ((*n)<(gpm_fd+1))
-     *n = gpm_fd+1;
-   FD_SET(3,readfds);           /* stdin */
-   if (gpm_fd>0)                /* mouse */
-     FD_SET(gpm_fd,readfds);
+   if (*n<1)
+     *n = 1;
+   FD_SET(0,readfds);           /* stdin */
 }
 
 g_error ncursesinput_init(void) {
-   Gpm_Connect my_gpm;
-
    /* Initialize ncurses, possibly also for a video driver's benefit... */
    initscr(); 
    start_color();
@@ -205,15 +145,6 @@ g_error ncursesinput_init(void) {
    curs_set(0);   
    nodelay(stdscr,1);
 
-   /* Connect to GPM */
-   my_gpm.eventMask = GPM_MOVE | GPM_DRAG | GPM_UP | GPM_DOWN;
-   my_gpm.defaultMask = 0;                 /* Pass nothing */
-   my_gpm.minMod = 0;                      /* Any modifier keys */
-   my_gpm.maxMod = ~0;
-   if (Gpm_Open(&my_gpm,0) == -1)
-     return mkerror(PG_ERRT_IO,74);
-   gpm_zerobased = 1;
-   
    /* Force a screen update here, otherwise ncurses will impolitely clear the
     * screen next time a key is input */
    refresh();
@@ -222,7 +153,6 @@ g_error ncursesinput_init(void) {
 }
 
 void ncursesinput_close(void) {
-   while (Gpm_Close());
    clear(); refresh(); endwin();
 }
 
