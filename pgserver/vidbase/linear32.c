@@ -1,4 +1,4 @@
-/* $Id: linear32.c,v 1.6 2002/03/26 17:37:30 instinc Exp $
+/* $Id: linear32.c,v 1.7 2002/04/02 14:10:42 micahjd Exp $
  *
  * Video Base Library:
  * linear32.c - For 32bpp linear framebuffers
@@ -197,7 +197,7 @@ void linear32_blit(hwrbitmap dest,
      u32 rgba = *s;                                                    \
      u32 oldpixel = *d;                                                \
      u8 *atab = alpha_table + ((rgba >> 16) & 0x7F00);                 \
-     *d = (((rgba>>16) + atab[(oldpixel&0xFF0000)>>16] ) >> 16) & 0xFF0000 | \
+     *d = (((rgba>>16) + atab[ oldpixel          >>16] ) << 16) & 0xFF0000 | \
           (((rgba>>8)  + atab[(oldpixel&0x00FF00)>>8]  ) << 8 ) & 0x00FF00 | \
           (( rgba      + atab[(oldpixel&0x0000FF)   ]  )      ) & 0x0000FF;  \
    }                     
