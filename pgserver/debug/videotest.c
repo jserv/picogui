@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.34 2002/10/23 02:09:02 micahjd Exp $
+/* $Id: videotest.c,v 1.35 2002/11/03 05:01:34 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -417,7 +417,7 @@ void videotest_run(s16 number) {
 
     if(loop || cycle) {
       if (sleep(delay))    /* If sleep is interrupted, exit -- micah */
-	exit(0);
+	return;
       if(cycle) {
 	if(++nr>NUM_PATTERNS) {
 	  if(!loop) break;
