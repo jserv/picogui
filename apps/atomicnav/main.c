@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.3 2002/01/08 11:36:06 micahjd Exp $
+/* $Id: main.c,v 1.4 2002/10/11 10:43:12 micahjd Exp $
  *
  * main.c - Initialization and event loop for Atomic Navigator
  *
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     browserwin_command(win, "URL", argv[1]);
   
   if (run_eventloop) {
-    pgCustomizeSelect(selectHandler, selectBH);
+    pgCustomizeSelect((pgselecthandler) selectHandler, (pgselectbh) selectBH);
     pgEventLoop();
   }
   else
