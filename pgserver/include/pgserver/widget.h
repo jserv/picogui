@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.5 2000/11/04 04:22:05 micahjd Exp $
+/* $Id: widget.h,v 1.6 2000/11/04 05:54:23 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -290,6 +290,10 @@ void dispatch_direct(char *name,long param);
 
 /* The divnode currently occupied by the pointing device */
 extern struct divnode *div_under_crsr;
+
+/* Customizes the button's appearance
+   (used by other widgets that embed buttons in themeselves) */
+void customize_button(struct widget *self,int state,int state_on,int state_hilight);
 
 #endif /* __WIDGET_H */
 

@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.4 2000/10/31 01:46:48 micahjd Exp $
+/* $Id: memtheme.c,v 1.5 2000/11/04 05:54:23 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -50,33 +50,39 @@ unsigned short thobj_ancestry[PGTH_ONUM] = {
 
   /* #  Theme object                 Parent              */
 
-  /* 0  PGTH_O_DEFAULT            */ 0,                       /* (magical, this is ignored) */
-  /* 1  PGTH_O_BASE_INTERACTIVE   */ PGTH_O_DEFAULT,
-  /* 2  PGTH_O_BASE_CONTAINER     */ PGTH_O_DEFAULT,
-  /* 3  PGTH_O_BUTTON             */ PGTH_O_BASE_INTERACTIVE,
-  /* 4  PGTH_O_BUTTON_HILIGHT     */ PGTH_O_BUTTON,
-  /* 5  PGTH_O_BUTTON_ON          */ PGTH_O_BUTTON_HILIGHT,
-  /* 6  PGTH_O_TOOLBAR            */ PGTH_O_BASE_CONTAINER,
-  /* 7  PGTH_O_SCROLL             */ PGTH_O_BASE_INTERACTIVE,
-  /* 8  PGTH_O_SCROLL_HILIGHT     */ PGTH_O_SCROLL,
-  /* 9  PGTH_O_INDICATOR          */ PGTH_O_BASE_DISPLAY,
-  /* 10 PGTH_O_PANEL              */ PGTH_O_BASE_TLCONTAINER,
-  /* 11 PGTH_O_PANELBAR           */ PGTH_O_BASE_INTERACTIVE,
-  /* 12 PGTH_O_POPUP              */ PGTH_O_BASE_TLCONTAINER,
-  /* 13 PGTH_O_BACKGROUND         */ PGTH_O_DEFAULT,
-  /* 14 PGTH_O_BASE_DISPLAY       */ PGTH_O_DEFAULT,
-  /* 15 PGTH_O_BASE_TLCONTAINER   */ PGTH_O_DEFAULT,
-  /* 16 PGTH_O_THEMEINFO          */ PGTH_O_DEFAULT,
-  /* 17 PGTH_O_LABEL              */ PGTH_O_BASE_DISPLAY,
-  /* 18 PGTH_O_FIELD              */ PGTH_O_BASE_DISPLAY,
-  /* 19 PGTH_O_BITMAP             */ PGTH_O_BASE_DISPLAY,
-  /* 20 PGTH_O_SCROLL_ON          */ PGTH_O_SCROLL_HILIGHT,
-  /* 21 PGTH_O_LABEL_SCROLL       */ PGTH_O_LABEL,
-  /* 22 PGTH_O_PANELBAR_HILIGHT   */ PGTH_O_PANELBAR,
-  /* 23 PGTH_O_PANELBAR_ON        */ PGTH_O_PANELBAR_HILIGHT,
-  /* 24 PGTH_O_BOX                */ PGTH_O_BASE_CONTAINER,
-  /* 25 PGTH_O_LABEL_DLGTITLE     */ PGTH_O_LABEL,
-  /* 26 PGTH_O_LABEL_DLGTEXT      */ PGTH_O_LABEL,
+  /* 0  PGTH_O_DEFAULT               */ 0,                       /* (magical, this is ignored) */
+  /* 1  PGTH_O_BASE_INTERACTIVE      */ PGTH_O_DEFAULT,
+  /* 2  PGTH_O_BASE_CONTAINER        */ PGTH_O_DEFAULT,
+  /* 3  PGTH_O_BUTTON                */ PGTH_O_BASE_INTERACTIVE,
+  /* 4  PGTH_O_BUTTON_HILIGHT        */ PGTH_O_BUTTON,
+  /* 5  PGTH_O_BUTTON_ON             */ PGTH_O_BUTTON_HILIGHT,
+  /* 6  PGTH_O_TOOLBAR               */ PGTH_O_BASE_CONTAINER,
+  /* 7  PGTH_O_SCROLL                */ PGTH_O_BASE_INTERACTIVE,
+  /* 8  PGTH_O_SCROLL_HILIGHT        */ PGTH_O_SCROLL,
+  /* 9  PGTH_O_INDICATOR             */ PGTH_O_BASE_DISPLAY,
+  /* 10 PGTH_O_PANEL                 */ PGTH_O_BASE_TLCONTAINER,
+  /* 11 PGTH_O_PANELBAR              */ PGTH_O_BASE_INTERACTIVE,
+  /* 12 PGTH_O_POPUP                 */ PGTH_O_BASE_TLCONTAINER,
+  /* 13 PGTH_O_BACKGROUND            */ PGTH_O_DEFAULT,
+  /* 14 PGTH_O_BASE_DISPLAY          */ PGTH_O_DEFAULT,
+  /* 15 PGTH_O_BASE_TLCONTAINER      */ PGTH_O_DEFAULT,
+  /* 16 PGTH_O_THEMEINFO             */ PGTH_O_DEFAULT,
+  /* 17 PGTH_O_LABEL                 */ PGTH_O_BASE_DISPLAY,
+  /* 18 PGTH_O_FIELD                 */ PGTH_O_BASE_DISPLAY,
+  /* 19 PGTH_O_BITMAP                */ PGTH_O_BASE_DISPLAY,
+  /* 20 PGTH_O_SCROLL_ON             */ PGTH_O_SCROLL_HILIGHT,
+  /* 21 PGTH_O_LABEL_SCROLL          */ PGTH_O_LABEL,
+  /* 22 PGTH_O_PANELBAR_HILIGHT      */ PGTH_O_PANELBAR,
+  /* 23 PGTH_O_PANELBAR_ON           */ PGTH_O_PANELBAR_HILIGHT,
+  /* 24 PGTH_O_BOX                   */ PGTH_O_BASE_CONTAINER,
+  /* 25 PGTH_O_LABEL_DLGTITLE        */ PGTH_O_LABEL,
+  /* 26 PGTH_O_LABEL_DLGTEXT         */ PGTH_O_LABEL,
+  /* 27 PGTH_O_CLOSEBTN              */ PGTH_O_BASE_PANELBTN,
+  /* 28 PGTH_O_CLOSEBTN_ON           */ PGTH_O_BASE_PANELBTN_ON,
+  /* 29 PGTH_O_CLOSEBTN_HILIGHT      */ PGTH_O_BASE_PANELBTN_HILIGHT,
+  /* 30 PGTH_O_BASE_PANELBTN         */ PGTH_O_BASE_INTERACTIVE,
+  /* 31 PGTH_O_BASE_PANELBTN_ON      */ PGTH_O_BASE_PANELBTN_HILIGHT,
+  /* 32 PGTH_O_BASE_PANELBTN_HILIGHT */ PGTH_O_BASE_PANELBTN,
 };
 
 struct pgmemtheme *memtheme;

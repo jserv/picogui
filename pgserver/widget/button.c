@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.35 2000/10/29 20:52:35 micahjd Exp $
+/* $Id: button.c,v 1.36 2000/11/04 05:54:23 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -34,10 +34,22 @@
 struct btndata {
   int on,over;
   handle bitmap,bitmask,text,font;
+
+  /* Hooks for customizing a button's appearance */
+  int state,state_on,state_hilight;
 };
 #define DATA ((struct btndata *)(self->data))
 
 void resize_button(struct widget *self);
+
+/* Customizes the button's appearance
+   (used by other widgets that embed buttons in themeselves) */
+void customize_button(struct widget *self,int state,int state_on,int state_hilight) {
+  self->in->div->state = DATA->state = state;
+  DATA->state_on = state_on;
+  DATA->state_hilight = state_hilight;
+  resize_button(self);
+}
 
 struct btnposition {
   /* Coordinates calculated in position_button */
@@ -94,6 +106,11 @@ g_error button_install(struct widget *self) {
   errorcheck;
   memset(self->data,0,sizeof(struct btndata));
 
+  /* Default states */
+  DATA->state = PGTH_O_BUTTON;
+  DATA->state_on = PGTH_O_BUTTON_ON;
+  DATA->state_hilight = PGTH_O_BUTTON_HILIGHT;
+
   /* Main split */
   e = newdiv(&self->in,self);
   errorcheck;
@@ -103,7 +120,7 @@ g_error button_install(struct widget *self) {
   e = newdiv(&self->in->div,self);
   errorcheck;
   self->in->div->build = &build_button;
-  self->in->div->state = PGTH_O_BUTTON;
+  self->in->div->state = DATA->state;
 
   /* Spacer (between buttons) */
   e = newdiv(&self->in->next,self);
@@ -288,11 +305,11 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   /* Update, THEN send the event. */
 
   if (DATA->on)
-    div_setstate(self->in->div,PGTH_O_BUTTON_ON);
+    div_setstate(self->in->div,DATA->state_on);
   else if (DATA->over)
-    div_setstate(self->in->div,PGTH_O_BUTTON_HILIGHT);
+    div_setstate(self->in->div,DATA->state_hilight);
   else
-    div_setstate(self->in->div,PGTH_O_BUTTON);
+    div_setstate(self->in->div,DATA->state);
 
   if (event>=0)
     post_event(PG_WE_ACTIVATE,self,event,0);
@@ -309,12 +326,12 @@ void resize_button(struct widget *self) {
   if (self->in->flags & PG_S_ALL) return;
 
   /* Space between buttons */
-  self->in->next->split = theme_lookup(PGTH_O_BUTTON,PGTH_P_SPACING);
+  self->in->next->split = theme_lookup(DATA->state,PGTH_P_SPACING);
 
   /* Minimum size and margin */
-  w = theme_lookup(PGTH_O_BUTTON,PGTH_P_WIDTH);
-  h = theme_lookup(PGTH_O_BUTTON,PGTH_P_HEIGHT);
-  m = theme_lookup(PGTH_O_BUTTON,PGTH_P_MARGIN);
+  w = theme_lookup(DATA->state,PGTH_P_WIDTH);
+  h = theme_lookup(DATA->state,PGTH_P_HEIGHT);
+  m = theme_lookup(DATA->state,PGTH_P_MARGIN);
 
   /* Calculate everything */
   position_button(self,&bp);

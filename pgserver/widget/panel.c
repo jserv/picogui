@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.34 2000/11/04 04:22:05 micahjd Exp $
+/* $Id: panel.c,v 1.35 2000/11/04 05:54:23 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -39,8 +39,8 @@
 			      or smaller, it will be interpreted
 			      as a panel roll-up */
 
-/* A shortcut... */
-#define PANELBAR_DIV self->in->next->div
+/* the divnode making the whole (draggable) panelbar, including buttons */
+#define BARDIV        self->in->next->div
 
 struct paneldata {
   int on,over;
@@ -61,14 +61,20 @@ struct paneldata {
 
   /* Text on the panelbar */
   handle text;
+
+  /* buttons on the panelbar */
+  struct widget *btn_close;
+
+  /* The panelbar */
+  struct divnode *panelbar;
 };
 #define DATA ((struct paneldata *)(self->data))
 
 void themeify_panel(struct widget *self);
 
 void resize_panel(struct widget *self) {
-  self->in->div->split = theme_lookup(self->in->div->state,PGTH_P_MARGIN);
-  self->in->next->split = theme_lookup(self->in->next->div->state,PGTH_P_WIDTH);
+  self->in->div->split = theme_lookup(DATA->panelbar->state,PGTH_P_MARGIN);
+  self->in->next->split = theme_lookup(DATA->panelbar->state,PGTH_P_WIDTH);
 }
 
 void build_panelbar(struct gropctxt *c,unsigned short state,
@@ -142,11 +148,19 @@ g_error panel_install(struct widget *self) {
   errorcheck;
   self->in->next->flags |= PG_S_TOP;
 
-  /* And finally, the divnode that draws the panelbar */
-  e = newdiv(&self->in->next->div,self);
+  /* Buttons */
+  e = widget_create(&DATA->btn_close,PG_WIDGET_BUTTON,self->dt,&self->in->next->div,
+		    self->container,self->owner);
   errorcheck;
-  self->in->next->div->build = &build_panelbar;
-  self->in->next->div->state = PGTH_O_PANELBAR;
+  customize_button(DATA->btn_close,PGTH_O_CLOSEBTN,PGTH_O_CLOSEBTN_ON,
+		   PGTH_O_CLOSEBTN_HILIGHT);
+
+  /* And finally, the divnode that draws the panelbar */
+  e = newdiv(DATA->btn_close->out,self);
+  errorcheck;
+  DATA->panelbar = *DATA->btn_close->out;
+  DATA->panelbar->build = &build_panelbar;
+  DATA->panelbar->state = PGTH_O_PANELBAR;
 
   self->sub = &self->in->div->div;
   self->out = &self->in->next->next;
@@ -161,6 +175,9 @@ g_error panel_install(struct widget *self) {
 }
 
 void panel_remove(struct widget *self) {
+  /* Kill the buttons */
+  widget_remove(DATA->btn_close);
+
   g_free(self->data);
   if (!in_shutdown)
     r_divnode_free(self->in);
@@ -229,14 +246,11 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
   switch (type) {
 
   case TRIGGER_ENTER:
-
-    /* Only set DATA->over if the mouse is in the panelbar */
-    if (param->mouse.x < PANELBAR_DIV->x ||
-	param->mouse.y < PANELBAR_DIV->y ||
-	param->mouse.x >= (PANELBAR_DIV->x+PANELBAR_DIV->w) ||
-	param->mouse.y >= (PANELBAR_DIV->y+PANELBAR_DIV->h))
-      return;
-    DATA->over = 1;
+  case TRIGGER_MOVE:
+    /* Handle entering/exiting the node */
+    tmpover = div_under_crsr == DATA->panelbar;
+    if (DATA->over == tmpover) return;
+    DATA->over = tmpover;
     break;
 
   case TRIGGER_LEAVE:
@@ -250,22 +264,23 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_DOWN:
     if (param->mouse.chbtn != 1) return;
+    if (DATA->panelbar != div_under_crsr) return;
 
     /* Calculate grab_offset with respect to
        the edge shared by the panel and the
        panel bar. */
     switch (self->in->flags & (~SIDEMASK)) {
     case PG_S_TOP:
-      DATA->grab_offset = param->mouse.y - PANELBAR_DIV->y;
+      DATA->grab_offset = param->mouse.y - DATA->panelbar->y;
       break;
     case PG_S_BOTTOM:
-      DATA->grab_offset = PANELBAR_DIV->y + PANELBAR_DIV->h - 1 - param->mouse.y;
+      DATA->grab_offset = DATA->panelbar->y + DATA->panelbar->h - 1 - param->mouse.y;
       break;
     case PG_S_LEFT:
-      DATA->grab_offset = param->mouse.x - PANELBAR_DIV->x;
+      DATA->grab_offset = param->mouse.x - DATA->panelbar->x;
       break;
     case PG_S_RIGHT:
-      DATA->grab_offset = PANELBAR_DIV->x + PANELBAR_DIV->w - 1 - param->mouse.x;
+      DATA->grab_offset = DATA->panelbar->x + DATA->panelbar->w - 1 - param->mouse.x;
       break;
     }
 
@@ -278,18 +293,18 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     update_nosprite();
 
     /* Allocate the new sprite */
-    if(iserror(new_sprite(&DATA->s,PANELBAR_DIV->w,PANELBAR_DIV->h)))
+    if(iserror(new_sprite(&DATA->s,BARDIV->w,BARDIV->h)))
       return;
-    if (iserror((*vid->bitmap_new)(&DATA->s->bitmap,PANELBAR_DIV->w,PANELBAR_DIV->h))) {
+    if (iserror((*vid->bitmap_new)(&DATA->s->bitmap,BARDIV->w,BARDIV->h))) {
       free_sprite(DATA->s);
       return;
     }
     
     /* Grab a bitmap of the panelbar to use as the sprite */
     (*vid->clip_off)();
-    (*vid->unblit)(DATA->s->x = PANELBAR_DIV->x,DATA->s->y = PANELBAR_DIV->y,
+    (*vid->unblit)(DATA->s->x = BARDIV->x,DATA->s->y = BARDIV->y,
 		   DATA->s->bitmap,0,0,
-		   PANELBAR_DIV->w,PANELBAR_DIV->h);
+		   BARDIV->w,BARDIV->h);
     DATA->s->clip_to = self->in;
 
     break;
@@ -303,25 +318,25 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     switch (self->in->flags & (~SIDEMASK)) {
     case PG_S_TOP:
       self->in->split =  param->mouse.y - DATA->grab_offset - self->in->y;
-      if (self->in->split + PANELBAR_DIV->h > self->in->h)
-	self->in->split = self->in->h - PANELBAR_DIV->h;
+      if (self->in->split + BARDIV->h > self->in->h)
+	self->in->split = self->in->h - BARDIV->h;
       break;
     case PG_S_BOTTOM:
       self->in->split = self->in->y + self->in->h - 1 -
 	param->mouse.y - DATA->grab_offset;
-      if (self->in->split + PANELBAR_DIV->h > self->in->h)
-	self->in->split = self->in->h - PANELBAR_DIV->h;
+      if (self->in->split + BARDIV->h > self->in->h)
+	self->in->split = self->in->h - BARDIV->h;
       break;
     case PG_S_LEFT:
       self->in->split =  param->mouse.x - DATA->grab_offset - self->in->x;
-      if (self->in->split + PANELBAR_DIV->w > self->in->w)
-	self->in->split = self->in->w - PANELBAR_DIV->w;
+      if (self->in->split + BARDIV->w > self->in->w)
+	self->in->split = self->in->w - BARDIV->w;
       break;
     case PG_S_RIGHT:
       self->in->split = self->in->x + self->in->w - 1 -
 	param->mouse.x - DATA->grab_offset;
-      if (self->in->split + PANELBAR_DIV->w > self->in->w)
-	self->in->split = self->in->w - PANELBAR_DIV->w;
+      if (self->in->split + BARDIV->w > self->in->w)
+	self->in->split = self->in->w - BARDIV->w;
       break;
     }
     if (self->in->split < 0) self->in->split = 0;
@@ -358,13 +373,6 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     DATA->on = 0;
     break;
 
-  case TRIGGER_MOVE:
-    /* Handle entering/exiting the node */
-    tmpover = div_under_crsr == PANELBAR_DIV;
-    if (DATA->over == tmpover) return;
-    DATA->over = tmpover;
-    break;
-    
   case TRIGGER_DRAG:
     if (!DATA->on) return;
     /* Ok, button 1 is dragging through our widget... */
@@ -378,20 +386,20 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
     /* Determine where to blit the bar to... */
     switch (self->in->flags & (~SIDEMASK)) {
     case PG_S_TOP:
-      DATA->s->x = PANELBAR_DIV->x;
+      DATA->s->x = BARDIV->x;
       DATA->s->y = param->mouse.y - DATA->grab_offset;
       break;
     case PG_S_BOTTOM:
-      DATA->s->x = PANELBAR_DIV->x;
-      DATA->s->y = param->mouse.y + DATA->grab_offset - PANELBAR_DIV->h;
+      DATA->s->x = BARDIV->x;
+      DATA->s->y = param->mouse.y + DATA->grab_offset - BARDIV->h;
       break;
     case PG_S_LEFT:
-      DATA->s->y = PANELBAR_DIV->y;
+      DATA->s->y = BARDIV->y;
       DATA->s->x = param->mouse.x - DATA->grab_offset;
       break;
     case PG_S_RIGHT:
-      DATA->s->y = PANELBAR_DIV->y;
-      DATA->s->x = param->mouse.x + DATA->grab_offset - PANELBAR_DIV->w;
+      DATA->s->y = BARDIV->y;
+      DATA->s->x = param->mouse.x + DATA->grab_offset - BARDIV->w;
       break;
     }
 
@@ -408,11 +416,11 @@ void panel_trigger(struct widget *self,long type,union trigparam *param) {
 void themeify_panel(struct widget *self) {
   /* Apply the current state  */
   if (DATA->on)
-    div_setstate(self->in->next->div,PGTH_O_PANELBAR_ON);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_ON);
   else if (DATA->over)
-    div_setstate(self->in->next->div,PGTH_O_PANELBAR_HILIGHT);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR_HILIGHT);
   else
-    div_setstate(self->in->next->div,PGTH_O_PANELBAR);
+    div_setstate(DATA->panelbar,PGTH_O_PANELBAR);
 }
 
 /* The End */
