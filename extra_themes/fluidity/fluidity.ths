@@ -56,6 +56,10 @@ object default {
     r   = right_sz;
     t   = top_sz;
     b   = bottom_sz;
+	
+    /* Limit minimum size */
+    w = w < (l+r) ? (l+r) : w;
+    h = h < (t+b) ? (t+b) : h;
 
     /* Some common subexpressions */
     bsy = sy+sh-b;
