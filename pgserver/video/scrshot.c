@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.6 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: scrshot.c,v 1.7 2002/02/10 05:23:29 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -41,6 +41,8 @@ const char *scrshot_file;
 int scrshot_skip;
 int scrshot_total;
 
+void scrshot_close();
+
 g_error scrshot_init(void) {
    /* Avoid freeing a nonexistant backbuffer in close() */
    FB_MEM = NULL;
@@ -58,7 +60,6 @@ g_error scrshot_init(void) {
    return success;
 }
 
-extern void nullfb_close(void);
 g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
    g_error e;
    
@@ -118,7 +119,7 @@ g_error scrshot_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 #endif
       
     default:
-      nullfb_close();
+      scrshot_close();
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
    }
    
