@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.24 2001/01/21 22:20:48 micahjd Exp $
+/* $Id: dispatch.c,v 1.25 2001/01/26 11:18:16 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -31,77 +31,35 @@
 
 #include <pgserver/pgnet.h>
 
-/* Table of request handlers */
-DEF_REQHANDLER(ping)
-DEF_REQHANDLER(update)
-DEF_REQHANDLER(mkwidget)
-DEF_REQHANDLER(mkbitmap)
-DEF_REQHANDLER(mkfont)
-DEF_REQHANDLER(mkstring)
-DEF_REQHANDLER(free)
-DEF_REQHANDLER(set)
-DEF_REQHANDLER(get)
-DEF_REQHANDLER(mktheme)
-DEF_REQHANDLER(in_key)
-DEF_REQHANDLER(in_point)
-DEF_REQHANDLER(in_direct)
-DEF_REQHANDLER(wait)
-DEF_REQHANDLER(mkfillstyle)
-DEF_REQHANDLER(register)
-DEF_REQHANDLER(mkpopup)
-DEF_REQHANDLER(sizetext)
-DEF_REQHANDLER(batch)
-DEF_REQHANDLER(grabkbd)
-DEF_REQHANDLER(grabpntr)
-DEF_REQHANDLER(givekbd)
-DEF_REQHANDLER(givepntr)
-DEF_REQHANDLER(mkcontext)
-DEF_REQHANDLER(rmcontext)
-DEF_REQHANDLER(focus)
-DEF_REQHANDLER(getstring)
-DEF_REQHANDLER(mkmsgdlg)
-DEF_REQHANDLER(setpayload)
-DEF_REQHANDLER(getpayload)
-DEF_REQHANDLER(mkmenu)
-DEF_REQHANDLER(writeto)
-DEF_REQHANDLER(updatepart)
-DEF_REQHANDLER(undef)
+/* First bring in function prototypes for all handlers */
+#define RQH DEF_REQHANDLER
+#include "requests.inc"
+#undef RQH
+
+/* Normal function table? */
+
+#ifndef RUNTIME_FUNCPTR
+/* Yep */
+
+#define RQH TAB_REQHANDLER
 g_error (*rqhtab[])(int,struct pgrequest*,void*,unsigned long*,int*) = {
-  TAB_REQHANDLER(ping)
-  TAB_REQHANDLER(update)
-  TAB_REQHANDLER(mkwidget)
-  TAB_REQHANDLER(mkbitmap)
-  TAB_REQHANDLER(mkfont)
-  TAB_REQHANDLER(mkstring)
-  TAB_REQHANDLER(free)
-  TAB_REQHANDLER(set)
-  TAB_REQHANDLER(get)
-  TAB_REQHANDLER(mktheme)
-  TAB_REQHANDLER(in_key)
-  TAB_REQHANDLER(in_point)
-  TAB_REQHANDLER(in_direct)
-  TAB_REQHANDLER(wait)
-  TAB_REQHANDLER(mkfillstyle)
-  TAB_REQHANDLER(register)
-  TAB_REQHANDLER(mkpopup)
-  TAB_REQHANDLER(sizetext)
-  TAB_REQHANDLER(batch)
-  TAB_REQHANDLER(grabkbd)
-  TAB_REQHANDLER(grabpntr)
-  TAB_REQHANDLER(givekbd)
-  TAB_REQHANDLER(givepntr)
-  TAB_REQHANDLER(mkcontext)
-  TAB_REQHANDLER(rmcontext)
-  TAB_REQHANDLER(focus)
-  TAB_REQHANDLER(getstring)
-  TAB_REQHANDLER(mkmsgdlg)
-  TAB_REQHANDLER(setpayload)
-  TAB_REQHANDLER(getpayload)
-  TAB_REQHANDLER(mkmenu)
-  TAB_REQHANDLER(writeto)
-  TAB_REQHANDLER(updatepart)
-  TAB_REQHANDLER(undef)
+#include "requests.inc"
 };
+#undef RQH
+
+#else
+/* Nope, do some funky stuff */
+
+#define RQH(x) *p = &rqh_##x; p++;
+g_error (*rqhtab[PGREQ_UNDEF+1])(int,struct pgrequest*,void*,unsigned long*,int*);
+void rqhtab_init(void) {
+   g_error (**p)(int,struct pgrequest*,void*,unsigned long*,int*);
+   p = rqhtab;
+#include "requests.inc"
+}
+#undef RQH
+   
+#endif /* RUNTIME_FUNCPTR */
 
 /* Macro for casting the arguments */
 #define reqarg(x) \

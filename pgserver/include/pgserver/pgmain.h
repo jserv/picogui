@@ -1,4 +1,4 @@
-/* $Id: pgmain.h,v 1.2 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: pgmain.h,v 1.3 2001/01/26 11:18:16 micahjd Exp $
  *
  * pgmain.h - just a few things related to the main loop
  *
@@ -30,6 +30,14 @@
 
 extern volatile int in_shutdown;
 void request_quit(void);
+
+/* Functions for initializing function pointer tables when they can't
+ * be done at compile time (ucLinux, for example) */
+#ifdef RUNTIME_FUNCPTR
+void widgettab_init(void);
+void drivertab_init(void);
+void rqhtab_init(void);
+#endif
 
 #endif /* _H_PGMAIN */
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.21 2001/01/13 02:16:08 micahjd Exp $
+/* $Id: pgmain.c,v 1.22 2001/01/26 11:18:16 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -73,6 +73,13 @@ int main(int argc, char **argv) {
   my_pid = getpid();
 #endif
 
+  /* Initialize pointer tables here if it can't be done at compile-time */
+#ifdef RUNTIME_FUNCPTR
+   widgettab_init();
+   drivertab_init();
+   rqhtab_init();
+#endif
+   
   /*************************************** Command-line processing */
 
   {  /* Restrict the scope of these vars so they go away after

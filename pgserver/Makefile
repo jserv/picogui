@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.48 2001/01/20 06:59:08 micahjd Exp $
+# $Id: Makefile,v 1.49 2001/01/26 11:18:13 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -82,6 +82,8 @@ SRC := \
     theme/memtheme.c \
     theme/fillstyle.c \
 
+# These are lists used in macro-driven function tables
+INC := net/requests.inc gcore/inputdrivers.inc gcore/videodrivers.inc
 
 HDR := include/pgserver/*.h include/picogui/*.h
 
@@ -119,6 +121,10 @@ ifeq ($(strip $(PLATFORM)),uclinux)
         CFLAGS := $(CFLAGS) -fPIC -DUCLINUX
         BINNAME := uclinux-$(BINNAME)
 	SRC := $(SRC) os/$(PLATFORM)/platform.c
+
+	# With position independant code, function pointers can't be
+        # set at compile-time
+	CFLAGS := $(CFLAGS) -DRUNTIME_FUNCPTR
 endif
 
 # Extra compiler flags needed by drivers
@@ -171,7 +177,7 @@ font/fontdata.o : font/*.fdf font/*.fi Makefile.cfg script/fontdef.pl
 	$(GCC) -o font/fontdata.o fonts.tmp.c $(CFLAGS)
 	rm -f fonts.tmp.c
 
-%.o : %.c $(HDR) Makefile.cfg
+%.o : %.c $(HDR) $(INC) Makefile.cfg
 	$(GCC) -o $@ $< $(CFLAGS) $(DRV)
 
 Makefile.cfg:

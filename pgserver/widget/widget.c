@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.56 2001/01/19 06:27:54 micahjd Exp $
+/* $Id: widget.c,v 1.57 2001/01/26 11:18:16 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -30,7 +30,14 @@
 #include <pgserver/pgnet.h>
 
 /* Table of widgets */
+#ifdef RUNTIME_FUNCPTR
+struct widgetdef widgettab[PG_WIDGETMAX+1];
+void widgettab_init(void) {
+   struct widgetdef *p = widgettab;
+#else
 struct widgetdef widgettab[] = {
+#endif
+   
 DEF_STATICWIDGET_TABLE(toolbar)
 DEF_STATICWIDGET_TABLE(label)
 DEF_WIDGET_TABLE(scroll)

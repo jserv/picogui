@@ -1,7 +1,12 @@
-/* $Id: driverinfo.c,v 1.13 2001/01/20 06:59:09 micahjd Exp $
+/* $Id: driverinfo.c,v 1.14 2001/01/26 11:18:16 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
- *                installed drivers
+ *                installed drivers.
+ *                This file is all macro junk, mostly to implement
+ *                the run-time function pointer tables needed by 
+ *                ucLinux. The stuff you want to change to add new
+ *                drivers should be in videodrivers.inc and
+ *                inputdrivers.inc
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -29,69 +34,57 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 
-/* Video 
- * Order does matter here- if no driver is specified, the one listed 
- * first here will be tried first, trying the next if there is an error,
- * and so on...
- */
+/*********** Normal version *****/
+#ifndef RUNTIME_FUNCPTR
+
+#define DRV(name,reg) {name,reg},
+
 struct vidinfo videodrivers[] = {
-
-#ifdef DRIVER_FBDEV
-  {"fbdev",&fbdev_regfunc},
-#endif
-   
-#ifdef DRIVER_SDLFB
-  {"sdlfb",&sdlfb_regfunc},
-#endif
-   
-#ifdef DRIVER_SDL
-  {"sdl",&sdl_regfunc},
-#endif
-   
-#ifdef DRIVER_SVGAFB      
-  {"svgafb",&svgafb_regfunc},
-#endif
-
-#ifdef DRIVER_SVGAGL
-  {"svgagl",&svgagl_regfunc},
-#endif   
-
-#ifdef DRIVER_EZ328_CHIPSLICE
-#  ifdef DRIVER_EZ328_CHIPSLICE_V0_2_CITIZEN_G3243H
-     {"ez328_chipslice_vd2_citizen_G3243H",&chipslice_video_regfunc},
-#  endif
-#endif
-
-#ifdef DRIVER_NCURSES
-  {"ncurses",&ncurses_regfunc},
-#endif   
-
-#ifdef DRIVER_NULL
-  {"null",&null_regfunc},
-#endif DRIVER_NULL
-   
-  /* End */ {NULL,NULL}
+#include "videodrivers.inc"
+   DRV(NULL,NULL)
 };
 
-/* Input
- * Usually this will be autoloaded by the video driver.  If no driver is
- * specified, no input. Order does not matter
- */
 struct inputinfo inputdrivers[] = {
-
-#ifdef DRIVER_SDLINPUT
-  {"sdlinput",&sdlinput_regfunc},
-#endif
-   
-#ifdef DRIVER_SVGAINPUT
-  {"svgainput",&svgainput_regfunc},
-#endif
-
-#ifdef DRIVER_NCURSESINPUT
-  {"ncursesinput",&ncursesinput_regfunc},
-#endif
-
-  /* End */ {NULL,NULL}
+#include "inputdrivers.inc"
+  /* End */ DRV(NULL,NULL)
 };
 
+/*********** Runtime table junk ***/
+
+#else /* RUNTIME_FUNCPTR */
+
+/***** Video */
+
+/* First count the elements to allocate the array 
+ * (yes, I do abuse the preprocessor...) 
+ */
+
+#define DRV(x,y) +1
+struct vidinfo videodrivers[1
+#include "videodrivers.inc"
+			    ];
+struct inputinfo inputdrivers[1
+#include "inputdrivers.inc"
+			      ];
+#undef DRV
+
+/* Initialization function */
+
+#define DRV(x,y) p->name = x; p->regfunc = y; p++;
+
+void drivertab_init(void) {
+     {
+	struct vidinfo *p = videodrivers;
+#include "videodrivers.inc"
+	DRV(NULL,NULL);
+     }
+     {
+	struct inputinfo *p = inputdrivers;
+#include "inputdrivers.inc"
+	DRV(NULL,NULL);
+     }
+}
+
+#endif /* RUNTIME_FUNCPTR */
+  
 /* The End */
