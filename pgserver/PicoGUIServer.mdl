@@ -12,11 +12,7 @@ Provides the PicoGUI server, which is responsible for the
 graphical interface.
 """
 
-depends = [ 'kernel', 'resourcemanager' ]
-
-asserts = [ 'kernel', 'resourcemanager',
-            (S ('module/picoguiserver') & S ('platform/ppc-linux')) >> S ('module/libjpeg'),
-            ]
+depends = [ 'kernel', 'resourcemanager', ('libjpeg', S ('platform/ppc-linux')) ]
 
 runtime = [
 
