@@ -13,7 +13,8 @@ EXTRA_libvidbase_a_SOURCES = \
 	linear8.c	\
 	linear16.c      \
 	linear24.c      \
-	linear32.c
+	linear32.c      \
+	slowvbl.c
 
 libvidbase_a_LIBADD       = $(VIDBASE:%.c=%.o)
 libvidbase_a_DEPENDENCIES = $(VIDBASE:%.c=%.o)

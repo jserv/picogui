@@ -395,3 +395,10 @@ CONFIG_ERROR_TRACE
       Any time a PicoGUI function reports an erorr, this reports it to
       stderr. This could be very useful for debugging errors from
       unknown locations.
+
+CONFIG_VBL_SLOWVBL
+      This VBL simulates a very slow output device for debugging purposes.
+      It will clearly show every pixel you draw :)
+      There are a couple important config file options that control this.
+      You need to enable the VBL with your video driver's config.
+      The VBL itself takes some options controlling the amount of delay.

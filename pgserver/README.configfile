@@ -231,6 +231,10 @@ quoted appropriately. For example:
   decimal equivalent of the PG_FSTYLE flags. Any or all of these parameters
   are optional.
 
+- slowvbl
+  (requires the slowvbl to be compiled in)
+  Set to nonzero to use the very slow VBL
+
 [video-scrshot]
 
 - file
@@ -316,6 +320,46 @@ quoted appropriately. For example:
 - keyclick_freq
 - keyclick_len
   Frequency and duration of key click events
+
+[slowvbl]
+
+- delay
+  -- BIG FAT HACK ALERT --
+  I tried using usleep() to get a very tiny per-pixel delay,
+  but even that was too much. This enters a busy loop (ick!)
+  for the specified number of iterations. Thankfully, this
+  usually isn't necessary because the update() function is
+  slow enough.
+  Default: 0
+
+- updatefreq
+  Only immediately updates every X pixels. If this is an odd
+  number and you set updatetype to zero, you get a good stipple
+  effect with the hilight color and the actual pixels.
+  Default: 3
+
+- updatetype
+  If this is:
+   0 - only update the pixel itself
+   1 - update the line
+   2 - update the frame
+  Default: 0
+
+- hilight
+  Hilight redrawn areas of the screen so you can see when
+  something is redrawn multiple times when it hasn't changed
+  Default: 1
+
+- hilightcolor
+  Hexadecimal color to use for hilighting
+  Default: FFFF00
+
+- fastsprites
+  When this option is on, the extra hilighting and updating
+  is disabled while drawing sprites. This makes the mouse cursor
+  much less annoying, but if you're debugging something sprite-
+  related, you can turn this off.
+  Default: 1
 
 --- The End ---
 

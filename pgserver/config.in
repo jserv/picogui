@@ -142,6 +142,7 @@ bool 'Linear framebuffer @ 8bpp'  CONFIG_VBL_LINEAR8
 bool 'Linear framebuffer @ 16bpp' CONFIG_VBL_LINEAR16
 bool 'Linear framebuffer @ 24bpp' CONFIG_VBL_LINEAR24
 bool 'Linear framebuffer @ 32bpp' CONFIG_VBL_LINEAR32
+bool 'Very slow VBL (for debugging)' CONFIG_VBL_SLOWVBL
 bool '90 degree video rotation'   CONFIG_ROTATE
 bool '180 degree video rotation'  CONFIG_ROTATE180
 bool '270 degree video rotation'  CONFIG_ROTATE270

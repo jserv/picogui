@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.34 2002/01/06 09:22:59 micahjd Exp $
+/* $Id: sdlfb.c,v 1.35 2002/01/16 03:56:57 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -271,6 +271,11 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
       sdlfb_close();
       return mkerror(PG_ERRT_BADPARAM,101);   /* Unknown bpp */
   }
+
+#ifdef CONFIG_VBL_SLOWVBL
+  if (get_param_int("video-sdlfb","slowvbl",0))
+    setvbl_slowvbl(vid);
+#endif
    
   /* Save the new video mode. Might not be the actual SDL video mode if we
    * are using a skin.

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.68 2002/01/10 15:22:12 micahjd Exp $
+/* $Id: video.h,v 1.69 2002/01/16 03:56:56 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -612,6 +612,7 @@ void setvbl_linear8(struct vidlib *vid);
 void setvbl_linear16(struct vidlib *vid);
 void setvbl_linear24(struct vidlib *vid);
 void setvbl_linear32(struct vidlib *vid);
+void setvbl_slowvbl(struct vidlib *vid);
 
 /************** Registration functions for video wrapper libraries */
 void vidwrap_rotate90(struct vidlib *vid);

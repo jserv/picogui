@@ -46,6 +46,7 @@ add_if_true linear8.c  $CONFIG_VBL_LINEAR8
 add_if_true linear16.c $CONFIG_VBL_LINEAR16
 add_if_true linear24.c $CONFIG_VBL_LINEAR24
 add_if_true linear32.c $CONFIG_VBL_LINEAR32
+add_if_true slowvbl.c  $CONFIG_VBL_SLOWVBL
 
 close_section
 
