@@ -23,7 +23,7 @@ A minimal read-only WebDAV client
 _svn_id = "$Id$"
 
 from httplib import HTTPConnection
-from urlparse import *
+from urlparse import urlparse
 from xml.parsers import expat
 import PGBuild.Errors
 

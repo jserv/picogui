@@ -23,7 +23,7 @@ using only the Python standard library and MiniDAV.
 # 
 _svn_id = "$Id$"
 
-from urlparse import *
+from urlparse import urlparse
 from MiniDAV import DavObject
 import os, re, time
 import pickle
