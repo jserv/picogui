@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.16 2001/10/20 01:39:10 micahjd Exp $
+/* $Id: render.c,v 1.17 2001/10/20 02:19:26 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -637,10 +637,11 @@ void gropnode_draw(struct groprender *r, struct gropnode *n) {
 	 VID(slab) (r->output,n->r.x,n->r.y,n->r.w,c,r->lgop);
        if ((r->orig.y+r->orig.h-1)>=r->clip.y1 && (r->orig.y+r->orig.h-1)<=r->clip.y2)
 	 VID(slab) (r->output,n->r.x,n->r.y+n->r.h-1,n->r.w,c,r->lgop);
-       if (r->orig.x>=r->clip.x1 && r->orig.x<=r->clip.x2 && n->r.h>2)
-	 VID(bar) (r->output,n->r.x,n->r.y+1,n->r.h-2,c,r->lgop);
-       if ((r->orig.x+r->orig.w-1)>=r->clip.x1 && (r->orig.x+r->orig.w-1)<=r->clip.x2 && n->r.h>2)
-	 VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y+1,n->r.h-2,c,r->lgop);
+       if (r->orig.x>=r->clip.x1 && r->orig.x<=r->clip.x2)
+	 VID(bar) (r->output,n->r.x,n->r.y,n->r.h,c,r->lgop);
+       if ((r->orig.x+r->orig.w-1)>=r->clip.x1 &&
+	   (r->orig.x+r->orig.w-1)<=r->clip.x2)
+	 VID(bar) (r->output,n->r.x+n->r.w-1,n->r.y,n->r.h,c,r->lgop);
        break;
        
     case PG_GROP_SLAB:
