@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.13 2000/06/02 22:31:48 micahjd Exp $
+/* $Id: request.c,v 1.14 2000/06/03 00:03:38 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -42,7 +42,7 @@
 #define STATICBUF_SIZE 64
 unsigned char staticbuf[STATICBUF_SIZE];
 
-/* #define NONBLOCKING */
+/*#define NONBLOCKING*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -319,7 +319,7 @@ int reqproc(void) {
 	      de = recv(fd,pd,remaining,0);
 	      if (de<=0) {
 		/* Connection close? */
-		g_free(data);
+		if (data != staticbuf) g_free(data);
 		closefd(fd);
 		return 1;
 	      }	  
