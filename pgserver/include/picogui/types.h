@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.6 2003/01/21 06:01:44 davidtrowbridge Exp $
+/* $Id: types.h,v 1.7 2003/01/21 06:12:53 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
@@ -31,13 +31,20 @@
 
 /******* Fixed-sized types */
 
-#if ((defined(__APPLE__) && defined(__MACH__)) || defined(_MIPS_ISA)) // Mac OS X and Darwin 
+
+/*
+ * Fixed type definitions for MacOS X, Darwin, and IRIX
+ * FIXME: this is a kludge
+ */
+#if ((defined(__APPLE__) && defined(__MACH__)) || defined(_MIPS_ISA))
 typedef unsigned char __u8;
 typedef signed char __s8;
 typedef unsigned short __u16;
 typedef signed short __s16;
 typedef unsigned long __u32;
 typedef signed long __s32;
+
+/* Use asm/types.h on linux */
 #else
 #include <asm/types.h>
 #endif
