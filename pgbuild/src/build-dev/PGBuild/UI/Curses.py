@@ -137,13 +137,13 @@ class Window(object):
 class Heading(Window):
     """Curses window providing a heading with left, right, or center justified text"""
     def __init__(self, rect, text, side='left',
-                 bgChar=None, fgAttr=None, bgAttr=None, sideMargin=10):
+                 bgChar=None, fgAttr=None, bgAttr=None, sideMargin=4):
         if not bgAttr:
-            bgAttr = curses.color_pair(007) | curses.A_BOLD
+            bgAttr = curses.color_pair(070)
         if not fgAttr:
-            fgAttr = curses.color_pair(006) | curses.A_BOLD
+            fgAttr = curses.color_pair(070)
         if not bgChar:
-            bgChar = curses.ACS_HLINE
+            bgChar = '-'
             
         Window.__init__(self, rect)
         self.sideMargin = sideMargin
@@ -190,8 +190,14 @@ class TaskWindow(Window):
     """Window that displays the list of active tasks"""
     def show(self, list):
         self.win.clear()
+        self.win.move(0,0)
+        attribute = 0
         for level in xrange(len(list)):
-            self.addText(((" - ", curses.A_BOLD), list[level]), 0, level)
+            if level == len(list)-1:
+                attribute = curses.color_pair(006) | curses.A_BOLD
+            self.addText(" " * (level+1))
+            self.addText(( (curses.ACS_HLINE, curses.A_BOLD),
+                           " ", (list[level], attribute), "\n"))
         self.win.refresh()
 
 class CursesWrangler(object):
@@ -229,8 +235,8 @@ class CursesWrangler(object):
     def layout(self):
         """Set up us our windows, called whenever the size changes"""
         remaining = Rect(0,0,self.width,self.height)
-        Heading(remaining.sliceBottom(1), "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),
-                'center', ' ', curses.color_pair(070), curses.color_pair(070))
+        Heading(remaining.sliceBottom(1),
+                "%s version %s - Curses frontend" % (PGBuild.name, PGBuild.version),'center', ' ')
         Heading(remaining.sliceTop(1), "Active Tasks")
         self.taskWin = TaskWindow(remaining.sliceTop(self.height / 4))
         Heading(remaining.sliceTop(1), "Messages")
@@ -260,6 +266,8 @@ class Progress(PGBuild.UI.None.Progress):
             self.curses = self.parent.curses
         else:
             self.curses = CursesWrangler()
+        self.warning("oh no\nThis is a warning!")
+        self.error("but...\nThis is an error!")
 
     def _showTaskHeading(self):
         task = self
@@ -280,7 +288,7 @@ class Progress(PGBuild.UI.None.Progress):
                                         ))
         
     def _warning(self, text):
-        self.curses.messageWin.textBlock("Warning:\n" + text, curses.color_pair(006) | curses.A_BOLD)
+        self.curses.messageWin.textBlock("Warning:\n" + text, curses.color_pair(003) | curses.A_BOLD)
             
     def _error(self, text):
         self.curses.messageWin.textBlock("Error:\n" + text, curses.color_pair(001) | curses.A_BOLD)
