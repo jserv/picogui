@@ -1,4 +1,4 @@
-# $Id: PicoGUI.pm,v 1.31 2000/08/10 18:08:26 micahjd Exp $
+# $Id: PicoGUI.pm,v 1.32 2000/08/27 06:00:59 micahjd Exp $
 #
 # PicoGUI client module for Perl
 #
@@ -28,7 +28,7 @@ package PicoGUI;
 use Carp;
 use Socket;
 @ISA       = qw(Exporter);
-@EXPORT    = qw(NewWidget %ServerInfo Update NewString RestoreTheme
+@EXPORT    = qw(NewWidget Update NewString RestoreTheme
 		NewFont NewBitmap delete SetBackground RestoreBackground
 		SendPoint SendKey ThemeSet RegisterApp EventLoop NewPopup
 		GetTextSize GrabKeyboard GrabPointingDevice GiveKeyboard
@@ -413,21 +413,13 @@ sub _init {
     select((select(S),$|=1)[0]);
     
     # Now we have a socket, read the hello packet
-    read S,$pkt,64;
-    ($magic,$protover,$width,$height,$bpp,$title) = unpack("Nn4a50",$pkt);
+    read S,$pkt,8;
+    ($magic,$protover) = unpack("Nn",$pkt);
     $magic==$MAGIC or 
 	croak "PicoGUI - incorrect magic number ($MAGIC -> $magic)\n";
 
     # TODO: fix this
     $protover==$PROTOVER or croak "PicoGUI - protocol version not supported\n"; 
-
-    %ServerInfo = (
-	'Width' => $width,
-	'Height' => $height,
-	'BPP' => $bpp,
-	'Title' => $title
-	);
-
 }
 
 # Close the connection on exit
