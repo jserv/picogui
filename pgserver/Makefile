@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.43 2001/01/14 23:03:09 micahjd Exp $
+# $Id: Makefile,v 1.44 2001/01/14 23:08:28 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -138,6 +138,10 @@ endif
 
 ifneq ($(findstring DRIVER_SVGAFB,$(DRV)),)
         LDFLAGS := $(LDFLAGS) -lvga
+endif
+
+ifneq ($(findstring DRIVER_NCURSES,$(DRV)),)
+        LDFLAGS := $(LDFLAGS) -lncurses
 endif
 
 # Generate a list of object files
