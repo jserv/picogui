@@ -1,7 +1,8 @@
 VERBOSE=on
 PMDIR=$HOME/.procmail
 LOGFILE=$PMDIR/log
+LOCKFILE=$PMDIR/lock
 
 :0
 * ^Subject: picogui
-| /home/snapshots/tools/svn/svn_snapshot_local.sh /home/snapshots/picogui picogui- /var/www/snapshots > /dev/null 2> /dev/null
+| nice -n 15 /home/snapshots/tools/svn/svn_snapshot_local.sh /home/snapshots/picogui picogui- /var/www/snapshots > /dev/null 2> /dev/null
