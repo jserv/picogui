@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.4 2001/10/17 20:44:37 micahjd Exp $
+/* $Id: html.c,v 1.5 2001/10/17 22:01:20 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -27,11 +27,11 @@
  *   <form> *
  *   <hr> *
  *   <table> *
- *   <TT> *
- *   <I> *
- *   <B> *
- *   <U> *
- *   <STRIKE> *
+ *   <TT>
+ *   <I>
+ *   <B>
+ *   <U>
+ *   <STRIKE>
  *   <BIG> *
  *   <SMALL> *
  *   <SUB> *
@@ -244,7 +244,7 @@ g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
 g_error html_tag_b_i_u(struct html_parse *hp, struct html_tag_params *tag) {
   u32 flag;
   /* Determine font flag from name character */
-  switch (tag->tag[0]) {
+  switch (tolower(tag->tag[0])) {
   case 'b': flag = PG_FSTYLE_BOLD;      break;
   case 'i': flag = PG_FSTYLE_ITALIC;    break;
   case 'u': flag = PG_FSTYLE_UNDERLINE; break;
@@ -259,6 +259,14 @@ g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
   return sucess;
 }
 
+/* Other misc. font changes */
+g_error html_tag_tt(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,PG_FSTYLE_FIXED,0,0);
+}
+g_error html_tag_strike(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,PG_FSTYLE_STRIKEOUT,0,0);
+}
+
 /*************************************** HTML tag table */
 
 struct html_taghandler {
@@ -269,11 +277,15 @@ struct html_taghandler {
   { "p",       &html_tag_p },
   { "br",      &html_tag_br },
   { "b",       &html_tag_b_i_u },
-  { "i",       &html_tag_b_i_u },
-  { "u",       &html_tag_b_i_u },
   { "/b",      &html_tag_unformat },
+  { "i",       &html_tag_b_i_u },
   { "/i",      &html_tag_unformat },
+  { "u",       &html_tag_b_i_u },
   { "/u",      &html_tag_unformat },
+  { "tt",      &html_tag_tt },
+  { "/tt",     &html_tag_unformat },
+  { "strike",  &html_tag_strike },
+  { "/strike", &html_tag_unformat },
 
   { NULL, NULL }
 };
@@ -400,6 +412,13 @@ g_error html_dispatch_text(struct html_parse *hp,
   const u8 *fragment;
   g_error e;
 
+#ifdef DEBUG_HTML
+  /* Debuggativity! */
+  write(1,"html: dispatching text '",24);
+  write(1,start,end-start+1);
+  write(1,"'\n",2);
+#endif
+
   for (fragment = NULL;start <= end;start++) {
     if (fragment) {
       /* Look for the end */
@@ -408,8 +427,10 @@ g_error html_dispatch_text(struct html_parse *hp,
 	e = html_dispatch_textfragment(hp,fragment,start-1);
 	errorcheck;
 	fragment = NULL;
-      }
-      else {
+
+#ifdef DEBUG_HTML
+	printf("html: insert wordbreak\n");
+#endif
 	e = text_insert_wordbreak(hp->c);
 	errorcheck;
       }
@@ -418,6 +439,9 @@ g_error html_dispatch_text(struct html_parse *hp,
       /* Look for the beginning */
 
       if (isspace(*start)) {
+#ifdef DEBUG_HTML
+	printf("html: insert wordbreak\n");
+#endif
 	e = text_insert_wordbreak(hp->c);
 	errorcheck;
       }
@@ -441,6 +465,13 @@ g_error html_dispatch_textfragment(struct html_parse *hp,
   const u8 *p,*cname;
   char *str, *q;
   g_error e;
+
+#ifdef DEBUG_HTML
+  /* Yet More Debuggativity! */
+  write(1,"html: dispatching textfragment '",32);
+  write(1,start,end-start+1);
+  write(1,"'\n",2);
+#endif
 
   /* Count the number of characters in the string, treating &foo; sequences
    * as 1 character.

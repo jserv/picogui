@@ -1,4 +1,4 @@
-/* $Id: textbox_main.c,v 1.11 2001/10/17 20:44:37 micahjd Exp $
+/* $Id: textbox_main.c,v 1.12 2001/10/17 22:01:20 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
@@ -73,13 +73,21 @@ g_error textbox_install(struct widget *self) {
    /* Add some demo text */
 
    { 
-     const char *t = 
-       "Hello, <b>World</b>!<P>\n"
-       "<B><i>This</i></B> is a <u>test...</u> foo<b>!</b> <br>\n"
-       "--&nbsp;&nbsp;&foo;&nbsp;-- N&iacute;ft&egrave;&eacute;";
+     const char *t = "
+Hello, <b>World</b>!<br>
+This is a demonstration of PicoGUI's HTML parsing capabilities:
+<p>
+Normal text<br>
+<b>Bold</b>, <i>italic</i>, and <u>underlined</u> text<br>
+Combinations of <b><i>multiple</i> <u>formats</u></b><br>
+Changing<b>formats</b>within<b>one</b>word<br>
+Nonbreaking spaces: --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--<Br>
+ISO Latin-1 international characters: N&iacute;ft&egrave;&eacute; <BR>
+Other formats: <tt>teletype mode</tt>, <strike>strikeout</strike><BR>
+";
      handle f;
 
-     e = findfont(&f,self->owner,"Helvetica",18,PG_FSTYLE_FLUSH);
+     e = findfont(&f,self->owner,"Helvetica",10,PG_FSTYLE_FLUSH);
      errorcheck;
      e = text_format_font(&DATA->c,f);
      errorcheck;
