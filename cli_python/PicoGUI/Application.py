@@ -59,6 +59,7 @@ class EventRegistry(object):
 
 class Application(Widget.Widget):
     _type = 1 # apptype parameter for the register request
+    idle_delay = 100 # 0.1 second - reasonably realtime. You can set to None if you don't want idle events.
     
     def __init__(self, title='', server=None, handle=0):
         if not server:
@@ -116,8 +117,10 @@ class Application(Widget.Widget):
     def send(self, widget, name, **attrs):
         self._event_stack.append(InternalEvent(name, widget, attrs))
 
-    def poll_next_event(self):
-        ev = self.server.wait()
+    def poll_next_event(self, timeout=None):
+        ev = self.server.wait(timeout)
+        if ev is None:
+            return
         if ev.widget_id is None:
             if ev.name == 'infilter':
                 ev = ev.trigger
@@ -139,18 +142,14 @@ class Application(Widget.Widget):
 
             self.server.update()
 
-            if self._event_registry.get(None, 'idle'):
-                # if we have idle handlers, we want to see to it that they are called
-                queued = self.server.checkevent()
-
+            queued = self.server.checkevent()
+            if queued:
                 for i in range(queued):
                     self.poll_next_event()
-                else: #nothing queued - send idle and sleep
+            else: #nothing queued - wait a bit more
+                while not self._event_stack:
                     self.send(self, 'idle')
-                    time.sleep(0.1)
-            else:
-                # otherwise, just get one single event and dispatch it
-                self.poll_next_event()
+                    self.poll_next_event(self.idle_delay)
 
             try:
                 self.dispatch_events()
