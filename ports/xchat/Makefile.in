@@ -57,12 +57,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CPP = @CPP@
 DATADIRNAME = @DATADIRNAME@
 GENCAT = @GENCAT@
+GLIBC21 = @GLIBC21@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_CONFIG = @GLIB_CONFIG@
 GLIB_LIBS = @GLIB_LIBS@
@@ -71,15 +75,14 @@ GMSGFMT = @GMSGFMT@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_CONFIG = @GTK_CONFIG@
 GTK_LIBS = @GTK_LIBS@
-GT_NO = @GT_NO@
-GT_YES = @GT_YES@
 GUI_CFLAGS = @GUI_CFLAGS@
 GUI_LIBS = @GUI_LIBS@
-INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
-INTLDEPS = @INTLDEPS@
+INTLBISON = @INTLBISON@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
+INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
+LIBICONV = @LIBICONV@
 MAKEINFO = @MAKEINFO@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
@@ -92,7 +95,6 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 gdkpixbufpath = @gdkpixbufpath@
 gnomepath = @gnomepath@
-l = @l@
 perlpath = @perlpath@
 pythonpath = @pythonpath@
 sedpath = @sedpath@
@@ -117,9 +119,10 @@ CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
 DATA =  $(icon_DATA) $(util_DATA)
 
-DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
-Makefile.am Makefile.in acconfig.h aclocal.m4 config.h.in configure \
-configure.in install-sh missing mkinstalldirs
+DIST_COMMON =  README ./stamp-h.in ABOUT-NLS AUTHORS COPYING ChangeLog \
+INSTALL Makefile.am Makefile.in NEWS acconfig.h aclocal.m4 config.guess \
+config.h.in config.sub configure configure.in install-sh missing \
+mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
