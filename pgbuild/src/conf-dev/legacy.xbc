@@ -3,7 +3,7 @@
 
 	<package name="legacy/picogui">
 		<description>
-			<summary>PicoGUI legacy packages.</summary>
+			<summary>PicoGUI legacy packages</summary>
 			<detail>
 				This package is for older versions of PicoGUI, before PGBuild support was added.
 				These are currently here mainly to test PGBuild's support for software packages

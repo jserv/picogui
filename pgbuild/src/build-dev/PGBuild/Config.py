@@ -42,9 +42,10 @@ The extra rules imposed on the XML:
 # 
 _svn_id = "$Id$"
 
+import xml.sax._exceptions
 import PGBuild.XMLUtil
 import PGBuild.Errors
-import re, shutil, os
+import re, shutil, os, sys
 
 configFileExtension = "xbc"
 
@@ -250,7 +251,11 @@ class Tree(PGBuild.XMLUtil.Document):
            in which case the file isn't merged in on mount, but
            does save changes.
            """
-        dom = PGBuild.XMLUtil.Document(file)
+
+        try:
+            dom = PGBuild.XMLUtil.Document(file)
+        except xml.sax._exceptions.SAXParseException:
+            raise PGBuild.Errors.ConfigError("The file %s is not well-formed (%s)" % (file, sys.exc_info()[1]))
 
         # Validate the <pgbuild> tag
         if dom.getRoot().nodeName != self.rootName:

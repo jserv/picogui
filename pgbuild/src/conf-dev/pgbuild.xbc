@@ -3,7 +3,7 @@
     
 	<package name="build">
 		<description>
-			<summary>The source code for PGBuild itself.</summary>
+			<summary>The source code for PGBuild itself</summary>
 			<detail>
 				This is included in the initial download of PGBuild for obvious reasons, but it is
 				also a package. This makes it easy to keep PGBuild up to date without any special
@@ -16,7 +16,7 @@
 
 	<package name="conf">
 		<description>
-			<summary>The default configuration files for PGBuild.</summary>
+			<summary>The default configuration files for PGBuild</summary>
 			<detail>
 				These are in a separate package to make updates faster, and
 				to make it easier to use PGBuild in other projects.

@@ -239,8 +239,12 @@ class Interface(object):
 
         if node.nodeType == node.ELEMENT_NODE:
             try:
-                # An element with a name, list it by name without recursion
-                print "%s%s" % (indentString, node.attributes['name'].value)
+                # An element with a name, list it by name without recursion. Try to get a description.
+                try:
+                    description = self.config.xpath('description/summary/text()', node)[0].data
+                except IndexError:
+                    description = ""
+                print "%s%-20s%s" % (indentString, node.attributes['name'].value, description)
             except KeyError:
                 # An element without a name, try to treat it as a container and recurse into its children
                 print "%s%s:" % (indentString, node.tagName)
