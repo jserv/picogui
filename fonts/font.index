@@ -1,6 +1,6 @@
-clean_4x6.pcf                                     Clean:0:fixed
-clean_5x6.pcf                                     Clean:0:fixed
-clean_6x12.pcf                                    Clean:0:fixed
+clean_4x6.pcf                                     Clean:6:fixed
+clean_5x8.pcf                                     Clean:8:fixed
+clean_6x12.pcf                                    Clean:12:fixed
 helmet.ttf                                        Helmet:0:scalable
 helmet_bold.ttf                                   Helmet:0:bold:scalable
 helmet_bold_italic.ttf                            Helmet:0:bold:italic:scalable
