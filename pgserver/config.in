@@ -50,6 +50,7 @@ bool 'Video driver debugging'           DEBUG_VIDEODRIVER
 bool 'Trace pgstring memory management' DEBUG_PGSTRING_MEM
 bool 'Textbox widget debugging'         DEBUG_TEXTBOX
 bool 'Textedit widget debugging'        DEBUG_TEXTEDIT
+bool 'Profile X11 SHM synchronization'  CONFIG_X11_SHM_PROFILE
 
 comment 'Other options'
 bool 'Electric Fence malloc debugging'  CONFIG_EFENCE

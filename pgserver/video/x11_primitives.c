@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.10 2002/11/07 08:20:48 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.11 2002/11/07 09:08:52 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -33,19 +33,50 @@
 
 /******************************************************** Utilities */
 
+/* We can optionally profile how often this has to synchronize.
+ * Note that XSHM_PROFILE can't be an inline function, since
+ * inlines won't inline if they are nested.
+ */
+#ifdef CONFIG_X11_SHM_PROFILE
+int xshm_sync, xshm_total;
+#define XSHM_PROFILE \
+  xshm_total++; \
+  if (xshm_total==50000) { \
+    printf("X11 SHM Profile: %d sync / %d total (%d.%02d%%)\n", \
+      xshm_sync, xshm_total, xshm_sync*100/xshm_total, \
+      (xshm_sync*10000/xshm_total)%100); \
+    xshm_total = xshm_sync = 0; \
+  }
+#endif
+
+
 /* Turn on or off SHM rendering, synchronizing if needed.
  * Versions that work on one or two bitmaps at a time are provided.
  * We only need to sync if we've been drawing using X primitives
  * and we're about to use our own via SHM.
  */
 static inline void set_shm1(hwrbitmap a, int shmflag) {
-  if(shmflag && !XB(a)->using_shm)
+  if(shmflag && !XB(a)->using_shm) {
     XSync(x11_display,False);
+#ifdef CONFIG_X11_SHM_PROFILE
+    xshm_sync++;
+#endif
+  }
+#ifdef CONFIG_X11_SHM_PROFILE
+  XSHM_PROFILE;
+#endif
   XB(a)->using_shm = shmflag;
 }
 static inline void set_shm2(hwrbitmap a, hwrbitmap b, int shmflag) {
-  if(shmflag && ((!XB(b)->using_shm) || (!XB(a)->using_shm)))
+  if(shmflag && ((!XB(b)->using_shm) || (!XB(a)->using_shm))) {
     XSync(x11_display,False);
+#ifdef CONFIG_X11_SHM_PROFILE
+    xshm_sync++;
+#endif
+  }
+#ifdef CONFIG_X11_SHM_PROFILE
+  XSHM_PROFILE;
+#endif
   XB(a)->using_shm = shmflag;
   XB(b)->using_shm = shmflag;
 }
