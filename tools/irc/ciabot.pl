@@ -30,10 +30,10 @@ use vars qw ($project $from_email $dest_email $max_lines $sync_delay
 ### Configuration
 
 # Project name (as known to CIA).
-$project = 'ELinks';
+$project = 'your_project_here';
 
 # The from address in the generated mails.
-$from_email = 'pasky@ucw.cz';
+$from_email = 'your@email.here';
 
 # Mail all reports to this address.
 $dest_email = 'commits@picogui.org';
