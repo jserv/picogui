@@ -1,0 +1,165 @@
+/* $Id: lucid-small.ths,v 1.1 2003/04/05 02:11:42 lalo Exp $
+ *
+ * Lucid - A simple and clean solid color and thin outline theme, where
+ *         most elements are translucent.
+ *
+ * WARNING: This theme is still incomplete!
+ *
+ * Micah Dowty
+ */
+
+property fBackground,fTranslucent, fSolid, fFramedTranslucent;
+property fNop, frameColor, alpha;
+
+object default {
+  name = "Lucid (small)";
+
+  bgfill = Copy(default::fTranslucent);
+
+  font = Font("Helvetica",8,0);		  
+
+  fBackground = fillstyle {
+    SetClip(x,y,w,h);
+    background::bgfill(-widget::PG_WP_ABSOLUTEX,
+		       -widget::PG_WP_ABSOLUTEY,
+		       0x7FFF,0x7FFF);
+    SetClip(0,0,0x7FFF,0x7FFF);
+  };
+
+  fNop = fillstyle {
+    Nop();
+  };
+
+  fTranslucent = fillstyle {
+    fBackground(x,y,w,h);
+    
+    SetLgop(PG_LGOP_ALPHA);
+    SetColor(PGCF_ALPHA | alpha | bgcolor);
+    Rect(x,y,w,h);
+    SetLgop(PG_LGOP_NONE);
+  };
+
+  fSolid = fillstyle {
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
+  };
+
+  fFramedTranslucent = fillstyle {
+    SetColor(frameColor);
+    Frame(x,y,w,h);
+    fTranslucent(x+1,y+1,w-2,h-2);
+  };
+
+  fgcolor = 0x000000;
+  bgcolor = 0xffffff;
+  alpha   = 0x68000000;
+
+  margin  = 0;
+  spacing = 2;
+  width   = 14;
+  height  = 14;
+}
+
+object background {
+  bgcolor = 0xeeeeee;
+  bgfill = fillstyle {
+    fSolid(x,y,w,h);
+  };
+}
+
+object base.tlcontainer {
+  bgcolor = 0xffffff;
+  margin = 1;
+}
+
+object popup {
+  bgfill = fillstyle {
+    fFramedTranslucent(x,y,w,h);
+  };
+}
+
+object label.dlgtitle parent = PGTH_O_PANELBAR;
+
+object panelbar {
+  margin = 1;
+  font = Font(NULL,0,PG_FSTYLE_BOLD);
+  align = PG_A_LEFT;
+  bgfill = fillstyle {
+    fTranslucent(x,y,w,h);
+    SetColor(0x336699);
+    Slab(x+2,y+h-1,w-4,1);
+  };
+}
+
+object base.panelbtn {
+  side = PG_S_RIGHT;
+}
+
+object button {
+  fgcolor = 0x336699;
+  font = Font(NULL,0,PG_FSTYLE_BOLD);
+  margin = 2;
+}
+
+object button.hilight bgfill = fillstyle {
+  button::bgfill(x,y,w,h);
+  SetColor(fgcolor);
+  SetLgop(PG_LGOP_STIPPLE);
+  Frame(x,y,w,h);
+  SetLgop(PG_LGOP_NONE);
+};
+
+object button.on bgfill = fillstyle {
+  button::bgfill(x,y,w,h);
+  SetColor(fgcolor);
+  Frame(x,y,w,h);
+};
+
+object flatbutton parent = PGTH_O_BUTTON;
+
+object panel {
+  border.size = 7;
+  bgfill = Copy(default::fNop);
+  border.fill = fillstyle {
+    fBackground(x,y,border.size-1,h);
+    fBackground(x,y,w,border.size-1);
+    fBackground(x+w-border.size+1,y,border.size-1,h);
+    fBackground(x,y+h-border.size+1,w,border.size-1);
+    fFramedTranslucent(x+border.size-1,y+border.size-1,w-border.size*2+2,h-border.size*2+2);
+  };
+}
+
+object field {
+  bgfill = Copy(default::fFramedTranslucent);
+  frameColor = Copy(button::fgcolor);
+  margin = 1;
+}
+
+object scroll {
+  width = 12;
+  fgcolor = 0x336699;
+
+  bgfill = fillstyle {
+    var m;
+
+    default::bgfill(x,y,w,h);
+    SetColor(fgcolor);
+    m = width/2-1;
+    Rect(x+m,y+m,w-m*2,h-m*2);
+  };
+
+  overlay = fillstyle {
+    SetColor(fgcolor);
+    Frame(x+1,y+1,w-2,h-2);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+  };
+}
+
+object closebtn text = "X";
+object rotatebtn text = "/";
+object zoombtn text = "-";
+
+obj terminal font = Font("Clean", 8, PG_FSTYLE_FIXED);
+
+/* The End */
