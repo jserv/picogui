@@ -107,6 +107,9 @@ constants = {
         'color':			(5, {
         }),
         'sizemode':			(6, {
+            'pixel':	(0, {}),
+            'percent':	(1<<2, {}),
+            'cntfrac':	(1<<15, {}),
         }),
         'text':				(7, _getString),
         'font':				(8, _getFont),

@@ -8,6 +8,9 @@ def pack(fmt, *args):
 		if spec in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'x']:
 			continue
 		a = args[len(processed_args)]
+		# simple way of supporting Widget objects
+		if hasattr(a, 'handle'):
+			a = a.handle
 		if spec == 'L':
 			conv = long
 		elif spec == 's':
