@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.12 2003/03/26 10:25:42 micahjd Exp $
+/* $Id: terminal.h,v 1.13 2003/03/26 13:49:20 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -58,6 +58,8 @@ struct terminal_state {
   unsigned int no_autowrap:1;
   unsigned int key_prefix_switch:1;
   unsigned int insert_mode:1;
+  unsigned int x10_mouse:1;
+  unsigned int x11_mouse:1;
 };
 
 /* All internal data for the terminal widget, accessed with the DATA macro 
@@ -97,6 +99,9 @@ struct terminaldata {
   u8 attr_default, attr_cursor;        /* Theme settings */
   u32 flashtime_on,flashtime_off;
   u32 cursor_wait;
+
+  int mouse_x, mouse_y;                /* Current mouse position in the widget */
+  int key_mods;                        /* Current key modifiers */
 
   struct terminal_state current;       /* Current emulated terminal state */
   struct terminal_state saved;         /* Saved terminal state, via ESC 7 and ESC 8 */
@@ -165,6 +170,16 @@ void kbd_event(struct widget *self, int pgkey,int mods);
 
 /* Output formatted char */
 void term_char(struct widget *self,u8 c);
+
+/* Reset the terminal emulator */
+void term_reset(struct widget *self);
+
+/* Send an x10/x11 mouse reporting code.
+ *   - 'press' is a boolean indicating whether this is a press or release.
+ *   - 'button' is a button number (0=left, 1=middle, etc.)
+ *   - This expects an x,y position and modifiers saved already. Modifiers are in PGMOD_* format.
+ */
+void term_mouse_event(struct widget *self, int press, int button);
 
 #endif /* __TERMINAL_H */
 

@@ -1,4 +1,4 @@
-/* $Id: terminal_frontend.c,v 1.20 2003/03/26 00:29:08 micahjd Exp $
+/* $Id: terminal_frontend.c,v 1.21 2003/03/26 13:49:21 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -60,8 +60,7 @@ g_error terminal_install(struct widget *self) {
   load_terminal_theme(self);
 
   DATA->attr_under_crsr = DATA->attr_default;
-  DATA->current.attr = DATA->attr_default;
-   
+
   DATA->bufferw = 80;
   DATA->bufferh = 24;
   DATA->pref_lines = 24;
@@ -84,8 +83,11 @@ g_error terminal_install(struct widget *self) {
   terminal_set(self,PG_WP_FONT,DATA->deffont);
    
   self->trigger_mask = PG_TRIGGER_STREAM | PG_TRIGGER_CHAR | PG_TRIGGER_DOWN |
-     PG_TRIGGER_UP | PG_TRIGGER_RELEASE | PG_TRIGGER_ACTIVATE | PG_TRIGGER_DEACTIVATE |
-     PG_TRIGGER_TIMER | PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP;
+    PG_TRIGGER_UP | PG_TRIGGER_RELEASE | PG_TRIGGER_ACTIVATE | PG_TRIGGER_DEACTIVATE |
+    PG_TRIGGER_TIMER | PG_TRIGGER_KEYDOWN | PG_TRIGGER_KEYUP | PG_TRIGGER_SCROLLWHEEL |
+    PG_TRIGGER_MOVE;
+
+  term_reset(self);
 
   return success;
 }
@@ -331,22 +333,55 @@ void build_terminal(struct gropctxt *c,u16 state,struct widget *self) {
 }
 
 void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
+
   term_rectprepare(self);   /* Changes must be enclosed
 			     * by term_rectprepare and term_realize */
   
+  if (type & (PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE)) {
+    /* Get the x,y of the mouse, for mouse events */
+    DATA->mouse_x = (param->mouse.x - self->in->div->r.x - DATA->bg->r.x) / DATA->celw;
+    DATA->mouse_y = (param->mouse.y - self->in->div->r.y - DATA->bg->r.y) / DATA->celh;
+    if (DATA->mouse_x<0) DATA->mouse_x = 0;
+    if (DATA->mouse_y<0) DATA->mouse_y = 0;
+    if (DATA->mouse_x>=DATA->bufferw) DATA->mouse_x = DATA->bufferw - 1;
+    if (DATA->mouse_y>=DATA->bufferh) DATA->mouse_y = DATA->bufferh - 1;
+  }
+
   switch (type) {
     
     /* When clicked, request keyboard focus */
     
   case PG_TRIGGER_DOWN:
-    if (param->mouse.chbtn==1)
+    if (param->mouse.chbtn==1) {
       DATA->on=1;
+      term_mouse_event(self, 1, 0);
+    }
+    else if (param->mouse.chbtn==2)
+      term_mouse_event(self, 1, 1);
+    else if (param->mouse.chbtn==4)
+      term_mouse_event(self, 1, 2);
     return;
     
   case PG_TRIGGER_UP:
     if (DATA->on && param->mouse.chbtn==1) {
       DATA->on=0;
       request_focus(self);
+      term_mouse_event(self, 0, 0);
+    }
+    else if (param->mouse.chbtn==2)
+      term_mouse_event(self, 0, 1);
+    else if (param->mouse.chbtn==4)
+      term_mouse_event(self, 0, 2);
+    return;
+
+  case PG_TRIGGER_SCROLLWHEEL:
+    if (param->mouse.y > 0) {
+      term_mouse_event(self, 1, 3);
+      term_mouse_event(self, 0, 3);
+    }
+    else {
+      term_mouse_event(self, 1, 4);
+      term_mouse_event(self, 0, 4);
     }
     return;
       
@@ -399,6 +434,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     return;
      
   case PG_TRIGGER_KEYDOWN:
+    DATA->key_mods = param->kbd.mods;
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
     param->kbd.consume++;
@@ -411,6 +447,7 @@ void terminal_trigger(struct widget *self,s32 type,union trigparam *param) {
     return;
     
   case PG_TRIGGER_KEYUP:
+    DATA->key_mods = param->kbd.mods;
     if (!(param->kbd.flags & PG_KF_FOCUSED))
       return;
     param->kbd.consume++;

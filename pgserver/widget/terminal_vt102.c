@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.29 2003/03/26 10:25:43 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.30 2003/03/26 13:49:21 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -304,6 +304,14 @@ void term_char(struct widget *self,u8 c) {
 
 
 /********************************************** Escape codes */
+
+/* Reset the terminal emulator */
+void term_reset(struct widget *self) {
+  memset(&DATA->current, 0, sizeof(DATA->current));
+  DATA->current.attr = DATA->attr_default;
+  DATA->current.scroll_bottom = DATA->bufferh - 1;
+  term_clearbuf(self,0,0,DATA->bufferw * DATA->bufferh);
+}    
 
 /* Handle an incoming character while processing an escape sequence */
 void term_char_escapemode(struct widget *self,u8 c) {
@@ -739,8 +747,8 @@ int term_misc_code(struct widget *self,u8 c) {
 
       /* ESC c - reset */
     case 'c':
-      DBG("-UNIMPLEMENTED- reset\n");
-      /* Hmm.. what to do here? */
+      DBG("reset\n");
+      term_reset(self);
       return 1;
 
       /* ESC D - linefeed */
@@ -985,7 +993,8 @@ void term_decset(struct widget *self,int n,int enable) {
 
     /* ESC [ ? 9 h - X10 mouse reporting */
   case 9:
-    DBG("-UNIMPLEMENTED- X10 mouse reporting\n");
+    DBG("setting X10 mouse reporting to %d\n", enable);
+    DATA->current.x10_mouse = enable;
     break;
 
     /* ESC [ ? 25 h - Cursor on/off */
@@ -1006,7 +1015,8 @@ void term_decset(struct widget *self,int n,int enable) {
 
     /* ESC [ ? 1000 h - X11 mouse reporting */
   case 1000:
-    DBG("-UNIMPLEMENTED- X11 mouse reporting\n");
+    DBG("setting X11 mouse reporting to %d\n", enable);
+    DATA->current.x11_mouse = enable;
     break;
 
   default:
@@ -1052,6 +1062,42 @@ void term_xterm(struct widget *self) {
     
   default:
     DBG("-ERROR- unknown xterm code %d - \"%s\"\n", n, txt);
+  }
+}
+
+/* Send an x10/x11 mouse reporting code */
+void term_mouse_event(struct widget *self, int press, int button) {
+  static char event[] = "\033[Mbxy";
+
+  DBG("press=%d, x=%d, y=%d, button=%d, modifiers=%d\n", 
+      press, DATA->mouse_x, DATA->mouse_y, button, DATA->key_mods);
+
+  /* X11 mouse reporting */
+  if (DATA->current.x11_mouse) {
+    int buttoncode = 0;
+
+    if (press && button < 3)              buttoncode |= button; 
+                                     else buttoncode |= 3;
+    if (DATA->key_mods & PGMOD_SHIFT)     buttoncode |= 4;
+    if (DATA->key_mods & PGMOD_ALT)       buttoncode |= 8;
+    if (DATA->key_mods & PGMOD_CTRL)      buttoncode |= 16;
+
+    DBG("using X11 mouse reporting\n");
+    event[3] = '\040' + buttoncode;
+    event[4] = '\040' + DATA->mouse_x;
+    event[5] = '\040' + DATA->mouse_y;
+    post_event(PG_WE_DATA, self, strlen(event), 0, event);    
+  }
+
+  /* X10 mouse reporting */
+  else if (DATA->current.x10_mouse) {
+    DBG("using X10-compatibility mouse reporting\n");
+    if (press) {
+      event[3] = '\040' + button;
+      event[4] = '\040' + DATA->mouse_x;
+      event[5] = '\040' + DATA->mouse_y;
+      post_event(PG_WE_DATA, self, strlen(event), 0, event);
+    }
   }
 }
 
