@@ -1,0 +1,10 @@
+obj default name = "OpenZaurus Background";
+
+object background {
+   bitmap1 = LoadBitmap("data/bg_zaurus.jpeg");
+   bgfill = fillstyle {
+      Bitmap(x,y,w,h,bitmap1);
+   };
+}
+
+/* The End */
