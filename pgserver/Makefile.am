@@ -46,8 +46,10 @@ CONFIG_STATUS_DEPENDENCIES = $(CONFIG_FILE) $(srcdir)/select.in
 
 .PHONY: config menuconfig
 
+# Note that this did read $(SHELL) instead of bash, but since Configure really does
+# require the bash shell this is better.
 config:
-	$(SHELL) $(top_srcdir)/configscript/Configure \
+	bash $(top_srcdir)/configscript/Configure \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@mv -f $(CONFIG_FILE) $(CONFIG_FILE).old
 	@rm -f .config.h && mv .config $(CONFIG_FILE)
@@ -55,7 +57,7 @@ config:
 	@echo "type make to build the program"
 
 menuconfig: configscript/lxdialog/lxdialog
-	$(SHELL) $(top_srcdir)/configscript/Menuconfig \
+	bash $(top_srcdir)/configscript/Menuconfig \
 		$(top_srcdir)/config.in $(CONFIG_FILE)
 	@rm -f .config.h
 	@test -f .config && \
