@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.6 2002/10/25 15:25:34 pney Exp $
+/* $Id: textedit_logical.c,v 1.7 2002/10/28 13:06:22 pney Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -203,11 +203,11 @@ int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
   int i;
 
   printf ("\nutf-8 : len = %d\n", strlen (inBuf));
-  for (i = 0; i < strlen (inBuf); i++)
-    printf ("%c", inBuf [i] & 0xFF);
-  printf ("\n");
-  for (i = 0; i < strlen (inBuf); i++)
-    printf (" 0x%x", inBuf [i] & 0xFF);
+//  for (i = 0; i < strlen (inBuf); i++)
+//    printf ("%c", inBuf [i] & 0xFF);
+//  printf ("\n");
+//  for (i = 0; i < strlen (inBuf); i++)
+//    printf (" 0x%x", inBuf [i] & 0xFF);
 }
 // DEBUG --------------------------------------------------------
 
@@ -220,7 +220,7 @@ int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
     if (ihandle == (iconv_t) -1) {
       /* Something went wrong.  */
       if (errno == EINVAL) {
-        printf (__FILE__ " : conversion from UTF-8 to wchar_t not available\n");
+        printf (__FILE__ " : conversion not available (UTF-8 to wchar_t)\n");
       }
       else {
         printf (__FILE__ " : error iconv_open : %s\n", strerror (errno));
@@ -242,12 +242,12 @@ int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
   int i;
   /* length of the wchar_t string */
   printf ("\n-> wchar_t : len = %d\n", wcslen (outBuf));
-  /* replace the pointer to the beginning of the string */
-  oBufp = (char *) outBuf;
-  /* print the wchar_t string byte per byte */
-  for (i = 0; i < 4 * wcslen (outBuf); i++)
-    printf (" 0x%x", oBufp [i] & 0xFF);
-  printf ("\n");
+//  /* replace the pointer to the beginning of the string */
+//  oBufp = (char *) outBuf;
+//  /* print the wchar_t string byte per byte */
+//  for (i = 0; i < 4 * wcslen (outBuf); i++)
+//    printf (" 0x%x", oBufp [i] & 0xFF);
+//  printf ("\n");
 }
 // DEBUG --------------------------------------------------------
 
@@ -274,7 +274,7 @@ int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
     if (ihandle == (iconv_t) -1) {
       /* Something went wrong.  */
       if (errno == EINVAL) {
-        printf (__FILE__ " : conversion from wchar_t to utf-8 not available\n");
+        printf (__FILE__ " : conversion not available (wchar_t to utf-8)\n");
       }
       else {
         printf (__FILE__ " : error iconv_open : %s\n", strerror (errno));
@@ -286,6 +286,10 @@ int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
 
     /* convert */
     iconv (ihandle, & iBufp, & iSize, & outBuf, outSize);
+    /* terminate string.
+     * the outBuf pointer is set to the first free room by iconv
+     */
+    *outBuf = '\0';
 
     /* release conversion handle */
     iconv_close (ihandle);
@@ -768,41 +772,48 @@ void text_backend_store_selection ( text_widget * widget) {
 
 #ifdef CONFIG_TEXTEDIT_WCHART
     {
-      char * cBuf;
+      char * oBuf;
+      wchar_t * iBuf;
       int oSize = k * 6;
       int keepSize = oSize;
 
       /* allocate the max possible buffer */
-      cBuf = malloc (oSize);
+      oBuf = malloc (oSize);
  
-      printf ("\n---------> BEFORE conv oSize = %d (nb of free bytes)\n", oSize);
+      /* copy the characters to re-encode to a null terminated string */
+      iBuf = malloc (sizeof (wchar_t) * (k + 1));
+      wcsncpy (iBuf, b->data + offset, k);
+      iBuf [k] = L'\0';
 
       /* convert */
-      wchartToUtf8 (b->data + offset, cBuf, & oSize);
+      wchartToUtf8 (iBuf, oBuf, & oSize);
 
-      printf ("\n---------> AFTER conv  oSize = %d (nb of free bytes)\n", oSize);
+      /* oSize is the number of free rooms in the output buffer. Then the real
+       * length of the string is the following:
+       */
       keepSize -= oSize;
 
-	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, keepSize, cBuf);
-//	memcpy (textedit_clipboard->buffer, cBuf, k);
+	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, keepSize, oBuf);
+//	memcpy (textedit_clipboard->buffer, oBuf, k);
 
       /* free memory */
-      free (cBuf);
+      free (oBuf);
+      free (iBuf);
     }
 #else
-	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, k, b->data + offset);
+    pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, k, b->data + offset);
 //	  memcpy(textedit_clipboard->buffer, b->data + offset, k);
 #endif
 
-    len -= k;
-    block_set_bgap(b, b_gap);
-    while (len) {
-	  ll_b = llist_next(ll_b);
-	  b = BLOCK(ll_b);
-	  b_gap = b->b_gap;
-	  block_set_bgap(b, b->len);
-
-
+//    len -= k;
+//    block_set_bgap(b, b_gap);
+//    while (len) {
+//	    ll_b = llist_next(ll_b);
+//	    b = BLOCK(ll_b);
+//	    b_gap = b->b_gap;
+//	    block_set_bgap(b, b->len);
+//
+//
 //#ifdef CONFIG_TEXTEDIT_WCHART
 //	  {
 //	    char * cBuf;
@@ -820,13 +831,13 @@ void text_backend_store_selection ( text_widget * widget) {
 //	    free (cBuf);
 //	  }
 //#else
-	  memcpy(textedit_clipboard->buffer + k, b->data, MIN(len, b->len));
+//	    memcpy(textedit_clipboard->buffer + k, b->data, MIN(len, b->len));
 //#endif
-
-	  k += MIN(len, b->len);
-	  len -= MIN(len, b->len);
-	  block_set_bgap(b, b_gap);
-    }
+//
+//	    k += MIN(len, b->len);
+//	    len -= MIN(len, b->len);
+//	    block_set_bgap(b, b_gap);
+//    }
 }
 
 
