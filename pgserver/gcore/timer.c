@@ -1,4 +1,4 @@
-/* $Id: timer.c,v 1.28 2003/02/03 11:47:30 thierrythevoz Exp $
+/* $Id: timer.c,v 1.29 2003/02/04 08:25:58 thierrythevoz Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
@@ -55,7 +55,7 @@ int timer_eval(u32 t);
 
 /* Load timer values from the config file */
 void timer_init(void) {
-  timer_cursorhide    = get_param_int("timers","cursorhide",50);
+  timer_cursorhide    = get_param_int("timers","cursorhide",5000);
   timer_backlightoff  = get_param_int("timers","backlightoff",0);
   timer_sleep         = get_param_int("timers","sleep",0);
   timer_vidblank      = get_param_int("timers","vidblank",0);

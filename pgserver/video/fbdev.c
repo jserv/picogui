@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.44 2003/02/03 11:47:30 thierrythevoz Exp $
+/* $Id: fbdev.c,v 1.45 2003/02/04 08:25:59 thierrythevoz Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -732,11 +732,7 @@ g_error fbdev_regfunc(struct vidlib *v) {
    v->init = &fbdev_init;
    v->close = &fbdev_close;
    v->message = &fbdev_message;
-/*
-#ifdef CONFIG_FB_VT
-   v->message = &fbdev_message;
-#endif
-*/  
+
 #ifdef CONFIG_FB_YUV16_422_PLANAR
    e = yuv16_422_planar_regfunc(v);
    errorcheck;

@@ -132,22 +132,22 @@ quoted appropriately. For example:
 [timers]
 
 - cursorhide
-  Inactivity time before hiding the cursor for hotkey navigation, in 1/10 seconds
+  Inactivity time before hiding the cursor for hotkey navigation, in 1/1000 seconds
   Set this to 0 for "infinite"
-  Default is 50 (5 seconds)
+  Default is 5000 (5 seconds)
 
 - backlightoff
-  Inactivity time before turning off the backlight, in 1/10 seconds
+  Inactivity time before turning off the backlight, in 1/1000 seconds
   Set this to 0 for "infinite"
   Default is infinite  
 
 - sleep
-  Inactivity time before sleep mode, in 1/10 seconds
+  Inactivity time before sleep mode, in 1/1000 seconds
   Set this to 0 for "infinite"
   Default is infinite
 
 - vidblank
-  Inactivity time before blanking the display, in 1/10 seconds
+  Inactivity time before blanking the display, in 1/1000 seconds
   Set this to 0 for "infinite"
   Default is infinite
 
