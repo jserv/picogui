@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.11 2002/11/03 04:54:25 micahjd Exp $
+/* $Id: scrshot.c,v 1.12 2002/11/03 05:22:13 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -28,7 +28,7 @@
 #include <pgserver/common.h>
 #include <pgserver/video.h>
 #include <pgserver/configfile.h>
-#include <pgserver/pgmain.h>
+#include <pgserver/init.h>
 
 #include <stdio.h>
 

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.50 2002/10/23 02:09:08 micahjd Exp $
+/* $Id: sdlfb.c,v 1.51 2002/11/03 05:22:13 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -32,7 +32,6 @@
 #include <pgserver/common.h>      /* Needed for any pgserver file */
 
 #include <pgserver/video.h>       /* Always needed for a video driver! */
-#include <pgserver/pgmain.h>      /* For reload_initial_themes() */
 #include <pgserver/render.h>      /* For data types like 'quad' */
 #include <pgserver/input.h>       /* For loading our corresponding input lib */
 #include <pgserver/configfile.h>  /* For loading our configuration */
