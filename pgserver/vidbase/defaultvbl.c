@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.51 2001/10/13 08:45:56 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.52 2001/10/21 12:01:22 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1406,8 +1406,9 @@ g_error def_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
   (*rend)->hfont = defaultfont;
   (*rend)->clip.x2 = b->w - 1;
   (*rend)->clip.y2 = b->h - 1;
-  (*rend)->output_rect.x = b->w;
-  (*rend)->output_rect.y = b->h;
+  (*rend)->orig_clip = (*rend)->clip;
+  (*rend)->output_rect.w = b->w;
+  (*rend)->output_rect.h = b->h;
 
   return sucess;
 }
