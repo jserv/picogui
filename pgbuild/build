@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-#
-# Convenience entry point for systems that support #! lines
-#
+"""Convenience entry point for systems that support #! lines"""
 import pgbuild
 pgbuild.main()
