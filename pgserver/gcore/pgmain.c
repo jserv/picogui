@@ -1,11 +1,11 @@
-/* $Id: pgmain.c,v 1.25 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: pgmain.c,v 1.26 2001/02/17 05:18:40 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
  *            main loop.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -72,7 +72,10 @@ int main(int argc, char **argv) {
   /* Fake it */
   int optind = 1;
 #endif
-  
+#ifdef CONFIG_VIDEOTEST
+  int videotest_mode,videotest_on = 0;
+#endif
+   
 #ifndef WINDOWS
   my_pid = getpid();
 #endif
@@ -111,7 +114,7 @@ int main(int argc, char **argv) {
 
     while (1) {
 
-      c = getopt(argc,argv,"fbhlx:y:d:v:i:t:");
+      c = getopt(argc,argv,"fbhlx:y:d:v:i:t:s:");
       if (c==-1)
 	break;
       
@@ -207,8 +210,18 @@ int main(int argc, char **argv) {
 	tail = p;
 	break;
 
-      case '?':        /* Need help */
-      case 'h':
+#ifdef CONFIG_VIDEOTEST /* Video test mode */
+      case 's':
+	videotest_on = 1;
+	videotest_mode = atoi(optarg);
+	if (!videotest_mode) {
+	   videotest_help();
+	   exit(1);
+	}
+	break;
+#endif
+	 
+      default:        /* Need help */
 #ifdef TINY_MESSAGES
 	puts("Commandline error");
 #else
@@ -228,6 +241,9 @@ int main(int argc, char **argv) {
 	     "  v driver  : default video driver (see -l)\n"
 	     "  i driver  : load an input driver, can use more than one (see -l)\n"
 	     "  t theme   : load a compiled theme file, can use more than one\n"
+#ifdef CONFIG_VIDEOTEST
+	     "  s modenum : enter video test mode. modenum = 'help' to list modes\n"
+#endif
 	     "\n"
 	     "  If specified, a session manager process will be run after server\n"
 	     "  initialization is done, and the server will quit after the last\n"
@@ -271,6 +287,12 @@ int main(int argc, char **argv) {
       }
     }
 
+#ifdef CONFIG_VIDEOTEST   /* Video test mode */
+    if (videotest_on)
+       videotest_run(videotest_mode);
+#endif
+     
+     
     /* Subsystem initialization and error check */
 
 #ifdef DEBUG_INIT
@@ -344,7 +366,10 @@ int main(int argc, char **argv) {
 #endif
 
   /* initial update */
-  update(NULL,1);
+#ifdef CONFIG_VIDEOTEST
+  if (!videotest_on)    /* If we have a test pattern, leave that up */
+#endif   
+     update(NULL,1);
 
   /* Now that the socket is listening, run the session manager */
 

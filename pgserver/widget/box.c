@@ -1,10 +1,10 @@
-/* $Id: box.c,v 1.10 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: box.c,v 1.11 2001/02/17 05:18:41 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

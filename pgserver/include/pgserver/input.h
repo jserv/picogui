@@ -1,9 +1,9 @@
-/* $Id: input.h,v 1.7 2001/01/14 23:03:11 micahjd Exp $
+/* $Id: input.h,v 1.8 2001/02/17 05:18:40 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

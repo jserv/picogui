@@ -1,11 +1,11 @@
-/* $Id: common.h,v 1.1 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: common.h,v 1.2 2001/02/17 05:18:40 micahjd Exp $
  *
  * pgserver/common.h - things every file in pgserver should need,
  *                     including memory management, error handling,
  *                     and configuration info.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.5 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: ez328.c,v 1.6 2001/02/17 05:18:41 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -6,7 +6,7 @@
  *           and uses them to set up the driver.
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,8 +29,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_EZ328
 
 #include <pgserver/video.h>
 #include <asm/MC68EZ328.h>   /* Defines the CPU and peripheral's registers */
@@ -72,5 +70,4 @@ g_error ez328_regfunc(struct vidlib *v) {
    return sucess;
 }
 
-#endif /* DRIVER_EZ328 */
 /* The End */

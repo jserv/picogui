@@ -1,9 +1,9 @@
-/* $Id: font.c,v 1.17 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: font.c,v 1.18 2001/02/17 05:18:40 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -107,7 +107,7 @@ void outchar_fake(struct fontdesc *fd,
 
 /* Output text, interpreting '\n' but no other control chars.
  * This function does add the margin as specified by fd->margin.
-*/
+ */
 void outtext(struct fontdesc *fd,
 	     int x,int y,hwrcolor col,char *txt,struct cliprect *clip) {
   int xbase;

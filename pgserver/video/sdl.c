@@ -1,9 +1,9 @@
-/* $Id: sdl.c,v 1.16 2001/02/15 03:37:07 micahjd Exp $
+/* $Id: sdl.c,v 1.17 2001/02/17 05:18:41 micahjd Exp $
  *
  * sdl.c - video driver wrapper for SDL.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,8 +26,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_SDL
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -526,5 +524,4 @@ g_error sdl_regfunc(struct vidlib *v) {
   return sucess;
 }
 
-#endif /* DRIVER_SDL */
 /* The End */

@@ -1,10 +1,10 @@
-/* $Id: timer.c,v 1.10 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: timer.c,v 1.11 2001/02/17 05:18:40 micahjd Exp $
  *
  * timer.c - OS-specific stuff for setting timers and
  *            figuring out how much time has passed
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

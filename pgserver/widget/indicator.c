@@ -1,9 +1,9 @@
-/* $Id: indicator.c,v 1.16 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: indicator.c,v 1.17 2001/02/17 05:18:41 micahjd Exp $
  *
  * indicator.c - progress meter, battery bar, etc.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

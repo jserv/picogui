@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.11 2001/01/29 00:22:33 micahjd Exp $
+/* $Id: pgnet.h,v 1.12 2001/02/17 05:18:40 micahjd Exp $
  *
  * pgnet.h - definitions and stuff for the picogui server
  *           networking code. Most of the interesting code
@@ -6,7 +6,7 @@
  *           in picogui/network.h
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

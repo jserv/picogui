@@ -1,10 +1,10 @@
-/* $Id: appmgr.h,v 1.11 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: appmgr.h,v 1.12 2001/02/17 05:18:40 micahjd Exp $
  *
  * appmgr.h - All the window-manager-ish functionality, except we don't
  * do windows (X windows, that is?)
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

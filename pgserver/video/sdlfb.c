@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.6 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: sdlfb.c,v 1.7 2001/02/17 05:18:41 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -6,7 +6,7 @@
  *           for those VBLs.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,8 +29,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_SDLFB
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
@@ -113,5 +111,4 @@ g_error sdlfb_regfunc(struct vidlib *v) {
   return sucess;
 }
 
-#endif /* DRIVER_SDLFB */
 /* The End */

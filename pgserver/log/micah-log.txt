@@ -1,3 +1,27 @@
+---- Friday, February 16
+
+Found something interesting... in uClinux the menuitem widgets are actually
+terminal widgets! After complaining a bit, opening a popup menu reveals
+little terminal widgets. This is probably also why the canvas isn't working,
+maybe there's a mistake in the function table for the widgets.
+
+Wrote a working svgalib input driver for mouse and keyboard
++ apps/pgremote/svgainput.c
+
+---- Thursday, February 15
+
+Wrote the help file for menuconfig, config.help
++ config.help
+
+Modified makefile and video drivers to skip the file if the video driver
+is compiled in. This speeds up compilation a bit.
+
+Adding video driver test modes (Pascal's suggestion :)
++ debug/videotest.c
+
+Changed copyright messages for the new milennium...
+(affects nearly every file)
+
 ---- Wednesday, February 14
 
 Brandon informed me that pgBind is crufty, and so I add support for

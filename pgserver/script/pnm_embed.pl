@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: pnm_embed.pl,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+# $Id: pnm_embed.pl,v 1.4 2001/02/17 05:18:41 micahjd Exp $
 #
 # Munge a binary PNM file into a header file to be directly compiled
 # into a program
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+# Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

@@ -1,10 +1,10 @@
-/* $Id: video.h,v 1.21 2001/02/10 11:07:04 micahjd Exp $
+/* $Id: video.h,v 1.22 2001/02/17 05:18:41 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -513,6 +513,10 @@ void def_unblit(int src_x,int src_y,
 void setvbl_default(struct vidlib *vid);
 void setvbl_linear8(struct vidlib *vid);
 void setvbl_linear4(struct vidlib *vid);
+
+/************** Debugging */
+void videotest_run(int number);
+void videotest_help(void);
 
 #endif /* __H_VIDEO */
 

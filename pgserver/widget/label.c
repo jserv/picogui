@@ -1,10 +1,10 @@
-/* $Id: label.c,v 1.27 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: label.c,v 1.28 2001/02/17 05:18:41 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

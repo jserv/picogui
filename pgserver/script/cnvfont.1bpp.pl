@@ -1,11 +1,11 @@
 #!/usr/bin/perl
-# $Id: cnvfont.1bpp.pl,v 1.4 2001/02/07 07:28:08 micahjd Exp $
+# $Id: cnvfont.1bpp.pl,v 1.5 2001/02/17 05:18:41 micahjd Exp $
 #
 # This program generates a file with the fdf font data converted
 # to 1bpp bitmap data, formatted for input by a C compiler.
 #
 # PicoGUI small and efficient client/server GUI
-# Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+# Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

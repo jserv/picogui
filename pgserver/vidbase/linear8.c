@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.12 2001/02/15 03:29:07 micahjd Exp $
+/* $Id: linear8.c,v 1.13 2001/02/17 05:18:41 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -7,7 +7,7 @@
  * fun for others to read? I have that thing about for loops...)
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.12 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.13 2001/02/17 05:18:41 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -6,7 +6,7 @@
  * most distros get this all munged up, so we connect to gpm directly.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -29,8 +29,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_NCURSESINPUT
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -232,5 +230,4 @@ g_error ncursesinput_regfunc(struct inlib *i) {
    return sucess;
 }
 
-#endif /* DRIVER_NCURSESINPUT */
 /* The End */

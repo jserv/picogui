@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.6 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: svgafb.c,v 1.7 2001/02/17 05:18:41 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -8,7 +8,7 @@
  * This driver supports 8,16,24, and 32 bit color at any resolution.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,8 +31,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_SVGAFB
 
 /* For debugging: force double-buffer on and don't actually touch the screen */
 //#define VIRTUAL
@@ -287,5 +285,4 @@ g_error svgafb_regfunc(struct vidlib *v) {
    return sucess;
 }
 
-#endif /* DRIVER_SVGAFB */
 /* The End */

@@ -1,10 +1,10 @@
-/* $Id: network.h,v 1.18 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: network.h,v 1.19 2001/02/17 05:18:41 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

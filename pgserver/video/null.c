@@ -1,10 +1,10 @@
-/* $Id: null.c,v 1.3 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: null.c,v 1.4 2001/02/17 05:18:41 micahjd Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,8 +27,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_NULL
 
 #include <pgserver/video.h>
 
@@ -90,5 +88,4 @@ g_error null_regfunc(struct vidlib *v) {
    return sucess;
 }
 
-#endif /* DRIVER_NULL */
 /* The End */

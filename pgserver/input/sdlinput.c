@@ -1,9 +1,9 @@
-/* $Id: sdlinput.c,v 1.12 2001/02/14 05:13:18 micahjd Exp $
+/* $Id: sdlinput.c,v 1.13 2001/02/17 05:18:41 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,8 +26,6 @@
  */
 
 #include <pgserver/common.h>
-
-#ifdef DRIVER_SDLINPUT
 
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -120,5 +118,4 @@ g_error sdlinput_regfunc(struct inlib *i) {
   return sucess;
 }
 
-#endif /* DRIVER_SDLINPUT */
 /* The End */

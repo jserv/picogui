@@ -1,11 +1,11 @@
-/* $Id: handle.h,v 1.8 2001/01/30 03:34:21 micahjd Exp $
+/* $Id: handle.h,v 1.9 2001/02/17 05:18:40 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
  *            and deleting handles.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

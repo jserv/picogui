@@ -1,4 +1,4 @@
-/* $Id: ez328_chipslice_lcd.c,v 1.4 2001/02/14 05:13:19 micahjd Exp $
+/* $Id: ez328_chipslice_lcd.c,v 1.5 2001/02/17 05:18:41 micahjd Exp $
  *
  * ez328_chipslice_lcd.c
  *           LCD video drivers for the DragonBall-based ChipSlice.
@@ -14,7 +14,7 @@
  *           Status: under work
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
