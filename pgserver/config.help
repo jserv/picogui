@@ -1,15 +1,21 @@
 
-LINUX
+CONFIG_LINUX_GENERIC
      Select the platform to compile PicoGUI for. Supported so far:
      
-     Linux:
+     Linux-generic:
       This might work with other POSIX-ish OSes but it has only been
       tested with Linux.
      
-     uClinux:
+     uClinux-m68k:
       uClinux is a derivative of the standard Linux kernel, modified
       to operate on CPUs without a memory management unit. So far
       this port is specifically aimed at the Motorola 68k architecture.
+
+     Linux-mips:
+      Cross-compile for a mips CPU. (little endian)
+      Mips CPUs are used in many WinCE handhelds, and in the VTech
+      Helio. See linux-vr.org for information about running linux on
+      a mips handheld.
 
      Windows:
       This is for cross-compiling to Windows using the mingw32-gcc

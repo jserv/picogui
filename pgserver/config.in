@@ -4,17 +4,20 @@ mainmenu_option next_comment
 comment 'Target System'
 
 choice 'Platform' \
-	"Linux                          LINUX \
-	 uClinux			UCLINUX \
-	 Windows			WINDOWS" Linux
+	"Linux-generic                  CONFIG_LINUX_GENERIC \
+	 uClinux-m68k 	        	UCLINUX \
+	 Linux-mips                     CONFIG_LINUX_MIPS \
+	 
+	 Windows			WINDOWS" Linux-generic
 if [ "$UCLINUX" = "y" ]; then
     choice 'Platform running uClinux' \
-	"Real_ChipSlice         CONFIG_CHIPSLICE \
+        "Generic                CONFIG_UCLINUX_GENERIC \
+	 Real_ChipSlice         CONFIG_CHIPSLICE \
          Soft_ChipSlice         CONFIG_SOFT_CHIPSLICE \
-         Xcopilot               CONFIG_XCOPILOT" None
+         Xcopilot               CONFIG_XCOPILOT" Generic
     bool 'm68k asm optimization (not implemented)' ASM_68000
 fi
-if [ "$UCLINUX" != "y" ]; then
+if [ "$CONFIG_LINUX_GENERIC" = "y" ]; then
     bool 'x86 asm optimization'             ASM_INTEL
 fi
 endmenu

@@ -5,8 +5,9 @@
 #
 # Target System
 #
-LINUX=y
+CONFIG_LINUX_GENERIC=y
 # UCLINUX is not set
+# CONFIG_LINUX_MIPS is not set
 # WINDOWS is not set
 ASM_INTEL=y
 

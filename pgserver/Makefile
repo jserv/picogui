@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.69 2001/04/07 09:30:37 micahjd Exp $
+# $Id: Makefile,v 1.70 2001/04/15 02:11:59 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,10 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.70  2001/04/15 02:11:59  micahjd
+# PicoGUI can now be cross-compiled to the mips architecture, used by many
+# WinCE handhelds and the VTech Helio.
+#
 # Revision 1.69  2001/04/07 09:30:37  micahjd
 # Fixes ncurses and gpm dependencies when compiling ncursesinput but not ncurses
 #
@@ -255,6 +259,13 @@ ifneq ($(UCLINUX),)
 	# With position independant code, function pointers can't be
         # set at compile-time??
 	CFLAGS := $(CFLAGS) -DRUNTIME_FUNCPTR
+endif
+ifneq ($(CONFIG_LINUX_MIPS),)
+        GCC := mipsel-linux-gcc
+	STRIP := mipsel-linux-strip
+        CFLAGS := $(CFLAGS) -msoft-float
+        BINNAME := mips-$(BINNAME)
+	#SRC := $(SRC) os/mips/platform.c
 endif
 
 # Extra compiler flags needed by drivers

@@ -1,3 +1,14 @@
+2001-04-14    Micah Dowty <micahjd@users.sourceforge.net>
+
+      * vidbase/defaultvbl.c: Fixed 90 degree rotation crash bug
+      
+      * input/ncursesinput.c: Added a hack to prevent screen clearing by
+        ncurses when a key is pressed
+	
+      * Makefile: Adding support for linux on mips CPUs for the Helio port
+      
+      * config.in: Adding config options for linux on mips
+
 2001-04-13    Micah Dowty <micahjd@users.sourceforge.net>
 
 Ha. Just noticed that today's a Friday the 13th. Neat...
