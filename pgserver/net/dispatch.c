@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.9 2000/10/29 19:48:06 micahjd Exp $
+/* $Id: dispatch.c,v 1.10 2000/10/29 20:52:35 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -684,7 +684,7 @@ g_error rqh_mkfillstyle(int owner, struct pgrequest *req,
 
 /* Little internal helper function for mkmsgdlg */
 g_error dlgbtn(int owner, struct widget *tb, handle htb,
-	       unsigned long payload, char *text) {
+	       unsigned long payload, int textproperty, int key) {
   g_error e;
   handle h;
   unsigned long *ppayload;
@@ -697,11 +697,11 @@ g_error dlgbtn(int owner, struct widget *tb, handle htb,
   e = handle_payload(&ppayload,owner,h);
   errorcheck;
   *ppayload = payload;
-  e = mkhandle(&h,PG_TYPE_STRING | HFLAG_NFREE,owner,text);
-  errorcheck;
-  e = widget_set(w,PG_WP_TEXT,h);
+  e = widget_set(w,PG_WP_TEXT,theme_lookup(PGTH_O_POPUP,textproperty));
   errorcheck;
   e = widget_set(w,PG_WP_SIDE,PG_S_RIGHT);
+  errorcheck;
+  e = widget_set(w,PG_WP_HOTKEY,key);
   errorcheck;
 }
 
@@ -710,7 +710,12 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   g_error e;
   handle h,htb;
   struct widget *w,*tb;
+  unsigned long flags;
   reqarg(mkmsgdlg);
+
+  /* If no flags were specified, use the defaults */
+  flags = ntohl(arg->flags);
+  if (!flags) flags = PG_MSGBTN_OK;
 
   /* The popup box itself */
   e = create_popup(-1,-1,250,150,&w,owner);
@@ -728,7 +733,10 @@ g_error rqh_mkmsgdlg(int owner, struct pgrequest *req,
   errorcheck;
 
   /* Buttons */
-  dlgbtn(owner,tb,htb,1,"Make it so!");
+  if (flags & PG_MSGBTN_OK)
+    dlgbtn(owner,tb,htb,PG_MSGBTN_OK,PGTH_P_STRING_OK,PGKEY_RETURN);
+  if (flags & PG_MSGBTN_CANCEL)
+    dlgbtn(owner,tb,htb,PG_MSGBTN_CANCEL,PGTH_P_STRING_CANCEL,PGKEY_ESCAPE);
 
   return sucess;
 }

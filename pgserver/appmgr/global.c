@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.22 2000/10/29 01:45:32 micahjd Exp $
+/* $Id: global.c,v 1.23 2000/10/29 20:52:35 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -40,6 +40,7 @@ handle defaultfont;
 struct widget *bgwidget;
 handle hbgwidget;
 struct sprite *pointer;
+handle string_ok,string_cancel;
 
 g_error appmgr_init(void) {
   hwrbitmap bgbits;
@@ -67,6 +68,12 @@ g_error appmgr_init(void) {
   e = (*vid->bitmap_loadpnm)(&pointer->mask,cursor_mask_bits,cursor_mask_len);
   errorcheck;
 
+  /* Default strings */
+  e = mkhandle(&string_ok,PG_TYPE_STRING | HFLAG_NFREE,-1,"Ok");
+  errorcheck;
+  e = mkhandle(&string_cancel,PG_TYPE_STRING | HFLAG_NFREE,-1,"Cancel");
+  errorcheck;
+  
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.34 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: button.c,v 1.35 2000/10/29 20:52:35 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -321,22 +321,25 @@ void resize_button(struct widget *self) {
 
   /* Orientation */
   if ((self->in->flags & PG_S_TOP) ||
-      (self->in->flags & PG_S_BOTTOM))
+      (self->in->flags & PG_S_BOTTOM)) {
 
     /* Vertical */
+    bp.h += m<<1;
     if (bp.h > h)
-      self->in->split = bp.h + (m<<1);
+      self->in->split = bp.h;
     else
       self->in->split = h;
-
+  }
   else if ((self->in->flags & PG_S_LEFT) ||
-	   (self->in->flags & PG_S_RIGHT))
+	   (self->in->flags & PG_S_RIGHT)) {
 
     /* Horizontal */
+    bp.w += m<<1;
     if (bp.w > w)
-      self->in->split = bp.w + (m<<1);
+      self->in->split = bp.w;
     else
       self->in->split = w;
+  }
 }
 
 /* Code to generate the button coordinates, needed to resize or build the button */
@@ -429,6 +432,10 @@ void position_button(struct widget *self,struct btnposition *bp) {
     bp->w = bp->bw;
     bp->h = bp->bh;
     bp->bx = bp->by = 0;
+  }
+  else {
+    bp->w = 0;
+    bp->h = 0;
   }
 }
 
