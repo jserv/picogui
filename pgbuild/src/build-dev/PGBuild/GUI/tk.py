@@ -22,15 +22,17 @@ A Tkinter-based frontend for PGBuild
 # 
 
 import PGBuild.GUI.none
+import PGBuild
 import sys
+import tkMessageBox
 
 description = "Tkinter-based frontend"
 priority = 20
 
 class Interface(PGBuild.GUI.none.Interface):
     def run(self):
-	self.progress.message("This doesn't do anything yet")
-	sys.exit(0)
+        tkMessageBox.showerror(PGBuild.name,
+                               "The tk GUI is not implemented yet")
 
 ### The End ###
         

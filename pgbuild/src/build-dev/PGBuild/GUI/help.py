@@ -33,7 +33,6 @@ class Interface(PGBuild.GUI.none.Interface):
         for name in PGBuild.GUI.getNames():
             text += "%10s: %s\n" % (name, PGBuild.GUI.find(name).description)
         self.progress.message(text[:-1])
-	sys.exit(0)
         
 ### The End ###
         
