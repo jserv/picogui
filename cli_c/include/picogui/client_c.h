@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.44 2001/05/15 04:27:02 micahjd Exp $
+/* $Id: client_c.h,v 1.45 2001/05/16 00:45:32 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -156,7 +156,9 @@ typedef int (*pgselecthandler)(int n, fd_set *readfds, fd_set *writefds,
  * \brief A structure representing data, loaded or mapped into memory
  * 
  * This is returned by the pgFrom* series of functions for loading
- * data. \internal
+ * data, and used by many PicoGUI functions that need to refer to a chunk of data.
+ * 
+ * \sa pgFromFile, pgFromStream, pgFromMemory, pgFromTempMemory, pgNewBitmap, pgLoadTheme
  */
 struct pgmemdata {
   void *pointer;       // when null, indicates error
@@ -310,6 +312,7 @@ void pgSubUpdate(pghandle widget);
 void pgBind(pghandle widgetkey,unsigned short eventkey,
 	    pgevthandler handler,void *extra);
 
+#ifdef FD_SET
 /*!
  *
  * \brief Wait on your own file descriptors
@@ -328,7 +331,6 @@ void pgBind(pghandle widgetkey,unsigned short eventkey,
  * 
  * \sa pgSetIdle, pgEventLoop
  */
-#ifdef FD_SET
 void pgCustomizeSelect(pgselecthandler handler);
 #endif
 
@@ -641,53 +643,194 @@ void pgReplaceText(pghandle widget,const char *str);
  */
 void pgReplaceTextFmt(pghandle widget,const char *fmt, ...);
 
-/* Create a new font object based on the given
- * parameters. Any of them can be 0 (or PGFONT_ANY)
- * to ignore that parameter.
+/*!
+ * \brief Create a new font object
+ * 
+ * \param name The name of the font to search for, or NULL
+ * \param size The size (height in pixels) of the font to search for, or zero
+ * \param style Zero or more PG_FSTYLE_* flags or'ed together
+ * 
+ * \returns A handle to the new font object created in the PicoGUI server
+ * 
+ * Based on the supplied parameters, finds the closest installed font and creates
+ * an object describing it. For example:
+ * \code
+fDefault = pgNewFont(NULL,0,PG_FSTYLE_DEFAULT);                  // Find the font marked as default
+fBold    = pgNewFont(NULL,0,PG_FSTYLE_DEFAULT | PG_FSTYLE_BOLD); // Bold version of the default font
+fBig     = pgNewFont(NULL,40,PG_FSTYLE_ITALIC);                  // A large italic font
+fFlush   = pgNewFont("Helvetica",0,PG_FSTYLE_FLUSH);             // Helvetica at the default size, with no space at the edges
+ * \endcode
+ * 
+ * \sa pgNewString, pgDelete, pgEnterContext, pgLeaveContext
  */
 pghandle pgNewFont(const char *name,short size,unsigned long style);
 
-/* In *w and *h, returns the size in pixels of the given text
- * in the given font. 
- *
- * font may be 0 to use the default font
+/*!
+ * \brief Measure a string of text
+ * 
+ * \param w The address to return the width in
+ * \param h The address to return the height in
+ * \param font A font to render the text in
+ * \param text A handle to the text to measure
+ * 
+ * In \p *w and \p *h, returns the size in pixels of the given text
+ * in the given font. Font may be PGDEFAULT to use the default font.
+ * 
+ * Note that if you use pgNewText to create a string object just for this function
+ * call, you should delete it afterwards to prevent a memory leak:
+ * \code
+pghandle sText;
+int w,h;
+
+sText = pgNewString("Hello, World!");
+pgSizeText(&w,&h,PGDEFAULT,sText);
+pgDelete(sText);
+ * \endcode
+ * 
+ * Alternatively, defining a context with pgEnterContext and pgLeaveContext
+ * will clean up the string object automatically:
+ * \code
+pgEnterContext();
+pgSizeText(&w,&h,PGDEFAULT,pgNewString("Hello, World!");
+pgLeaveContext();
+ * \endcode
+ * 
+ * \sa pgEnterContext, pgLeaveContext, pgNewString, pgNewFont
  */
 void pgSizeText(int *w,int *h,pghandle font,pghandle text);
 
-/* Load a compiled theme file into the server */
+/*!
+ * \brief Load a compiled theme
+ * 
+ * \param A pgmemdata structure, as returned by a pgFrom* function
+ * \returns A handle to the new theme object created in the PicoGUI server
+ * 
+ * The compiled theme data can be generated using the \p themec utility. The theme
+ * can be unloaded by calling pgDelete with the returned theme handle.
+ * 
+ * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, pgDelete, pgEnterContext, pgLeaveContext
+ */
 pghandle pgLoadTheme(struct pgmemdata obj);
 
-/* Get and set the 'payload', a app-defined chunk
- * of data attatched to any object. Good for defining
- * button return codes in a dialog, or even making
- * a linked list of objects!
+/*! 
+ * \brief Set an object's payload
+ * 
+ * \param object A handle to any PicoGUI object
+ * \param payload A 32-bit piece of application-defined data
+ * 
+ * The "payload" is a client-defined chunk
+ * of data attatched to any object that has a handle.
+ * Some good uses for this are assigning numerical values to
+ * buttons, or even creating a linked list of objects
+ * by storing a handle in the payload.
+ * It is usually possible for the client to store pointers
+ * in the payload, but this is not recommended, for two reasons:
+ *  - If the pgserver is buggy or compromised, the client is vulnerable to crashes or data corruption
+ *  - If the client-side architecture uses pointers of more than 32 bits, it will not work
+ * 
+ * \sa pgGetPayload, pgGetEvent
  */
 void pgSetPayload(pghandle object,unsigned long payload);
+
+/*!
+ * \brief Get an object's payload
+ * 
+ * \param object A handle to any PicoGUI object
+ * \returns The 32-bit piece of application-defined data set using pgSetPayload
+ * 
+ * See pgSetPayload for more information about payloads and their uses.
+ * 
+ * \sa pgSetPayload
+ */
 unsigned long pgGetPayload(pghandle object);
 
-/* Write data to a widget.
- * (for example, a terminal widget)
+/*!
+ * \brief Write data to a widget
+ *
+ * \param widget The handle of the widget to receive data
+ * \param A pgmemdata structure containing the data, as returned by a pgFrom* function
+ * 
+ * Write a chunk of widget-defined data to a widget. For example, this can be used to send
+ * text to a terminal widget or commands to a canvas widget. (For canvas drawing pgWriteCmd or PGFX
+ * should usually be used instead)
+ * 
+ * \sa pgFromMemory, pgFromFile, pgFromStream, pgFromTempMemory, PG_WIDGET_TERMINAL, PG_WIDGET_CANVAS, pgWriteCmd, pgNewCanvasContext
  */
 void pgWriteData(pghandle widget,struct pgmemdata data);
 
-/* Wrapper around pgWriteData to send a command, for example
- * to a canvas widget. Widget, command, and param number must be followed
- * by the specified number of commands
+/*!
+ * \brief Write a command to a widget
+ *
+ * \param widget The handle of the widget to receive the command
+ * \param command A widget-defined command number
+ * \param numparams The number of parameters following this one
+ * 
+ * This function creates a pgcommand structure from it's arguments and
+ * uses pgWriteData to send it to the specified widget.
+ * Currently this is used as the low-level interface to the canvas widget.
+ * 
+ * \sa pgWriteData, PG_WIDGET_CANVAS, pgNewCanvasContext
  */
 void pgWriteCmd(pghandle widget,short command,short numparams, ...);
 
 /******************** Data loading */
 
-/* Data already loaded in memory */
+/*!
+ * \brief Refer to data loaded into memory
+ * 
+ * \param data A pointer to data loaded into memory
+ * \param length The length, in bytes, of the data referred to
+ * \returns A pgmemdata structure describing the data
+ * 
+ * When using pgFromMemory, the data pointer must remain valid for
+ * a relatively long period of time, usually until the request buffer
+ * is flushed. If you would rather have the client library free the
+ * memory for you when it is done, see pgFromTempMemory
+ * 
+ * \sa pgFromFile, pgFromStream, pgFromTempMemory
+ */
 struct pgmemdata pgFromMemory(void *data,unsigned long length);
 
-/* Data already loaded in memory, client lib will free it when done */
+/*!
+ * \brief Refer to data loaded into memory, free when done
+ * 
+ * \param data A pointer to data loaded into memory
+ * \param length The length, in bytes, of the data referred to
+ * \returns A pgmemdata structure describing the data
+ * 
+ * The data pointer must have been dynamically allocated with malloc() or equivalent.
+ * When the client library is done using it, \p data will be freed with the free() function.
+ * 
+ * \sa pgFromMemory, pgFromFile, pgFromStream
+ */
 struct pgmemdata pgFromTempMemory(void *data,unsigned long length);
 
-/* Load from a normal disk file */
+
+/*!
+ * \brief Refer to data in a file
+ * 
+ * \param file The name of the file containing data to be referred to
+ * \returns A pgmemdata structure describing the data. This is needed by many PicoGUI API functions that require data as input.
+ * 
+ * Depending on implementation the file may be loaded into memory temporarily, or memory-mapped if possible
+ * 
+ * \sa pgFromMemory, pgFromTempMemory, pgFromStream
+ */
 struct pgmemdata pgFromFile(const char *file);
 
-/* Load from an already-opened stream */
+/*!
+ * \brief Refer to data in an opened stream
+ * 
+ * \param f C stream, as returned by \p fopen() in \p stdio.h
+ * \param length The number of bytes to read from the stream
+ * \returns A pgmemdata structure describing the data
+ * 
+ * Depending on implementation, the data may be read from the stream into memory, or memory-mapped if possible.
+ * The chunk of data referred to begins at the stream's current position and extends \p length bytes past it.
+ * The stream's position is advanced by \p length bytes.
+ * 
+ * \sa pgFromMemory, pgFromTempMemory, pgFromFile
+ */
 struct pgmemdata pgFromStream(FILE *f, unsigned long length);
 
 /* TODO: Load from resource. Allow apps to package necessary bitmaps
@@ -704,56 +847,141 @@ struct pgmemdata pgFromStream(FILE *f, unsigned long length);
 
 /******************** Program flow */
 
-/* The app's main event-processing loop.  This can be called
- * more than once throughout the life of the program, but
- * it shouldn't be called while it's already running.
+/*!
+ * \brief Event processing and dispatching loop
+ * 
+ * pgEventLoop waits for events from the PicoGUI server and dispatches
+ * them according to bindings set up with pgBind. The handler set with
+ * pgSetIdle is also called if applicable.
+ * 
+ * pgEventLoop can be called more than once throughout the life of the
+ * program, but it is not re-entrant.
  * 
  * If the app recieves an event while it is not waiting in an
  * EventLoop, the server will queue them until the client is
  * ready.
+ * 
+ * \sa pgGetEvent, pgExitEventLoop, pgBind, pgSetIdle
  */
 void pgEventLoop(void);
+
+/*!
+ * \brief Exit the current event loop
+ * 
+ * If the client is currently inside an event loop, this function
+ * sets a flag to exit it at the next possible opportunity
+ * 
+ * \sa pgEventLoop
+ */
 void pgExitEventLoop(void);
 
-/* Wait for a single event, then return it. This is good
- * for small dialog boxes, or other situations when pgBind and
- * pgEventLoop are overkill.
+/*!
+ * \brief Wait for a single event
+ *
+ * \returns A pgEvent structure
+ * 
+ * This is good for small dialog boxes, or other situations when pgBind and
+ * pgEventLoop are overkill. pgGetEvent can be used while an event loop is already
+ * in progress, for example in a pgSetIdle or pgBind handler function.
+ * 
+ * \sa pgEventLoop, pgBind, pgSetIdle, pgSetPayload, pgGetPayload
  */
 struct pgEvent *pgGetEvent(void);
 
-/* PicoGUI uses a context system, similar to contexts in C.
+/*!
+ * \brief Enter a new context
+ * 
+ * PicoGUI uses a context system, similar to a variable's scope in C.
  * Whenever the program leaves a context, all objects created
- * while in that context are deleted. Contexts can be nested
- * almost infinitely (Well, 32768 or so... ;-)
+ * while in that context are deleted. No memory is used by creating a context,
+ * and they can be nested a very large number of times.
+ * 
+ * Here is an example, indented to show the context levels:
+ * \code
+pghandle x,y,z;
+
+pgEnterContext();
+  x = pgNewString("X");
+  pgEnterContext();
+    y = pgNewString("Y");
+  pgLeaveContext();           // y is deleted
+  z = pgNewString("Z");
+pgLeaveContext();             // x and z are deleted
+ * \endcode
+ * 
+ * \sa pgLeaveContext
  */
 void pgEnterContext(void);
+
+/*!
+ * \brief Leave a context
+ * 
+ * When leaving a context, all objects created within it are deleted.
+ * See pgEnterContext for an example.
+ * 
+ * \sa pgEnterContext
+ */
 void pgLeaveContext(void);
 
-/* Create a message dialog box, wait until it is
- * answered, then return the answer.
+/*!
+ * \brief Create a message dialog box
+ *
+ * \param title The title string displayed across the dialog's top
+ * \param text Text to display within the dialog box
+ * \param flags One or more PG_MSGBTN_* constants or'ed together, or zero for the default
+ * \returns The PG_MSGBTN_* constant indicating which button was activated
+ * 
+ * This creates a modal dialog box in the center of the screen, displaying the
+ * given message, and waits for an answer. If \p flags is zero, a simple dialog
+ * with only an "Ok" button is created. Possible PG_MSGBTN_* flags include:
+ *  - PG_MSGBTN_OK
+ *  - PG_MSGBTN_CANCEL
+ *  - PG_MSGBTN_YES
+ *  - PG_MSGBTN_NO
+ * 
+ * \sa pgMessageDialogFmt
  */
 int pgMessageDialog(const char *title,const char *text,unsigned long flags);
 
-/* Like pgMessageDialog, but uses printf-style formatting */
+/*!
+ * \brief Create a message dialog box, with formatting
+ * 
+ * This function is equivalent to pgMessage, with support for printf-style formatting
+ * 
+ * \sa pgMessageDialog
+ */
 int pgMessageDialogFmt(const char *title,unsigned long flags,const char *fmt, ...);
 
-/* There are many ways to create a menu in PicoGUI
- * (at the lowest level, using pgNewPopupAt and the menuitem widget)
- *
- * This creates a static popup menu from a "|"-separated list of
- * menu items, and returns the number (starting with 1) of the chosen
- * item, or 0 for cancel.
+/*! 
+ * \brief Create a popup menu from a string
+ * 
+ * \param items A list of menu items, separated by pipe characters. The menu items may contain newlines.
+ * \returns The number (starting with 1) of the chosen item, or zero for a click outside the menu
+ * 
+ * This function is a high-level way to create simple menus, equivalent to calling pgNewPopupAt to create
+ * a popup menu and filling it with menuitem widgets.
+ * 
+ * \sa pgMenuFromArray, pgNewPopup, pgNewPopupAt
  */
 int pgMenuFromString(char *items);
 
-/* This creates a menu from an array of string handles. 
- * Same return values as pgMenuFromString above.
+/*!
+ * \brief Create a popup menu from string handles
+ * 
+ * \param items An array of handles to string objects for each menu item
+ * \param numitems The number of string handles
+ * \returns The number (starting with 1) of the chosen item, or zero for a click outside the menu
+ * 
+ * Unlike pgMenuFromString, this function does not perform memory
+ * management automatically. Before the client begins creating string
+ * objects for the \p items array, call pgEnterContext.
+ * After pgMenuFromArray returns, call pgLeaveContext to free the string
+ * handles and destroy the popup menu. Note that the popup menu will not
+ * disappear until the call to pgLeaveContext. This means it is possible to delay
+ * calling pgLeaveContext to display other popups on top of the menu, for
+ * example to create a tree of popup menus.
  *
- * Important note: pgMenuFromArray does not perform context
- *                 management automatically like pgMenuFromString.
- *                 Before you start allocating strings,
- *                 call pgEnterContext, and after pgMenuFromArray
- *                 call pgLeaveContext.
+ * \sa pgMenuFromString, pgNewPopup, pgNewPopupAt
  */
 int pgMenuFromArray(pghandle *items,int numitems); 
 

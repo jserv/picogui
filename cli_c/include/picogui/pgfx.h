@@ -1,4 +1,4 @@
-/* $Id: pgfx.h,v 1.6 2001/05/10 03:05:36 micahjd Exp $
+/* $Id: pgfx.h,v 1.7 2001/05/16 00:45:32 micahjd Exp $
  *
  * picogui/pgfx.h - The PicoGUI abstract graphics interface
  * 
@@ -28,41 +28,91 @@
  * 
  */
 
+/*! 
+ * \file pgfx.h
+ * \brief PGFX Graphics API Header
+ * 
+ * PGFX is an abstract interface to graphics primitives. It provides a
+ * higher level method of using the Canvas widget and other graphics
+ * output devices.
+ * Usually this file does not need to be included
+ * separately, it is included with <tt>\#include <picogui.h></tt>
+ */
+
 /************ Data structures */
 
-/* Unit for x,y coordinates */
+//! Unit for coordinates in PGFX 
 typedef int pgu;
-/* RGB color */
+
+/*! 
+ * \brief RGB hardware-independant color
+ * 
+ * The format is 24-bit RGB, similar to that used by HTML.
+ * The following are some example colors:
+ * \code
+#define BLACK   0x000000
+#define WHITE   0xFFFFFF
+#define GREY    0x808080
+#define RED     0xFF0000
+#define GREEN   0x00FF00
+#define BLUE    0x0000FF
+#define YELLOW  0xFFFF00
+ * \endcode
+ * 
+ * Video drivers may define other formats that are selected by
+ * setting a bit in the color's high byte. For example, in text-mode
+ * drivers, a high byte set to 0x20 would indicate a raw character code.
+ * Using the  driver, the expression (0x20000F00 | 'A') would be
+ * a capital "A" with a white foreground and black background.
+ * These formats are video-driver dependant, and under normal circumstances
+ * the high byte should always be zero.
+ */
 typedef unsigned long pgcolor;
-/* A number to identify the generated primitive, if it is stored */
+
+/*!
+ * \brief Reference to a stored primitive
+ * 
+ * If the underlying output device is one that stores primitives, for example
+ * the canvas in PGFX_PERSISTENT mode, this number can be used to refer to 
+ * the primitive later.
+ * 
+ * Currently this functionality is unimplemented in PGFX. To manipulate
+ * primitives in the canvas widget the pgWriteCmd interface must be used.
+ */
 typedef int pgprim;
 
 
-/* This defines a rendering method and a device to output to
- * The application must treat this structure as read-only!
+/*!
+ * \brief Rendering context
+ * 
+ * This defines a rendering method and a device to output to.
+ * It may be a canvas, bitmap, or any other device.
+ * 
+ * The members of this structure are not to be used by the client,
+ * only the PGFX rendering backend. Their values are defined by
+ * the rendering functions, and modification or interpretation by
+ * the client may have unexpected results.
+ * 
+ * \sa pgNewCanvasContext, pgDeleteContext
  */
 typedef struct pgfx_context {
-   struct pgfx_lib *lib;   /* Pointers to the rendering functions */
-   pghandle device;        /* Output device */
-   pgcolor color;          /* Current color */
-   pgu cx,cy;              /* Current position for moveto/lineto */
-   unsigned long flags;    /* Depends on the lib */
+   struct pgfx_lib *lib;   //!< Pointers to the rendering functions 
+   pghandle device;        //!< Output device (canvas, bitmap, etc.)
+   pgcolor color;          //!< Current color
+   pgu cx,cy;              //!< Current position for moveto/lineto
+   unsigned long flags;    //!< Backend-defined
    int sequence;
 } *pgcontext;
 
 
-/* Defines a standard set of functions implemented in pgfx_lib
- * These functions are equal to the available gropnodes and their parameters
- * as implemented in pgserver/gcore/grop.c (except color is omitted)
- * 
- * There are some things that would be messy to implement in this high-level
- * interface and so are only available with pgWriteCmd:
- * 
- *  - PG_GROP_TEXTGRID
- *  - Gropnode morphing / complex color conversions
+/*!
+ * \brief Defines the rendering backend
+ *
+ * pgfx_lib defines the set of functions a PGFX backend needs to implement.
+ *
+ * \sa pgPixel, pgLine, pgRect, pgFrame, pgSlab, pgBar, pgText, pgBitmap, pgTileBitmap, pgGradient
  */
 struct pgfx_lib {
-   /* Primitives */
    pgprim (*pixel)     (pgcontext c, pgu x,  pgu y);
    pgprim (*line)      (pgcontext c, pgu x1, pgu y1, pgu x2, pgu y2);
    pgprim (*rect)      (pgcontext c, pgu x,  pgu y,  pgu w,  pgu h);
@@ -89,30 +139,142 @@ struct pgfx_lib {
     * output-method-independant it is not necessary to call pgSubUpdate */
    void (*update)(pgcontext c);
    
-   /* FIXME: add functions to manipulate grops after they're created */
+   /* FIXME: add functions to manipulate grops after they're created 
+    * also update documentation when this is done. */
 };
 
 /************ Primitives */
 
-/* These macros make it easy to call the primitives with a familiar syntax 
- * See the above definition of pgfx_lib for the parameters */
-#define pgPixel(a,b,c)                    (*(a)->lib->pixel)(a,b,c)
-#define pgLine(a,b,c,d,e)                 (*(a)->lib->line)(a,b,c,d,e)
-#define pgRect(a,b,c,d,e)                 (*(a)->lib->rect)(a,b,c,d,e)
-#define pgFrame(a,b,c,d,e)                (*(a)->lib->frame)(a,b,c,d,e)
-#define pgSlab(a,b,c,d)                   (*(a)->lib->slab)(a,b,c,d)
-#define pgBar(a,b,c,d)                    (*(a)->lib->bar)(a,b,c,d)
-#define pgText(a,b,c,d)                   (*(a)->lib->text)(a,b,c,d)
-#define pgBitmap(a,b,c,d,e,f)             (*(a)->lib->bitmap)(a,b,c,d,e,f)
-#define pgTileBitmap(a,b,c,d,e,f)         (*(a)->lib->tilebitmap)(a,b,c,d,e,f)
-#define pgGradient(a,b,c,d,e,f,g,h)       (*(a)->lib->gradient)(a,b,c,d,e,f,g,h)
-#define pgSetColor(a,b)                   (*(a)->lib->setcolor)(a,b)
-#define pgSetFont(a,b)                    (*(a)->lib->setfont)(a,b)
-#define pgSetLgop(a,b)                    (*(a)->lib->setlgop)(a,b)
-#define pgSetAngle(a,b)                   (*(a)->lib->setangle)(a,b)
-#define pgSetSrc(a,b,c,d,e)               (*(a)->lib->setsrc)(a,b,c,d,e)
-#define pgSetMapping(a,b,c,d,e,f)         (*(a)->lib->setmapping)(a,b,c,d,e,f)
-#define pgContextUpdate(a)                (*(a)->lib->update)(a)
+/* These functions are simple glue between the client and the pgfx_lib structure */
+
+//! Plot a single pixel in the current color
+inline pgprim pgPixel(pgcontext c,pgu x,pgu y);
+//! Plot a line between two specified coordinate pairs
+inline pgprim pgLine(pgcontext c,pgu x1,pgu y1,pgu x2,pgu y2);
+//! Draw a filled rectangle in the current color
+inline pgprim pgRect(pgcontext c,pgu x,pgu y,pgu w,pgu h);
+//! Draw a non-filled rectangle in the current color
+inline pgprim pgFrame(pgcontext c,pgu x,pgu y,pgu w,pgu h);
+//! Draw a horizontal line beginning at \p (x,y) and extending right \p w pixels
+inline pgprim pgSlab(pgcontext c,pgu x,pgu y,pgu w);
+//! Draw a vertical line beginning at \p (x,y) and extending down \p h pixels
+inline pgprim pgBar(pgcontext c,pgu x,pgu y,pgu h);
+/*! 
+ * \brief Draw a string in the current color, font, and angle
+ * 
+ * The upper-left corner of the string is drawn at the given (x,y)
+ * coordinates. If the string is rotated with pgSetAngle the origin is
+ * at the corresponding point on the rotated text.
+ * 
+ * By default PicoGUI inserts a small font-dependant gap between the
+ * specified coordinates and the actual edge of the text. To override this,
+ * create a font with the PG_FSTYLE_FLUSH flag set.
+ * 
+ * \sa pgNewString, pgNewFont, pgSizeText, pgSetColor, pgSetFont, pgSetAngle
+ */
+inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string);
+/*!
+ * \brief Draw a bitmap
+ * 
+ * If the specified width and height are larger than the bitmap, the bitmap
+ * will be tiled. The (x,y) coordinate on the source bitmap that is mapped
+ * to the destination (x,y) is determined by the x any y components of the
+ * source rectangle.
+ * 
+ * \sa pgSetLgop, pgSetSrc, pgTileBitmap
+ */
+inline pgprim pgBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap);
+/*!
+ * \brief Tile a portion of a bitmap
+ * 
+ * pgBitmap will automatically tile the source bitmap if the width and height
+ * are sufficiently large. However, pgBitmap tiles the entire bitmap.
+ * pgTileBitmap tiles a portion of the bitmap, defined by the current source
+ * rectangle.
+ * 
+ * \sa pgSetLgop, pgSetSrc, pgBitmap
+ */
+inline pgprim pgTileBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap);
+/*!
+ * \brief Render a linear color gradient
+ *
+ * \param angle Angle to rotate gradient, in degrees
+ * 
+ * This function fills the specified rectangle with a linear gradient between
+ * colors \p c1 and \p c2.
+ */
+inline pgprim pgGradient(pgcontext c,pgu x,pgu y,pgu w,pgu h,
+			 pgu angle,pgcolor c1,pgcolor c2);
+//! Set the current color
+inline pgprim pgSetColor(pgcontext c,pgcolor color);
+//! Set the current font
+inline pgprim pgSetFont(pgcontext c,pghandle font);
+/*!
+ * \brief Set the current logical operation
+ *
+ * The logical operation ("LGOP" for short) defines how
+ * the the color of a drawn primitive is combined with the
+ * color already on the screen.
+ * 
+ *  - PG_LGOP_NULL: Do not render the primitive
+ *  - PG_LGOP_NONE: Render the primitive normally
+ *  - PG_LGOP_OR: Bitwise 'or' the primitive with existing pixels
+ *  - PG_LGOP_AND: Bitwise 'and' the primitive with existing pixels
+ *  - PG_LGOP_XOR: Bitwise exclusive 'or' the primitive with existing pixels
+ *  - PG_LGOP_INVERT: Invert all bits in the primitive's pixels
+ *  - PG_LGOP_INVERT_OR: Invert, then 'or'
+ *  - PG_LGOP_INVERT_AND: Invert, then 'and'
+ *  - PG_LGOP_INVERT_XOR: Invert, then exclusive 'or'
+ *  - PG_LGOP_SUBTRACT: Subtract primitive from existing pixels, clamping to black
+ *  - PG_LGOP_ADD: Add primitive to existing pixels, clamping to white
+ *  - PG_LGOP_MULTIPLY: Multiply the primitive by existing pixels, treating white as 1 and black as 0
+ *  - PG_LGOP_STIPPLE: Only set pixels within a checkerboard pattern, for creating dotted lines or a 'grey' effect
+ */
+inline pgprim pgSetLgop(pgcontext c,short lgop);
+/*!
+ * \brief Set the angle for text
+ * 
+ * The angle is measured in degrees:
+ *  - 0: Horizontal, left to right
+ *  - 90: Vertical, bottom to top
+ *  - 180: Upside down
+ *  - 270: Vertical, top to bottom
+ */ 
+inline pgprim pgSetAngle(pgcontext c,pgu angle);
+/*!
+ * \brief Set the bitmap source rectangle
+ *
+ * The bitmap source rectangle is selects which piece of
+ * the source bitmap to use in bitmap primitives
+ * 
+ * \sa pgBitmap, pgTileBitmap
+ */
+inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h);
+/*!
+ * \brief Set coordinate system mapping
+ *
+ * This function defines how the coordinates in a primitive are converted
+ * to device coordinates. The following types are supported:
+ * 
+ *  - PG_MAP_NONE: Primitives are in device coordinates, the supplied rectangle is ignored
+ *  - PG_MAP_SCALE: The width and height supplied indicate the virtual size of the device, 
+ *    these are stretched to the device's actual size
+ * 
+ * PG_MAP_SCALE is particularly useful in conjunction with PGFX_PERSISTENT and the canvas widget.
+ * When the canvas is resized, its contents will stretch automatically with no client-side
+ * intervention.
+ * 
+ */
+inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type);
+/*! 
+ * \brief Draws any undrawn primitives
+ * 
+ * This must be called after a drawing primitives to force them to actually appear.
+ * It will flush any buffers necessary and instructs the server to draw changed
+ * areas of the screen if necessary.
+ * 
+ */
+inline void pgContextUpdate(pgcontext c);
 
 /* Meta-primitives */
 void    pgMoveTo(pgcontext c, pgu x, pgu y);

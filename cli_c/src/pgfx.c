@@ -1,4 +1,4 @@
-/* $Id: pgfx.c,v 1.2 2001/04/14 00:02:22 micahjd Exp $
+/* $Id: pgfx.c,v 1.3 2001/05/16 00:45:32 micahjd Exp $
  *
  * picogui/pgfx.c - PGFX general-purpose utility functions
  * 
@@ -42,6 +42,59 @@ pgprim  pgLineto(pgcontext c, pgu x, pgu y) {
 
 void pgDeleteContext(pgcontext c) {
    free(c);
+}
+
+inline pgprim pgPixel(pgcontext c,pgu x,pgu y) {
+   return (*(c)->lib->pixel)(c,x,y);
+}
+inline pgprim pgLine(pgcontext c,pgu x1,pgu y1,pgu x2,pgu y2) {
+   return (*(c)->lib->line)(c,x1,y1,x2,y2);
+}
+inline pgprim pgRect(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->rect)(c,x,y,w,h);
+}
+inline pgprim pgFrame(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->frame)(c,x,y,w,h);
+}
+inline pgprim pgSlab(pgcontext c,pgu x,pgu y,pgu w) {
+   return (*(c)->lib->slab)(c,x,y,w);
+}
+inline pgprim pgBar(pgcontext c,pgu x,pgu y,pgu h) {
+   return (*(c)->lib->bar)(c,x,y,h);
+}
+inline pgprim pgText(pgcontext c,pgu x,pgu y,pghandle string) {
+   return (*(c)->lib->text)(c,x,y,string);
+}
+inline pgprim pgBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap) {
+   return (*(c)->lib->bitmap)(c,x,y,w,h,bitmap);
+}
+inline pgprim pgTileBitmap(pgcontext c,pgu x,pgu y,pgu w,pgu h,pghandle bitmap) {
+   return (*(c)->lib->tilebitmap)(c,x,y,w,h,bitmap);
+}
+inline pgprim pgGradient(pgcontext c,pgu x,pgu y,pgu w,pgu h,
+			 pgu angle,pgcolor c1,pgcolor c2) {
+   return (*(c)->lib->gradient)(c,x,y,w,h,angle,c1,c2);
+}
+inline pgprim pgSetColor(pgcontext c,pgcolor color) {
+   return (*(c)->lib->setcolor)(c,color);
+}
+inline pgprim pgSetFont(pgcontext c,pghandle font) {
+   return (*(c)->lib->setfont)(c,font);
+}
+inline pgprim pgSetLgop(pgcontext c,short lgop) {
+   return (*(c)->lib->setlgop)(c,lgop);
+}
+inline pgprim pgSetAngle(pgcontext c,pgu angle) {
+   return (*(c)->lib->setangle)(c,angle);
+}
+inline pgprim pgSetSrc(pgcontext c,pgu x,pgu y,pgu w,pgu h) {
+   return (*(c)->lib->setsrc)(c,x,y,w,h);
+}
+inline pgprim pgSetMapping(pgcontext c,pgu x,pgu y,pgu w,pgu h,short type) {
+   return (*(c)->lib->setmapping)(c,x,y,w,h,type);
+}
+inline void pgContextUpdate(pgcontext c) {
+   (*(c)->lib->update)(c);
 }
 
 /* The End */
