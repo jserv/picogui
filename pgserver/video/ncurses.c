@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.31 2002/10/22 23:08:12 micahjd Exp $
+/* $Id: ncurses.c,v 1.32 2002/11/04 02:45:46 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -40,8 +40,6 @@
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>
-#include <pgserver/appmgr.h>
-#include <pgserver/font.h>
 #include <pgserver/render.h>
 
 #ifdef DRIVER_GPM
@@ -56,35 +54,7 @@ chtype *ncurses_screen;
 extern Gpm_Event gpm_last_event;
 #endif
 
-/******************************************** Fake font */
-/* This is a little hack to trick PicoGUI's text rendering */
 
-/* We only keep 1 byte here, filling it in later with the character code */
-u8 ncurses_font_bitmap;
-
-struct font const ncurses_font = {
-   w: 1, 
-   h: 1,
-   defaultglyph: ' ',
-   ascent: 1,
-   descent: 0,
-   bitmaps: &ncurses_font_bitmap,
-   glyphs: NULL,
-};
-
-/* Bogus fontstyle node */
-struct fontstyle_node ncurses_font_style = {
-   name: "Ncurses Pseudofont",
-   size: 1,
-   flags: PG_FSTYLE_FIXED,
-   next: NULL,
-   normal: (struct font *) &ncurses_font,
-   bold: NULL,
-   italic: NULL,
-   bolditalic: NULL,
-   boldw: 0
-};
-        
 /******************************************** Implementations */
 
 g_error ncurses_init(void) {
@@ -151,63 +121,6 @@ void ncurses_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
 #endif
 }
 
-/**** Hack the normal font rendering a bit so we use regular text */
-
-void ncurses_font_newdesc(struct fontdesc *fd, const u8 *name,
-			  int size, int flags) {
-   fd->font = (struct font *) &ncurses_font;
-   fd->margin = 0;
-   fd->hline = -1;
-   fd->italicw = 0;
-   fd->fs = &ncurses_font_style;
-}
-
-struct fontglyph const *ncurses_font_getglyph(struct fontdesc *fd, int ch) {
-  /* Fake glyph and bitmap to return */
-  static struct fontglyph fakeglyph;
-
-  fakeglyph.encoding  = ch;
-  fakeglyph.bitmap    = 0;
-  ncurses_font_bitmap = ch;
-  fakeglyph.dwidth    = 1;
-  fakeglyph.w         = 1;
-  fakeglyph.h         = 1;
-  fakeglyph.x         = 0;
-  fakeglyph.y         = 0;
-  
-  return &fakeglyph;
-}
-
-void ncurses_charblit(hwrbitmap dest, u8 *chardat,s16 dest_x,
-		      s16 dest_y,s16 w,s16 h,s16 lines,s16 angle,
-		      hwrcolor c,struct quad *clip,s16 lgop) {
-   chtype *location;
-   
-   if (lgop != PG_LGOP_NONE) {
-      def_charblit(dest,chardat,dest_x,dest_y,w,h,lines,angle,c,clip,lgop);
-      return;
-   }
-   
-   /* Make sure we're within clip */
-   if (clip && (dest_x<clip->x1 || dest_y<clip->y1 ||
-		dest_x>clip->x2 || dest_y>clip->y2))
-     return;
-   
-   /* Get the previous contents, strip out all but the background,
-    * and add our new foreground and text */
-   location = ncurses_screen + dest_x + vid->xres * dest_y;
-   *location = COLOR_PAIR((PAIR_NUMBER(*location & (~A_CHARTEXT)) & 0x38) | 
-			  ((PAIR_NUMBER(c) & 0x38)>>3)) | (c & A_BOLD) | (*chardat);
-     
-   /* Send it */
-   mvaddch(dest_y,dest_x,*location);
-}
-
-/**** We use a ncurses character cell as our hwrcolor */
-
-/* This can handle input colors in different formats, always returning
- * a ncurses attribute value */
-
 hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 
    if (c & PGCF_TEXT_ASCII) {
@@ -232,18 +145,22 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 	((c & 0x000800) ? A_BOLD : 0) | acs_map[c & 0x0000FF];
    }
 
-   else {
-      /* RGB value interpreted as a background attribute */
-      
-      int sc = 7;
-      if ((c & 0xFF0000) > 0x400000) sc |= 32;
-      if ((c & 0x00FF00) > 0x004000) sc |= 16;
-      if ((c & 0x0000FF) > 0x000040) sc |= 8;
-      return (COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
-				 ((c&0x00FF00) > 0x00A000) || 
-				 ((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) | ' ';
+   else if (c & PGCF_ALPHA) {
+     /* Default conversion for alpha values (premultiply) */
+     return def_color_pgtohwr(c);
    }
-   
+
+   else {
+     /* RGB value interpreted as a background attribute */
+      
+     int sc = 7;
+     if ((c & 0xFF0000) > 0x400000) sc |= 32;
+     if ((c & 0x00FF00) > 0x004000) sc |= 16;
+     if ((c & 0x0000FF) > 0x000040) sc |= 8;
+     return (COLOR_PAIR(sc) | ( ((c&0xFF0000) > 0xA00000) || 
+				((c&0x00FF00) > 0x00A000) || 
+				((c&0x0000FF) > 0x0000A0) ? A_BOLD : 0)) | ' ';
+   }
 }
 
 /******************************************** Driver registration */
@@ -253,16 +170,11 @@ g_error ncurses_regfunc(struct vidlib *v) {
    
    v->init = &ncurses_init;
    v->close = &ncurses_close;
-   
    v->pixel = &ncurses_pixel;
    v->getpixel = &ncurses_getpixel;
    v->update = &ncurses_update;  
    v->color_pgtohwr = &ncurses_color_pgtohwr;
    
-   v->font_newdesc = &ncurses_font_newdesc;
-   v->font_getglyph = &ncurses_font_getglyph;
-   v->charblit = &ncurses_charblit;
-
    return success;
 }
 
