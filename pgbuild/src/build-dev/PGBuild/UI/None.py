@@ -1,6 +1,6 @@
-""" PGBuild.UI.base
+""" PGBuild.UI.None
 
-Base classes for all UI modules. 
+Base classes for all UI modules, doesn't implement any UI at all.
 """
 # 
 # PicoGUI Build System

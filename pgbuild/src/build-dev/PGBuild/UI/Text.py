@@ -1,4 +1,4 @@
-""" PGBuild.UI.text
+""" PGBuild.UI.Text
 
 The 'text' UI, that provides progress reporting and other UI functionality
 specific to running in a command line environment.
@@ -22,7 +22,7 @@ specific to running in a command line environment.
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.UI.base
+import PGBuild.UI.None
 import sys, os
 
 class Colorizer:
@@ -66,7 +66,7 @@ class Colorizer:
             self.set(('reset',))
         
 
-class Progress(PGBuild.UI.base.Progress):
+class Progress(PGBuild.UI.None.Progress):
     """Progress reporter for command line use, with optional color"""
 
     def _init(self):
@@ -105,7 +105,7 @@ class Progress(PGBuild.UI.base.Progress):
         self._textBlock(text)
 
 
-class Interface(PGBuild.UI.base.Interface):
+class Interface(PGBuild.UI.None.Interface):
     progressClass = Progress
 
 ### The End ###

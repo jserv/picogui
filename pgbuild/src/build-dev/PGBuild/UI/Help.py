@@ -1,4 +1,4 @@
-""" PGBuild.UI.help
+""" PGBuild.UI.Help
 
 The 'help' UI, that just lists the available UIs and exits
 """
