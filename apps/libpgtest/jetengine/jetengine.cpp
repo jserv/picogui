@@ -9,6 +9,7 @@
 #include "FlatLand.h"
 #include "Ship.h"
 #include "Camera.h"
+#include "Skybox.h"
 
 
 int main(int argc, char **argv) {
@@ -19,12 +20,14 @@ int main(int argc, char **argv) {
     FlatLand world;
     Camera camera;
     Ship ship;
+    Skybox skybox;
     u32 old_ticks, new_ticks;
     float frame_time;
 
     pythread.addObject("world",&world);
     pythread.addObject("ship",&ship);
     pythread.addObject("camera",&camera);
+    pythread.addObject("skybox",&skybox);
     pythread.run();
 
     old_ticks = SDL_GetTicks();
@@ -39,6 +42,7 @@ int main(int argc, char **argv) {
       glShadeModel(GL_SMOOTH);
 
       camera.setMatrix();
+      skybox.draw();
       world.draw();
       ship.draw();
       world.animate(frame_time);

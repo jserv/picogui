@@ -7,7 +7,8 @@ OBJS = \
 	PythonInterpreter.o	\
 	FlatLand.o		\
 	Ship.o			\
-	Camera.o
+	Camera.o		\
+	Skybox.o
 
 HEADERS = \
 	EmbeddedPGserver.h	\
@@ -18,7 +19,8 @@ HEADERS = \
 	PythonInterpreter.h	\
 	FlatLand.h		\
 	Ship.h			\
-	Camera.h
+	Camera.h		\
+	Skybox.h
 
 BIN = jetengine
 

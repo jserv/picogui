@@ -187,7 +187,7 @@ object default {
   lowerBevel = 20;
 }
 
-object box bgfill = Copy(default::fWetPanel);
+object box bgfill = Copy(default::fGlowPanel);
 
 object button {
   bgfill = Copy(default::fEmptyPanel);

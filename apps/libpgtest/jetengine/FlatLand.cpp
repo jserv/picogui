@@ -24,16 +24,6 @@ void FlatLand::animate(float seconds) {
 void FlatLand::draw() {
   float hrepeat, vrepeat;
 
-  /* Simple gradient sky */
-  glBegin(GL_QUADS);
-  glColor3f(0.851, 0.886, 0.918);
-  glVertex3f(-1000, 0, -1000);
-  glVertex3f(1000, 0, -1000);
-  glColor3f(0.047, 0.357, 0.569);
-  glVertex3f(1000, 600,-1000);
-  glVertex3f(-1000, 600,-1000);
-  glEnd();
-  
   hrepeat = getAttrFloat("hrepeat");
   vrepeat = getAttrFloat("vrepeat");
 
