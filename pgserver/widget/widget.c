@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.49 2000/11/05 05:08:19 micahjd Exp $
+/* $Id: widget.c,v 1.50 2000/11/05 20:46:44 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -261,7 +261,10 @@ void redraw_bg(struct widget *self) {
   /* Flags! Redraws automatically propagate through all child nodes of the
      container's div.
   */
-  container->in->flags |= DIVNODE_NEED_RECALC;
+  if (container->type == PG_WIDGET_PANEL) /* Panels are a little more complicated */
+    container->in->div->flags |= DIVNODE_NEED_RECALC | DIVNODE_PROPAGATE_RECALC;
+  else
+    container->in->flags |= DIVNODE_NEED_RECALC;
   container->dt->flags |= DIVTREE_NEED_RECALC;
 }
 
