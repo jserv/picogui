@@ -70,9 +70,18 @@ def parse(config, argv):
                                 usage="%prog [options] [targets] ...",
                                 version=PGBuild.version)
 
+    ############# General options
+
+    parser.add_option("-v", "--verbose", action="count", dest="verbosity", default=1,
+                      help="report progress in more detail")    
+    parser.add_option("-q", "--quiet", action="store_const", dest="verbosity", const=0,
+                      help="suppress all noncritical output")    
+
+    ############# Configuration management
+
     configGroup = parser.add_option_group("Configuration Management")
     configGroup.add_option("-t", "--dump-tree", dest="treeDumpFile",
-                           help="Dump the configuration tree in XML Build Configuration format to FILE", metavar="FILE")
+                           help="dump the configuration tree to FILE", metavar="FILE")
 
     config.mount(OptionsXML(parser.parse_args(argv[1:])))
 

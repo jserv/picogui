@@ -66,42 +66,83 @@ class Colorizer:
         
 
 class Progress:
-    """Progress reporter based on Colorizer"""
+    """Progress reporter based on Colorizer
+       This supports dividing the program's execution into a hierarchy of tasks,
+       and reporting progress within each of those tasks.
 
-    def __init__(self):
-        self.color = Colorizer()
-        self.taskStack = []
+       Verbosity levels:
+         1.0 is always the neutral verbosity level. -v command line switches, for example,
+         add 1 to the verbosity level. The -q switch will set it to zero.
+
+       Unimportance levels:
+         Tasks and progress reports have unimportance levels- if the task/report's unimportance
+         is greater than the verbosity, nothing will be output.
+
+         The unimportance level of a task is added to all of its children's unimportance levels.
+         This means that a trivial task can be given an unimportance of 1 for example, so that
+         its children will have an unimportance of 2 and will only be output if there was a
+         -v command line switch. However, if a critical error with an unimportance of -5 occurs
+         in the trivial task, the task heading and that error will both be output.
+    """
+
+    def __init__(self, verbosityLevel=1, parent=None, taskName=None):
+        self.parent = parent
+        self.verbosityLevel = verbosityLevel
+        self.taskName = taskName
+        self.taskHeadingPrinted = 0
+        if parent:
+            self.color = parent.color
+            self.indentLevel = parent.indentLevel + 1
+        else:
+            self.color = Colorizer()
+            self.indentLevel = 0
+
+    def _printTaskHeading(self):
+        if not self.taskHeadingPrinted:
+            if self.parent and not self.parent.taskHeadingPrinted:
+                self.parent._printTaskHeading()            
+            if self.taskName:
+                self.color.write(" -" * self.indentLevel, ('bold',))
+                self.color.write(" %s..." % self.taskName, ('bold', 'cyan'))
+                self.color.write("\n")
+            self.taskHeadingPrinted = 1
+
+    def _outputTest(self, unimportance):
+        """Test whether a message is important enough to output,
+           if so return true and make sure our task headings have
+           been printed.
+           """
+        if unimportance > self.verbosityLevel:
+            return 0
+        self._printTaskHeading()
+        return 1
     
-    def report(self, verb, noun):
-        self.color.write("%10s " % verb)
-        self.color.write(":", ('bold',))
-        self.color.write(" %s\n" % noun)
+    def report(self, verb, noun, unimportance=1):
+        if self._outputTest(unimportance):
+            self.color.write("%10s " % verb)
+            self.color.write(":", ('bold',))
+            self.color.write(" %s\n" % noun)
 
-    def task(self, name):
-        self.color.write(" -" * len(self.taskStack))
-        self.color.write(" - ", ('bold',))
-        self.color.write("%s..." % name, ('bold', 'cyan'))
-        self.color.write("\n")
-        newProgress = Progress()
-        newProgress.taskStack = self.taskStack[:]
-        newProgress.taskStack.append(name)
-        return newProgress
+    def task(self, name, unimportance=0):
+        """Create a new Progress object representing a hierarchial task"""
+        return Progress(self.verbosityLevel - unimportance, self, name)
 
-    def warning(self, text):
-        self.message("Warning: " + text, ('bold', 'brown'))
+    def warning(self, text, unimportance=1):
+        self.message("Warning: " + text, unimportance, ('bold', 'brown'))
+            
+    def error(self, text, unimportance=-5):
+        self.message("Error: " + text, unimportance, ('bold', 'red'))
 
-    def error(self, text):
-        self.message("Error: " + text, ('bold', 'red'))
-
-    def message(self, text, color=None):
-        self.color.write("\n")
-        bullet = '*'
-        for line in text.split("\n"):
-            self.color.write(" %s " % bullet, ('bold',))
-            self.color.write(line, color)
+    def message(self, text, unimportance=1, color=None):
+        if self._outputTest(unimportance):
             self.color.write("\n")
-            bullet = ' '
-        self.color.write("\n")
+            bullet = '*'
+            for line in text.split("\n"):
+                self.color.write(" %s " % bullet, ('bold',))
+                self.color.write(line, color)
+                self.color.write("\n")
+                bullet = ' '
+            self.color.write("\n")
 
 ### The End ###
         

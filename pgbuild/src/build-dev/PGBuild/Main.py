@@ -27,24 +27,46 @@ as soon as it creates a Bootstrap object with vital path and package names.
 def run(config, progress):
     """Examine the provided configuration and take the specified actions"""
 
+    progress.message("This is a normal message")
+    progress.message("This is an unimportant message",2)
+    progress.message("This is an important message",0)
+
+    t = progress.task("Unimportant task",1)
+    t.message("This is a normal message")
+    t.message("This is an unimportant message",2)
+    t.message("This is an important message",0)
+
     treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
     if treeDumpFile:
         f = open(treeDumpFile, "w")
         f.write(config.toprettyxml())
         f.close()
 
+
 def main(bootstrap, argv):
-    """The entry point called by build.py. Initializes the config tree
-       and handles exceptions, letting run() do most of the work.
+    """The entry point called by build.py. Most of the work is done by run(),
+       this just handles:
+
+         - Initializing the config tree
+         - Initializing the Progress object
+         - Exception catching
        """
     import PGBuild.CommandLine.Options
     import PGBuild.CommandLine.Output
     import PGBuild.Config
     config = PGBuild.Config.Tree()
-    progress = PGBuild.CommandLine.Output.Progress()
     try:
+        # Load the options passed to use by build.py into the <bootstrap> section
         config.boot(bootstrap)
+
+        # Parse command line options into the <invocation> section
         PGBuild.CommandLine.Options.parse(config, argv)
+
+        # Set up a progress reporter object at the specified verbosity
+        verbosity = int(config.eval("invocation/option[@name='verbosity']/text()"))
+        progress = PGBuild.CommandLine.Output.Progress(verbosity)
+
+        # Do everything else :)
         run(config, progress)
     finally:
         config.commit()
