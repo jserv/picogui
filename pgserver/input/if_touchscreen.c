@@ -1,4 +1,4 @@
-/* $Id: if_touchscreen.c,v 1.6 2002/10/02 21:25:07 micahjd Exp $
+/* $Id: if_touchscreen.c,v 1.7 2002/10/02 22:23:22 micahjd Exp $
  *
  * if_touchscreen.c - Touchscreen calibration and filtering
  *
@@ -86,13 +86,15 @@ void infilter_touchscreen_handler(struct infilter *self, u32 trigger, union trig
 
   touchscreen_pentoscreen(tsc, &param->mouse.x, &param->mouse.y);
 
-  /* If the pen is up, move the invisible cursor offscreen */
-  if (!param->mouse.btn)
-    param->mouse.x = param->mouse.y = -1;
-
   /* Change the event into a normal mouse status event now that it's in screen coords 
    */
   infilter_send(self, PG_TRIGGER_PNTR_STATUS, param);
+
+  /* If the pen is up, move the invisible cursor offscreen */
+  if (!param->mouse.btn) {
+    param->mouse.x = param->mouse.y = -1;
+    infilter_send(self, PG_TRIGGER_MOVE, param);
+  }
 }
 
 struct infilter infilter_touchscreen = {
