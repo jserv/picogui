@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.5 2001/01/15 09:23:57 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.6 2001/01/15 09:57:46 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -47,7 +47,7 @@ void ncursesinput_sendkey(int key) {
 }
 
 int ncursesinput_fd_activate(int fd) {
-   int ch;
+   int ch,mods;
    Gpm_Event evt;
    static int savedbtn = 0;
    
@@ -58,6 +58,20 @@ int ncursesinput_fd_activate(int fd) {
        case ERR:    /* Nothing yet */
 	 break;
 
+       case '\033':
+	 /* Escape- the following key has the alt modifier */
+	 ch = getch();
+	 mods = PGMOD_ALT;
+
+	 /* Check for ctrl too */
+	 if (ch < ' ') {
+	    ch += 'a'-1;
+	    mods |= PGMOD_CTRL;
+	 }
+	 
+	 dispatch_key(TRIGGER_KEYDOWN,ch,mods);
+	 break;
+	 
 	 /**** Keys that must be mapped */
 	 
        case KEY_BACKSPACE:    dispatch_key(TRIGGER_CHAR,'\b',0); break;
@@ -86,6 +100,10 @@ int ncursesinput_fd_activate(int fd) {
 	 
        default:     /* Normal key */
 	 dispatch_key(TRIGGER_CHAR,ch,0);
+	 
+	 /* Check for ctrl */
+	 if (ch < ' ')
+	   dispatch_key(TRIGGER_DOWN,ch+'A'-1,PGMOD_CTRL);
       }
    }
    
