@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.13 2001/02/07 07:28:08 micahjd Exp $
+/* $Id: ncurses.c,v 1.14 2001/02/14 05:13:19 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_NCURSES
 
@@ -266,7 +268,7 @@ hwrcolor ncurses_color_pgtohwr(pgcolor c) {
 /**** A hack to turn off the picogui sprite cursor */
 
 void ncurses_sprite_show(struct sprite *spr) {
-   if (spr==pointer) {
+   if (spr==cursor) {
       spr->visible = 0;
     
       /* Do it ourselves */

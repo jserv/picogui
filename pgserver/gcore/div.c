@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.32 2000/12/29 22:31:58 micahjd Exp $
+/* $Id: div.c,v 1.33 2001/02/14 05:13:18 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -25,8 +25,9 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <pgserver/divtree.h>
-#include <pgserver/g_malloc.h>
 #include <pgserver/widget.h>
 
 /* Fill in the x,y,w,h of this divnode's children node based on it's

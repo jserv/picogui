@@ -1,4 +1,4 @@
-/* $Id: menuitem.c,v 1.3 2000/11/05 06:55:22 micahjd Exp $
+/* $Id: menuitem.c,v 1.4 2001/02/14 05:13:19 micahjd Exp $
  *
  * menuitem.c - a customized button, used for menu items
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 
 g_error menuitem_install(struct widget *self) {

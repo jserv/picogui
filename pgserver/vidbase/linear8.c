@@ -1,4 +1,4 @@
-/* $Id: linear8.c,v 1.10 2001/02/08 04:56:03 micahjd Exp $
+/* $Id: linear8.c,v 1.11 2001/02/14 05:13:19 micahjd Exp $
  *
  * Video Base Library:
  * linear8.c - For 8bpp linear framebuffers (2-3-3 RGB mapping)
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy */
 #include <pgserver/video.h>

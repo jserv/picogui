@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.15 2001/02/07 07:28:08 micahjd Exp $
+/* $Id: g_error.c,v 1.16 2001/02/14 05:13:18 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -25,7 +25,7 @@
  * 
  */
 
-#include <pgserver/g_error.h>
+#include <pgserver/common.h>
 
 #ifdef DEBUG_ANY
 /* Extra includes needed for guru screen */

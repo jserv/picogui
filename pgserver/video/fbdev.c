@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.1 2001/01/20 06:59:09 micahjd Exp $
+/* $Id: fbdev.c,v 1.2 2001/02/14 05:13:19 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -26,6 +26,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_FBDEV
 

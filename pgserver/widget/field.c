@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.17 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: field.c,v 1.18 2001/02/14 05:13:19 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -27,6 +27,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 

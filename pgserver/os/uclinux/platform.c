@@ -1,4 +1,4 @@
-/* $Id: platform.c,v 1.3 2001/01/29 00:22:33 micahjd Exp $
+/* $Id: platform.c,v 1.4 2001/02/14 05:13:18 micahjd Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
@@ -27,7 +27,7 @@
  * 
  */
 
-
+#include <pgserver/common.h>
 #include <malloc.h>
 
 /* VSNPRINTF *********************************************************************************/

@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.5 2001/01/13 20:28:19 micahjd Exp $
+/* $Id: sdlfb.c,v 1.6 2001/02/14 05:13:19 micahjd Exp $
  *
  * sdlfb.c - Video driver for SDL using a linear framebuffer.
  *           This will soon replace sdl.c, but only after the
@@ -27,6 +27,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_SDLFB
 

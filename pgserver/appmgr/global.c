@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.29 2001/02/13 04:02:12 micahjd Exp $
+/* $Id: global.c,v 1.30 2001/02/14 05:13:18 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -27,10 +27,11 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <pgserver/widget.h>
 #include <pgserver/divtree.h>
 #include <pgserver/font.h>
-#include <pgserver/g_malloc.h>
 #include <pgserver/appmgr.h>
 
 /*** Simple arrow cursor in XBM format */

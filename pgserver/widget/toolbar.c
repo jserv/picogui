@@ -1,4 +1,4 @@
-/* $Id: toolbar.c,v 1.10 2000/11/13 01:20:37 micahjd Exp $
+/* $Id: toolbar.c,v 1.11 2001/02/14 05:13:19 micahjd Exp $
  *
  * toolbar.c - container widget for buttons
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 

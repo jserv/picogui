@@ -1,4 +1,4 @@
-/* $Id: grop.c,v 1.37 2001/02/11 06:34:51 micahjd Exp $
+/* $Id: grop.c,v 1.38 2001/02/14 05:13:18 micahjd Exp $
  *
  * grop.c - rendering and creating grop-lists
  *
@@ -25,9 +25,10 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <pgserver/divtree.h>
 #include <pgserver/video.h>
-#include <pgserver/g_malloc.h>
 #include <pgserver/font.h>
 #include <pgserver/handle.h>
 #include <pgserver/appmgr.h>

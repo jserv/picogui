@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.7 2001/02/08 07:36:27 micahjd Exp $
+/* $Id: fillstyle.c,v 1.8 2001/02/14 05:13:18 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/svrtheme.h>
 #include <pgserver/pgnet.h>   /* ntohs and friends... */

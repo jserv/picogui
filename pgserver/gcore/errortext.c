@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.16 2001/02/08 07:36:27 micahjd Exp $
+/* $Id: errortext.c,v 1.17 2001/02/14 05:13:18 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -25,7 +25,7 @@
  * 
  */
 
-#include <pgserver/g_error.h>
+#include <pgserver/common.h>
 
 /************************ Numeric Errors */
 

@@ -1,4 +1,4 @@
-/* $Id: svgagl.c,v 1.4 2001/01/16 02:12:36 micahjd Exp $
+/* $Id: svgagl.c,v 1.5 2001/02/14 05:13:19 micahjd Exp $
  *
  * svgagl.c - video driver for (S)VGA cards, via vgagl and svgalib
  * 
@@ -26,6 +26,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_SVGAGL
 

@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.24 2000/12/31 23:18:18 micahjd Exp $
+/* $Id: bitmap.c,v 1.25 2001/02/14 05:13:19 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 
 struct bitmapdata {

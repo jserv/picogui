@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.16 2001/02/14 01:47:05 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.17 2001/02/14 05:13:19 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -32,6 +32,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/video.h>
 #include <pgserver/font.h>

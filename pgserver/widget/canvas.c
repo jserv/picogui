@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.5 2001/01/24 00:34:11 micahjd Exp $
+/* $Id: canvas.c,v 1.6 2001/02/14 05:13:19 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <picogui/canvas.h>
 

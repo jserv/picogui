@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.47 2001/01/15 09:01:01 micahjd Exp $
+/* $Id: panel.c,v 1.48 2001/02/14 05:13:19 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/video.h>
 #include <pgserver/timer.h>

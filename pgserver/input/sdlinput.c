@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.11 2001/01/05 03:18:52 micahjd Exp $
+/* $Id: sdlinput.c,v 1.12 2001/02/14 05:13:18 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_SDLINPUT
 

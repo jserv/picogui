@@ -1,4 +1,4 @@
-/* $Id: ez328_chipslice_lcd.c,v 1.3 2000/12/16 18:37:47 micahjd Exp $
+/* $Id: ez328_chipslice_lcd.c,v 1.4 2001/02/14 05:13:19 micahjd Exp $
  *
  * ez328_chipslice_lcd.c
  *           LCD video drivers for the DragonBall-based ChipSlice.
@@ -35,6 +35,8 @@
  *   initial version
  * 
  */
+
+#include <pgserver/common.h>
 
 /* Drivers for LCD panels of the CHIPSLICE platforms */
 #ifdef DRIVER_EZ328_CHIPSLICE

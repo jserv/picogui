@@ -1,4 +1,4 @@
-/* $Id: svgainput.c,v 1.17 2001/02/13 04:02:14 micahjd Exp $
+/* $Id: svgainput.c,v 1.18 2001/02/14 05:13:18 micahjd Exp $
  *
  * svgainput.h - input driver for SVGAlib
  *
@@ -24,6 +24,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_SVGAINPUT
 

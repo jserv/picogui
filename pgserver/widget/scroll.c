@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.29 2001/01/05 06:42:28 micahjd Exp $
+/* $Id: scroll.c,v 1.30 2001/02/14 05:13:19 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 
 /* Minimum # of milliseconds between scrolls. This is used to limit the

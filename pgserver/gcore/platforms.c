@@ -1,4 +1,4 @@
-/* $Id: platforms.c,v 1.2 2000/10/26 19:48:09 pney Exp $
+/* $Id: platforms.c,v 1.3 2001/02/14 05:13:18 micahjd Exp $
  *
  * platforms.c - groups some platforms dependant functions 
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 
 /* Case platform is uclinux */
 #ifdef UCLINUX

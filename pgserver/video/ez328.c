@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.4 2001/02/10 11:07:04 micahjd Exp $
+/* $Id: ez328.c,v 1.5 2001/02/14 05:13:19 micahjd Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -27,6 +27,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_EZ328
 

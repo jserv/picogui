@@ -1,4 +1,4 @@
-/* $Id: null.c,v 1.2 2001/02/14 01:47:05 micahjd Exp $
+/* $Id: null.c,v 1.3 2001/02/14 05:13:19 micahjd Exp $
  *
  * null.c - A dummy driver that produces no actual output but can do
  *          some error checking and debuggative things
@@ -25,6 +25,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_NULL
 

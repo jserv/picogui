@@ -1,4 +1,4 @@
-/* $Id: linear4.c,v 1.4 2001/02/14 01:47:05 micahjd Exp $
+/* $Id: linear4.c,v 1.5 2001/02/14 05:13:19 micahjd Exp $
  *
  * Video Base Library:
  * linear4.c - For 4-bit grayscale framebuffers
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/inlstring.h>    /* inline-assembly __memcpy if possible*/
 #include <pgserver/video.h>

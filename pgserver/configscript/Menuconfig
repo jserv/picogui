@@ -1263,7 +1263,7 @@ save_configuration () {
 	echo -n "."
 
 	DEF_CONFIG="${1:-.config}"
-	DEF_CONFIG_H="include/linux/autoconf.h"
+	DEF_CONFIG_H="include/pgserver/autoconf.h"
 
 	CONFIG=.tmpconfig
 	CONFIG_H=.tmpconfig.h
@@ -1448,7 +1448,7 @@ then
 else
 	echo
     	echo 
-	echo Your kernel configuration changes were NOT saved.
+	echo Your configuration changes were NOT saved.
 	echo
 fi
 

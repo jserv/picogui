@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.59 2001/02/13 04:02:14 micahjd Exp $
+/* $Id: widget.c,v 1.60 2001/02/14 05:13:19 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>
 

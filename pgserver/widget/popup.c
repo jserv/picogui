@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.24 2001/02/13 04:02:14 micahjd Exp $
+/* $Id: popup.c,v 1.25 2001/02/14 05:13:19 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -28,6 +28,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <pgserver/appmgr.h>
 

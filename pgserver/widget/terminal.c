@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.18 2001/01/31 03:54:16 micahjd Exp $
+/* $Id: terminal.c,v 1.19 2001/02/14 05:13:19 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 #include <ctype.h>
 

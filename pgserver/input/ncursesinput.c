@@ -1,4 +1,4 @@
-/* $Id: ncursesinput.c,v 1.11 2001/02/13 04:09:14 micahjd Exp $
+/* $Id: ncursesinput.c,v 1.12 2001/02/14 05:13:18 micahjd Exp $
  *
  * ncursesinput.h - input driver for ncurses
  * 
@@ -27,6 +27,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #ifdef DRIVER_NCURSESINPUT
 

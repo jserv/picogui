@@ -1,4 +1,4 @@
-/* $Id: driverinfo.c,v 1.14 2001/01/26 11:18:16 micahjd Exp $
+/* $Id: driverinfo.c,v 1.15 2001/02/14 05:13:18 micahjd Exp $
  *
  * driverinfo.c - has a static array with information about
  *                installed drivers.
@@ -30,6 +30,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/video.h>
 #include <pgserver/input.h>

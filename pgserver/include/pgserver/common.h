@@ -1,8 +1,8 @@
-/* $Id: all.h,v 1.4 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: common.h,v 1.1 2001/02/14 05:13:18 micahjd Exp $
  *
- * pgserver/all.h - Includes all the pgserver files. Some files
- *                  need so many includes that this just makes sense.
- *                  Sometimes I'm lazy. Oh well.
+ * pgserver/common.h - things every file in pgserver should need,
+ *                     including memory management, error handling,
+ *                     and configuration info.
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
@@ -27,21 +27,8 @@
  * 
  */
 
-#include <pgserver/divtree.h>
+#include <pgserver/autoconf.h>
 #include <pgserver/g_error.h>
-#include <pgserver/handle.h>
-#include <pgserver/pgnet.h>
-#include <pgserver/timer.h>
-#include <pgserver/widget.h>
-#include <pgserver/appmgr.h>
-#include <pgserver/font.h>
 #include <pgserver/g_malloc.h>
-#include <pgserver/input.h>
-#include <pgserver/pgmain.h>
-#include <pgserver/svrtheme.h>
-#include <pgserver/video.h>
-
-#include <picogui/network.h>
-#include <picogui/constants.h>
 
 /* The End */

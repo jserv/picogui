@@ -1,4 +1,4 @@
-/* $Id: background.c,v 1.4 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: background.c,v 1.5 2001/02/14 05:13:19 micahjd Exp $
  *
  * background.c - an internal widget for drawing the screen background
  *
@@ -25,6 +25,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 
 void build_background(struct gropctxt *c,unsigned short state,struct widget *self) {

@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.27 2001/01/30 03:34:21 micahjd Exp $
+/* $Id: handle.c,v 1.28 2001/02/14 05:13:18 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -27,7 +27,8 @@
  * 
  */
 
-#include <pgserver/g_malloc.h>
+#include <pgserver/common.h>
+
 #include <pgserver/handle.h>
 #include <pgserver/widget.h>
 #include <pgserver/pgnet.h>

@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.9 2000/10/19 01:21:24 micahjd Exp $
+/* $Id: box.c,v 1.10 2001/02/14 05:13:19 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <pgserver/common.h>
 #include <pgserver/widget.h>
 
 #define MANUALSIZE  ((int)self->data)   /* nonzero to disregard theme sizing */

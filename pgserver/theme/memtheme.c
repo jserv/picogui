@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.22 2001/02/13 05:09:19 micahjd Exp $
+/* $Id: memtheme.c,v 1.23 2001/02/14 05:13:18 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -26,8 +26,9 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <pgserver/svrtheme.h>
-#include <pgserver/g_error.h>
 #include <pgserver/divtree.h>
 #include <pgserver/pgnet.h>
 #include <picogui/theme.h>

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.26 2001/02/07 08:45:07 micahjd Exp $
+/* $Id: dispatch.c,v 1.27 2001/02/14 05:13:18 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -28,6 +28,8 @@
  * 
  * 
  */
+
+#include <pgserver/common.h>
 
 #include <pgserver/pgnet.h>
 

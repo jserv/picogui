@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.16 2001/02/08 02:37:07 micahjd Exp $
+/* $Id: font.c,v 1.17 2001/02/14 05:13:18 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -25,11 +25,11 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <string.h>
 
 #include <pgserver/font.h>
-#include <pgserver/g_malloc.h>
-#include <pgserver/g_error.h>
 #include <pgserver/video.h>
 
 /* This defines how italic the generated italic is */

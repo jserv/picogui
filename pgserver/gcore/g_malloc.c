@@ -1,4 +1,4 @@
-/* $Id: g_malloc.c,v 1.11 2000/12/17 05:53:49 micahjd Exp $
+/* $Id: g_malloc.c,v 1.12 2001/02/14 05:13:18 micahjd Exp $
  *
  * g_malloc.c - malloc wrapper providing error handling
  *
@@ -28,9 +28,9 @@
  * 
  */
 
+#include <pgserver/common.h>
+
 #include <stdlib.h>
-#include <pgserver/g_malloc.h>
-#include <pgserver/g_error.h>
 
 long memref = 0;
 
