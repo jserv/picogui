@@ -31,27 +31,30 @@ class Bootstrap:
     """PGBuild bootstrap object, holds pathnames and other
        settings necessary to bootstrap the rest of the system.
        """
+    def __init__(self):
+        self.paths = {}
+        self.packages = {}
 
-    # Store the path this script is in as the PGBuild root path
-    rootPath = os.path.abspath(os.path.dirname(sys.argv[0]))
+        # Store the path this script is in as the PGBuild root path
+        self.paths['root'] = os.path.abspath(os.path.dirname(sys.argv[0]))
 
-    # Set the other important paths
-    binPath       = os.path.join(rootPath, 'bin')
-    localConfPath = os.path.join(rootPath, 'conf')
-    packagePath   = os.path.join(rootPath, 'src')
-
-    # Set the name of the two packages PGBuild requires for bootstrapping
-    buildPackage  = "build-dev"
-    confPackage   = "conf-dev"
-
-    # Get paths for the bootstrap packages
-    buildPackagePath = os.path.join(packagePath, buildPackage)
-    confPackagePath  = os.path.join(packagePath, confPackage)
+        # Set the other important paths
+        self.paths['bin']       = os.path.join(self.paths['root'], 'bin')
+        self.paths['localConf'] = os.path.join(self.paths['root'], 'conf')
+        self.paths['packages']  = os.path.join(self.paths['root'], 'src')
+        
+        # Set the name of the two packages PGBuild requires for bootstrapping
+        self.packages['build'] = "build-dev"
+        self.packages['conf']  = "conf-dev"
+        
+        # Get paths for the bootstrap packages
+        self.paths['buildPackage'] = os.path.join(self.paths['packages'], self.packages['build'])
+        self.paths['confPackage']  = os.path.join(self.paths['packages'], self.packages['conf'])
 
 if __name__ == '__main__':
     # Use the Bootstrap class to locate our build package and call its Main
     boot = Bootstrap()
-    sys.path.insert(0, boot.buildPackagePath)
+    sys.path.insert(0, boot.paths['buildPackage'])
     import PGBuild.Main
     PGBuild.Main.main(boot, sys.argv)
 
