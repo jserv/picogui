@@ -1,4 +1,4 @@
-/* $Id: ez328.c,v 1.16 2001/10/23 13:31:41 pney Exp $
+/* $Id: ez328.c,v 1.17 2001/10/29 13:27:21 bauermeister Exp $
  *
  * ez328.c - Driver for the 68EZ328's (aka Motorola Dragonball EZ)
  *           built-in LCD controller. It assumes the LCD parameters
@@ -69,11 +69,12 @@ g_error ez328_init(void) {
 #elif defined(CONFIG_XCOPILOT)
    LXMAX  = 160;
    LYMAX  = 160-1;
-   vid->bpp = 1;
+   vid->bpp = vid->bpp<=2 ? vid->bpp : 1;
 #elif defined(CONFIG_SOFT_CHIPSLICE)
    LXMAX  = 240;
    LYMAX  = 320-1;
-   vid->bpp = 1;
+   if (!vid->bpp) vid->bpp = 2;
+   vid->bpp = vid->bpp<=2 ? vid->bpp : 1;
 #endif
    
    if (!vid->bpp) vid->bpp = 1;        /* Default to black and white */
@@ -109,7 +110,14 @@ g_error ez328_setmode(int xres,int yres,int bpp,unsigned long flags) {
       LVPW = LXMAX / 8;
       LPICF &= 0xFC;
       LPICF |= 1;
-      LGPMR = 0xC4;        /* Set a default pallete */
+# if defined(CONFIG_XCOPILOT)  || \
+     defined(CONFIG_SOFT_CHIPSLICE)
+      /* the xcopilot emulator is a MC68328, it has a 16-bit LGPMR */
+      WORD_REF(0xfffffa32) = 0x10f2; /* default: 0x1073 */
+# else
+      /* the MC68{EZ,VZ}328 have a 8-bit LGPMR */
+      LGPMR = 0xC4;        /* Set a default palette */
+# endif
       break;
 #endif
 
