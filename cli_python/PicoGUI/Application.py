@@ -78,7 +78,11 @@ class Application(Widget.Widget):
     def run(self):
         self.server.update()
         while 1:
-            queued = self.server.checkevent()
+
+            # Commented out to keep this from infinitely looping --Micah
+            queued = 1
+            #queued = self.server.checkevent()
+
             for i in range(queued):
                 ev = self.server.wait()
                 if ev.widget_id in self._widget_registry.keys():
