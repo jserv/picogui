@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.85 2002/02/18 10:16:46 micahjd Exp $
+/* $Id: dispatch.c,v 1.86 2002/03/26 04:05:42 instinc Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -427,8 +427,8 @@ g_error rqh_register(int owner, struct pgrequest *req,
 		     void *data, u32 *ret, int *fatal) {
   struct app_info i;
   g_error e;
-  short int *spec = (short int *)(((char*)data)+sizeof(struct pgreqd_register));
-  unsigned long remaining = req->size - sizeof(struct pgreqd_register);
+  s16 *spec = (s16 *)(((char*)data)+sizeof(struct pgreqd_register));
+  u32 remaining = req->size - sizeof(struct pgreqd_register);
   reqarg(register);
 
   memset(&i,0,sizeof(i));
@@ -453,7 +453,7 @@ g_error rqh_register(int owner, struct pgrequest *req,
 
   /* Process APPSPECs */
   for (;remaining >= 4;remaining -= 4) {
-    short key,value;
+    s16 key,value;
     key   = ntohs(*(spec++));
     value = ntohs(*(spec++));
 
@@ -758,7 +758,7 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
 		      void *data, u32 *ret, int *fatal) {
   struct pgresponse_data rsp;
   char *string;
-  unsigned long size;
+  u32 size;
   g_error e;
   reqarg(handlestruct);
 
@@ -780,7 +780,7 @@ g_error rqh_getstring(int owner, struct pgrequest *req,
 
 g_error rqh_setpayload(int owner, struct pgrequest *req,
 		       void *data, u32 *ret, int *fatal) {
-  unsigned long *ppayload;
+  u32 *ppayload;
   g_error e;
   reqarg(setpayload);
   
@@ -794,7 +794,7 @@ g_error rqh_setpayload(int owner, struct pgrequest *req,
 
 g_error rqh_getpayload(int owner, struct pgrequest *req,
 		       void *data, u32 *ret, int *fatal) {
-  unsigned long *ppayload;
+  u32 *ppayload;
   g_error e;
   reqarg(handlestruct);
   

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.44 2002/02/18 07:27:50 micahjd Exp $
+/* $Id: request.c,v 1.45 2002/03/26 04:05:44 instinc Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -219,7 +219,7 @@ void readfd(int from) {
 
 #ifdef DEBUG_NET
       printf("prep data (type %u, #%u, %lu bytes)\n",buf->req.type,
-	     buf->req.id,(unsigned long)buf->req.size);
+	     buf->req.id,(u32)buf->req.size);
 #endif
       /* Will the data fit in the static buffer? */
       if (buf->req.size < PKTBUF_LEN) {

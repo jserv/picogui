@@ -1,4 +1,4 @@
-/* $Id: eventq.c,v 1.19 2002/02/02 20:52:51 lonetech Exp $
+/* $Id: eventq.c,v 1.20 2002/03/26 04:05:43 instinc Exp $
  *
  * eventq.c - This implements the post_event function that the widgets
  *            use to send events to the client.  It stores these in a
@@ -42,7 +42,7 @@
    Normally data is NULL. To send a data event, set event to something using
    PG_EVENTCODING_DATA, put the size in param, and point data at your cargo.
 */
-void post_event(int event,struct widget *from,long param,int owner,char *data) {
+void post_event(int event,struct widget *from,s32 param,int owner,char *data) {
   handle hfrom;
   struct conbuf *cb;
 
