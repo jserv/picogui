@@ -20,8 +20,12 @@
 			    <label side="left" name="PythonPrompt"/>
 				<field side="all" name="PythonCommand"/>
 			</box> 
-		    <scrollbox>
-				<textbox side="all" readonly="1" name="PythonConsole"/>
+		        <scrollbox>
+				<textbox side="all" 
+					 readonly="1" 
+				   	 insertmode="append"
+					 name="PythonConsole"
+					 />
 			</scrollbox>
 		</tabpage>
 	</box>

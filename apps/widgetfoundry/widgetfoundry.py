@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# $Id: widgetfoundry.py,v 1.8 2002/11/17 04:23:29 micahjd Exp $
+# $Id: widgetfoundry.py,v 1.9 2002/11/19 00:20:30 micahjd Exp $
 #
 # widgetfoundry.py - Main module for the Widget Foundry WT editor
 #
@@ -20,54 +20,33 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 # 
-import PicoGUI
-import Components, CommandLine, Toolbox, WTWidget, XWT
+import PicoGUI, sys
+import WTWidget
+from code import InteractiveConsole
 
 
 class Main:
     def __init__(self):
-        self.app = PicoGUI.Application("Widget Foundry")
+        self.app = PicoGUI.TemplateApp(open('main.wt').read(),[
+            'WidgetTree',
+            'Properties',
+            'WidgetPalette',
+            'PythonPrompt',
+            'PythonCommand',
+            'PythonConsole',
+            'WorkArea',
+            'XWTViewer',
+            'WidgetInfo',
+            ])
         self.selectNotify = {}
         self.changeNotify = {}
         self.selection = None
 
-        # Give the window an initial size if it supports it
-        try:
-            self.app.width  = 800
-            self.app.height = 600
-        except PicoGUI.responses.ParameterError:
-            pass
-
-        self.toolbar = Components.Toolbar(self)
         self.workArea = WorkArea(self)
-
-        self.toolbar.add([
-            ('Toolbox',        Components.toggleComponent, {
-                'extdevents' : 'toggle',
-                'component'  : Toolbox.Toolbox,
-                'attr'       : 'toolbox'
-                }),
-            ('Command Line',   Components.toggleComponent, {
-                'extdevents' : 'toggle',
-                'component'  : CommandLine.CommandLine,
-                'attr'       : 'commandLine'
-                }),
-            ('XWT View',       Components.toggleComponent, {
-                'extdevents' : 'toggle',
-                'component'  : XWT.XWTView,
-                'attr'       : 'xwtView'
-                }),
-            ('Export WT',      XWT.ExportWT, {
-                'side'       : 'right',
-                }),
-            ('Save XWT',       XWT.Save, {
-                'side'       : 'right',
-                }),
-            ('Load XWT',       XWT.Load, {
-                'side'       : 'right',
-                }),
-            ])
-
+        self.propertyBox = PropertyBox(self)
+        self.commandLine = CommandLine(self)
+        self.xwtView = XWTView(self)
+        
     def select(self, widget):
         for i in self.selectNotify.keys():
             self.selectNotify[i](self.selection,widget)
@@ -77,7 +56,7 @@ class Main:
 class WorkArea:
     "This is where widget templates are constructed"
     def __init__(self, main):
-        self.root = WTWidget.Widget(main.app,main.toolbar.widget.addWidget('box'))
+        self.root = WTWidget.Widget(main.app,main.app.WorkArea.addWidget('box','inside'))
         self.root.side = 'all'
         self.main = main
         self.root.changeNotify = self.changeNotify
@@ -96,22 +75,96 @@ class WorkArea:
     def changeNotify(self, widget, property):
         for i in self.main.changeNotify.keys():
             self.main.changeNotify[i](widget,property)
+
        
+class PropertyBox:
+    "List of properties for the selected widget"
+    def __init__(self, main):
+        self.main = main
+        self.main.selectNotify[self] = self.selectNotify
+        self.main.changeNotify[self] = self.changeNotify
+        self.selectNotify(None, self.main.selection)
+
+    def selectNotify(self, previous, current):
+        if hasattr(self,'propList'):
+            self.propList.destroy()
+        if current:
+            self.propList = WTWidget.PropertyList(self.main.app, current, self.main.app.Properties)
+            self.updateInfo()
+
+    def changeNotify(self, widget, property):
+        if widget == self.main.selection and property == 'name':
+            self.updateInfo()
+            
+    def updateInfo(self):
+        if self.main.selection.properties.has_key('name'):
+            name = repr(self.main.selection.name)
+        else:
+            name = '<anonymous>'
+        self.main.app.WidgetInfo.text = "%s widget: %s" % (self.main.selection.wtype.name, name)
+
+
+class CommandLine(InteractiveConsole):
+    def __init__(self, main):
+        # Redirect stdout and stderr to our own write() function
+        sys.stdout = main.app.PythonConsole
+        sys.stderr = main.app.PythonConsole
+        
+        locals = {
+            "__name__":   "__console__",
+            "__doc__":    None,
+            "main":       main,
+            "PicoGUI":    PicoGUI,
+            "sys":        sys,
+            }
+        InteractiveConsole.__init__(self,locals)
+
+        try:
+            sys.ps1
+        except AttributeError:
+            sys.ps1 = ">>> "
+        try:
+            sys.ps2
+        except AttributeError:
+            sys.ps2 = "... "
+
+        self.main = main
+        self.prompt = sys.ps1
+        main.app.PythonPrompt.text = self.prompt
+        main.app.link(self.enterLine, main.app.PythonCommand, 'activate')
+
+        print "Python %s on %s\n(Widget Foundry shell, See main.__dict__ for useful variables)\n" %\
+              (sys.version, sys.platform)
+
+    def enterLine(self, ev, widget):
+        line = widget.text[:]
+        print self.prompt + line
+        if self.push(line):
+            self.prompt = sys.ps2
+        else:
+            self.prompt = sys.ps1
+        self.main.app.PythonPrompt.text = self.prompt
+        widget.text = ''
+        
+
+class XWTView:
+    def __init__(self, main):
+        self.main = main
+        self.main.changeNotify[self] = self.changeNotify
+        self.update()
+
+    def changeNotify(self, widget, property):
+        self.update()
+
+    def update(self):
+        self.main.app.XWTViewer.write(self.main.workArea.root.toXWT())
+
 
 if __name__ == '__main__':
-    Main().app.run()
-#    app = PicoGUI.TemplateApp(open('main.wt').read(),[
-#        'WidgetTree',
-#        'Properties',
-#        'WidgetPalette',
-#        'PythonPrompt',
-#        'PythonCommand',
-#        'PythonConsole',
-#        'WorkArea',
-#        'XWTViewer',
-#        ])
-#    w = app.WorkArea.addWidget('label','inside')
-#    w.text = "Hello"
-#    w.side = "all"
-#    app.PythonPrompt.text = ">>> "
-#    app.run()
+    saved_stdout = sys.stdout
+    saved_stderr = sys.stderr
+    try:
+        Main().app.run()
+    finally:
+        sys.stdout = saved_stdout
+        sys.stderr = saved_stderr
