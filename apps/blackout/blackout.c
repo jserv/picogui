@@ -1,4 +1,4 @@
-/* $Id: blackout.c,v 1.1 2001/01/24 00:28:19 micahjd Exp $
+/* $Id: blackout.c,v 1.2 2001/01/31 04:17:24 micahjd Exp $
  *
  * blackout.c - "Blackout" game to demonstrate game programming and
  *              canvas widget event handling.
@@ -159,9 +159,6 @@ int evtDrawBoard(short event, pghandle from, long param) {
    pgWriteCmd(from,PGCANVAS_REDRAW,0);
    pgUpdate();
 
-   /* Check for a win condition */
-   
-   
    return 0;
 }
 
