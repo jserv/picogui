@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.129 2002/02/08 15:20:16 instinc Exp $
+/* $Id: constants.h,v 1.130 2002/02/12 09:45:48 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -459,6 +459,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_TIME_OFF      33  //!< Milliseconds off for flashing cursor
 #define PGTH_P_TIME_DELAY    34  //!< Milliseconds to wait before flashing
 #define PGTH_P_PARENT        35  //!< Overrides the default theme inheritance
+#define PGTH_P_XOFFSET       36  //!< General purpose
+#define PGTH_P_YOFFSET       37  //!< General purpose
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.61 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: constants.h,v 1.62 2002/02/12 09:45:48 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -158,8 +158,8 @@
 #define PG_FSTYLE_DEFAULT      (1<<1)    //!< The default font in its category, fixed or proportional.
 #define PG_FSTYLE_SYMBOL       (1<<2)    //!< Font contains nonstandard chars and will not be chosen unless specifically requested
 #define PG_FSTYLE_SUBSET       (1<<3)    //!< Font does not contain all the ASCII chars before 127, and shouldn't be used unless requested
-#define PG_FSTYLE_EXTENDED     (1<<4)    //!< (deprecated) Contains international characters above 127 
-#define PG_FSTYLE_IBMEXTEND    (1<<5)    //!< (deprecated) Has IBM-PC extended characters
+#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
+#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
 #define PG_FSTYLE_DOUBLESPACE  (1<<7)    //!< Add extra space between lines
 #define PG_FSTYLE_BOLD         (1<<8)    //!< Use or simulate a bold version of the font
 #define PG_FSTYLE_ITALIC       (1<<9)    //!< Use or simulate an italic version of the font
@@ -169,8 +169,6 @@
 #define PG_FSTYLE_FLUSH        (1<<14)   //!< Disable the margin that PicoGUI puts around text
 #define PG_FSTYLE_DOUBLEWIDTH  (1<<15)   //!< Add extra space between characters
 #define PG_FSTYLE_ITALIC2      (1<<16)   //!< Twice the slant of the default italic
-#define PG_FSTYLE_ENCODING_ISOLATIN1  (1<<4)  //!< ISO Latin-1 encoding
-#define PG_FSTYLE_ENCODING_IBM        (1<<5)  //!< IBM-PC extended characters
 #define PG_FSTYLE_ENCODING_UNICODE    (1<<17) //!< Unicode encoding
 
 #define PG_FSTYLE_ENCODING_MASK       (PG_FSTYLE_ENCODING_ISOLATIN1|\
@@ -461,6 +459,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_TIME_OFF      33  //!< Milliseconds off for flashing cursor
 #define PGTH_P_TIME_DELAY    34  //!< Milliseconds to wait before flashing
 #define PGTH_P_PARENT        35  //!< Overrides the default theme inheritance
+#define PGTH_P_XOFFSET       36  //!< General purpose
+#define PGTH_P_YOFFSET       37  //!< General purpose
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
@@ -790,6 +790,7 @@ typedef unsigned long pghandle;
 #define PGDM_INPUT_CALEN     11   //!< Turn calibration mode on/off
 #define PGDM_CURSORWARP      12   //!< Internal message, notify drivers of a cursor warp
 #define PGDM_SIGNAL          13   //!< Internal message, sends SIGUSR1/2 to drivers (param is signal)
+#define PGDM_READY           14   //!< Notify the drivers that the server is completely up
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
@@ -1021,6 +1022,9 @@ typedef unsigned long pghandle;
 					    * color has already been multiplied by the alpha channel
 					    * then divided by 128.
 					    */  
+
+#define PGCF_MASK             (0xFF000000) /* Mask of all color flags */
+
 /******************** pgcolors */
 
 /* Standard HTML colors */
