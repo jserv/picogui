@@ -1,4 +1,4 @@
-/* $Id: eventbroker.c,v 1.8 2002/02/04 16:20:37 gobry Exp $
+/* $Id: eventbroker.c,v 1.9 2002/03/01 08:08:26 bauermeister Exp $
  *
  * eventbroker.c - input driver to manage driver messages
  *
@@ -161,8 +161,9 @@ void eventbroker_message(u32 message, u32 param, u32 *ret)
 
 
   case PGDM_BACKLIGHT:
-    switch(param) {
-    }
+#if defined(CONFIG_SOFT_CHIPSLICE) || defined(CONFIG_CHIPSLICE)
+    rm_backlight_ctrl(param ? RM_BACKLIGHT_ON : RM_BACKLIGHT_OFF);
+#endif
     break;
 
   /* sound support through /dev/tty2 implemented in drivers/char/vt.c */
