@@ -1,4 +1,4 @@
-/* $Id: if_client_adaptor.c,v 1.6 2003/03/04 06:55:13 micahjd Exp $
+/* $Id: if_client_adaptor.c,v 1.7 2003/03/04 23:37:01 micahjd Exp $
  *
  * if_client_adaptor.c - Send events to clients, for client-side input filters
  *
@@ -149,6 +149,9 @@ g_error infilter_client_send(union pg_client_trigger *client_trig) {
 		 client_trig->content.u.mouse.cursor_handle);
     tp.mouse.ts_calibration = client_trig->content.u.mouse.ts_calibration;
     errorcheck;
+  }
+  else if (client_trig->content.type & PG_TRIGGER_MOTIONTRACKER) {
+    memcpy(&tp.motion, &client_trig->content.u.motion, sizeof(tp.motion));
   }
 
   /* Get the source infilter */

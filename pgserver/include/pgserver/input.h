@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.53 2003/03/04 06:55:12 micahjd Exp $
+/* $Id: input.h,v 1.54 2003/03/04 23:37:00 micahjd Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -198,7 +198,7 @@ union trigparam {
   /* Data from a motion tracking device-
    * Values unsupported by the device should be zero.
    * Coordinates are in device-dependent physical units, but should
-   * be normalized between 0 and 0xFFFFFFF. If possible, the client
+   * be normalized between 0 and 0x7FFFFFF. If possible, the client
    * library should interpret this as a floating point number
    * between 0.0 and 1.0
    */

@@ -1,4 +1,4 @@
-/* $Id: network.h,v 1.72 2003/03/04 06:55:12 micahjd Exp $
+/* $Id: network.h,v 1.73 2003/03/04 23:37:01 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
@@ -127,8 +127,8 @@ union pg_client_trigger {
       } kbd;
 
       struct {
-	u32 position[3];         /* Position axes normalized between 0 and 0xFFFFFFFF */
-	u32 orientation[3];      /* Position axes normalized between 0 and 0xFFFFFFFF */
+	u32 position[3];         /* Position axes normalized between 0 and 0x7FFFFFFF */
+	u32 orientation[3];      /* Position axes normalized between 0 and 0x7FFFFFFF */
 	u32 bodyPart;          /* A PG_BODYPART_* constant indicating what this motion data is for */
       } motion;
 
