@@ -1,4 +1,4 @@
-/* $Id: jpeg.c,v 1.2 2001/07/25 21:47:34 micahjd Exp $
+/* $Id: jpeg.c,v 1.3 2001/08/13 02:59:11 micahjd Exp $
  *
  * jpeg.c - Functions to convert any of the jpeg formats 
  *
@@ -200,11 +200,7 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
   /* Convert from any of the pbmplus formats in binary or ascii */
   struct stdbitmap **bmp = (struct stdbitmap **) hbmp;
   g_error e;
-  unsigned char *p,*pline;
-  int shiftset = 8-vid->bpp;
-  int oshift;
-  int i,val,bit,r,g,b;
-  int bpp;
+  int i,r,g,b,x,y;
   hwrcolor hc;
 
   int pixels;
@@ -239,24 +235,22 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
 #endif
 
   /* Set up the bitmap */
-  e = (*vid->bitmap_new) ((hwrbitmap *)bmp,cinfo.output_width,cinfo.output_height);
+  e = VID (bitmap_new) ((hwrbitmap *)bmp,cinfo.output_width,
+			cinfo.output_height);
   errorcheck;
 
   /* Make a one-row-high sample array that will go away when done with image */
   buffer = (*cinfo.mem->alloc_sarray)
 		((j_common_ptr) &cinfo, JPOOL_IMAGE, scanline_bytes, 1);
 
-
-  pline = p = (*bmp)->bits;
-  oshift=shiftset;
-
+  y = 0;
   while (cinfo.output_scanline <   cinfo.output_height  ) 
   {
 
     jpeg_read_scanlines(&cinfo, buffer, 1);
 
     /* process scanline */
-    for (i=0;i<scanline_bytes; i=i+3) {
+    for (i=0,x=0;i<scanline_bytes; i=i+3,x++) {
 
       switch(cinfo.out_color_components) {
       case 3:
@@ -272,53 +266,14 @@ g_error jpeg_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       /* Convert to hwrcolor */
       hc = VID(color_pgtohwr) (mkcolor(r,g,b));
 
-      /* Output them in the device's bpp */
-      switch (vid->bpp) {
-      case 1:
-      case 2:
-      case 4:
-	if (oshift==shiftset)
-	   *p = hc << oshift;
-	else
-	   *p |= hc << oshift;
-	if (!oshift) {
-	  oshift = shiftset;
-	  p++;
-	}
-	 else
-	   oshift -= vid->bpp;
-	break;
-
-      case 8:
-	*(((unsigned char *)p)++) = hc;
-	break;
-	 
-      case 16:
-	*(((unsigned short *)p)++) = hc;
-	break;
-
-      case 24:
-	*(p++) = (unsigned char) hc;
-	*(p++) = (unsigned char) (hc >> 8);
-	*(p++) = (unsigned char) (hc >> 16);
-	break;
-
-      case 32:
-	*(((unsigned long *)p)++) = hc;
-	break;
-
-#if DEBUG_VIDEO
-	/* Probably not worth the error-checking time
-	   in non-debug versions, as it would be caught
-	   earlier (hopefully?)
-	*/
-
-      default:
-	printf("Converting to unsupported BPP\n");
-	exit(1);
-#endif
-      }
+      /* Get the video driver to set the pixel.
+       * This is slower than the funky loop used in the pnm loader,
+       * but since JPEG decompression is slow anyway it doesn't really
+       * matter as much.
+       */
+      VID(pixel) (*bmp,x,y,hc,PG_LGOP_NONE);
     }
+    y++;
   }
   jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
