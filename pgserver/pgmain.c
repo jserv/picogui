@@ -1,4 +1,4 @@
-/* $Id: pgmain.c,v 1.18 2002/01/06 09:22:56 micahjd Exp $
+/* $Id: pgmain.c,v 1.19 2002/01/10 18:07:16 micahjd Exp $
  *
  * pgmain.c - Processes command line, initializes and shuts down
  *            subsystems, and invokes the net subsystem for the
@@ -33,6 +33,8 @@
 #include <pgserver/video.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
+#include <pgserver/configfile.h>
+#include <pgserver/touchscreen.h>
 
 #include <stdlib.h>
 #include <string.h>   /* For strdup() */
@@ -43,12 +45,16 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 extern char **environ;
 #endif
 
 volatile u8 proceed = 1;
 volatile u8 in_shutdown = 0, in_init = 1;
-int use_sessionmgmt = 0;
+volatile int use_sessionmgmt = 0;           /* Using session manager, exit after last client */
+int use_tpcal = 0;                          /* Run tpcal before running the session manager */
+int sessionmgr_secondary = 0;               /* Need to run session manager after tpcal */
+volatile int sessionmgr_start = 0;          /* Start the session manager at the next iteration */
 extern long memref;
 struct dtstack *dts;
 
@@ -60,6 +66,7 @@ extern int optind;
 #ifndef WINDOWS
 pid_t my_pid;
 void sigterm_handler(int x);
+void sigchld_handler(int x);
 #endif
 
 /* For storing theme files to load later */
@@ -70,6 +77,40 @@ struct themefilenode {
 };
 
 struct themefilenode *themefiles;
+
+/* Fork off a process specified in a config variable, 
+ * returns nonzero if a process was specified.
+ */
+int run_config_process(const char *name) {
+#ifndef WINDOWS  
+  const char *cmd;
+
+  cmd = get_param_str("pgserver",name,NULL);
+
+  if (!cmd)
+    return 0;
+
+# ifdef UCLINUX
+  if (!vfork())
+# else
+    if (!fork())
+# endif
+      {
+	char *sargv[4];
+	sargv[0] = "sh";
+	sargv[1] = "-c";
+	sargv[2] = (char *) cmd;
+	sargv[3] = 0;
+	execve("/bin/sh",sargv,environ);
+	prerror(mkerror(PG_ERRT_BADPARAM,55));
+	kill(my_pid,SIGTERM);
+	exit(1);
+      }
+   
+  return 1;
+#endif
+}
+
 
 /********** And it all starts here... **********/
 int main(int argc, char **argv) {
@@ -124,14 +165,14 @@ int main(int argc, char **argv) {
     struct themefilenode *tail = NULL,*p;
     handle h;
     int vidw,vidh,vidd,vidf;
-    char *str;
+    const char *str;
     g_error (*viddriver)(struct vidlib *v) = NULL;
     
 #ifndef WINDOWS    /* Command line processing is broke in windoze */
 
     while (1) {
 
-      c = getopt(argc,argv,"hlnv:m:i:t:c:-:");
+      c = getopt(argc,argv,"hlnv:m:i:t:c:-:s:");
       if (c==-1)
 	break;
       
@@ -173,6 +214,10 @@ int main(int argc, char **argv) {
 
       case 'm':        /* Video mode */
 	set_param_str("pgserver","mode",optarg);
+	break;
+
+      case 's':        /* Session manager */
+	set_param_str("pgserver","session",optarg);
 	break;
 
       case 'c':        /* Config file */
@@ -286,7 +331,7 @@ int main(int argc, char **argv) {
 #endif
 	     "usage: pgserver [-hln] [-c configfile] [-v driver] [-m WxHxD]\n"
 	     "                [--section.key=value] [--key=value] [--key]\n"
-	     "                [-i driver] [-t theme] [session manager...]\n\n"
+	     "                [-i driver] [-t theme] [-s \"session manager\"]\n\n"
 	     "  h : This help message\n"
 	     "  l : List installed drivers and fonts\n"
 	     "  n : Ignore existing configuration data\n"
@@ -349,11 +394,12 @@ int main(int argc, char **argv) {
       * use it, but in this case there's no reason why not to.
       */
      {
+       const char *constthemes;
        char *themes;
        char *tok;
 
-       if (themes = get_param_str("pgserver","themes",NULL)) {
-	 themes = strdup(themes);
+       if (constthemes = get_param_str("pgserver","themes",NULL)) {
+	 themes = strdup(constthemes);
 
 	 while (tok = strtok(themes," \t")) {
 
@@ -375,11 +421,12 @@ int main(int argc, char **argv) {
 
      /* Use strtok again to load input drivers */
      {
+       const char *constinputs;
        char *inputs,*str;
        char *tok;
 
-       if (inputs = get_param_str("pgserver","input",NULL)) {
-	 str = inputs = strdup(inputs);
+       if (constinputs = get_param_str("pgserver","input",NULL)) {
+	 str = inputs = strdup(constinputs);
 
 	 while (tok = strtok(str," \t")) {
 	   if (iserror(prerror(
@@ -521,6 +568,10 @@ int main(int argc, char **argv) {
      prerror(mkerror(PG_ERRT_INTERNAL,54));
      exit(1);
   }
+  if (signal(SIGCHLD,&sigchld_handler)==SIG_ERR) {
+     prerror(mkerror(PG_ERRT_INTERNAL,54));
+     exit(1);
+  }
 #endif
    
 #ifdef CONFIG_VIDEOTEST   /* Video test mode */
@@ -536,56 +587,28 @@ int main(int argc, char **argv) {
 #endif   
      update(NULL,1);
 
-  /* Now that the socket is listening, run the session manager */
-
-  if (optind<argc && argv[optind]) {
-    use_sessionmgmt = 1;
-
-#ifdef WINDOWS
-    if (_spawnvp(_P_NOWAIT,argv[optind],argv+optind)<=0) {
-      prerror(mkerror(PG_ERRT_BADPARAM,55));
-      exit(1);
-    }
-#else
-# ifdef UCLINUX
-    if (!vfork()) {
-# else
-    if (!fork()) {
-# endif
-      execvp(argv[optind],argv+optind);
-      prerror(mkerror(PG_ERRT_BADPARAM,55));
-      kill(my_pid,SIGTERM);
-      exit(1);
-    }
+  /* Need to calibrate touchscreen? */
+#ifdef CONFIG_TOUCHSCREEN
+  if (!touchscreen_calibrated)
+    use_tpcal = 1;
 #endif
 
+  /* Start the first child process, either tpcal or the session manager */
+  if (use_tpcal) {
+    if (!run_config_process("tpcal")) {
+      if (run_config_process("session"))
+	use_sessionmgmt = 1;
+    }
+    else
+      sessionmgr_secondary = 1;
+  }
+  else {
+    if (run_config_process("session"))
+      use_sessionmgmt = 1;    
   }
 
-#ifndef WINDOWS  
-  /* We still might have a session manager from the config file */
-  if (get_param_str("pgserver","session",NULL)) {
-    use_sessionmgmt = 1;
-    
-# ifdef UCLINUX
-    if (!vfork()) {
-# else
-    if (!fork()) {
-# endif
-      char *sargv[4];
-      sargv[0] = "sh";
-      sargv[1] = "-c";
-      sargv[2] = get_param_str("pgserver","session",NULL);
-      sargv[3] = 0;
-      execve("/bin/sh",sargv,environ);
-      prerror(mkerror(PG_ERRT_BADPARAM,55));
-      kill(my_pid,SIGTERM);
-      exit(1);
-    }
-  }    
-#endif
-
+  /* Done! */
   in_init = 0;
-     
   /*************************************** Main loop */
 
 #ifdef DEBUG_INIT
@@ -593,8 +616,15 @@ int main(int argc, char **argv) {
   guru("Initialization done!\n\n(This message brought to you\nby DEBUG_INIT)");
 #endif
      
-  while (proceed)
+  while (proceed) {
     net_iteration();
+
+    if (sessionmgr_start) {
+      if (run_config_process("session"))
+	use_sessionmgmt = 1;    
+      sessionmgr_start = 0;
+    }
+  }
 
   /*************************************** cleanup time */
 
@@ -636,6 +666,16 @@ int main(int argc, char **argv) {
 #ifndef WINDOWS
 void sigterm_handler(int x) {
   proceed = 0;
+}
+
+void sigchld_handler(int x) {
+  /* Wait for child so we don't have zombies */
+  waitpid(-1, NULL, WNOHANG);
+    
+  if (sessionmgr_secondary) {
+    sessionmgr_start = 1;
+    sessionmgr_secondary = 0;
+  }
 }
 #endif
 

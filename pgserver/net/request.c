@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.32 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: request.c,v 1.33 2002/01/10 18:07:16 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -79,7 +79,8 @@ void closefd(int fd) {
   struct conbuf *p,*condemn=NULL;
 
   /* Last client left */
-  if (use_sessionmgmt && !(--numclients))
+  --numclients;
+  if (use_sessionmgmt && !numclients)
     request_quit();
   
   /* Give up captured input devices */
