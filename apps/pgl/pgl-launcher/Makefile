@@ -1,4 +1,4 @@
-include ../../../Makefile.rules
+include ../../Makefile.rules
 
 BINNAME = pgl-launcher 
 SRC     = $(wildcard *.c)
