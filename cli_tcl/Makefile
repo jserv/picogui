@@ -11,7 +11,7 @@ tclheader:
 	echo '#!'`which tclsh` >tclheader
 
 widgets.in: ../pgserver/include/picogui/constants.h apps/parseheader.tcl
-	apps/parseheader.tcl $< $@ "#define PG_WIDGET_" pg_widget
+	apps/parseheader.tcl $< $@ PG_WIDGET_ pg_widget
 
 clean:
-	rm -f apps/*.tcl
+	rm -f apps/*.tcl picogui.tcl tclheader widgets.in

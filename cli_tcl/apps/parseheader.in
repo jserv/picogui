@@ -19,9 +19,9 @@ set arrayname [lindex $argv 3]
 
 set fdata [split [FromFile $input] "\n"]
 set data ""
-set cut [string length $search]
+set cut [string length "#define $search"]
 foreach line $fdata {
-	set start [string first $search $line]
+	set start [string first "#define $search" $line]
 	if {$start ==0} {
 		set line [string range $line $cut end ]
 		set line [regsub -all " +" [regsub -all "\t+" $line " "] " "]
@@ -35,7 +35,11 @@ foreach line $data {
 set out [open $output w]
 puts $out "array set $arrayname \""
 foreach line [lsort [array names temp]] {
-	puts $out "\t$line\t$temp($line)"
+	puts -nonewline $out "\t$line\t"
+	if {[string first $search $temp($line)]==0} {
+		set temp($line) $temp([string tolower [string range $temp($line) [string length $search] end]])
+	}
+	puts $out [format "%sexpr $temp($line)%s" {[} {]}]
 }
 puts $out "\""
 close $out
