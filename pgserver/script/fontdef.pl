@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.13 2001/09/01 23:12:10 micahjd Exp $
+# $Id: fontdef.pl,v 1.14 2001/10/17 05:49:05 micahjd Exp $
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.
@@ -145,8 +145,11 @@ foreach $fntname (sort keys %fdfs) {
 		elsif (/^ENCODING\s*(\S+)/) {
 		    if ($encoding+1 != $1 and $beginglyph!=-1) {
 			# We will later replace these extras with copies of the default glyph
-			$numglyphs++;
-			push @glyphs, "";
+			for ($i=$1-$encoding-1;$i;$i--) {
+			    $numglyphs++;
+			    push @glyphs, "";
+
+			}
 		    }
 		    $encoding = $1;
 		    $saved_beginglyph = $beginglyph;
