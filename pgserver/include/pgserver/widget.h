@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.35 2001/08/09 09:57:48 micahjd Exp $
+/* $Id: widget.h,v 1.36 2001/08/30 15:05:08 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -348,8 +348,10 @@ extern struct widget *kbdfocus;
 
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
-void customize_button(struct widget *self,int state,int state_on,int state_hilight,
-		      void *extra, void (*event)(struct widget *extra,struct widget *button));
+void customize_button(struct widget *self,int state,int state_on,
+		      int state_hilight,int state_on_nohilight,
+		      void *extra, void (*event)(struct widget *extra,
+						 struct widget *button));
 
 /* Clips a popup's main divnode to fit on the screen,
  * used when changing video modes */

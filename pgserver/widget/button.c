@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.72 2001/08/10 13:40:33 micahjd Exp $
+/* $Id: button.c,v 1.73 2001/08/30 15:05:09 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -43,7 +43,7 @@ struct btndata {
    handle bitmap,bitmask,text,font;
    
    /* Hooks for embedding a button in another widget */
-   int state,state_on,state_hilight;
+   int state,state_on,state_hilight,state_on_nohilight;
    struct widget *extra;  /* the owner of a customized button */
    void (*event)(struct widget *extra,struct widget *button);
    
@@ -55,11 +55,14 @@ struct btndata {
 
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
-void customize_button(struct widget *self,int state,int state_on,int state_hilight,
-		      void *extra, void (*event)(struct widget *extra,struct widget *button)) {
+void customize_button(struct widget *self,int state,int state_on,
+		      int state_hilight, int state_on_nohilight,
+		      void *extra, void (*event)(struct widget *extra,
+						 struct widget *button)) {
   self->in->div->state = DATA->state = state;
   DATA->state_on = state_on;
   DATA->state_hilight = state_hilight;
+  DATA->state_on_nohilight = state_on_nohilight;
   DATA->extra = extra;
   DATA->event = event;
 
@@ -146,6 +149,7 @@ g_error button_install(struct widget *self) {
   /* Default states */
   DATA->state = PGTH_O_BUTTON;
   DATA->state_on = PGTH_O_BUTTON_ON;
+  DATA->state_on_nohilight = PGTH_O_BUTTON_ON;
   DATA->state_hilight = PGTH_O_BUTTON_HILIGHT;
 
   /* Main split */
@@ -387,8 +391,10 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   /* Update, THEN send the event. */
 
-  if (DATA->on)
+  if (DATA->on && DATA->over)
     div_setstate(self->in->div,DATA->state_on,0);
+  else if (DATA->on)
+    div_setstate(self->in->div,DATA->state_on_nohilight,0);
   else if (DATA->over)
     div_setstate(self->in->div,DATA->state_hilight,0);
   else

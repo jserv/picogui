@@ -1,4 +1,4 @@
-/* $Id: menuitem.c,v 1.6 2001/03/03 01:44:27 micahjd Exp $
+/* $Id: menuitem.c,v 1.7 2001/08/30 15:05:09 micahjd Exp $
  *
  * menuitem.c - a customized button, used for menu items
  *
@@ -37,7 +37,7 @@ g_error menuitem_install(struct widget *self) {
 
   /* Customize */
   customize_button(self,PGTH_O_MENUITEM,PGTH_O_MENUITEM_HILIGHT,
-		   PGTH_O_MENUITEM_HILIGHT,NULL,NULL);
+		   PGTH_O_MENUITEM_HILIGHT,PGTH_O_MENUITEM_HILIGHT,NULL,NULL);
 
   /* We need extra events */
   widget_set(self,PG_WP_EXTDEVENTS,PG_EXEV_PNTR_UP | PG_EXEV_NOCLICK);

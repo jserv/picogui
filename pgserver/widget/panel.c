@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.64 2001/08/30 03:56:50 micahjd Exp $
+/* $Id: panel.c,v 1.65 2001/08/30 15:05:09 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -278,21 +278,24 @@ g_error panel_install(struct widget *self) {
 		    self->container,self->owner);
   errorcheck;
   customize_button(DATA->btn_close,PGTH_O_CLOSEBTN,PGTH_O_CLOSEBTN_ON,
-		   PGTH_O_CLOSEBTN_HILIGHT,self,&panelbtn_close);
+		   PGTH_O_CLOSEBTN_HILIGHT,PGTH_O_CLOSEBTN_ON,self,
+		   &panelbtn_close);
 
   /* Rotate Button */
   e = widget_create(&DATA->btn_rotate,PG_WIDGET_BUTTON,self->dt,DATA->btn_close->out,
 		    self->container,self->owner);
   errorcheck;
   customize_button(DATA->btn_rotate,PGTH_O_ROTATEBTN,PGTH_O_ROTATEBTN_ON,
-		   PGTH_O_ROTATEBTN_HILIGHT,self,&panelbtn_rotate);
+		   PGTH_O_ROTATEBTN_HILIGHT,PGTH_O_ROTATEBTN_ON,
+		   self,&panelbtn_rotate);
 
   /* Zoom Button */
   e = widget_create(&DATA->btn_zoom,PG_WIDGET_BUTTON,self->dt,DATA->btn_rotate->out,
 		    self->container,self->owner);
   errorcheck;
   customize_button(DATA->btn_zoom,PGTH_O_ZOOMBTN,PGTH_O_ZOOMBTN_ON,
-		   PGTH_O_ZOOMBTN_HILIGHT,self,&panelbtn_zoom);
+		   PGTH_O_ZOOMBTN_HILIGHT,PGTH_O_ZOOMBTN_ON,
+		   self,&panelbtn_zoom);
 
   /* And finally, the divnode that draws the panelbar */
   e = newdiv(DATA->btn_zoom->out,self);
