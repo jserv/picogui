@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.39 2002/02/02 22:37:46 micahjd Exp $
+/* $Id: sdlfb.c,v 1.40 2002/02/03 00:56:55 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -314,7 +314,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   else
 #endif
   {
-     vid->bpp  = sdl_vidsurf->format->BitsPerPixel;
+     ((struct stdbitmap*)vid->display)->bpp = vid->bpp  = sdl_vidsurf->format->BitsPerPixel;
      FB_MEM = sdl_vidsurf->pixels;
      FB_BPL = sdl_vidsurf->pitch;
   }
