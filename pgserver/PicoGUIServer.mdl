@@ -35,7 +35,7 @@ export PG_TS_CALIBRATION
 
 # start pgserver
 pgserver &
-sleep 2
+sleep 2\n
 ''',
                      help = "Start the PicoGUI Server" )
             ]
