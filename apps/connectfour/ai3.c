@@ -82,7 +82,7 @@ int nextmovelose(struct board *it, int param)
   
   //positive slope
   for(x=0;x<4;x++)
-    for(y=1;y<3;y++)
+    for(y=0;y<3;y++)
     { 
       total = glook(it,x,y) + glook(it,x+1,y+1) + glook(it,x+2,y+2) + glook(it,x+3,y+3);
       if(total == 3 || total == -3)
@@ -94,7 +94,7 @@ int nextmovelose(struct board *it, int param)
   
   //negative slope
   for(x=0;x<4;x++)
-    for(y=1;y<6;y++)
+    for(y=0;y<6;y++)
     {
       total = glook(it,x,y) + glook(it,x+1,y-1) + glook(it,x+2,y-2) + glook(it,x+3,y-3);
       if(total == 3 || total == -3)
