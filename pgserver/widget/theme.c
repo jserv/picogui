@@ -1,4 +1,4 @@
-/* $Id: theme.c,v 1.14 2000/09/09 01:46:16 micahjd Exp $
+/* $Id: theme.c,v 1.15 2000/09/23 06:11:55 micahjd Exp $
  *
  * theme.h - This defines the structures and functions for themes,
  * parameters defining the way widgets are drawn that are reconfigurable
@@ -88,8 +88,8 @@ void addelement(struct divnode *d,struct element *el,
 /* Apply a state to an existing gropnode */
 void applystate(struct gropnode *n,struct element *el,int state) {
   /* gradient.c1 occupies the same memory as c */
-  n->param.gradient.c1 = el->state[state].c1;
-  n->param.gradient.c2 = el->state[state].c2;
+  n->param.gradient.c1 = (*vid->color_pgtohwr)(el->state[state].c1);
+  n->param.gradient.c2 = (*vid->color_pgtohwr)(el->state[state].c2);
   n->param.gradient.angle = el->state[state].angle;
   n->param.gradient.translucent = el->state[state].translucent;
 }
