@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.24 2002/09/15 10:51:48 micahjd Exp $
+/* $Id: font.h,v 1.25 2002/09/26 14:11:02 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -140,9 +140,6 @@ g_error findfont(handle *pfh,int owner, const u8 *name,int size,stylet flags);
 /* Utility to do a binary search for a font glyph */
 const struct fontglyph *font_findglyph(const struct fontglyph *start, 
 				 const struct fontglyph *end, s32 key);
-
-/* Render a textgrid gropnode, called from render.c */
-void textgrid_render(struct groprender *r, struct gropnode *n);
 
 #endif /* __H_FONT */
 

@@ -24,7 +24,9 @@ libwidget_a_SOURCES = \
     $(WIDGET)
 
 EXTRA_libwidget_a_SOURCES = \
-    terminal.c \
+    terminal_frontend.c \
+    terminal_textgrid.c \
+    terminal_vt102.c \
     canvas.c \
     panel_nobar.c \
     textbox_frontend.c \

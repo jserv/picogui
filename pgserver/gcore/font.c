@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.54 2002/09/17 23:01:56 micahjd Exp $
+/* $Id: font.c,v 1.55 2002/09/26 14:11:02 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -463,109 +463,6 @@ int fontcmp(struct fontstyle_node *fs,const u8 *name, int size, stylet flags) {
 
   return result;
 }
-
-#ifdef CONFIG_WIDGET_TERMINAL
-/* The workhorse of the terminal widget. 3 params:
- * 1. buffer handle,
- * 2. buffer width and offset (0xWWWWOOOO)
- * 3. handle to textcolors array
- */
-void textgrid_render(struct groprender *r, struct gropnode *n) {
-  int buffersz,bufferw,bufferh;
-  int celw,celh,charw,charh,offset;
-  int i;
-  unsigned char attr;
-  u32 *textcolors;
-  s16 temp_x;
-  struct gropnode bn;
-  struct groprender br;
-  struct pgstr_iterator stri = PGSTR_I_NULL;
-  struct pgstring *str;
-  struct fontdesc *fd;
-
-  if (iserror(rdhandle((void**)&str,PG_TYPE_PGSTRING,-1,
-		       n->param[0])) || !str)
-    return;
-  if (iserror(rdhandle((void**)&fd,PG_TYPE_FONTDESC,-1,
-		       r->hfont)) || !fd)
-    return;
-    
-  /* Set up background color node (we'll need it later) */
-  memset(&bn,0,sizeof(bn));
-  bn.type = PG_GROP_RECT;
-  bn.flags = PG_GROPF_COLORED;
-  
-  /* Read textcolors parameter */
-  if (iserror(rdhandle((void**)&textcolors,PG_TYPE_PALETTE,-1,
-		       n->param[2])) || !textcolors)
-    return;
-  if (textcolors[0] < 16)    /* Make sure it's big enough */
-    return;
-  textcolors++;              /* Skip length entry */
-  
-  /* Should be fine for fixed width fonts
-   * and pseudo-acceptable for others? */
-  celw      = fd->font->w;  
-  celh      = fd->font->h;
-  
-  /* n->param[1]'s low u16 is the buffer width, the high u16 is
-   * an offset from the beginning of the buffer.
-   */
-  bufferw = n->param[1] >> 16;
-  buffersz = str->num_chars - (n->param[1] & 0xFFFF);
-  pgstring_seek(str,&stri, n->param[1] & 0xFFFF);
-  bufferh = buffersz / bufferw;
-  if (buffersz<=0) return;
-  
-  charw     = n->r.w/celw;
-  charh     = n->r.h/celh;
-  offset    = bufferw - charw;
-  if (offset<0) {
-    offset = 0;
-    charw = bufferw;
-  }
-  if (charh>bufferh)
-    charh = bufferh;
-  
-  r->orig.x = n->r.x;
-  for (;charh;charh--,n->r.y+=celh,pgstring_seek(str,&stri,offset)) {
-      
-    /* Skip the entire line if it's clipped out */
-    if (n->r.y > r->clip.y2 ||
-	(n->r.y+celh) < r->clip.y1) {
-      pgstring_seek(str,&stri,bufferw);
-      continue;
-    }
-    
-    for (n->r.x=r->orig.x,i=charw;i;i--) {
-      void *metadata;
-      u32 ch;
-      
-      /* Decode one character/attribute pair */
-      ch = pgstring_decode_meta(str,&stri,&metadata);
-      attr = (u8)(u32)metadata;
-      
-      /* Background color (clipped rectangle) */
-      if ((attr & 0xF0)!=0) {
-	br = *r;
-	bn.r.x = n->r.x;
-	bn.r.y = n->r.y;
-	bn.r.w = celw;
-	bn.r.h = celh;
-	bn.param[0] = textcolors[attr>>4];
-	gropnode_clip(&br,&bn);
-	gropnode_draw(&br,&bn);
-      }
-      
-      temp_x = n->r.x;
-      n->r.x += celw;
-      outchar(r->output, fd, &temp_x, &n->r.y, 
-	      textcolors[attr & 0x0F],
-	      ch, &r->clip,r->lgop, 0);
-    }
-  }
-}
-#endif
 
 /* The End */
 

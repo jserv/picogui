@@ -25,7 +25,8 @@ noinst_HEADERS = \
 	fbkeys.h	\
 	svrwt.h		\
 	pgstring.h	\
-	paragraph.h
+	paragraph.h     \
+	terminal.h
 
 CONFIG_CLEAN_FILES = autoconf.h
 
