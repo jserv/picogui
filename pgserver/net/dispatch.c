@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.55 2001/08/13 19:03:01 micahjd Exp $
+/* $Id: dispatch.c,v 1.56 2001/08/30 04:46:23 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -414,7 +414,8 @@ g_error rqh_mkpopup(int owner, struct pgrequest *req,
   g_error e;
   reqarg(mkpopup);
 
-  e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w,owner);
+  e = create_popup((s16)ntohs(arg->x),(s16)ntohs(arg->y),
+		   (s16)ntohs(arg->w),(s16)ntohs(arg->h),&w,owner);
   errorcheck;
 
   e = mkhandle(&h,PG_TYPE_WIDGET,owner,w);
