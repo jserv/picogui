@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.14 2001/05/05 02:00:08 micahjd Exp $
+/* $Id: canvas.c,v 1.15 2001/05/05 20:54:18 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -33,8 +33,30 @@
 void canvas_command(struct widget *self, unsigned short command, 
 		    unsigned short numparams,signed long *params);
 
-/* Use the data pointer to store a grop context */
-#define CTX  ((struct gropctxt *)self->data)
+struct canvasdata {
+   struct gropctxt ctx;
+   struct rect input_map;
+   u8 input_maptype;
+};
+   
+#define DATA ((struct canvasdata *)self->data)
+#define CTX  (&DATA->ctx)
+
+/*********************************** Utility */
+
+/* This does the reverse of mappings specified in render.c */
+void canvas_inputmap(struct widget *self,s16 *x,s16 *y) {
+   switch (DATA->input_maptype) {
+    case PG_MAP_NONE:
+      return;
+      
+    case PG_MAP_SCALE:
+      *x = *x * DATA->input_map.w / self->in->div->w;
+      *y = *y * DATA->input_map.h / self->in->div->h;
+      break;
+      
+   }
+}
 
 /*********************************** Widget interfacing */
 
@@ -50,8 +72,9 @@ g_error canvas_install(struct widget *self) {
    g_error e;
    
    /* Allocate context */
-   e = g_malloc((void**) &self->data,sizeof(struct gropctxt));
+   e = g_malloc((void**) &self->data,sizeof(struct canvasdata));
    errorcheck;
+   memset(self->data,0,sizeof(struct canvasdata));
    
    /* Main split */
    e = newdiv(&self->in,self);
@@ -139,6 +162,8 @@ void canvas_trigger(struct widget *self,long type,union trigparam *param) {
       break;
    }
 
+   canvas_inputmap(self,&param->mouse.x,&param->mouse.y);
+   
    /* Same mouse event packing used for pointer grabbing in widget.c:  
     *
     * Squeeze all the mouse params into a long, as follows.
@@ -267,6 +292,15 @@ void canvas_command(struct widget *self, unsigned short command,
       self->in->div->tx = params[0];
       self->in->div->ty = params[1];
       self->in->div->flags = DIVNODE_SCROLL_ONLY;
+      break;
+
+    case PGCANVAS_INPUTMAPPING:
+      if (numparams<5) return;
+      DATA->input_map.x   = params[0];
+      DATA->input_map.y   = params[1];
+      DATA->input_map.w   = params[2];
+      DATA->input_map.h   = params[3];
+      DATA->input_maptype = params[4];
       break;
       
    }

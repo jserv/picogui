@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.26 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: widget.h,v 1.27 2001/05/05 20:54:17 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -76,20 +76,20 @@ typedef long glob;
 /* Trigger param union */
 union trigparam {
   struct {
-    int x,y,btn;  /* Current mouse status */
-    int chbtn;    /* Changed buttons */
+    s16 x,y,btn;  /* Current mouse status */
+    s16 chbtn;    /* Changed buttons */
 
     /* Relative to a particular divnode */
     struct divnode *div;
-    int divx,divy;
+    s16 divx,divy;
   } mouse;
   struct {
-    int key;
-    int mods;
+    s16 key;
+    s16 mods;
   } kbd;
   struct {
-    unsigned long size;
-    unsigned char *data;
+    u32 size;
+    u8 *data;
   } stream;
 };
 

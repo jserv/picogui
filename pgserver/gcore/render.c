@@ -1,4 +1,4 @@
-/* $Id: render.c,v 1.3 2001/05/05 02:00:07 micahjd Exp $
+/* $Id: render.c,v 1.4 2001/05/05 20:54:16 micahjd Exp $
  *
  * render.c - gropnode rendering engine. gropnodes go in, pixels come out :)
  *            The gropnode is clipped, translated, and otherwise mangled,
@@ -310,6 +310,9 @@ void gropnode_nonvisual(struct groprender *r, struct gropnode *n) {
 }
 
 /****************************************************** gropnode_map */
+
+/* NOTE: When new mapping types are added, add input mappings
+ * to canvas.c! */
 
 void gropnode_map(struct groprender *r, struct gropnode *n) {
 
