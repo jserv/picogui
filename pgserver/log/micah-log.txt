@@ -1,3 +1,17 @@
+2001-08-12    Micah Dowty <micahjd@users.sourceforge.net>
+
+Just for fun, but also to make the development environment for embedded
+systems as realistic as possible, I'm writing support for 'skins' into
+PicoGUI that can make it look and act very much like a particular handheld.
+This just means adding more config options to the SDL video and input
+drivers, and writing some config files for the skins.
+
+      * README.configfile: Added many new options to sdlfb and sdlinput
+      
+      * skin/helio*: Added some example Helio skins
+      
+
+
 2001-08-11    Micah Dowty <micahjd@users.sourceforge.net>
 
 Writing a couple more test applets that will be used in PGL. I'm waiting on

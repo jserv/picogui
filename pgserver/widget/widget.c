@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.96 2001/08/09 09:57:48 micahjd Exp $
+/* $Id: widget.c,v 1.97 2001/08/12 22:35:15 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -554,6 +554,7 @@ int send_trigger(struct widget *w, long type,
 
 void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
   union trigparam param;
+  s16 physx,physy;
   memset(&param,0,sizeof(param));
 
   inactivity_reset();
@@ -563,7 +564,17 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
     drivermessage(PGDM_SOUNDFX,PG_SND_KEYCLICK);
 
   /* Convert coordinates from physical to logical */
+  physx = x;
+  physy = y;
   VID(coord_logicalize) (&x,&y);
+
+  /* If this is a button up/down event and we're not already at the
+   * specified coordinates, move there. This is almost completely unnecessary
+   * for mice, but a must with touchscreens!
+   */
+  if ( (type == TRIGGER_DOWN || type == TRIGGER_UP) &&
+       (x != cursor->x || y != cursor->y) )
+    dispatch_pointing(TRIGGER_MOVE,physx,physy,prev_btn);
    
   param.mouse.x = x;
   param.mouse.y = y;

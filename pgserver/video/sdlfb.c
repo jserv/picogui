@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.18 2001/08/12 21:08:58 micahjd Exp $
+/* $Id: sdlfb.c,v 1.19 2001/08/12 22:35:15 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -49,6 +49,10 @@ int sdlfb_emucolors;
 pgcolor sdlfb_tint;
 s16 sdlfb_display_x;
 s16 sdlfb_display_y;
+#endif
+
+#ifdef CONFIG_SDLEMU_BLIT
+void *sdlfb_backbuffer;
 #endif
 
 /* Macros to easily access the members of vid->display */
@@ -247,6 +251,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
       */
      e = g_malloc((void**)&FB_MEM,(FB_BPL * vid->yres) + 1);
      errorcheck;
+     sdlfb_backbuffer = FB_MEM;
   }
   else
 #endif
@@ -319,8 +324,8 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 void sdlfb_close(void) {
 #ifdef CONFIG_SDLEMU_BLIT
   /* Free backbuffer */
-   if (FB_MEM && (FB_MEM != sdl_vidsurf->pixels))
-     g_free(FB_MEM);
+   if (sdlfb_backbuffer)
+     g_free(sdlfb_backbuffer);
 #endif   
   unload_inlib(inlib_main);   /* Take out our input driver */
   SDL_Quit();

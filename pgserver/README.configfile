@@ -154,6 +154,33 @@ quoted appropriately. For example:
 - total
   The total number of screenshots to take
 
+[input-sdlinput]
+
+- autowarp
+  Automatically detect PicoGUI pointer warping and pass it on to SDL.
+  This is on by default.
+
+- sdlcursor
+  Display the cursor provided by SDL
+
+- pgcursor
+  If this is nonzero, the PicoGUI cursor is shown whenever the mouse is moved.
+  This is on by default.
+
+- translate_x
+  Add this value to the X coordinate before dispatching an event
+
+- translate_y
+  Add this value to the Y coordinate before dispatching an event
+
+- upmove
+  If nonzero, send 'move' events when the mouse button is up
+  This is on by default.
+
+- foldbuttons
+  Convert all mouse button clicks to button 1, to simulate a one-button
+  mouse or touchpad
+
 --- The End ---
 
 

@@ -1,4 +1,4 @@
-/* $Id: sdlinput.c,v 1.19 2001/07/11 09:22:28 micahjd Exp $
+/* $Id: sdlinput.c,v 1.20 2001/08/12 22:35:15 micahjd Exp $
  *
  * sdlinput.h - input driver for SDL
  *
@@ -53,6 +53,15 @@
  */
 #define POLL_USEC 100
 
+/* Options from the config file */
+u8 sdlinput_autowarp;
+u8 sdlinput_pgcursor;
+u8 sdlinput_foldbuttons;
+u8 sdlinput_upmove;
+s16 sdlinput_translate_x;
+s16 sdlinput_translate_y;
+
+
 /******************************************** Implementations */
 
 void sdlinput_poll(void) {
@@ -67,6 +76,8 @@ void sdlinput_poll(void) {
   cursorx = cursor->x;
   cursory = cursor->y;
   VID(coord_physicalize)(&cursorx,&cursory);
+  cursorx -= sdlinput_translate_x;
+  cursory -= sdlinput_translate_y;
 
   switch (evt.type) {
     
@@ -74,39 +85,53 @@ void sdlinput_poll(void) {
     /* If SDL's old mouse position doesn't jive with our cursor position,
      * warp the mouse and try again.
      */
-    if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
-	(evt.motion.y-evt.motion.yrel)!=cursory) {
-      SDL_WarpMouse(cursorx,
-		    cursory);
-      break;
-    }
+    if (sdlinput_autowarp)
+      if ((evt.motion.x-evt.motion.xrel)!=cursorx ||
+	  (evt.motion.y-evt.motion.yrel)!=cursory) {
+	SDL_WarpMouse(cursorx,
+		      cursory);
+	break;
+      }
 
     if ((evt.motion.x==ox) && (evt.motion.y==oy)) break;
-    dispatch_pointing(TRIGGER_MOVE,ox = evt.motion.x,
-		      oy = evt.motion.y,btnstate=evt.motion.state);
-    drivermessage(PGDM_CURSORVISIBLE,1);
+    if (sdlinput_upmove || evt.motion.state)
+      dispatch_pointing(TRIGGER_MOVE,
+			sdlinput_translate_x + (ox = evt.motion.x),
+			sdlinput_translate_y + (oy = evt.motion.y),
+			btnstate=evt.motion.state);
+    if (sdlinput_pgcursor)
+      drivermessage(PGDM_CURSORVISIBLE,1);
     break;
     
   case SDL_MOUSEBUTTONDOWN:
     /* Also auto-warp for button clicks */
-    if (evt.button.x!=cursorx ||
-	evt.button.y!=cursory)
-      SDL_WarpMouse(cursorx,
-		    cursory);
+    if (sdlinput_autowarp)
+      if (evt.button.x!=cursorx ||
+	  evt.button.y!=cursory)
+	SDL_WarpMouse(cursorx,cursory);
 
-    dispatch_pointing(TRIGGER_DOWN,cursorx,
-		      cursory,btnstate |= 1<<(evt.button.button-1));
+    dispatch_pointing(TRIGGER_DOWN,
+		      sdlinput_translate_x + 
+		      (sdlinput_autowarp ? cursorx : evt.button.x),
+		      sdlinput_translate_y + 
+		      (sdlinput_autowarp ? cursory : evt.button.y),
+		      btnstate |= 1<<(evt.button.button-1));
     break;
     
   case SDL_MOUSEBUTTONUP:
     /* Also auto-warp for button clicks */
-    if (evt.button.x!=cursorx ||
-	evt.button.y!=cursory)
-      SDL_WarpMouse(cursorx,
-		    cursory);
-
-    dispatch_pointing(TRIGGER_UP,cursorx,
-		      cursory,btnstate &= ~(1<<(evt.button.button-1)));
+    if (sdlinput_autowarp)
+      if (evt.button.x!=cursorx ||
+	  evt.button.y!=cursory)
+	SDL_WarpMouse(cursorx,
+		      cursory);
+    
+    dispatch_pointing(TRIGGER_UP,
+		      sdlinput_translate_x + 
+		      (sdlinput_autowarp ? cursorx : evt.button.x),
+		      sdlinput_translate_y + 
+		      (sdlinput_autowarp ? cursory : evt.button.y),
+		      btnstate &= ~(1<<(evt.button.button-1)));
     break;
     
   case SDL_KEYDOWN:
@@ -131,7 +156,14 @@ void sdlinput_poll(void) {
 }
 
 g_error sdlinput_init(void) {
-  SDL_ShowCursor(0);    /* Handle our own cursor */
+  sdlinput_autowarp = get_param_int("input-sdlinput","autowarp",1);
+  sdlinput_pgcursor = get_param_int("input-sdlinput","pgcursor",1);
+  sdlinput_foldbuttons = get_param_int("input-sdlinput","foldbuttons",0);
+  sdlinput_upmove = get_param_int("input-sdlinput","upmove",1);
+  sdlinput_translate_x = get_param_int("input-sdlinput","translate_x",0);
+  sdlinput_translate_y = get_param_int("input-sdlinput","translate_y",0);
+  SDL_ShowCursor(get_param_int("input-sdlinput","sdlcursor",0));
+
   SDL_EnableUNICODE(1);
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
   return sucess;
