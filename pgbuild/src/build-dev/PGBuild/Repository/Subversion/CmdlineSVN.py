@@ -65,9 +65,12 @@ class ptyopen(object):
         return status >> 8
 
 
-def openSvn(args):
+def openSvn(args, progress):
     global svnCommand
     cmdline = '%s --non-interactive %s' % (svnCommand, args)
+
+    # When in verbose mode, show the command we're running
+    progress.report('running', cmdline, 2)
 
     # Our first choice is to use a pseudoterminal. This gets us nice line-buffered
     # text rather than having it plop out in big chunks. If we have a problem with
@@ -126,7 +129,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
     def download(self, destination, progress):
         finished = 0
         try:
-            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination)),
+            collectProgress(openSvn('co "%s" "%s"' % (self.url, destination), progress),
                             progress, destination)
             finished = 1
         finally:
@@ -155,7 +158,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
         if not self.isWorkingCopyPresent(destination):
             return 1
 
-        svn = openSvn('status --show-updates "%s"' % destination)
+        svn = openSvn('status --show-updates "%s"' % destination, progress)
         # If we have any lines beginning with (ignoring whitespace) an asterisk,
         # we need to update something.
         while 1:
@@ -170,7 +173,7 @@ class Repository(PGBuild.Repository.RepositoryBase):
     def update(self, destination, progress):
         """Update the package if possible. Return 1 if there was an update available, 0 if not."""
         if self.isWorkingCopyPresent(destination):
-            return collectProgress(openSvn('up "%s"' % destination), progress, destination) != 0
+            return collectProgress(openSvn('up "%s"' % destination, progress), progress, destination) != 0
         else:
             # No working copy- do a complete download
             self.download(destination, progress)
