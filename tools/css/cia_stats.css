@@ -11,6 +11,7 @@ body {
 img {
   border: none;
   vertical-align: middle;
+  padding: 0em 1em;
 }
 
 .dateBox {
@@ -24,6 +25,7 @@ img {
 .footer {
   background: white;
   border-top: 1px solid black;
+  border-bottom: 1px solid black;
   margin: 2em 0em 0em 0em;
   padding: 1em;
   text-align: center;
