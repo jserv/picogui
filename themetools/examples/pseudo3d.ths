@@ -1,0 +1,70 @@
+/* $Id: pseudo3d.ths,v 1.1 2000/11/08 06:36:21 micahjd Exp $
+ *
+ * Theme with simple (and boring?) grey 3d-ish hilights
+ * But hey, it works on a 16-color display!
+ *
+ * Micah Dowty
+ */
+
+object default {
+  /* The default fill, shaded on the edges */
+  bgfill = fillstyle {
+    var hc,sc;
+    hc = ColorConv(hilightcolor);
+    sc = ColorConv(shadowcolor);
+    Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+    Slab(x,y,w,1,hc);
+    Slab(x,y+h-1,w,1,sc);
+    Bar(x,y,1,h,hc);
+    Bar(x+w-1,y,1,h,sc);
+    x = x + offset;
+    y = y + offset;
+  };
+  bgcolor = 0xC0C0C0;
+  hilightcolor = 0xFFFFFF;
+  shadowcolor = 0x808080;
+
+  /* Some consistant spacings and margins */
+  spacing = 2;
+  margin = 2;
+}
+
+/* Button sizing */
+object button {
+  height = 20;
+  width = 20;
+}
+
+/* Well, but not for panelbuttons */
+object base.panelbtn {
+  width = Copy(panelbar::width);
+  height = Copy(panelbar::width);
+  spacing = 0;
+}
+
+/* Separate the buttons a bit */
+object closebtn side = PG_S_LEFT;
+object rotatebtn side = PG_S_RIGHT;
+object zoombtn side = PG_S_RIGHT;
+
+/* Button click effects! */
+object button.on {
+  hilightcolor = Copy(button::shadowcolor);
+  shadowcolor = Copy(button::hilightcolor);
+  offset = 1;
+}
+
+/* Toolbars, with reversed 'colors' and a different margin */ 
+object toolbar {
+  hilightcolor = Copy(default::shadowcolor);
+  shadowcolor = Copy(default::hilightcolor);
+}
+
+/* Panelbars */
+object panelbar {
+  width = 17;
+  fgcolor = 0xFFFFFF;
+  bgcolor = 0x000080;
+  hilightcolor = 0x0000FF;
+  shadowcolor = 0x000000;
+}
