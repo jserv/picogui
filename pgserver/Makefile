@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.68 2001/04/05 05:23:16 micahjd Exp $
+# $Id: Makefile,v 1.69 2001/04/07 09:30:37 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -21,6 +21,9 @@
 #
 #
 # $Log: Makefile,v $
+# Revision 1.69  2001/04/07 09:30:37  micahjd
+# Fixes ncurses and gpm dependencies when compiling ncursesinput but not ncurses
+#
 # Revision 1.68  2001/04/05 05:23:16  micahjd
 # Added the new flatbutton widget to the server
 #
@@ -277,6 +280,9 @@ ifneq ($(DRIVER_SVGAFB),)
 endif
 
 ifneq ($(DRIVER_NCURSES),)
+        LDFLAGS := $(LDFLAGS) -lncurses
+endif
+ifneq ($(DRIVER_NCURSESINPUT),)
         LDFLAGS := $(LDFLAGS) -lncurses -lgpm
 endif
 
