@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.9 2002/11/07 07:59:56 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.10 2002/11/07 08:20:48 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -40,12 +40,12 @@
  */
 static inline void set_shm1(hwrbitmap a, int shmflag) {
   if(shmflag && !XB(a)->using_shm)
-    XSync(x11_display, False);
+    XSync(x11_display,False);
   XB(a)->using_shm = shmflag;
 }
 static inline void set_shm2(hwrbitmap a, hwrbitmap b, int shmflag) {
   if(shmflag && ((!XB(b)->using_shm) || (!XB(a)->using_shm)))
-    XSync(x11_display, False);
+    XSync(x11_display,False);
   XB(a)->using_shm = shmflag;
   XB(b)->using_shm = shmflag;
 }

@@ -63,7 +63,7 @@ endmenu
 mainmenu_option next_comment
 comment 'Fonts'
 bool 'Freetype2 font engine'                     CONFIG_FONTENGINE_FREETYPE
-bool 'Xft font engine'                           CONFIG_FONTENGINE_XFT
+bool 'Xft font engine (EXPERIMENTAL)'            CONFIG_FONTENGINE_XFT
 bool 'Text mode font engine'                     CONFIG_FONTENGINE_TEXTMODE
 bool 'Internal BDF font engine'                  CONFIG_FONTENGINE_BDF
 if [ "$CONFIG_FONTENGINE_BDF" = "y" ]; then
@@ -108,7 +108,7 @@ if [ "$DRIVER_SDLFB" = "y" ]; then
 	 Blit	       		CONFIG_SDLEMU_BLIT \
 	 Color			CONFIG_SDLEMU_COLOR" None
 fi
-bool 'X Window System driver (EXPERIMENTAL)' DRIVER_X11
+bool 'X Window System driver'              DRIVER_X11
 bool 'SDL/OpenGL driver (EXPERIMENTAL, see README.opengl)'    DRIVER_SDLGL
 bool 'SVGAlib framebuffer driver'          DRIVER_SVGAFB
 bool 'Motorola 68EZ328 LCD driver'         DRIVER_EZ328
