@@ -25,6 +25,20 @@ separate theme object to create a checkbox's look and workings.
       * widget/button.c: Added an experimental PG_WP_ON property to get/set
         the toggle state of a button/checkbox/radiobutton/etc
 
+      * examples/pseudo3d.ths: Added good checkbox support- put together a
+        small code fragment to make a bitmapped checkbox that is reused in
+	a few other themes.
+ 
+      * examples/aqua.ths: Added good checkbox support
+      
+      * examples/classic256.ths: Added minimal checkbox support
+      
+      * examples/flat16.ths: Added neat checkbox support
+      
+      * examples/nifty3d.ths: Added good checkbox support
+
+      * examples/pastel_light.ths: Added good checkbox support
+
 2001-03-25    Micah Dowty <micahjd@users.sourceforge.net>
 
 Well, I'm on spring break now! So, aside from the multiplayer gaming, I have
