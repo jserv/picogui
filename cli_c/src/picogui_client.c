@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.34 2001/01/03 10:06:08 micahjd Exp $
+/* $Id: picogui_client.c,v 1.35 2001/01/03 10:11:49 micahjd Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -499,7 +499,8 @@ void pgInit(int argc, char **argv)
 
       else if (!strcmp(arg,"version")) {
 	/* --pgversion : For now print CVS id */
-	fprintf(stderr,"$Id: picogui_client.c,v 1.34 2001/01/03 10:06:08 micahjd Exp $\n");
+	fprintf(stderr,"$Id: picogui_client.c,v 1.35 2001/01/03 10:11:49 micahjd Exp $\n");
+	exit(1);
       }
       
       else {
