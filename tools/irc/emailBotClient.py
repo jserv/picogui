@@ -8,6 +8,7 @@
 from twisted.internet import reactor, protocol
 import sys, email
 
+logFile = "/home/commits/mail.log"
 socketName = "/tmp/announceBot.socket"
 allowedCommands = ("Announce", "JoinChannel", "PartChannel")
 
@@ -15,6 +16,9 @@ class AnnounceClient(protocol.Protocol):
     def connectionMade(self):
         import sys
         mailMsg  = email.message_from_file(sys.stdin)
+        f = open(logFile, "a")
+	f.write(mailMsg.as_string())
+	f.close()
         subjectFields = mailMsg['Subject'].split(" ")
         messages = mailMsg.get_payload().split("\n")
         if subjectFields[0] in allowedCommands:
