@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.9 2002/11/23 12:23:35 micahjd Exp $
+/* $Id: init.c,v 1.10 2002/11/25 07:56:13 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -110,6 +110,9 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   DBG("initial themes");
   e = reload_initial_themes();
   errorcheck;
+
+  DBG("Initial mouse cursor");
+  cursor_retheme();
 
 #ifdef CONFIG_TOUCHSCREEN
   /* This will queue up the touchscreen calibrator 
