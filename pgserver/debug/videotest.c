@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.35 2002/11/03 05:01:34 micahjd Exp $
+/* $Id: videotest.c,v 1.36 2002/11/03 23:25:31 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -354,13 +354,11 @@ void videotest_help(void) {
        "\t6\tText test pattern\n"
        "\t7\tAlpha channel test\n"
        "\t8\tblur test\n"
-       "\t99\tAll tests\n"
-       "\tnegative value: repeat test in a loop\n"
        );
 }
 
 
-static void videotest_run_one(int number,int update) {
+void videotest_run(s16 number) {
   switch (number) {
   case 1:
     testpat_line();
@@ -390,45 +388,14 @@ static void videotest_run_one(int number,int update) {
     printf("Unknown video test mode");
     exit(1);
   }
-  if (update)
-    VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
-}
 
+  VID(update) (VID(window_debug)(),0,0,vid->lxres,vid->lyres);
 
-void videotest_cleanup(void) {
   /* If we had to create the alpha test bitmap, clean that up now */
   if (alphatest_bitmap) {
     VID(bitmap_free)(alphatest_bitmap);
     alphatest_bitmap = NULL;
   }
-}
-
-void videotest_run(s16 number) {
-  int loop, cycle, nr;
-  const int delay = 1;
-
-  loop = number<0;
-  number = number<0 ? -number : number;
-  cycle = number==99;
-  nr = cycle ? 1 : number;
-
-  for(;;) {
-    videotest_run_one(nr,1);
-
-    if(loop || cycle) {
-      if (sleep(delay))    /* If sleep is interrupted, exit -- micah */
-	return;
-      if(cycle) {
-	if(++nr>NUM_PATTERNS) {
-	  if(!loop) break;
-	  else nr = 1;
-	}
-      }
-    }
-    else break;
-  }
-
-  videotest_cleanup();
 }
 
 /* The End */
