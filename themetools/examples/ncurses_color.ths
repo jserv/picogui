@@ -1,0 +1,27 @@
+/* $Id: ncurses_color.ths,v 1.1 2001/01/15 01:19:29 micahjd Exp $
+ *
+ * PicoGUI theme for the ncurses video driver.
+ * Nice colorful buttons and things, as provided by programs like dialog
+ *
+ * Micah Dowty
+ */
+
+object default {
+   bgfill = fillstyle {
+      Rect(x,y,w,h,ColorConv(bgcolor));
+   };
+   bgcolor = 0x808080;
+   fgcolor = 0x000000;
+   
+   width = 1;
+   height = 1;
+   margin = 0;
+   spacing = 1;
+}
+
+object panelbar {
+   bgcolor = 0x000080;
+   fgcolor = 0xFFFFFF;
+}
+
+/* The End */
