@@ -38,6 +38,7 @@ CONFIG_ERROR_TRACE=y
 # DEBUG_VIDEODRIVER is not set
 # DEBUG_PGSTRING_MEM is not set
 # DEBUG_TEXTBOX is not set
+# DEBUG_CANVAS is not set
 # DEBUG_TEXTEDIT is not set
 # CONFIG_X11_SHM_PROFILE is not set
 # CONFIG_EFENCE is not set
@@ -102,7 +103,7 @@ CONFIG_SDLEMU_NONE=y
 #
 # Input Drivers
 #
-CONFIG_INPUT_AUTOLOAD=y
+# CONFIG_INPUT_AUTOLOAD is not set
 # CONFIG_TOUCHSCREEN is not set
 # DRIVER_H3600TS is not set
 # DRIVER_ADC7843 is not set
@@ -116,7 +117,7 @@ DRIVER_SDLINPUT=y
 # DRIVER_RRTS is not set
 DRIVER_EVENTBROKER=y
 # DRIVER_TUXTS is not set
-# DRIVER_TTYKB is not set
+DRIVER_TTYKB=y
 # DRIVER_RAWTTYKB is not set
 # DRIVER_REMORAKB is not set
 # DRIVER_SERIALMOUSE is not set
