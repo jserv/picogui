@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.5 2002/10/12 14:46:35 micahjd Exp $
+/* $Id: textedit_logical.c,v 1.6 2002/10/25 15:25:34 pney Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -41,6 +41,10 @@
 #include <pgserver/textedit.h>
 #include <pgserver/widget.h>
 #include <assert.h>
+
+#ifdef CONFIG_TEXTEDIT_WCHART
+# include <iconv.h>
+#endif
 
 #define BLOCK(l)     ((block *)      llist_data(l))
 #define PARAGRAPH(l) ((paragraph *)  llist_data(l))
@@ -86,7 +90,7 @@ static void    widget_selection_to_cursor ( text_widget * widget,
 static void    widget_unset_selection  ( text_widget * widget );
 static void    widget_clear_selection  ( text_widget * widget );
 static void    widget_insert_chars ( text_widget * widget,
-                                     u8 * str,
+                                     TEXTEDIT_UCHAR * str,
                                      u32 len );
 static void    widget_delete_chars ( text_widget * widget,
                                      LList * ll_b,
@@ -102,7 +106,7 @@ static block * block_create          ( void );
 static void    block_destroy         ( block * b );
 static void    block_set_bgap        ( block * b, 
                                        u16 offset );
-static char *  block_str_at          ( block * b,
+static TEXTEDIT_CHAR * block_str_at  ( block * b,
                                        u16 l_offset );
 static void    block_string_size     ( text_widget * widget,
                                        block * b,
@@ -184,6 +188,111 @@ static void    rewrap                 ( text_widget * widget,
 #define        break_char(ch)  ((ch == '-') || (ch == ' ') || (ch == '\t'))
 
 
+#ifdef CONFIG_TEXTEDIT_WCHART
+/**
+ * conversion functions UTF-8 <-> UCS-4
+ */
+int utf8ToWchart (char * inBuf, int inNbChars, wchar_t * outBuf)
+{
+    iconv_t ihandle;
+    size_t iSize, oSize;
+    char * oBufp = (char *) outBuf;
+
+// DEBUG --------------------------------------------------------
+{
+  int i;
+
+  printf ("\nutf-8 : len = %d\n", strlen (inBuf));
+  for (i = 0; i < strlen (inBuf); i++)
+    printf ("%c", inBuf [i] & 0xFF);
+  printf ("\n");
+  for (i = 0; i < strlen (inBuf); i++)
+    printf (" 0x%x", inBuf [i] & 0xFF);
+}
+// DEBUG --------------------------------------------------------
+
+    /* define useful size */
+    iSize = strlen (inBuf);
+    oSize = inNbChars * 4;    /* each chars use 32 bits */
+
+    /* create conversion handle */
+    ihandle = iconv_open ("WCHAR_T", "UTF-8");
+    if (ihandle == (iconv_t) -1) {
+      /* Something went wrong.  */
+      if (errno == EINVAL) {
+        printf (__FILE__ " : conversion from UTF-8 to wchar_t not available\n");
+      }
+      else {
+        printf (__FILE__ " : error iconv_open : %s\n", strerror (errno));
+      }
+      /* Terminate the output string.  */
+      *outBuf = L'\0';
+      exit (1);
+    }
+
+    /* convert */
+    iconv (ihandle, & inBuf, & iSize, & oBufp, & oSize);
+    outBuf [inNbChars] = L'\0';
+
+    /* release conversion handle */
+    iconv_close (ihandle);
+
+// DEBUG --------------------------------------------------------
+{
+  int i;
+  /* length of the wchar_t string */
+  printf ("\n-> wchar_t : len = %d\n", wcslen (outBuf));
+  /* replace the pointer to the beginning of the string */
+  oBufp = (char *) outBuf;
+  /* print the wchar_t string byte per byte */
+  for (i = 0; i < 4 * wcslen (outBuf); i++)
+    printf (" 0x%x", oBufp [i] & 0xFF);
+  printf ("\n");
+}
+// DEBUG --------------------------------------------------------
+
+    return 0;
+}
+
+
+/**
+ * convert a wchar_t encoding string to an utf-8 encoding
+ * the availlable bytes remaining in the output buffer is stored in
+ * the outSize parameter
+ */
+int wchartToUtf8 (wchar_t * inBuf, char * outBuf, int * outSize)
+{
+    iconv_t ihandle;
+    size_t iSize;
+    char * iBufp = (char *) inBuf;
+
+    /* define useful size */
+    iSize = wcslen (inBuf) * 4;
+
+    /* create conversion handle */
+    ihandle = iconv_open ("UTF-8", "WCHAR_T");
+    if (ihandle == (iconv_t) -1) {
+      /* Something went wrong.  */
+      if (errno == EINVAL) {
+        printf (__FILE__ " : conversion from wchar_t to utf-8 not available\n");
+      }
+      else {
+        printf (__FILE__ " : error iconv_open : %s\n", strerror (errno));
+      }
+      /* Terminate the output string.  */
+      *outBuf = '\0';
+      exit (1);
+    }
+
+    /* convert */
+    iconv (ihandle, & iBufp, & iSize, & outBuf, outSize);
+
+    /* release conversion handle */
+    iconv_close (ihandle);
+
+    return 0;
+}
+#endif /* CONFIG_TEXTEDIT_WCHART */
 
 void text_backend_init ( text_widget * widget ) {
     LList * l;
@@ -272,6 +381,82 @@ void text_backend_build ( text_widget * widget,
     widget_render(widget);
 }
 
+#ifdef CONFIG_TEXTEDIT_WCHART
+void text_backend_set_text ( text_widget * widget,
+                             struct pgstring * text ) {
+    LList * ll_b, * ll_p, * ll_a;
+    size_t para_len;
+    block * b;
+    paragraph * p;
+    u32 len;
+    wchar_t txtBuf [text->num_chars + 1];
+    wchar_t * txt = txtBuf;
+    int cnt = 0;
+    size_t n;
+    char * pBuf = (char *) text->buffer;
+
+
+    utf8ToWchart (pBuf, text->num_chars, txt);
+
+
+    /* Destroy everything in widget */
+    for (ll_b = widget->blocks; ll_b; ll_b = llist_next(ll_b))
+        block_destroy(BLOCK(ll_b));
+    llist_free(widget->blocks);
+    widget->blocks = NULL;
+
+    b = block_create();
+    b->b_gap = 0;
+    widget->blocks = llist_append(widget->blocks, b);
+
+    len = text->num_chars;
+    while (len) {
+        for (para_len = 0; 
+             (para_len < len) && (txt[para_len] != L'\n'); 
+             para_len++)
+	    ;  /* no operation, go out of the loop also when newline */
+
+        if (txt[para_len] == L'\n')
+	    para_len++;
+
+        while (para_len + 1 > b->data_size - b->len) {
+            /* Paragraph won't fit into b */
+            if (b->len) {
+                 b = block_create();
+                 widget->blocks = llist_append(widget->blocks, b);
+            } else { 
+                /* Single long para */
+                block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
+            }
+        }
+        TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
+        p = paragraph_create();
+        b->paragraphs = llist_append(b->paragraphs, p);
+        p->len = para_len;
+        len -= para_len;
+        b->len += para_len;
+        b->b_gap += para_len;
+        ATOM(p->atoms)->len = para_len;
+        txt += para_len;
+    }
+
+    /* Set cursor */
+    widget->fvb = widget->current = widget->blocks;
+    widget->v_y_top = 0;
+    widget->cursor_v_y  = 0;
+
+    b = BLOCK(widget->current);
+    b->cursor_paragraph = b->paragraphs;
+    block_set_bgap(b, 0);
+    p = PARAGRAPH(b->cursor_paragraph);
+    UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_LEFT);
+    p->atoms = llist_prepend(p->atoms, atom_create(ATOM_TEXT, ATOM_FLAG_LEFT));
+    b->cursor_atom = p->atoms;
+
+    text_backend_build(widget, widget->width, widget->height);
+}
+
+#else /* ! CONFIG_TEXTEDIT_WCHART */
 
 void text_backend_set_text ( text_widget * widget,
                              struct pgstring * text ) {
@@ -309,7 +494,7 @@ void text_backend_set_text ( text_widget * widget,
                 block_data_resize (widget, b, b->len + para_len + BUFFER_GROW);
             }
         }
-        strncpy(b->data + b->b_gap, txt, para_len);
+        TEXTEDIT_STRNCPY(b->data + b->b_gap, txt, para_len);
         p = paragraph_create();
         b->paragraphs = llist_append(b->paragraphs, p);
         p->len = para_len;
@@ -336,19 +521,45 @@ void text_backend_set_text ( text_widget * widget,
     text_backend_build(widget, widget->width, widget->height);
 }
 
+#endif /* CONFIG_TEXTEDIT_WCHART */
 
 void text_backend_set_selection ( text_widget * widget,
                                   struct pgstring * text ) {
+#ifdef CONFIG_TEXTEDIT_WCHART
+    wchar_t * wBuffer;
+
     SET_FLAG(PARAGRAPH(BLOCK(widget->current)->cursor_paragraph)->flags,
              PARAGRAPH_FLAG_DRAW_ALL);
     SET_FLAG(ATOM(BLOCK(widget->current)->cursor_atom)->flags,
              ATOM_FLAG_DRAW);
+
+    /* allocate wchar_t buffer as 4 bytes/char */
+    wBuffer = malloc ((text->num_chars + 1) * 4);
+
+    /* convert text->buffer to a wchar_t string */
+    utf8ToWchart ((char *) text->buffer, text->num_chars, wBuffer);
+
+    /* insert chars */
+    widget_insert_chars (widget, (wint_t *) wBuffer, wcslen (wBuffer));
+
+    /* free memory */
+    free (wBuffer);
+
+#else /* CONFIG_TEXTEDIT_WCHART */
+
+    SET_FLAG(PARAGRAPH(BLOCK(widget->current)->cursor_paragraph)->flags,
+             PARAGRAPH_FLAG_DRAW_ALL);
+    SET_FLAG(ATOM(BLOCK(widget->current)->cursor_atom)->flags,
+             ATOM_FLAG_DRAW);
+
     widget_insert_chars(widget, text->buffer, text->num_bytes);
+
+#endif /* CONFIG_TEXTEDIT_WCHART */
 }
 
 
 void text_backend_insert_char ( text_widget * widget,
-                                char ch ) {
+                                TEXTEDIT_UCHAR ch ) {
     widget_insert_chars(widget, &ch, 1);
 }
  
@@ -479,7 +690,7 @@ void text_backend_save ( text_widget * widget ) {
         len += BLOCK(ll_b)->len;
 
     /* FIXME: need error checking here! */
-    pgstring_new(&widget->client_data, PGSTR_ENCODE_ASCII, len, NULL);
+    pgstring_new(&widget->client_data, PGSTR_ENCODE_UTF8, len, NULL);
     mkhandle(&widget->client_data_h, PG_TYPE_WIDGET, widget->self->owner, widget->client_data);
 
     /* FIXME: This doesn't handle Unicode properly 
@@ -491,8 +702,8 @@ void text_backend_save ( text_widget * widget ) {
         memcpy(widget->client_data->buffer + k, b->data, b->b_gap);
         k += b->b_gap;
         strncpy(widget->client_data->buffer + k, 
-                b->data + b->b_gap + gap_len,  
-                b->len - b->b_gap);
+		b->data + b->b_gap + gap_len,  
+		b->len - b->b_gap);
         k += b->len - b->b_gap;
     }
 }
@@ -508,9 +719,9 @@ void text_backend_store_selection ( text_widget * widget) {
     textedit_clipboard = NULL;
 
     if (widget->selection == SELECTION_NONE) {
-        pgstring_new(&textedit_clipboard, PGSTR_ENCODE_ASCII, 0, NULL);
+        pgstring_new(&textedit_clipboard, PGSTR_ENCODE_UTF8, 0, NULL);
         return;
-    } 
+    }
 
     ll_b = widget->current;
     ll_p = BLOCK(widget->current)->cursor_paragraph;
@@ -539,7 +750,7 @@ void text_backend_store_selection ( text_widget * widget) {
         ll_a = BLOCK(widget->current)->cursor_atom;
         ll_a = next_atom (ll_b, ll_p, ll_a, &ll_b, &ll_p);
     }
-    pgstring_new(&textedit_clipboard, PGSTR_ENCODE_ASCII, len, NULL);
+//    pgstring_new(&textedit_clipboard, PGSTR_ENCODE_UTF8, len, NULL);
 
     /* ll_a is the first selected atom */
     temp_ll = ll_a;
@@ -554,19 +765,67 @@ void text_backend_store_selection ( text_widget * widget) {
     b_gap = b->b_gap;
     block_set_bgap(b, b->len);
     k = MIN(len, b->len - offset);
-    memcpy(textedit_clipboard->buffer, b->data + offset, k);
+
+#ifdef CONFIG_TEXTEDIT_WCHART
+    {
+      char * cBuf;
+      int oSize = k * 6;
+      int keepSize = oSize;
+
+      /* allocate the max possible buffer */
+      cBuf = malloc (oSize);
+ 
+      printf ("\n---------> BEFORE conv oSize = %d (nb of free bytes)\n", oSize);
+
+      /* convert */
+      wchartToUtf8 (b->data + offset, cBuf, & oSize);
+
+      printf ("\n---------> AFTER conv  oSize = %d (nb of free bytes)\n", oSize);
+      keepSize -= oSize;
+
+	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, keepSize, cBuf);
+//	memcpy (textedit_clipboard->buffer, cBuf, k);
+
+      /* free memory */
+      free (cBuf);
+    }
+#else
+	pgstring_new (&textedit_clipboard, PGSTR_ENCODE_UTF8, k, b->data + offset);
+//	  memcpy(textedit_clipboard->buffer, b->data + offset, k);
+#endif
+
     len -= k;
     block_set_bgap(b, b_gap);
     while (len) {
-        ll_b = llist_next(ll_b);
-        b = BLOCK(ll_b);
-        b_gap = b->b_gap;
-        block_set_bgap(b, b->len);
-        memcpy(textedit_clipboard->buffer + k, b->data,
-               MIN(len, b->len));
-        k += MIN(len, b->len);
-        len -= MIN(len, b->len);
-        block_set_bgap(b, b_gap);
+	  ll_b = llist_next(ll_b);
+	  b = BLOCK(ll_b);
+	  b_gap = b->b_gap;
+	  block_set_bgap(b, b->len);
+
+
+//#ifdef CONFIG_TEXTEDIT_WCHART
+//	  {
+//	    char * cBuf;
+//	    int oSize = wcslen (b->data) * 6;
+//
+//	    /* allocate the max possible buffer */
+//	    cBuf = malloc (oSize);
+// 
+//	    /* convert */
+//	    wchartToUtf8 (b->data, cBuf, & oSize);
+//
+//	    memcpy(textedit_clipboard->buffer + k, cBuf, MIN(len, b->len));
+//
+//	    /* free memory */
+//	    free (cBuf);
+//	  }
+//#else
+	  memcpy(textedit_clipboard->buffer + k, b->data, MIN(len, b->len));
+//#endif
+
+	  k += MIN(len, b->len);
+	  len -= MIN(len, b->len);
+	  block_set_bgap(b, b_gap);
     }
 }
 
@@ -894,14 +1153,14 @@ static void widget_render ( text_widget * widget ) {
                             if (a->len > 0) {
                                 textedit_char_size(widget->self, block_char_at(b, offset + a->len - 1), &w, &h);
                                 textedit_draw_str(widget->self, 
-                                                  block_str_at(b, offset + a->len - 1),
+                                                  (TEXTEDIT_UCHAR *) block_str_at(b, offset + a->len - 1),
                                                   1, 
                                                   x + a->width - w, y,
                                                   GET_FLAG(a->flags, ATOM_FLAG_SELECTED));
                             }
                         } else {
                             textedit_draw_str(widget->self, 
-                                              block_str_at(b, offset),
+                                              (TEXTEDIT_UCHAR *) block_str_at(b, offset),
                                               a->len, 
                                               x, y,
                                               GET_FLAG(a->flags, ATOM_FLAG_SELECTED));
@@ -1526,7 +1785,7 @@ static void widget_clear_selection  ( text_widget * widget ) {
 
 
 static void widget_insert_chars ( text_widget * widget,
-                                  u8 * str,
+                                  TEXTEDIT_UCHAR * str,
                                   u32 len ) {
     block * b;
     paragraph * p;
@@ -1555,14 +1814,14 @@ static void widget_insert_chars ( text_widget * widget,
         p = PARAGRAPH(b->cursor_paragraph);
         a = ATOM(b->cursor_atom);
         SET_FLAG(p->flags, PARAGRAPH_FLAG_DRAW);
-        
+
         for (chunk_len = 1, new_para = FALSE;
              (chunk_len < len) && (str[chunk_len-1] != '\n'); 
              chunk_len++)
             break;
         if (str[chunk_len-1] == '\n')
             new_para = TRUE;
-        
+
         /* Make sure there is enough room in block to insert chunk */
         if (b->len + chunk_len >= b->data_size) {
             block_shed_last_para (widget, widget->current);
@@ -1575,20 +1834,20 @@ static void widget_insert_chars ( text_widget * widget,
             p = PARAGRAPH(b->cursor_paragraph);
             a = ATOM(b->cursor_atom); 
         }
-        memcpy(b->data + b->b_gap, str, chunk_len);
-        
+        TEXTEDIT_MEMCPY(b->data + b->b_gap, (TEXTEDIT_CHAR *) str, chunk_len);
+
         b->b_gap += chunk_len;
         a->len += chunk_len;
         p->len += chunk_len;
         b->len += chunk_len;
         SET_FLAG(a->flags, ATOM_FLAG_DRAW_LAST_CHAR);
-                
+
         if (new_para) {
             /* Create a new paragraph */
             SET_FLAG ( a->flags, ATOM_FLAG_DRAW | ATOM_FLAG_RIGHT );
             ll_a = llist_next(b->cursor_atom);
             p = paragraph_create();
-            
+
             if (ll_a) {
                 /* Split ll_a list at ll_a, insert after 0-len atom which
                  * starts paragraph p */
@@ -1602,18 +1861,18 @@ static void widget_insert_chars ( text_widget * widget,
                 PARAGRAPH(b->cursor_paragraph)->len -= p->len;
                 UNSET_FLAG(ATOM(p->atoms)->flags, ATOM_FLAG_RIGHT);
             }
-            
+
             b->paragraphs = llist_insert_after (b->cursor_paragraph, p);
             b->cursor_paragraph = llist_next(b->cursor_paragraph);
             b->cursor_atom = p->atoms;
-            
+
             SET_FLAG( ATOM(b->cursor_atom)->flags, ATOM_FLAG_DRAW );
             SET_FLAG( PARAGRAPH(b->cursor_paragraph)->flags,
                       PARAGRAPH_FLAG_DRAW_ALL |
                       PARAGRAPH_FLAG_H_INVALID );         
             SET_FLAG (PARAGRAPH(llist_prev(b->cursor_paragraph))->flags,
                       PARAGRAPH_FLAG_H_INVALID);
-            
+
             /* Wrap end of previous paragraph -- inserting a newline could
                cause the end of a line to move up */
             wrap(widget, b, PARAGRAPH(llist_prev(b->cursor_paragraph)), 
@@ -1627,7 +1886,7 @@ static void widget_insert_chars ( text_widget * widget,
             }
             wrap(widget, b, p, b->cursor_atom);
         }
-        
+
         len -= chunk_len;
         str += chunk_len;
     }
@@ -1730,9 +1989,9 @@ static void widget_delete_chars ( text_widget * widget,
         block_set_bgap(BLOCK(ll_b), 0);
 
         /* Move para text between blocks */
-        memcpy (b->data + b->len,
-                BLOCK(ll_b)->data + BLOCK(ll_b)->data_size - BLOCK(ll_b)->len,
-                p->len);
+        TEXTEDIT_MEMCPY(b->data + b->len,
+			BLOCK(ll_b)->data + BLOCK(ll_b)->data_size - BLOCK(ll_b)->len,
+			p->len);
         offset += b->len;
         b->len += p->len;
         b->b_gap += p->len;
@@ -1830,12 +2089,14 @@ static block * block_create ( void ) {
     g_error e;
     block * b;
     
-    /* FIXME: errorcheck can not be used here since block_create must return g_error */
+    /* FIXME: errorcheck can not be used here since block_create must return
+     * g_error */
 
     e = g_malloc ((void **) &b, sizeof(block));
     //    errorcheck;
 
-    e = g_malloc ((void **) &b->data, sizeof(char) * FIXED_BUFFER_LEN);
+    e = g_malloc ((void **) &b->data,
+		  sizeof(TEXTEDIT_CHAR) * FIXED_BUFFER_LEN);
     //    errorcheck;
 
     b->data_size = FIXED_BUFFER_LEN;
@@ -1879,25 +2140,25 @@ static void block_set_bgap ( block * b,
     
     while (b->b_gap > offset) {
         shift = MIN(b->b_gap - offset, gap_len);        
-        strncpy(b->data + b->b_gap + gap_len - shift,
-                b->data + b->b_gap - shift, 
-                shift);
+        TEXTEDIT_STRNCPY(b->data + b->b_gap + gap_len - shift,
+			 b->data + b->b_gap - shift, 
+			 shift);
         b->b_gap -= shift;
     }
 
     while (b->b_gap < offset) {
         shift = MIN(offset - b->b_gap, gap_len);        
-        strncpy(b->data + b->b_gap, 
-                b->data + b->b_gap + gap_len, 
-                shift);
+        TEXTEDIT_STRNCPY(b->data + b->b_gap, 
+			 b->data + b->b_gap + gap_len, 
+			 shift);
         b->b_gap += shift; 
     }
     
 }
 
 
-static char * block_str_at ( block * b,
-                                    u16 l_offset ) {
+static TEXTEDIT_CHAR * block_str_at ( block * b,
+				      u16 l_offset ) {
     if (l_offset >= b->b_gap) {
         return b->data + l_offset + (b->data_size - b->len);
     }
@@ -1918,14 +2179,14 @@ static void block_string_size ( text_widget * widget,
     if (offset < b->b_gap) {
         s_len = MIN(len, b->b_gap - offset);
         textedit_str_size ( widget->self,
-                            block_str_at(b, offset),
+                            (TEXTEDIT_UCHAR *) block_str_at(b, offset),
                             s_len, w, h);
         len -= s_len;
         offset += s_len;
     } 
     if (offset >= b->b_gap) {
         textedit_str_size ( widget->self,
-                            block_str_at(b, offset),
+                            (TEXTEDIT_UCHAR *) block_str_at(b, offset),
                             len, &t_w, &t_h);
         *w += t_w;
         *h = MAX(*h, t_h);
@@ -1941,8 +2202,8 @@ static void block_string_size ( text_widget * widget,
 static void block_data_resize ( text_widget * widget,
                                 block * b,
                                 u16 new_size ) {
+    TEXTEDIT_CHAR * data;
     u16 b_gap;
-    char * data;
     g_error e;
 
     assert (b->len <= new_size);
@@ -1951,10 +2212,10 @@ static void block_data_resize ( text_widget * widget,
     block_set_bgap (b, b->len);
 
     /* FIXME: This function must return g_error for errorcheck to work */
-    e = g_malloc ((void**) &data, sizeof(char) * new_size);
+    e = g_malloc ((void**) &data, sizeof(TEXTEDIT_CHAR) * new_size);
     //    errorcheck;
 
-    strncpy(data, b->data, b->len);
+    TEXTEDIT_STRNCPY(data, b->data, b->len);
     g_free(b->data);
     b->data = data;
     b->data_size = new_size;
@@ -2019,9 +2280,9 @@ static void block_shed_last_para ( text_widget * widget,
         b_next = BLOCK(llist_next(ll_b));
         block_set_bgap(b_next, 0);
     }
-    strncpy(b_next->data, 
-            b->data + b->len - p->len,
-            p->len);
+    TEXTEDIT_STRNCPY(b_next->data, 
+		     b->data + b->len - p->len,
+		     p->len);
     
     b_next->b_gap = p->len; 
     b_next->len += p->len;    
@@ -2295,7 +2556,8 @@ static void wrap ( text_widget * widget,
         t_offset -= ATOM(l)->len;
     }
     while (TRUE) {
-        textedit_str_size ( widget->self, block_str_at(b, t_offset),
+        textedit_str_size ( widget->self,
+			    (TEXTEDIT_UCHAR *) block_str_at(b, t_offset),
                             ATOM(l)->len, &w, &h);
         t_offset += ATOM(l)->len;
         width += w;

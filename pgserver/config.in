@@ -270,6 +270,9 @@ if [ "$CONFIG_WIDGET_TEXTBOX" = "y" ]; then
   bool '  Field'                              CONFIG_WIDGET_FIELD
 fi
 bool 'Textedit (simple text editor)'          CONFIG_WIDGET_TEXTEDIT
+if [ "$CONFIG_WIDGET_TEXTEDIT" = "y" ]; then
+  bool '  Unicode support (using wchar_t format)' CONFIG_TEXTEDIT_WCHART
+fi
 bool 'Toolbar'                                CONFIG_WIDGET_TOOLBAR 
 endmenu
 

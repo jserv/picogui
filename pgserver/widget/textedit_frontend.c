@@ -1,4 +1,4 @@
-/* $Id: textedit_frontend.c,v 1.8 2002/10/23 02:09:08 micahjd Exp $
+/* $Id: textedit_frontend.c,v 1.9 2002/10/25 15:25:34 pney Exp $
  *
  * textedit.c - Multi-line text widget. By Chuck Groom,
  * cgroom@bluemug.com, Blue Mug, Inc, July 2002. Intended to be
@@ -138,7 +138,7 @@ void        textedit_build_scroll   ( struct gropctxt *c,
                                       struct widget *self );
 void        textedit_draw_update    ( struct widget * self );
 
-static char upper                   ( char ch );
+static TEXTEDIT_CHAR upper          ( TEXTEDIT_CHAR ch );
 static void add_update_region       ( struct widget * self,
                                       s16 x, s16 y, 
                                       s16 w, s16 h );
@@ -539,7 +539,7 @@ void textedit_scrollevent( struct widget *self ) {
 
 
 void textedit_draw_str ( struct widget * self,
-                         u8 * txt,
+                         TEXTEDIT_UCHAR * txt,
                          size_t len,
                          s16 x, 
                          s16 y,
@@ -547,7 +547,7 @@ void textedit_draw_str ( struct widget * self,
     s16 w, h;
     struct pair t;
     size_t k;
-    u8 ch;
+    TEXTEDIT_UCHAR ch;
 
     if (len == 0)
         return;
@@ -557,10 +557,10 @@ void textedit_draw_str ( struct widget * self,
     
     textedit_str_size ( self, txt, len, &w, &h);
     textedit_draw_rect ( self, x, y, w, h, 
-                          highlight ? DATA->highlight : DATA->bg );
+			 highlight ? DATA->highlight : DATA->bg );
 
     for (k = 0; k < len; k++) {
-        ch = (char) *(txt + k);
+        ch = (TEXTEDIT_CHAR) *(txt + k);
         if (ch == '\t') {
             textedit_str_size (self, &ch, 1, &w, &h);
             t.x += w;
@@ -583,9 +583,9 @@ void textedit_draw_str ( struct widget * self,
 
 /* Get the physical size of a single line of text */
 void textedit_str_size ( struct widget *self,
-                         u8 * txt,
+                         TEXTEDIT_UCHAR * txt,
                          size_t len,
-                         s16 * w, 
+                         s16 * w,
                          s16 * h ) {
     int ch;
     struct pair p;
@@ -611,7 +611,7 @@ void textedit_str_size ( struct widget *self,
 
 
 void textedit_char_size  ( struct widget * self,
-                           char ch,
+                           TEXTEDIT_CHAR ch,
                            s16 * w, 
                            s16 * h ) {
     textedit_str_size (self, &ch, 1, w, h);
@@ -710,9 +710,9 @@ static void textedit_draw_rect (struct widget *self,
 
 
 
-static char upper(char ch) {
-    if (isalpha(ch))
-        return toupper(ch);
+static TEXTEDIT_CHAR upper(TEXTEDIT_CHAR ch) {
+    if (TEXTEDIT_ISALPHA(ch))
+        return TEXTEDIT_TOUPPER(ch);
     switch (ch) {
     case '`':
         return '~';

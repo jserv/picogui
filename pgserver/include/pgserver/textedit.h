@@ -1,4 +1,4 @@
-/* $Id: textedit.h,v 1.4 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: textedit.h,v 1.5 2002/10/25 15:25:34 pney Exp $
  *
  * Multi-line text widget. The widget is divided into PicoGUI specific
  * code in widget/textedit.c, and abstract text widget code in
@@ -44,6 +44,29 @@
 #ifndef FALSE
 #define FALSE 0
 #endif
+
+
+#ifdef CONFIG_TEXTEDIT_WCHART
+
+# include <wchar.h>
+# include <wctype.h>
+# define TEXTEDIT_CHAR                    wchar_t
+# define TEXTEDIT_UCHAR                   wint_t
+# define TEXTEDIT_ISALPHA(a)              iswalpha((a))
+# define TEXTEDIT_TOUPPER(a)              towupper((a))
+# define TEXTEDIT_STRNCPY(a, b, c)        wcsncpy((a), (b), (c))
+# define TEXTEDIT_MEMCPY(a, b, c)         wmemcpy((a), (b), (c))
+
+#else /* ! CONFIG_TEXTEDIT_WCHART */
+
+# define TEXTEDIT_CHAR                    char
+# define TEXTEDIT_UCHAR                   u8
+# define TEXTEDIT_ISALPHA(a)              isalpha((a))
+# define TEXTEDIT_TOUPPER(a)              toupper((a))
+# define TEXTEDIT_STRNCPY(a, b, c)        strncpy((a), (b), (c))
+# define TEXTEDIT_MEMCPY(a, b, c)         memcpy((a), (b), (c))
+
+#endif /* CONFIG_TEXTEDIT_WCHART */
 
 #define FIXED_BUFFER_LEN       4096
 #define BUFFER_GROW            256 
@@ -190,10 +213,10 @@ struct texteditdata {
  * Blocks are stored in a doubly-linked list.
  */
 struct _block {
-    size_t  len;               /* Length of text in block */
-    char  * data; 
-    u16     data_size;
-    u16     b_gap;
+    size_t          len;       /* Length of text in block */
+    TEXTEDIT_CHAR * data; 
+    u16             data_size;
+    u16             b_gap;
     
     LList * paragraphs;        /* Paragraphs in block */
     LList * cursor_paragraph;  /* Paragraph containing cursor. NULL if none */ 
@@ -226,13 +249,13 @@ struct _atom {
  * Translate generic requests to specific PicoGUI actions (textedit.c)
  */
 void textedit_draw_str    ( struct widget * self,
-                            u8 * txt,
+                            TEXTEDIT_UCHAR * txt,
                             size_t len,
                             s16 x, 
                             s16 y,
                             u8 highlight );
 void textedit_str_size    ( struct widget * self,
-                            u8 * txt,
+                            TEXTEDIT_UCHAR * txt,
                             size_t len,
                             s16 * w, 
                             s16 * h );
@@ -242,7 +265,7 @@ void textedit_clear_rect  ( struct widget * self,
 void textedit_move_cursor ( struct widget * self,
                             s16 x, s16 y, s16 h );
 void textedit_char_size   ( struct widget * self,
-                            char ch,
+                            TEXTEDIT_CHAR ch,
                             s16 * w, 
                             s16 * h );
 void textedit_set_font    ( struct widget * self,
@@ -267,7 +290,7 @@ void    text_backend_set_selection   ( text_widget * widget,
 void    text_backend_save            ( text_widget * widget );
 void    text_backend_store_selection ( text_widget * widget );
 void    text_backend_insert_char     ( text_widget * widget,
-                                       char ch ); 
+                                       TEXTEDIT_UCHAR ch ); 
 void    text_backend_delete_char     ( text_widget * widget );
 void    text_backend_cursor_move_dir ( text_widget * widget,
                                        cursor_direction dir );
