@@ -102,6 +102,10 @@ endmenu
 
 mainmenu_option next_comment
 comment 'Input Drivers'
+bool 'Touchscreen calibration'		CONFIG_TOUCHSCREEN
+if [ "$CONFIG_TOUCHSCREEN" = "y" ]; then
+   bool 'Palmax touchscreen driver'	       DRIVER_PALMAXTS
+fi
 bool 'SDL input driver'                    DRIVER_SDLINPUT
 bool 'X Window System input driver'        DRIVER_X11INPUT
 bool 'SVGAlib input driver'                DRIVER_SVGAINPUT
