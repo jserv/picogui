@@ -65,9 +65,9 @@ object indicator {
 object scroll {
   bitmap2 = LoadBitmap("data/aq_thumb_v.pnm");
   overlay = fillstyle {
-    Bitmap(x,y,10,15,scroll:bitmap2,PG_LGOP_NONE,0,0);
-    Tilebitmap(x,y+15,10,h-30,scroll:bitmap2,0,5,10,10);
-    Bitmap(x,y+h-15,10,15,scroll:bitmap2,PG_LGOP_NONE,0,7);
+    Bitmap(x,y,10,5,scroll:bitmap2,PG_LGOP_NONE,0,0);
+    Tilebitmap(x,y+5,10,h-10,scroll:bitmap2,0,5,10,10);
+    Bitmap(x,y+h-5,10,5,scroll:bitmap2,PG_LGOP_NONE,0,17);
   };
   width = 13;
   margin = 0;
