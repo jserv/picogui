@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.22 2002/10/10 08:19:26 micahjd Exp $
+/* $Id: linear16.c,v 1.23 2002/10/11 08:29:32 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -668,8 +668,8 @@ void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
   /* Blitter loop, moving the source as normal,
    * but using the rotation matrix above to move the destination.
    */
-  for (j=src_h;j;j--,s+=offset_src) {
-    for (i=src_w,pixeldest=linedest;i;i--,s++) {
+  for (j=0;j<src_h;j++,s+=offset_src) {
+    for (i=0,pixeldest=linedest;i<src_w;i++,s++) {
       *pixeldest = *s;
       pixeldest += ac;
     }
