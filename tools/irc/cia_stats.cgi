@@ -113,13 +113,15 @@ print """
   </div>
 </div>
 
-<div><span class="section">Most recent commits</span></div>
+<div><span class="section">Most recent commits (newest first)</span></div>
 <div class="section">
   <div class="sectionTop"></div>
   <div class="commitBox">
     <ul>
 """
-for command in readLatestCommands():
+commands = readLatestCommands()
+commands.reverse()
+for command in commands:
     if command[0] == "Announce":
         projectName = command[1]
         messageLine = htmlifyColorTags(command[2])
