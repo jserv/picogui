@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.31 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: widget.h,v 1.32 2001/08/04 07:46:54 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -342,6 +342,7 @@ extern struct divnode *div_under_crsr;
 /* These are needed to determine which widget is under the pointing
    device, keep track of status */
 extern struct widget *under;
+extern struct widget *lastclicked;    /* Most recently clicked widget */
 extern struct widget *capture;
 extern struct widget *kbdfocus;
 

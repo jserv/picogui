@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.48 2001/08/03 16:28:16 micahjd Exp $
+/* $Id: div.c,v 1.49 2001/08/04 07:46:54 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -86,17 +86,17 @@ void divnode_recalc(struct divnode *n) {
 	 /* This is a menu, allow it to overlap toolbars */
 	 n->div->flags &= ~DIVNODE_POPUP_NONTOOLBAR;
 
-	 if (under && under->type == PG_WIDGET_BUTTON) {
+	 if (lastclicked && lastclicked->type == PG_WIDGET_BUTTON) {
 	   /* snap to a button edge */
-	   x = under->in->div->x;
-	   y = under->in->div->y + under->in->div->h + margin;
+	   x = lastclicked->in->div->x;
+	   y = lastclicked->in->div->y + lastclicked->in->div->h + margin;
 	   if ((y+h)>=vid->yres) /* Flip over if near the bottom */
-	     y = under->in->div->y - h - margin;
+	     y = lastclicked->in->div->y - h - margin;
 	 }
-	 else if (under && under->type == PG_WIDGET_MENUITEM) {
+	 else if (lastclicked && lastclicked->type == PG_WIDGET_MENUITEM) {
 	   /* snap to a menuitem edge */
-	   x = under->in->div->x + under->in->div->w;
-	   y = under->in->div->y;
+	   x = lastclicked->in->div->x + lastclicked->in->div->w;
+	   y = lastclicked->in->div->y;
 	 }
 	 else {
 	   /* exactly at the cursor */

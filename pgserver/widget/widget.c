@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.91 2001/08/03 14:56:11 micahjd Exp $
+/* $Id: widget.c,v 1.92 2001/08/04 07:46:55 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -80,6 +80,7 @@ DEF_HYBRIDWIDGET_TABLE(listitem,button)
    device, keep track of status */
 struct divnode *div_under_crsr;
 struct widget *under;
+struct widget *lastclicked;
 struct widget *prev_under;
 int prev_btn;
 struct widget *capture;
@@ -206,6 +207,7 @@ void widget_remove(struct widget *w) {
 
     /* Get rid of any pointers we have to it */
     if (w==under) under = NULL;
+    if (w==lastclicked) lastclicked = NULL;
     if (w==prev_under) prev_under = NULL;
     if (w==capture) capture = NULL;
     if (w==kbdfocus) kbdfocus = NULL;
@@ -381,7 +383,7 @@ void redraw_bg(struct widget *self) {
    popped from the dtstack
 */
 void reset_widget_pointers(void) {
-  under = prev_under = capture = NULL;
+  lastclicked = under = prev_under = capture = NULL;
 }
 
 /*
@@ -620,6 +622,10 @@ void dispatch_pointing(u32 type,s16 x,s16 y,s16 btn) {
 
   if (div_under_crsr) {
     under = div_under_crsr->owner;
+    
+    /* Keep track of the most recently clicked widget */
+    if (type==TRIGGER_DOWN)
+      lastclicked = under;
 
     if ((!(btn & capturebtn)) && capture && (capture!=under)) {
       send_trigger(capture,TRIGGER_RELEASE,&param);
