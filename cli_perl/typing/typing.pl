@@ -186,7 +186,7 @@ LeaveContext;
 
 ############################################################ Typing panel
 
-$typingpanel = RegisterApp(-side => top,-height => 350);
+$typingpanel = RegisterApp(-side => top,-height => 400);
 $lessonname = NewWidget(-type => label,-font => NewFont("Utopia",25,grayline,italic),
 			-transparent => 1, -align => right);
 $lessoninfo = NewWidget(-type => label,-font => $boldfont,
@@ -249,9 +249,12 @@ NewWidget(-type=>button,-inside => $tb,-side => left,
 	      $incorrect = 0;
 	      $starttime = 0;
 	      $wpm = 0;
-	
+	      $lessonlinetotal = @lessontext;
+
 	      $typeinfo = NewWidget(-type => label,-side => bottom,-bgcolor => 0x000000,
 				    -color => 0xFFFFFF,-font => $boldfont);
+	      $typeinfo_top = NewWidget(-type => label,-side => top,
+				    -font => $boldfont,-align => left);
 	      $typespace = NewWidget(-type => label,-side => all);
 
 	      NewWidget(-type => button,-inside => $tb,-bitmap=>$ex,
@@ -284,7 +287,12 @@ foreach (@lesson_names) {
 		   -text => NewString($_),-onclick => \&setlesson);
     $setlessonto = $w if (!$student{$_} and !$setlessonto);
 }
-setlesson($setlessonto) if ($setlessonto);
+if ($setlessonto) {
+    setlesson($setlessonto);
+}
+else {
+    setlesson($w);
+}
 
 ############################################################ Load info bar
 
@@ -907,6 +915,8 @@ sub typechar {
 	$accuracy = '100.0';
     }
 
+    $linenum = $lessonline+1;
+    $typeinfo_top->ReplaceText("$lname [line $linenum of $lessonlinetotal]");
     $typeinfo->ReplaceText("Total keys: $total  Errors: $incorrect  Accuracy: $accuracy%  WPM: $wpm");
     Update;
 }
