@@ -97,8 +97,8 @@ int btnCustomMenu(struct pgEvent *evt) {
   pgNewWidget(PG_WIDGET_MENUITEM,0,0);
     pgSetWidget(PGDEFAULT,
 		PG_WP_TEXT,pgNewString("Linux!"),
-		PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/tux.pnm")),
-		PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/tux_mask.pnm")),
+		PG_WP_BITMAP,pgNewBitmap(pgFromFile("data/tux.pnm")),
+		PG_WP_BITMASK,pgNewBitmap(pgFromFile("data/tux_mask.pnm")),
 		0);
   pgNewWidget(PG_WIDGET_MENUITEM,0,0);
     pgSetWidget(PGDEFAULT,PG_WP_TEXT,pgNewString("C++"),0);
@@ -114,8 +114,8 @@ int btnCustomMenu(struct pgEvent *evt) {
   pgNewWidget(PG_WIDGET_BITMAP,0,0);
     pgSetWidget(PGDEFAULT,
 		/* Load a picture from the 'data' directory */
-		PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/dustpuppy.pnm")),
-		PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/dustpuppy_mask.pnm")),
+		PG_WP_BITMAP,pgNewBitmap(pgFromFile("data/dustpuppy.pnm")),
+		PG_WP_BITMASK,pgNewBitmap(pgFromFile("data/dustpuppy_mask.pnm")),
 		PG_WP_LGOP,PG_LGOP_OR,
 		PG_WP_SIDE,PG_S_ALL,
 		0);
@@ -166,8 +166,8 @@ int btnDialog(struct pgEvent *evt) {
   pgNewWidget(PG_WIDGET_BITMAP,0,0);
   pgSetWidget(PGDEFAULT,
 	      /* Load a picture from the 'data' directory */
-	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("demos/data/dustpuppy.pnm")),
-	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("demos/data/dustpuppy_mask.pnm")),
+	      PG_WP_BITMAP,pgNewBitmap(pgFromFile("data/dustpuppy.pnm")),
+	      PG_WP_BITMASK,pgNewBitmap(pgFromFile("data/dustpuppy_mask.pnm")),
 	      PG_WP_LGOP,PG_LGOP_OR,
 	      PG_WP_SIDE,PG_S_LEFT,
 	      0);
