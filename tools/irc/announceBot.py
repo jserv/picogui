@@ -53,8 +53,12 @@ class AnnounceServer(LineReceiver):
             (command, project) = line.split(" ", 2)
         
 	if command == "Announce":
-            # Now we'll try to send the message to #commits, #<project>, and #<project>-commits.
+            # Now we'll try to send the message to #commits, #commits-only, #<project>, and #<project>-commits.
             # No big deal if any of them fails becase we're not joined to that channel.
+	    try:
+	        groups['commits-only'].sendText(irc_colors.boldify(project + ": ") + message)
+            except KeyError:
+                pass
 	    try:
 	        groups['commits'].sendText(irc_colors.boldify(project + ": ") + message)
             except KeyError:
