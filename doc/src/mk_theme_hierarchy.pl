@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: mk_theme_hierarchy.pl,v 1.2 2000/10/02 04:52:29 micahjd Exp $
+# $Id: mk_theme_hierarchy.pl,v 1.3 2000/10/02 22:39:01 micahjd Exp $
 #
 # This is a small script that uses dot(1) from the
 # open source AT&T Graphvis program to create a theme
@@ -30,8 +30,8 @@
 #
 ####### configuration
 
-$srcfile = "../../pgserver/theme/memtheme.c";
-$postscript = "../ps/themehierarchy.ps";
+$srcfile = "../pgserver/theme/memtheme.c";
+$basename = "themehierarchy";
 
 ####### Main program
 
@@ -51,11 +51,12 @@ while (<SRCF>) {
 }
 
 # Open a pipe to dot
-open DOTF,"| dot -Tps -o $postscript" or die "Can't pipe to dot: $!";
+open DOTF,"| src/dot.sh dot $basename" or die "Can't pipe to dot.sh: $!";
 print DOTF <<EOF;
 digraph L0 {
     node [shape=box];
-    rotate=90;
+//    Landscape - good if you're printing the postscript, but not for the jpegs
+//    rotate=90;
     $objs $cons
     label = "\\nPicoGUI Theme Object Hierarchy";
     fontsize=18;

@@ -16,4 +16,7 @@ Software necessary to rebuild the documentation:
   cinclude2dot needs perl, and the various scripts in 'src' are written in
   perl.
 
+- ImageMagick (You should already have this!)
+  For converting postscript images to jpegs, etc.
+
 $id$
