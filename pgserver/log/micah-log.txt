@@ -17,7 +17,6 @@ skins work.
 		  the actual hardware does, but if not it can be easily changed.
 		
 
-
 2001-08-12    Micah Dowty <micahjd@users.sourceforge.net>
 
 Just for fun, but also to make the development environment for embedded

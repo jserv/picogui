@@ -1,0 +1,18 @@
+<IMG SRC="/home/micah/sf/pgui/pgserver/skin/vr3_large.jpeg" WIDTH=268 HEIGHT=415 BORDER=0 USEMAP="#map">
+
+<MAP NAME="map">
+<!-- #$-:Image Map file created by GIMP Imagemap Plugin -->
+<!-- #$-:GIMP Imagemap Plugin by Maurits Rijk -->
+<!-- #$-:Please do not edit lines starting with "#$" -->
+<!-- #$VERSION:1.3 -->
+<!-- #$AUTHOR:Micah Dowty -->
+<AREA SHAPE="RECT" COORDS="48,319,72,342" HREF="282">
+<AREA SHAPE="RECT" COORDS="73,319,95,342" HREF="283">
+<AREA SHAPE="RECT" COORDS="96,319,118,342" HREF="284">
+<AREA SHAPE="RECT" COORDS="119,319,143,342" HREF="285">
+<AREA SHAPE="RECT" COORDS="145,319,166,342" HREF="286">
+<AREA SHAPE="RECT" COORDS="167,319,190,342" HREF="287">
+<AREA SHAPE="RECT" COORDS="192,319,218,342" HREF="288">
+<AREA SHAPE="RECT" COORDS="58,356,97,384" HREF="276">
+<AREA SHAPE="RECT" COORDS="171,358,212,383" HREF="275">
+</MAP>
