@@ -10,7 +10,7 @@ CONFIG_LINUX_GENERIC=y
 # CONFIG_LINUX_MIPS is not set
 # WINDOWS is not set
 # ASM_INTEL is not set
-CONFIG_UNIX_SOCKET=y
+# CONFIG_UNIX_SOCKET is not set
 
 #
 # Debugging
