@@ -102,15 +102,19 @@ quoted appropriately. For example:
 
 - cursorhide
   Inactivity time before hiding the cursor, in 1/10 seconds
+  Default is infinite
 
 - backlightoff
   Inactivity time before turning off the backlight, in 1/10 seconds
-  
+  Default is infinite  
+
 - sleep
   Inactivity time before sleep mode, in 1/10 seconds
+  Default is infinite
 
 - vidblank
   Inactivity time before blanking the display, in 1/10 seconds
+  Default is infinite
 
 [video-x11]
 
@@ -118,12 +122,46 @@ quoted appropriately. For example:
   Set the window caption when PicoGUI is run in a window. This is a printf
   format string with 3 integer parameters: width, height, and color depth.
 
+- doublebuffer
+  If this is:
+    0 - no double buffering at all. Big sprites will flicker a lot, but animation
+        will generally be fast.
+    1 - double buffer everything. Solves a lot of problems- no flickering at all,
+        and expose events are handled much better. However, it will slow everything
+        down slightly.
+    2 - double buffer large sprites only
+        NOTE: Option 2 is only really useful if you have the PicoGUI mouse cursor
+              disabled most of the time. It is also a little buggy still...
+  The default is 1
+
+- defaultellipse	
+  If this is nonzero, the defaultvbl ellipse and fellipse functions are
+  used. If it is zero, the X server draws all ellipses and filled ellipses.
+  It is faster to let X draw them, but using the defaultvbl ellipse drawing
+  code will give the exact same result as when PicoGUI is run on other
+  environments.
+  The default is zero.
+
+[input-x11]
+
+- autowarp
+  Automatically detect PicoGUI pointer warping and warp the X cursor.
+  This is on by default.
+
+- xcursor
+  Display the normal X cursor.
+  This is on by default.
+
+- pgcursor
+  If this is nonzero, the PicoGUI cursor is shown whenever the mouse is moved.
+  This is off by default.  
+
 [video-sdlfb]
 
 - caption
   Set the window caption when PicoGUI is run in a window. This is a printf
   format string with 3 integer parameters: width, height, and color depth.
-  
+
 - fullscreen
   Set to 1 to enable fullscreen mode
 

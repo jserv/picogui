@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.9 2001/11/21 05:18:28 micahjd Exp $
+/* $Id: x11.c,v 1.10 2001/11/21 06:52:01 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -65,150 +65,9 @@ struct x11bitmap *x11_backbuffer;
 GC x11_gctab[PG_LGOPMAX+1];
 
 /* Hook for handling expose events from the input driver */
-void x11_expose(int x, int y, int w, int h);
-
-void x11_blankcursor(void);
+void (*x11_expose)(int x, int y, int w, int h);
 
 /******************************************** Implementations */
-
-/* Connect to the default X server */
-g_error x11_init(void) {
-  xdisplay = XOpenDisplay(NULL);
-  if (!xdisplay)
-    return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
-
-  /* Load the matching input driver */
-  return load_inlib(&x11input_regfunc,&inlib_main);
-}
-
-/* Create a window */
-g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
-  int black;
-  XEvent ev;
-  XTextProperty titleprop;
-  char title[80];
-  g_error e;
-  Visual *xvisual;
-
-  /* Default resolution is 640x480 
-   */
-  if (!xres) xres = 640;
-  if (!yres) yres = 480;
-
-  /* Create the window
-   */
-  black = BlackPixel(xdisplay, DefaultScreen(xdisplay));
-  x11_display.d = XCreateSimpleWindow(xdisplay, DefaultRootWindow(xdisplay),
-				      0, 0, xres, yres, 0, black, black);
-  
-  /* Map the window, waiting for the MapNotify event 
-   */
-  XSelectInput(xdisplay, x11_display.d, StructureNotifyMask);  
-  XMapWindow(xdisplay,x11_display.d);
-  do {
-    XNextEvent(xdisplay, &ev);
-  } while (ev.type != MapNotify);
-
-  /* Save display information
-   */
-  xvisual = DefaultVisual(xdisplay,0);
-  vid->xres = xres;
-  vid->yres = yres;
-  vid->bpp  = DefaultDepth(xdisplay,0);
-  x11_display.w = xres;
-  x11_display.h = yres;
-
-  /* Set up graphics contexts for each LGOP that X can support directly 
-   */
-  x11_gctab[PG_LGOP_NONE]       = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_OR]         = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_AND]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_XOR]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(xdisplay,x11_display.d,0,NULL);
-  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(xdisplay,x11_display.d,0,NULL);
-
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_OR],        GXor);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_AND],       GXand);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_XOR],       GXxor);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
-  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
-
-  /* FIXME: Stipple LGOP not working in X?
-   *
-  XSetLineAttributes(xdisplay,x11_gctab[PG_LGOP_STIPPLE],
-		     1,LineOnOffDash,CapRound,JoinRound);
-  XSetFillStyle(xdisplay,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
-  XSetFillRule(xdisplay,x11_gctab[PG_LGOP_STIPPLE],EvenOddRule);
-   */
-
-  /* Allocate a backbuffer- necessary for full double-buffering,
-   * and also for buffering sprite updates.
-   */
-  e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
-  errorcheck;  
-  
-#ifdef CONFIG_X11_DOUBLEBUFFER
-  /* This driver is double-buffered. This eliminates flicker, and
-   * lets us repaint the screen when we get an expose event.
-   */
-  vid->display = (hwrbitmap) x11_backbuffer;
-#else
-  /* Draw directly to the output window */
-  vid->display = (hwrbitmap) &x11_display;
-#endif
-
-#ifndef CONFIG_X11_CURSOR
-  x11_blankcursor();
-#endif
-
-  /* Set the window title
-   */
-  sprintf(title,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
-  	  vid->xres,vid->yres,vid->bpp);
-  XStoreName(xdisplay, x11_display.d, title);
-
-  /* Set input event mask */
-  XSelectInput(xdisplay, x11_display.d,
-	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
-	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
-  XAutoRepeatOn(xdisplay);
-
-  XFlush(xdisplay);
-  return sucess;
-}
-
-void x11_close(void) {
-  if (x11_display.rend)
-    g_free(x11_display.rend);
-  vid->bitmap_free((hwrbitmap) x11_backbuffer);
-  unload_inlib(inlib_main);   /* Take out our input driver */
-  XCloseDisplay(xdisplay);
-  xdisplay = NULL;
-}
-
-#ifndef CONFIG_X11_CURSOR
-void x11_blankcursor(void) {
-  XColor black, white;
-  Pixmap p;
-  Cursor c;
-  GC g;
-
-  p = XCreatePixmap(xdisplay,x11_display.d,8,8,1);
-  g = XCreateGC(xdisplay,p,0,NULL);
-  XFillRectangle(xdisplay,p,g,0,0,8,8);
-
-  black.red = black.green = black.blue = 0x0000;
-  white.red = white.green = white.blue = 0xFFFF;
-
-  c = XCreatePixmapCursor(xdisplay,p,p,&black,&white,0,0);
-  XDefineCursor(xdisplay, x11_display.d, c);
-}
-#endif
 
 void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
@@ -301,7 +160,6 @@ void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
   XFillRectangle(xdisplay,xb->d,g,x,y,1,h);
 }
 
-#ifndef CONFIG_X11_DEFAULTELLIPSE
 void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -313,6 +171,7 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   XSetForeground(xdisplay,g,c);
   XDrawArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
+
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -324,7 +183,6 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
   XSetForeground(xdisplay,g,c);
   XFillArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
-#endif
 
 /* Blit the backbuffer to the display- we always need this,
  * at the very least for sprite buffering
@@ -337,36 +195,31 @@ void x11_buffered_update(s16 x,s16 y,s16 w,s16 h) {
 
 /* Non-buffered update. Only need this if we're not doublebuffering
  */
-#ifndef CONFIG_X11_DOUBLEBUFFER
-void x11_update(s16 x,s16 y,s16 w,s16 h) {
+void x11_nonbuffered_update(s16 x,s16 y,s16 w,s16 h) {
   XFlush(xdisplay);
 }
-#endif
 
 /* Similar to the update function, but triggered by the X server */
-void x11_expose(int x,int y,int w,int h) {
-#ifdef CONFIG_X11_DOUBLEBUFFER
-
+void x11_buffered_expose(int x,int y,int w,int h) {
   /* If we're double-buffered, this is just x11_buffered_update without the XFlush */
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
+}
 
-#else
-
-  /* We're not so lucky... set all the GCs to clip to this expose rectangle,
-   * redraw all the divtree layers, then set the GCs back to normal.
-   * Ugly, but avoids an extra buffer.
-   */
-
+/* We're not so lucky... set all the GCs to clip to this expose rectangle,
+ * redraw all the divtree layers, then set the GCs back to normal.
+ * Ugly, but avoids an extra buffer.
+ */
+void x11_nonbuffered_expose(int x,int y,int w,int h) {
   struct divtree *p;
   int i;
   XRectangle cliprect;
-
+  
   cliprect.x      = x;
   cliprect.y      = y;
   cliprect.width  = w;
   cliprect.height = h;
-
+  
   for (i=0;i<=PG_LGOPMAX;i++)
     if (x11_gctab[i])
       XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
@@ -383,7 +236,6 @@ void x11_expose(int x,int y,int w,int h) {
   for (i=0;i<=PG_LGOPMAX;i++)
     if (x11_gctab[i])
       XSetClipRectangles(xdisplay, x11_gctab[i], 0, 0, &cliprect, 1, Unsorted);
-#endif
 }
 
 g_error x11_bitmap_get_groprender(hwrbitmap bmp, struct groprender **rend) {
@@ -492,8 +344,18 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
  * the flickering's pretty bad. x11_sprite_update() does a little
  * magic to double-buffer sprite updates.
  */
-#ifndef CONFIG_X11_DOUBLEBUFFER
-void x11_sprite_update(struct sprite *spr) {
+void x11_buffered_sprite_update(struct sprite *spr) {
+
+  /* Only bother with this if the sprite is big. Small sprites
+   * won't flicker anyway, and this code would slow them down
+   * dramatically, due to the 2 extra blits.
+   *
+   * This defines 32x32 as a small sprite, but that's a fudge factor.
+   */
+  if (spr->x<=32 && spr->y<=32) {
+    def_sprite_update(spr);
+    return;
+  }
 
   /* What's the relevant portion of the display? Assume that the
    * old and new positions of the sprite are close together. Use
@@ -517,17 +379,155 @@ void x11_sprite_update(struct sprite *spr) {
   x11_buffered_update(upd_x,upd_y,upd_w,upd_h);
   vid->display = (hwrbitmap) &x11_display;
 }
-#endif /* CONFIG_X11_DOUBLEBUFFER */
 
-/* A little hack to disable the PicoGUI cursor when we're using the X cursor */
-#ifdef CONFIG_X11_CURSOR
-void x11_sprite_show(struct sprite *spr) {
-  if (spr==cursor)
-    spr->visible = 0;
-  def_sprite_show(spr);
+/* Connect to the default X server */
+g_error x11_init(void) {
+  xdisplay = XOpenDisplay(NULL);
+  if (!xdisplay)
+    return mkerror(PG_ERRT_IO,46);   /* Error initializing video */
+
+  /* Load the matching input driver */
+  return load_inlib(&x11input_regfunc,&inlib_main);
 }
-#endif
 
+/* Create a window */
+g_error x11_setmode(s16 xres,s16 yres,s16 bpp,unsigned long flags) {
+  int black;
+  XEvent ev;
+  XTextProperty titleprop;
+  char title[80];
+  g_error e;
+  Visual *xvisual;
+
+  /* Default resolution is 640x480 
+   */
+  if (!xres) xres = 640;
+  if (!yres) yres = 480;
+
+  /* Create the window
+   */
+  black = BlackPixel(xdisplay, DefaultScreen(xdisplay));
+  x11_display.d = XCreateSimpleWindow(xdisplay, DefaultRootWindow(xdisplay),
+				      0, 0, xres, yres, 0, black, black);
+  
+  /* Map the window, waiting for the MapNotify event 
+   */
+  XSelectInput(xdisplay, x11_display.d, StructureNotifyMask);  
+  XMapWindow(xdisplay,x11_display.d);
+  do {
+    XNextEvent(xdisplay, &ev);
+  } while (ev.type != MapNotify);
+
+  /* Save display information
+   */
+  xvisual = DefaultVisual(xdisplay,0);
+  vid->xres = xres;
+  vid->yres = yres;
+  vid->bpp  = DefaultDepth(xdisplay,0);
+  x11_display.w = xres;
+  x11_display.h = yres;
+
+  /* Set up graphics contexts for each LGOP that X can support directly 
+   */
+  x11_gctab[PG_LGOP_NONE]       = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_OR]         = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_AND]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_XOR]        = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT]     = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_OR]  = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_AND] = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_INVERT_XOR] = XCreateGC(xdisplay,x11_display.d,0,NULL);
+  x11_gctab[PG_LGOP_STIPPLE]    = XCreateGC(xdisplay,x11_display.d,0,NULL);
+
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_OR],        GXor);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_AND],       GXand);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_XOR],       GXxor);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT],    GXcopyInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_OR], GXorInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_AND],GXandInverted);
+  XSetFunction(xdisplay,x11_gctab[PG_LGOP_INVERT_XOR],GXequiv);
+
+  /* FIXME: Stipple LGOP not working in X?
+   *
+  XSetLineAttributes(xdisplay,x11_gctab[PG_LGOP_STIPPLE],
+		     1,LineOnOffDash,CapRound,JoinRound);
+  XSetFillStyle(xdisplay,x11_gctab[PG_LGOP_STIPPLE],FillStippled);
+  XSetFillRule(xdisplay,x11_gctab[PG_LGOP_STIPPLE],EvenOddRule);
+   */
+  
+  /* Set up some kind of double-buffering */
+  switch (get_param_int("video-x11","doublebuffer",1)) {
+    
+    /* Fully double-buffered */
+  case 1:
+    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
+    errorcheck;  
+    vid->display = (hwrbitmap) x11_backbuffer;
+    vid->update = &x11_buffered_update;
+    x11_expose = &x11_buffered_expose;
+    break;
+
+    /* Only double-buffer sprites */
+  case 2:
+    e = vid->bitmap_new((hwrbitmap*) &x11_backbuffer,vid->xres,vid->yres);
+    errorcheck;  
+    vid->display = (hwrbitmap) &x11_display;
+    vid->update = &x11_nonbuffered_update;
+    x11_expose = &x11_nonbuffered_expose;
+    vid->sprite_update = &x11_buffered_sprite_update;
+    break;
+    
+    /* No double-buffer */
+  default:
+    vid->display = (hwrbitmap) &x11_display;
+    vid->update = &x11_nonbuffered_update;
+    x11_expose = &x11_nonbuffered_expose;
+   break;
+  }
+
+  /* Blank the cursor if we don't want it */
+  if (!get_param_int("input-x11","xcursor",1)) {
+    XColor black, white;
+    Pixmap p;
+    Cursor c;
+    GC g;
+    
+    p = XCreatePixmap(xdisplay,x11_display.d,8,8,1);
+    g = XCreateGC(xdisplay,p,0,NULL);
+    XFillRectangle(xdisplay,p,g,0,0,8,8);
+    
+    black.red = black.green = black.blue = 0x0000;
+    white.red = white.green = white.blue = 0xFFFF;
+    
+    c = XCreatePixmapCursor(xdisplay,p,p,&black,&white,0,0);
+    XDefineCursor(xdisplay, x11_display.d, c);
+  }
+
+  /* Set the window title
+   */
+  sprintf(title,get_param_str("video-x11","caption","PicoGUI (X11@%dx%dx%d)"),
+  	  vid->xres,vid->yres,vid->bpp);
+  XStoreName(xdisplay, x11_display.d, title);
+
+  /* Set input event mask */
+  XSelectInput(xdisplay, x11_display.d,
+	       KeyPressMask | KeyReleaseMask | ExposureMask | ButtonMotionMask |
+	       ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
+  XAutoRepeatOn(xdisplay);
+
+  XFlush(xdisplay);
+  return sucess;
+}
+
+void x11_close(void) {
+  if (x11_display.rend)
+    g_free(x11_display.rend);
+  if (x11_backbuffer)
+    vid->bitmap_free((hwrbitmap) x11_backbuffer);
+  unload_inlib(inlib_main);   /* Take out our input driver */
+  XCloseDisplay(xdisplay);
+  xdisplay = NULL;
+}
 
 /******************************************** Driver registration */
 
@@ -549,21 +549,10 @@ g_error x11_regfunc(struct vidlib *v) {
   v->bar = &x11_bar;
   v->line = &x11_line;
 
-#ifdef CONFIG_X11_DOUBLEBUFFER
-  v->update = &x11_buffered_update;
-#else
-  v->sprite_update = &x11_sprite_update;
-  v->update = &x11_update;
-#endif
-
-#ifndef CONFIG_X11_DEFAULTELLIPSE
-  v->ellipse = &x11_ellipse;
-  v->fellipse = &x11_fellipse;
-#endif
-
-#ifdef CONFIG_X11_CURSOR
-  v->sprite_show = &x11_sprite_show;
-#endif
+  if (!get_param_int("video-x11","defaultellipse",0)) {
+    v->ellipse = &x11_ellipse;
+    v->fellipse = &x11_fellipse;
+  }
 
   return sucess;
 }

@@ -1,4 +1,4 @@
-/* $Id: x11input.c,v 1.7 2001/11/21 05:18:28 micahjd Exp $
+/* $Id: x11input.c,v 1.8 2001/11/21 06:52:01 micahjd Exp $
  *
  * x11input.h - input driver for X11 events
  *
@@ -44,7 +44,11 @@
 /* Hooks for interfacing with the x11 video driver */
 extern Display *xdisplay;    /* X display from the x11.c driver */
 int x11_fd;                  /* X display's file descriptor */
-void x11_expose(int x, int y, int w, int h);
+void (*x11_expose)(int x, int y, int w, int h);
+
+/* Some config options */
+int x11input_autowarp;
+int x11input_pgcursor;
 
 /* Keyboard translation utilities */
 void x11_translate_key(Display *display, XKeyEvent *xkey, KeyCode kc,
@@ -61,7 +65,13 @@ g_error x11input_init(null) {
   if (!xdisplay)
     return mkerror(PG_ERRT_BADPARAM,36);   /* No matching video driver */
   x11_fd = ConnectionNumber(xdisplay);
+  
   x11input_init_keymap();
+  
+  /* Store other config options */
+  x11input_autowarp = get_param_int("input-x11","autowarp",1);
+  x11input_pgcursor = get_param_int("input-x11","pgcursor",0);
+
   return sucess;
 }
 
@@ -89,10 +99,10 @@ int x11input_fd_activate(int fd) {
        */
 
     case Expose:
-      x11_expose(ev.xexpose.x,
-		 ev.xexpose.y,
-		 ev.xexpose.width,
-		 ev.xexpose.height);
+      (*x11_expose)(ev.xexpose.x,
+		    ev.xexpose.y,
+		    ev.xexpose.width,
+		    ev.xexpose.height);
       break;
 
       /****************** Mouse events
@@ -109,19 +119,22 @@ int x11input_fd_activate(int fd) {
     case MotionNotify:
       dispatch_pointing(TRIGGER_MOVE,ev.xmotion.x, ev.xmotion.y, 
 			ev.xmotion.state >> 8);
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      if (x11input_pgcursor)
+	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       break;
 
     case ButtonPress:
       dispatch_pointing(TRIGGER_DOWN,ev.xbutton.x, ev.xbutton.y,
 			(ev.xbutton.state >> 8) | (1 << (ev.xbutton.button-1)));
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      if (x11input_pgcursor)
+	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       break;
 
     case ButtonRelease:
       dispatch_pointing(TRIGGER_UP,ev.xbutton.x, ev.xbutton.y,
 			(ev.xbutton.state >> 8) & (~(1 << (ev.xbutton.button-1))));
-      drivermessage(PGDM_CURSORVISIBLE,1,NULL);
+      if (x11input_pgcursor)
+	drivermessage(PGDM_CURSORVISIBLE,1,NULL);
       break;
 
       /****************** Keyboard events
