@@ -35,8 +35,6 @@
    go to www.libsdl.org!)
 */
 
-#include <pgserver/autoconf.h>
-
 #define PGKEY_BACKSPACE          8
 #define PGKEY_TAB  	         9 
 #define PGKEY_CLEAR  	         12
