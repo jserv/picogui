@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.4 2002/07/28 04:23:38 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.5 2002/07/28 11:37:51 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -44,6 +44,14 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
     param->mouse.cursor = cursor_global_invisible;
   }
 
+  /* Scroll wheel event? */
+  if (trigger==PG_TRIGGER_SCROLLWHEEL) {
+    /* If it's nonzero, pass it on */
+    if (param->mouse.x || param->mouse.y)
+      infilter_send(self,trigger,param);
+    return;
+  }
+
   /* Get physical cursor position for use later */
   cursor_getposition(param->mouse.cursor, &x, &y);
   if (!param->mouse.is_logical)
@@ -85,10 +93,6 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
   if ((param->mouse.x != x || param->mouse.y != y) && trigger!=PG_TRIGGER_MOVE)
     infilter_send(self,PG_TRIGGER_MOVE,param);
 
-  /* If it's a move event with a button down, send a drag event */
-  if (param->mouse.btn && trigger==PG_TRIGGER_MOVE)
-    infilter_send(self,PG_TRIGGER_DRAG,param);
-
   /* Detect changes in buttons, and store that along with the event
    */
   param->mouse.chbtn = param->mouse.btn ^ param->mouse.cursor->prev_buttons;
@@ -100,9 +104,9 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
 
 struct infilter infilter_pntr_normalize = {
   accept_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE,
+                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
   absorb_trigs: PG_TRIGGER_UP | PG_TRIGGER_DOWN | PG_TRIGGER_MOVE | PG_TRIGGER_PNTR_STATUS |
-                PG_TRIGGER_PNTR_RELATIVE,
+                PG_TRIGGER_PNTR_RELATIVE | PG_TRIGGER_SCROLLWHEEL,
   handler: &infilter_pntr_normalize_handler,
 };
 
