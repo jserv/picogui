@@ -2,6 +2,25 @@
 
 # constant maps
 
+def _getString(str, server):
+    # check if it's already a handle, too
+    if not server:
+        return str, _getString
+    try:
+        str.upper()
+    except:
+        return str, _getString
+    return server.getString(str), _getString
+
+def _getFont(str, server):
+    if not server:
+        return str, _getFont
+    try:
+        str.upper()
+    except:
+        return str, _getFont
+    return server.getFont(str), _getFont
+
 constants = {
     'attachwidget': {
         'after':	(1, {}),
@@ -53,6 +72,7 @@ constants = {
             'italic2':			((1<<16), {}),	# twice the slant of the default italic
             'encoding unicode':		((1<<17), {}),	# unicode encoding
     },),
+    'register': _getString,
     'set': {
         'size':				(1, {
         }),
@@ -81,10 +101,8 @@ constants = {
         }),
         'sizemode':			(6, {
         }),
-        'text':				(7, {
-        }),
-        'font':				(8, {
-        }),
+        'text':				(7, _getString),
+        'font':				(8, _getFont),
         'transparent':			(9, {
         }),
         'bordercolor':			(10, {
@@ -191,10 +209,13 @@ constants = {
     }
 }
 
-def resolve_constant(name, namespace=constants):
+def resolve_constant(name, namespace=constants, server=None):
     if type(namespace) == type(()):
         # for cases where the argument is really supposed to be a string, yet there are contstants after this
         return name, namespace[0]
+    if callable(namespace):
+        # for cases when we need even stranger processing
+        return namespace(name, server)
     if type(name) in (type(()), type([])):
         # multiple names are or'ed together; namespace returned is the last one
         value = 0
@@ -209,7 +230,7 @@ def resolve_constant(name, namespace=constants):
         # never mind, not a string
         return name, namespace
     r = namespace.get(name, (name, namespace))
-    if len(r) == 2:
+    if type(r) == type(()) and len(r) == 2:
         if r[1]:
             return r
         else:
@@ -244,7 +265,7 @@ class Request(object):
         args_resolved = []
         ns = self.ns
         for a in args:
-            r, ns = resolve_constant(a, ns)
+            r, ns = resolve_constant(a, ns, self.server)
             args_resolved.append(r)
         return self.server.send_and_wait(self.handler,args_resolved)
 
