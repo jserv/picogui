@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.13 2001/01/13 10:45:45 micahjd Exp $
+/* $Id: terminal.c,v 1.14 2001/01/15 01:09:14 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -154,8 +154,8 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
 
   /* Using our grop context and character cell size,
    * calculate a good size for us */
-  neww = c->w / DATA->celw - 1;   /* A little margin */
-  newh = c->h / DATA->celh - 1;
+  neww = c->w / DATA->celw - (fd->margin ? 1 : 0);   /* A little margin */
+  newh = c->h / DATA->celh - (fd->margin ? 1 : 0);
 
   /* If we're rolled up, don't bother */
   if ((neww>0) && (newh>0)) {
@@ -245,9 +245,11 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   DATA->bginc = c->current;
 
   /* For the margin we figured in earlier */
-  c->x += DATA->celw >> 1;
-  c->y += DATA->celh >> 1;
-
+  if (fd->margin) {
+     c->x += DATA->celw >> 1;
+     c->y += DATA->celh >> 1;
+  }
+   
   /* Non-incremental text grid */   
   addgrop(c,PG_GROP_TEXTGRID,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->hbuffer;
