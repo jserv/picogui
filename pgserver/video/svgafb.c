@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.3 2001/01/13 02:16:09 micahjd Exp $
+/* $Id: svgafb.c,v 1.4 2001/01/13 09:49:59 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -109,7 +109,7 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
 
 #ifndef VIRTUAL
    
-   svgafb_flags = 0;
+   svgafb_flags = flags & PG_VID_DOUBLEBUFFER ? SVGAFB_DOUBLEBUFFER : 0;
    
    /* In a GUI environment, we don't want VC switches,
     plus they usually crash on my system anyway,
@@ -134,9 +134,9 @@ g_error svgafb_init(int xres,int yres,int bpp,unsigned long flags) {
    /* Set up a palette for RGB simulation */
    for (i=0;i<256;i++)
      vga_setpalette(i,
-		    (i & 0xC0) >> 2,
-		    i & 0x38,
-		    (i & 0x07) << 3);
+		    (i & 0xC0) * 63 / 0xC0,
+		    (i & 0x38) * 63 / 0x38,
+		    (i & 0x07) * 63 / 0x07);
    
    /* Save the actual video mode (might be different than what
     was requested) */
@@ -214,19 +214,17 @@ void svgafb_close(void) {
 
 void svgafb_update_linear(int x,int y,int w,int h) {
    unsigned char *src,*dest;
-   int offset,i;
    unsigned long fbstart;
    
    /* Blit calculations */
    fbstart = y * vid->fb_bpl + x;
    dest = fbstart + graph_mem;
    src  = fbstart + vid->fb_mem;
-   offset = vid->fb_bpl - w;
    
    /* Might prevent tearing? */
    vga_waitretrace();
    
-   for (;h;h--,src+=offset,dest+=offset)
+   for (;h;h--,src+=vid->fb_bpl,dest+=vid->fb_bpl)
      __memcpy(dest,src,w);
 }
 
