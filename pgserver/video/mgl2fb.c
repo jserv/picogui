@@ -1,4 +1,4 @@
-/* $Id: mgl2fb.c,v 1.1 2002/01/21 14:39:09 micahjd Exp $
+/* $Id: mgl2fb.c,v 1.2 2002/10/22 23:08:12 micahjd Exp $
  *
  * mgl2fb.c - Video driver for MGL2
  *
@@ -74,7 +74,7 @@ static int mc_plt[258];
 
 g_error mgl2fb_init(void);
 void mgl2fb_close(void);
-void mgl2fb_update(s16 x, s16 y, s16 w, s16 h);
+void mgl2fb_update(hwrbitmap d,s16 x, s16 y, s16 w, s16 h);
 g_error mgl2fb_regfunc(struct vidlib *v);
 
 
@@ -128,7 +128,7 @@ void mgl2fb_close(void) {
   close_graph();
 }
 
-void mgl2fb_update(s16 x, s16 y, s16 w, s16 h) {
+void mgl2fb_update(hwrbitmap d,s16 x, s16 y, s16 w, s16 h) {
   u8 *srcptr, *ptr;
   int xx, xleft, i, j;
   int pixbuf[8];

@@ -1,4 +1,4 @@
-/* $Id: sed133x.c,v 1.4 2002/02/20 04:52:41 micahjd Exp $
+/* $Id: sed133x.c,v 1.5 2002/10/22 23:08:12 micahjd Exp $
  *
  * sed133x.c -- driver for Epson SED1330/SED1335/SED1336 based LC displays
  *
@@ -214,7 +214,7 @@ static g_error sed133x_init(void) {
 }
 
 /* Copy backbuffer to screen */
-static void sed133x_update(s16 x,s16 y,s16 w,s16 h)
+static void sed133x_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h)
 {
 #ifdef SED133X_FLICKER_FIX
 #define max_bytes 1

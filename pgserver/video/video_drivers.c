@@ -1,4 +1,4 @@
-/* $Id: video_drivers.c,v 1.8 2002/10/11 11:58:44 micahjd Exp $
+/* $Id: video_drivers.c,v 1.9 2002/10/22 23:08:12 micahjd Exp $
  *
  * video_drivers.c - handles loading/switching video drivers and modes
  *
@@ -513,7 +513,7 @@ void realize_updareas(void) {
 		 PG_LGOP_STIPPLE);
       */
 #endif
-      VID(update) (upd_x,upd_y,upd_w,upd_h);
+      VID(update) (vid->display, upd_x,upd_y,upd_w,upd_h);
       upd_x = upd_y = upd_w = upd_h = 0;
    } 
    

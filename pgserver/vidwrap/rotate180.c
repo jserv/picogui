@@ -1,4 +1,4 @@
-/* $Id: rotate180.c,v 1.21 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: rotate180.c,v 1.22 2002/10/22 23:08:12 micahjd Exp $
  *
  * rotate180.c - Video wrapper to rotate the screen 180 degrees
  *
@@ -58,8 +58,8 @@ hwrcolor rotate180_getpixel(hwrbitmap src,s16 x,s16 y) {
    (*vid->bitmap_getsize)(src,&dx,&dy);
    return (*vid->getpixel)(src,dx-1-x,dy-1-y);
 }
-void rotate180_update(s16 x,s16 y,s16 w,s16 h) {
-   (*vid->update)(vid->xres-x-w,vid->yres-y-h,w,h);
+void rotate180_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
+   (*vid->update)(display,vid->xres-x-w,vid->yres-y-h,w,h);
 }
 void rotate180_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
 		   hwrcolor c,s16 lgop) {

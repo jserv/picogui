@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.102 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: video.h,v 1.103 2002/10/22 23:08:11 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -207,7 +207,7 @@ struct vidlib {
    *
    * Default implementation: does nothing (assumes changes are immediate)
    */
-  void (*update)(s16 x,s16 y,s16 w,s16 h);
+  void (*update)(hwrbitmap display, s16 x,s16 y,s16 w,s16 h);
    
   /* Current mode (only used in driver)
    *
@@ -222,14 +222,63 @@ struct vidlib {
   /* fb_mem and fb_bpl are no longer here. Use display->bits and
    * display->pitch, also accessable with the macros FB_MEM and FB_BPL */
  
-  /* This bitmap is passed to primitives to indicate rendering to the display.
-   * When possible, it can have an actual pointer to video memory so the
-   * display is no different from any other bitmap. If it must be a special
-   * case, set this to NULL */
+  /* This is provided for the video drivers' convenience only!
+   * By default it is the bitmap indicating output to the display,
+   * but the video driver may redefine it using the functions in the
+   * window management section below.
+   */
   hwrbitmap display;
    
   /* Optionally process driver messages */
   void (*message)(u32 message, u32 param, u32 *ret);
+
+
+  /******************************************** Window management */
+
+
+  /* Optional
+   *   This is the bitmap rendered to by default. If the driver is
+   *   rootless, this will only be used for debugging purposes,
+   *   and the driver should create a debugging window at the mode
+   *   specified in setmode whenever this function is first called.
+   * 
+   * Default implementation: returns vid->display
+   */
+  hwrbitmap (*default_display)(void);  
+
+  /* Optional
+   *   In a rootless driver, create a new window and return a hwrbitmap
+   *   describing it.
+   *
+   * Default implementation: returns vid->display
+   */
+  hwrbitmap (*window_new)(void);
+
+  /* Optional
+   *   In a rootless driver, create a new window and return a hwrbitmap
+   *   describing it.
+   *
+   * Default implementation: does nothing
+   */
+  void (*window_free)(hwrbitmap window);
+
+  /* Optional
+   *   In a rootless driver, set the window title to the given string
+   *
+   * Default implementation: does nothing
+   */
+  void (*window_set_title)(hwrbitmap window, struct pgstring *title);
+
+  /* Optional
+   *   Routines to get/set position and size for the window
+   *
+   * Default implementation: set does nothing, get returns logical video mode
+   */
+  void (*window_set_position)(hwrbitmap window, s16 x, s16 y);
+  void (*window_set_size)(hwrbitmap window, s16 w, s16 h);
+  void (*window_get_position)(hwrbitmap window, s16 *x, s16 *y);
+  void (*window_get_size)(hwrbitmap window, s16 *w, s16 *h);
+
 
   /******************************************** Hooks */
 
@@ -650,7 +699,7 @@ g_error array_palettize(handle h, int owner);
  */
 
 void emulate_dos(void);
-void def_update(s16 x, s16 y, s16 w, s16 h);
+void def_update(hwrbitmap dest,s16 x, s16 y, s16 w, s16 h);
 g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 hwrcolor def_color_pgtohwr(pgcolor c);
 pgcolor def_color_hwrtopg(hwrcolor c);

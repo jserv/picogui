@@ -1,4 +1,4 @@
-/* $Id: slowvbl.c,v 1.2 2002/01/16 19:47:26 lonetech Exp $
+/* $Id: slowvbl.c,v 1.3 2002/10/22 23:08:12 micahjd Exp $
  *
  * Video Base Library:
  * slowvbl.c - intentionally slow VBL for debugging
@@ -59,7 +59,7 @@ void slowvbl_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
   if (slowvbl_hilight) {
     hwrcolor old = vid->getpixel(dest,x,y);
     (*slowvbl_original_pixel)(dest,x,y,slowvbl_hilightcolor,PG_LGOP_NONE);
-    vid->update(x,y,1,1);
+    vid->update(dest,x,y,1,1);
     (*slowvbl_original_pixel)(dest,x,y,old,PG_LGOP_NONE);
   }
 
@@ -70,15 +70,15 @@ void slowvbl_pixel(hwrbitmap dest, s16 x,s16 y,hwrcolor c,s16 lgop) {
     switch (slowvbl_updatetype) {
 
     case 1: /* line */
-      vid->update(0,y,vid->xres,1);
+      vid->update(dest,0,y,vid->xres,1);
       break;
 
     case 2: /* frame */
-      vid->update(0,0,vid->xres,vid->yres);
+      vid->update(dest,0,0,vid->xres,vid->yres);
       break;
 
     default: /* pixel */
-      vid->update(x,y,1,1);
+      vid->update(dest,x,y,1,1);
       break;
 
     }

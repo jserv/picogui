@@ -1,4 +1,4 @@
-/* $Id: if_magic.c,v 1.6 2002/10/16 11:54:41 micahjd Exp $
+/* $Id: if_magic.c,v 1.7 2002/10/22 23:08:11 micahjd Exp $
  *
  * if_magic.c - Trap magic debug keys
  *
@@ -379,7 +379,7 @@ void magic_button(s16 key) {
   case PGKEY_b:           /* CTRL-ALT-b blanks the screen */
     VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
 		 VID(color_pgtohwr) (0),PG_LGOP_NONE);
-    VID(update) (0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     return;
     
   case PGKEY_y:           /* CTRL-ALT-y unsynchronizes the screen buffers */
@@ -402,7 +402,7 @@ void magic_button(s16 key) {
       /* Push through the black screen */
       VID(rect)   (vid->display, 0,0,vid->lxres,vid->lyres, 
 		   VID(color_pgtohwr) (0),PG_LGOP_NONE);
-      VID(update) (0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
       /* Force redrawing everything to the backbuffer */
       p = dts->top;
       while (p) {
@@ -422,7 +422,7 @@ void magic_button(s16 key) {
   case PGKEY_u:           /* CTRL-ALT-u makes a blue screen */
     VID(rect) (vid->display,0,0,vid->lxres,vid->lyres,
 	       VID(color_pgtohwr) (0x0000FF), PG_LGOP_NONE);
-    VID(update) (0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     return;
     
   case PGKEY_p:           /* CTRL-ALT-p shows all loaded bitmaps */
@@ -432,13 +432,13 @@ void magic_button(s16 key) {
 
       guru("Table of loaded bitmaps:");
       handle_iterate(PG_TYPE_BITMAP,&debug_bitmaps,&data);
-      VID(update) (0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     }
     return;
     
   case PGKEY_o:           /* CTRL-ALT-o traces all divnodes */
     r_divnode_trace(dts->top->head);
-    VID(update) (0,0,vid->lxres,vid->lyres);
+    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     return;
 
   case PGKEY_a:           /* CTRL-ALT-a shows application info */
@@ -461,7 +461,7 @@ void magic_button(s16 key) {
       struct hotspot *p;
       for (p=hotspotlist;p;p=p->next)
 	hotspot_draw(p);
-      VID(update) (0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     }    
     return;
 
@@ -529,7 +529,7 @@ void magic_button(s16 key) {
 	y += 30;
       }
 
-      VID(update) (0,0,vid->lxres,vid->lyres);
+      VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
     }
     return;
 

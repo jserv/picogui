@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.38 2002/10/08 15:35:15 micahjd Exp $
+/* $Id: fbdev.c,v 1.39 2002/10/22 23:08:12 micahjd Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -112,7 +112,7 @@ hwrbitmap screen_buffer;
 int fbdev_flipped;
 #endif
 
-void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h);
+void fbdev_doublebuffer_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h);
 void fbdev_close(void);
 
 /**************************************** Color conversion */
@@ -742,7 +742,7 @@ void fbdev_close(void) {
    close(ttyfd);
 }
 
-void fbdev_doublebuffer_update(s16 x,s16 y,s16 w,s16 h) {
+void fbdev_doublebuffer_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
 #ifdef CONFIG_FB_SYNC
   /* My first attempt at a VBL-sync'ed framebuffer...
    * IMHO this method sucks so hopefully there's a better way.

@@ -1,4 +1,4 @@
-/* $Id: ncurses.c,v 1.30 2002/09/28 09:45:25 micahjd Exp $
+/* $Id: ncurses.c,v 1.31 2002/10/22 23:08:12 micahjd Exp $
  *
  * ncurses.c - ncurses driver for PicoGUI. This lets PicoGUI make
  *             nice looking and functional text-mode GUIs.
@@ -141,7 +141,7 @@ hwrcolor ncurses_getpixel(hwrbitmap src,s16 x,s16 y) {
      return ncurses_screen[x + vid->xres * y];
 }
 
-void ncurses_update(s16 x,s16 y,s16 w,s16 h) {
+void ncurses_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
    refresh();
 
 #ifdef DRIVER_GPM

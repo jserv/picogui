@@ -1,4 +1,4 @@
-/* $Id: benchmark.c,v 1.6 2002/10/22 19:42:26 micahjd Exp $
+/* $Id: benchmark.c,v 1.7 2002/10/22 23:08:08 micahjd Exp $
  *
  * benchmark.c - Run benchmarks on vidlib functions
  *
@@ -53,7 +53,7 @@ void bench_color_hwrtopg(struct benchmark_param *b) {
 }
 
 void bench_update(struct benchmark_param *b) {
-  VID(update)(0,0,b->w,b->h);
+  VID(update)(VID(default_display)(),0,0,b->w,b->h);
 }
 
 void bench_pixel(struct benchmark_param *b) {
@@ -351,7 +351,7 @@ void benchmark_run_one(struct benchmark_test *test, struct benchmark_param *b) {
   for (i=0;i<benchmark_iterations;i++)
     test->func(b);
   gettimeofday(&end,NULL);
-  VID(update)(0,0,vid->lxres,vid->lyres);
+  VID(update)(VID(default_display)(),0,0,vid->lxres,vid->lyres);
 
   result = ((end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec - start.tv_usec)); 
 

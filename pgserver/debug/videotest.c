@@ -1,4 +1,4 @@
-/* $Id: videotest.c,v 1.32 2002/10/20 15:09:59 micahjd Exp $
+/* $Id: videotest.c,v 1.33 2002/10/22 23:08:08 micahjd Exp $
  *
  * videotest.c - implements the -s command line switch, running various
  *               tests on the video driver
@@ -387,7 +387,7 @@ default:
     exit(1);
   }
   if (update)
-     VID(update) (0,0,vid->lxres,vid->lyres);
+     VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);
 }
 
 

@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.31 2002/10/22 19:08:54 micahjd Exp $
+/* $Id: x11.c,v 1.32 2002/10/22 23:08:12 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -209,7 +209,7 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
 /* Blit the backbuffer to the display- we always need this,
  * at the very least for sprite buffering
  */
-void x11_buffered_update(s16 x,s16 y,s16 w,s16 h) {
+void x11_buffered_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
   XCopyArea(xdisplay,((struct x11bitmap*)vid->display)->d,x11_display.d,
 	    x11_gctab[PG_LGOP_NONE],x,y,w,h,x,y);
   XFlush(xdisplay);
@@ -217,7 +217,7 @@ void x11_buffered_update(s16 x,s16 y,s16 w,s16 h) {
 
 /* Non-buffered update. Only need this if we're not doublebuffering
  */
-void x11_nonbuffered_update(s16 x,s16 y,s16 w,s16 h) {
+void x11_nonbuffered_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
   XFlush(xdisplay);
 }
 
@@ -343,6 +343,10 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
     return;
   }
 
+#if 0  /* FIXME: Tiling is not handled blit any more, it's handled by
+	*        the multiblit primitive. Move this tiling code to multiblit,
+	*        and make it handle source rectangles smartly.
+	*/
   /* If we're tiling, expand the bitmap to the minimum tile size
    * if necessary, and cache it. Then, if the tile is still smaller
    * than our blit size send it to the default blitter to be
@@ -365,6 +369,8 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   if (w > sxb->w || h > sxb->h)
     def_blit(dest,x,y,w,h,(hwrbitmap) sxb,src_x,src_y,lgop);
   else
+#endif /* 0 */
+
     XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
@@ -405,7 +411,7 @@ void x11_buffered_sprite_update(struct sprite *spr) {
   vid->sprite_show(spr);
   
   /* Copy backbuffer to display */
-  x11_buffered_update(upd_x,upd_y,upd_w,upd_h);
+  x11_buffered_update(NULL,upd_x,upd_y,upd_w,upd_h);
   vid->display = (hwrbitmap) &x11_display;
 }
 

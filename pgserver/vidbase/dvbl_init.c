@@ -1,4 +1,4 @@
-/* $Id: dvbl_init.c,v 1.9 2002/10/16 22:33:41 micahjd Exp $
+/* $Id: dvbl_init.c,v 1.10 2002/10/22 23:08:12 micahjd Exp $
  *
  * dvbl_init.c - This file is part of the Default Video Base Library,
  *               providing the basic video functionality in picogui but
@@ -37,7 +37,7 @@
 #include <pgserver/font.h>
 #include <pgserver/render.h>
 
-/******* no-op functions */
+/******* trivial functions */
 
 g_error def_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   return success;
@@ -50,7 +50,7 @@ g_error def_enterexitmode(void) {
    return success;
 }
 
-void def_update(s16 x,s16 y,s16 w,s16 h) {
+void def_update(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h) {
 }
 
 void def_coord_logicalize(int *x,int *y) {
@@ -79,6 +79,36 @@ int def_update_hook(void) {
 
 void def_grop_handler(struct groprender *r, struct gropnode *n) {
 }
+ 
+hwrbitmap def_default_display(void) {
+  return vid->display;
+}
+
+hwrbitmap def_window_new(void) {
+  return vid->display;
+}
+
+void def_window_free(hwrbitmap window) {
+}
+
+void def_window_set_title(hwrbitmap window, struct pgstring *title) {
+}
+
+void def_window_set_position(hwrbitmap window, s16 x, s16 y) {
+}
+
+void def_window_set_size(hwrbitmap window, s16 w, s16 h) {
+}
+
+void def_window_get_position(hwrbitmap window, s16 *x, s16 *y) {
+  *x = *y = 0;
+}
+
+void def_window_get_size(hwrbitmap window, s16 *w, s16 *h) {
+  *w = vid->lxres;
+  *h = vid->lyres;
+}
+
 
 /******* registration */
 
@@ -128,6 +158,14 @@ void setvbl_default(struct vidlib *vid) {
   vid->grop_handler = &def_grop_handler;
   vid->blur = &def_blur;
   vid->charblit = &def_charblit;
+  vid->default_display = &def_default_display;
+  vid->window_new = &def_window_new;
+  vid->window_free = &def_window_free;
+  vid->window_set_title = &def_window_set_title;
+  vid->window_set_position = &def_window_set_position;
+  vid->window_get_position = &def_window_get_position;
+  vid->window_set_size = &def_window_set_size;
+  vid->window_get_size = &def_window_get_size;
 #ifdef CONFIG_FONTENGINE_FREETYPE
   vid->alpha_charblit = &def_alpha_charblit;
 #endif

@@ -1,4 +1,4 @@
-/* $Id: scrshot.c,v 1.8 2002/03/27 15:09:25 lonetech Exp $
+/* $Id: scrshot.c,v 1.9 2002/10/22 23:08:12 micahjd Exp $
  *
  * scrshot.c - Maintains a virtual framebuffer, taking screenshots on update
  *
@@ -144,7 +144,7 @@ void scrshot_close(void) {
      g_free(FB_MEM);
 }
 
-void scrshot_update(s16 unusedx, s16 unusedy, s16 w, s16 h) {
+void scrshot_update(hwrbitmap d,s16 unusedx, s16 unusedy, s16 w, s16 h) {
   char buf[256];    /* I hate static buffers... */
   FILE *f;
   int x,y;

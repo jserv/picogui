@@ -1,4 +1,4 @@
-/* $Id: rotate90.c,v 1.34 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: rotate90.c,v 1.35 2002/10/22 23:08:12 micahjd Exp $
  *
  * rotate90.c - Video wrapper to rotate the screen 90 degrees
  *
@@ -57,8 +57,8 @@ hwrcolor rotate90_getpixel(hwrbitmap src,s16 x,s16 y) {
    (*vid->bitmap_getsize)(src,&dx,&dy);
    return (*vid->getpixel)(src,y,dy-1-x);
 }
-void rotate90_update(s16 x,s16 y,s16 w,s16 h) {
-   (*vid->update)(y,vid->yres-x-w,h,w);
+void rotate90_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
+   (*vid->update)(display,y,vid->yres-x-w,h,w);
 }
 void rotate90_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
 		   hwrcolor c,s16 lgop) {

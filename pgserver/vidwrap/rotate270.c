@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.22 2002/10/16 22:33:42 micahjd Exp $
+/* $Id: rotate270.c,v 1.23 2002/10/22 23:08:12 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -57,8 +57,8 @@ hwrcolor rotate270_getpixel(hwrbitmap src,s16 x,s16 y) {
    (*vid->bitmap_getsize)(src,&dx,&dy);
    return (*vid->getpixel)(src,dx-1-y,x);
 }
-void rotate270_update(s16 x,s16 y,s16 w,s16 h) {
-   (*vid->update)(vid->xres-y-h,x,h,w);
+void rotate270_update(hwrbitmap display,s16 x,s16 y,s16 w,s16 h) {
+   (*vid->update)(display,vid->xres-y-h,x,h,w);
 }
 void rotate270_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,
 		   hwrcolor c,s16 lgop) {

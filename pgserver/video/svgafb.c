@@ -1,4 +1,4 @@
-/* $Id: svgafb.c,v 1.13 2002/03/26 03:12:35 instinc Exp $
+/* $Id: svgafb.c,v 1.14 2002/10/22 23:08:12 micahjd Exp $
  *
  * svgafb.c - A driver for linear-framebuffer svga devices that uses the linear*
  *          VBLs instead of the default vbl and libvgagl.
@@ -59,8 +59,8 @@ int svgafb_closest_mode(s16 xres,s16 yres,s16 bpp);
 g_error svgafb_init(void);
 g_error svgafb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 void svgafb_close(void);
-void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h);
-void svgafb_update_paged(s16 x,s16 y,s16 w,s16 h);
+void svgafb_update_linear(hwrbitmap d,s16 x,s16 y,s16 w,s16 h);
+void svgafb_update_paged(hwrbitmap d,s16 x,s16 y,s16 w,s16 h);
 g_error svgafb_regfunc(struct vidlib *v);
 
 /****************************************************** Init / Shutdown */
@@ -233,7 +233,7 @@ void svgafb_close(void) {
 /****************************************************** Update Blits */
 
 /* Normal copy blit */
-void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h) {
+void svgafb_update_linear(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
    unsigned char *src,*dest;
    u32 fbstart;
    
@@ -257,7 +257,7 @@ void svgafb_update_linear(s16 x,s16 y,s16 w,s16 h) {
  * vgagl, probably written by Harm Hanemaayer (but if I am wrong please
  * correct me!)
  */
-void svgafb_update_paged(s16 x,s16 y,s16 w,s16 h) {
+void svgafb_update_paged(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
    u32 vp;
    int page;
    char *bp;

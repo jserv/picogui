@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.48 2002/10/12 15:13:32 micahjd Exp $
+/* $Id: sdlfb.c,v 1.49 2002/10/22 23:08:12 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -92,7 +92,7 @@ hwrcolor sdlfbemu_color_pgtohwr(pgcolor c);
 pgcolor sdlfbemu_color_hwrtopg(hwrcolor c);
 g_error sdlfb_init(void);
 void sdlfb_close(void);
-void sdlfb_update(s16 x,s16 y,s16 w,s16 h);
+void sdlfb_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h);
 g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags);
 hwrcolor sdlfb_tint_pgtohwr(pgcolor c);
@@ -363,7 +363,7 @@ g_error sdlfb_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
 	if (!iserror(VID(bitmap_load) (&bg,mem,len))) {
 	  VID(blit) (vid->display,0,0,fbw,fbh,bg,0,0,PG_LGOP_NONE);
 	  VID(bitmap_free) (bg);
-	  sdlfb_update(0,0,fbw,fbh);
+	  sdlfb_update(NULL,0,0,fbw,fbh);
 	}
 	g_free(mem);
       }
@@ -413,7 +413,7 @@ void sdlfb_close(void) {
   SDL_Quit();
 }
 
-void sdlfb_update(s16 x,s16 y,s16 w,s16 h) {
+void sdlfb_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
   DBG("at %d,%d,%d,%d\n",x,y,w,h);
 
 #ifdef CONFIG_SDLSKIN

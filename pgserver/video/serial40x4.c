@@ -1,4 +1,4 @@
-/* $Id: serial40x4.c,v 1.15 2002/06/20 08:45:00 micahjd Exp $
+/* $Id: serial40x4.c,v 1.16 2002/10/22 23:08:12 micahjd Exp $
  *
  * serial40x4.c - PicoGUI video driver for a serial wall-mounted
  *                40x4 character LCD I put together about a year ago.
@@ -242,7 +242,7 @@ void serial40x4_close(void) {
  *
  * Cruftily hardcoded to a split 40x4 Hitachi-compatible LCD
  */
-void serial40x4_update(s16 x,s16 y,s16 w,s16 h) {
+void serial40x4_update(hwrbitmap d,s16 x,s16 y,s16 w,s16 h) {
    int i_lcd,i;
    u8 *oldp,*newp;
    /* Output buffer big enough to hold one frame with worst-case encoding */

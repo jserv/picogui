@@ -1,4 +1,4 @@
-/* $Id: g_error.c,v 1.35 2002/10/12 14:46:34 micahjd Exp $
+/* $Id: g_error.c,v 1.36 2002/10/22 23:08:10 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
@@ -133,7 +133,7 @@ void guru(const char *fmt, ...) {
     df->lib->draw_string(df,vid->display,xy_to_pair(10+deadcomp_width,5),
 			 VID(color_pgtohwr)(0xFFFFFF),pgstring_tmpwrap(msgbuf),
 			 &screenclip,PG_LGOP_NONE,0);
-    VID(update) (0,0,vid->lxres,vid->lyres);    
+    VID(update) (VID(default_display)(),0,0,vid->lxres,vid->lyres);    
   }
   
 #ifdef CONFIG_STDERR_GURU
