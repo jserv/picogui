@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.34 2002/10/21 13:31:06 micahjd Exp $
+/* $Id: linear16.c,v 1.35 2002/10/22 15:18:26 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -514,10 +514,19 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
     diameter = 4;
 
   /* Leave room on the edges, so the p[radius]/p[-radius] stuff below is legal */
+#if defined(CONFIG_ROTATIONBASE_90) || defined(CONFIG_ROTATIONBASE_270)
+  /* Vertical */
+  y += radius;
+  h -= radius<<1;
+  if (h<=0)
+    return;
+#else
+  /* Horizontal */
   x += radius;
   w -= radius<<1;
   if (w<=0)
     return;
+#endif
 
   /* Find out the next highest power of two from radius, and the log of that */
   for (i=0,j=diameter;j!=1;i++)
@@ -538,7 +547,39 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
   strideradius = (bpl>>1)*radius;
   corner = PIXELADDR(x,y);
   r=g=b=0;
-  
+
+#if defined(CONFIG_ROTATIONBASE_90) || defined(CONFIG_ROTATIONBASE_270)
+
+  /* Vertical blur */
+  radius *= FB_BPL>>1;
+  for (line=corner,j=w;j;j--,line++) {
+    color = line[-radius];
+    r = (color & 0xF800) << log_diameter;
+    g = (color & 0x07E0) << log_diameter;
+    b = (color & 0x001F) << log_diameter;
+
+    for (p=line,i=h;i;i--,(u8*)p+=FB_BPL) {
+      /* Add the new pixel into the buffer */
+      color = p[radius];
+      r += color & 0xF800;
+      g += color & 0x07E0;
+      b += color & 0x001F;
+
+      /* Take the old one away */
+      color = p[-radius];
+      r -= color & 0xF800;
+      g -= color & 0x07E0;
+      b -= color & 0x001F;
+
+      /* Shift it into place */
+      *p = (((r >> log_diameter) & 0xF800) |
+	    ((g >> log_diameter) & 0x07E0) |
+	    ((b >> log_diameter) & 0x001F) );
+    }
+  }
+#else /* 0 or 180 degrees */
+
+  /* Horizontal blur */
   for (line=corner,j=h;j;j--,(u8*)line+=bpl) {
     color = line[-radius];
     r = (color & 0xF800) << log_diameter;
@@ -564,6 +605,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 	    ((b >> log_diameter) & 0x001F) );
     }
   }
+#endif /* rotation base */
 }
 #endif /* CONFIG_FASTER_BLUR */
 
