@@ -1,7 +1,7 @@
 #############################################################################
 #
 # PicoGUI client module for Perl
-# $Revision: 1.5 $
+# $Revision: 1.6 $
 #
 # Micah Dowty <micah@homesoftware.com>
 #
@@ -14,7 +14,8 @@ use Carp;
 require Exporter;
 @ISA       = qw(Exporter);
 @EXPORT    = qw(NewWidget %ServerInfo Update NewString
-		NewFont NewBitmap delete MakeBackground RestoreBackground);
+		NewFont NewBitmap delete MakeBackground RestoreBackground
+		EventWait);
 
 ################################ Constants
 
@@ -163,14 +164,38 @@ END {
 
 sub _request {
     my ($type,$data) = @_;
-    my ($rsp,$r_id,$ret,$errt,$msg);
+    my ($rsp,$r_id,$ret,$errt,$msg,$rspt,$mlen);
+    my ($etype,$efrom,$eparam);
     print S pack("nnN",$type,++$id,length $data);
     print S $data;
-    read S,$rsp,88;
-    ($r_id,$errt,$ret,$msg) = unpack("nnNa56",$rsp);
-    $r_id == $id or croak "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
-    $errt and croak "PicoGUI - ERROR($ERRT[$errt]) $msg\n";
-    return $ret;
+
+    # Read the response type
+    read S,$rsp,2 or croak "PicoGUI - Error reading response code";
+    ($rspt) = unpack("n",$rsp);
+    if ($rspt==1) {
+	# Error
+	read S,$rsp,6 or croak "PicoGUI - Error reading error code";
+	($r_id,$errt,$mlen) = unpack("nnn",$rsp);
+	read S,$msg,$mlen or carp "PicoGUI - Error reading error string";
+	$r_id == $id or carp "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
+	croak "PicoGUI - Server error of type $ERRT[$errt]: $msg\n";	
+    }
+
+    if ($rspt==2) {
+	# Return code
+	read S,$rsp,6 or croak "PicoGUI - Error reading return value";
+	($r_id,$ret) = unpack("nN",$rsp);
+	$r_id == $id or carp "PicoGUI - incorrect packet ID ($id -> $r_id)\n";
+	return $ret;
+    }
+    
+    if ($rspt==3) {
+	# Event
+	read S,$rsp,10 or croak "PicoGUI - Error reading event";
+	return unpack("nNN",$rsp);
+    }
+
+    croak "PicoGUI - Unexpected response type ($rspt)\n";
 }
 
 # Subs for each type of request
@@ -201,6 +226,9 @@ sub _mkstring {
 }
 sub _setbg {
     _request(9,pack('N',@_));
+}
+sub _wait {
+    _request(13);
 }
 
 ######### Public functions
@@ -344,6 +372,10 @@ sub NewBitmap {
     bless $self;
     $self->{'h'} = $h;
     return $self;
+}
+
+sub EventWait {
+    _wait();
 }
 
 _init();

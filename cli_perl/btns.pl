@@ -2,14 +2,43 @@
 use PicoGUI;
 
 $p = NewWidget(-type => panel);
-$chk = NewBitmap(-file => '../images/check.pnm');
-$chkm = NewBitmap(-file => '../images/check_mask.pnm');
+$str = NewString("Click a button");
+$lbl = NewWidget(-type => label,-side => top,
+		 -text => $str,-before => $p,-bgcolor => 0,-color => 0xFFFFFF);
 
-for ($i=0;$i<10;$i++) {
-NewWidget(-type => button, -inside => $p,-bitmap => $chk, -bitmask =>$chkm);
+$check = NewWidget(-type => button, -inside => $p,
+		   -bitmap  => NewBitmap(-file => '../images/check.pnm'),
+		   -bitmask => NewBitmap(-file => '../images/check_mask.pnm'));
+
+$tux = NewWidget(-type => button, -inside => $p,
+		 -bitmap  => NewBitmap(-file => '../images/tux.pnm'),
+		 -bitmask => NewBitmap(-file => '../images/tux_mask.pnm'));
+
+$x = NewWidget(-type => button, -inside => $p,
+	       -bitmap  => NewBitmap(-file => '../images/x.pnm'),
+	       -bitmask => NewBitmap(-file => '../images/x_mask.pnm'));
+
+Update(); 
+
+while (1) {
+    ($type,$from,$param) = EventWait();
+    
+    if ($from==$tux->GetHandle()) {
+	$nstr = NewString("You clicked Tux (click #".(++$tuxc).")");
+    }
+    elsif ($from==$x->GetHandle()) {
+	$nstr = NewString("You clicked the X (click #".(++$xc).")");
+    }
+    elsif ($from==$check->GetHandle()) {
+	$nstr = NewString("You clicked the check (click #".(++$checkc).")");
+    }
+    else {
+	$nstr = NewString("Other event");
+    }
+    
+    $lbl->SetWidget(-text => $nstr);
+    $str->delete;
+    $str = $nstr;
+    Update();
 }
-
-Update(); <STDIN>;
-
-
 
