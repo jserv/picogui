@@ -1,7 +1,7 @@
 #############################################################################
 #
 # PicoGUI client module for Perl
-# $Revision: 1.4 $
+# $Revision: 1.5 $
 #
 # Micah Dowty <micah@homesoftware.com>
 #
@@ -87,7 +87,8 @@ require Exporter;
 	  '-bordersize' => 11,
 	  '-bitmap' => 12,
 	  '-lgop' => 13,
-	  '-value' => 14
+	  '-value' => 14,
+	  '-bitmask' => 15
 	  );
 
 $MAGIC     = 0x31415926;
@@ -232,7 +233,8 @@ sub SetWidget {
 	$arg = $args{$_};
 	$arg = $ALIGN{$arg} if (/align/);
 	$arg = $SIDE{$arg} if (/side/);
-	$arg = $arg->GetHandle() if (/text/ or /bitmap/ or /font/);
+	$arg = $arg->GetHandle() if (/text/ or /bitmap/ or
+		/font/ or /bitmask/);
 	croak "Undefined property" if (!defined $prop);
 	_set($self->GetHandle(),$arg,$prop);
     }
