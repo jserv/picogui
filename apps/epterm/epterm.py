@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import PicoGUI, struct, os, sys
+import PicoGUI, struct, os, sys, time
 from PicoGUI import constants
 
 class TerminalPage:
@@ -109,7 +109,7 @@ class App(PicoGUI.Application):
 	    while(i != len(self._pages)):
 	        self._pages[i].setPosition(i)
 	        i = i + 1
-	    if position > (len(self._pages) - 1):
+	    if position >= len(self._pages):
 	        self._pages[position - 1].tabpage.on = 1
 	    else:
 	        self._pages[position].tabpage.on = 1
@@ -119,14 +119,19 @@ class App(PicoGUI.Application):
 	self._pages[-1].tabpage.text = 'tab!'
 	self._pages[-1].tabpage.on = 1
 
-    def update(self, ev):
+    def update(self):
+    # def update(self, ev):
 	i = 0
-	while(i != len(self._pages)):
+	while(i < len(self._pages)):
 	    self._pages[i].update()
 	    if(len(self._pages) == 0):
 	        sys.exit(0)
 	    i = i + 1
 
 f = App()
-f.idle_delay = 10
-f.run()
+while(1):
+    f.eventPoll()
+    f.update()
+    time.sleep(0.01)
+# f.idle_delay = 10
+# f.run()
