@@ -1,4 +1,4 @@
-/* $Id: backend.c,v 1.3 2000/09/26 00:46:14 micahjd Exp $
+/* $Id: backend.c,v 1.4 2000/10/07 22:06:07 micahjd Exp $
  *
  * backend.c - convert the in-memory representation of the
  *             theme data to the actual compiled theme file
@@ -55,6 +55,7 @@ void backend(void) {
   unsigned char *cp;
   struct pgtheme_thobj *thop;
   struct pgtheme_prop  *propp,*proparray;
+  struct loadernode *ldr;
   unsigned long sum=0;
 
   /* Calculate the theme heap's size, and allocate it */
@@ -127,6 +128,10 @@ void backend(void) {
       propp->loader = ntohs(pp->loader);
       propp->data = ntohl(pp->data);
 
+      /* Set up for loader linking */
+      if (pp->ldnode)
+	pp->ldnode->link_from = &propp->data;
+
       /* Link */
       if (pp->link_from)
 	*pp->link_from = htonl( ((char*)propp) - ((char*)themeheap) );
@@ -135,14 +140,37 @@ void backend(void) {
       pp = pp->next;
     }
 
-    /* Sort the property list in ascending order, so
-       the server can binary search it */
-    qsort(proparray,op->num_prop,sizeof(struct pgtheme_prop),
-	  &compare_prop);
-   
     /* Next! */
     op = op->next;
   }		     
+  
+  /* Append and link loaders */
+  ldr = loaderlist;
+  while (ldr) {
+
+    /* link */
+    *ldr->link_from = htonl( ((char*)themeheap_p) - ((char*)themeheap) );
+
+    /* Copy to the heap */
+    memcpy(themeheap_p,ldr->data,ldr->datalen);
+    themeheap_p += ldr->datalen;  
+
+    ldr = ldr->next;
+  }
+
+  /* Sort everything after all linking is done */
+
+  /* Property lists */
+  thop = thobjarray;
+  for (c=0;c<num_thobj;c++,thop++) {
+    proparray = (struct pgtheme_prop *) (((char*)themeheap) + 
+					 ntohl(thop->proplist));
+
+    /* Sort the property list in ascending order, so
+       the server can binary search it */
+    qsort(proparray,ntohs(thop->num_prop),sizeof(struct pgtheme_prop),
+	  &compare_prop);
+  }
 
   /* Sort the thobj array by id, in ascending order. This
      is required by the format so the server can use a 

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.9 2000/10/07 07:47:03 micahjd Exp $
+/* $Id: pgtheme.y,v 1.10 2000/10/07 22:06:08 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -26,6 +26,7 @@
  * 
  */
 
+#include <malloc.h>
 #include "themec.h"
 
 %}
@@ -38,6 +39,7 @@
     unsigned long loader;
     unsigned long propid;
     unsigned long data;
+    struct loadernode *ldnode;
   } propval;
   struct propnode *prop;
   struct objectnode *obj;
@@ -48,6 +50,8 @@
 %token <num>     NUMBER
 %token <propid>  PROPERTY
 %token <thobjid> THOBJ
+%token <num>     FSVAR
+%token <num>     FSFUNC
 %token STRING 
 
 %type <num>      constexp
@@ -71,14 +75,22 @@
 %type <fsn>      fsvar
 
    /* Reserved words */
-%token UNKNOWNSYM OBJ FILLSTYLE VAR FSVAR FSFUNC
+%token UNKNOWNSYM OBJ FILLSTYLE VAR SHIFTR SHIFTL
 
-%left VARPLUS
-%left VARMULT
-%nonassoc VARPAREN
+%left '|'
+%left '&'
+%left SHIFTL SHIFTR
 %left '-' '+'
 %left '*' '/'
 %nonassoc CONSTPAREN
+
+    /* Reduces the stack space used by fillstyles */
+%left VAROR
+%left VARAND
+%left VARSHIFT
+%left VARPLUS
+%left VARMULT
+%nonassoc VARPAREN
 
 %start unitlist
 
@@ -121,6 +133,7 @@ statement:  property '=' propertyval ';' {
     memset($$,0,sizeof(struct propnode));
     $$->loader = $3.loader;
     $$->data   = $3.data;
+    $$->ldnode = $3.ldnode;
     $$->propid = $1;
     num_totprop++;
   }
@@ -156,7 +169,7 @@ property: PROPERTY
         | UNKNOWNSYM  { $$ = 0; }
         ;
 
-propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; }
+propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.ldnode = NULL;}
            |  fillstyle         { $$ = $1; }
            ;
 
@@ -179,15 +192,74 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
          | FILLSTYLE '{' '}' { yyerror("empty fillstyle"); }
          | FILLSTYLE '{' fsbody '}' {
   struct fsnode *p = $3;
+  unsigned char *buf,*bp;
+  unsigned long bufsize=512;
+  struct pgrequest *req;
+  long t;
 
-  $$.data = 0;
-  $$.loader = 0;
+  /* Allocate the fillstyle buffer */
+  if (!(bp = buf = malloc(bufsize)))
+    yyerror("memory allocation error");
 
-  /* For now list out the opcodes */
+  /* Reserve space for the request header */
+  req = (struct pgrequest *) bp;
+  bp += sizeof(struct pgrequest);
+  memset(req,0,sizeof(struct pgrequest));
+  req->type = htons(PGREQ_MKFILLSTYLE);
+
+  /* Transcribe the fsnodes into real opcodes */
   while (p) {
-    printf("Op: 0x%02X Param: 0x%08X\n",p->op,p->param);
+    
+    /* Check buffer size */
+    t = bp-buf;
+    if ((bufsize-t)<10) {
+      buf = realloc(buf,bufsize <<= 1);
+      bp = buf+t;
+    }      
+
+    /* FIXME: Optimization lookahead thingy */
+    /* FIXME: Pack short values */
+    
+    /* Output opcode byte */
+    *(bp++) = p->op;
+   
+    /* Output parameters */
+    switch (p->op) {
+
+    case PGTH_OPCMD_LONGLITERAL:      /* 4 byte */
+      *(((unsigned long *)bp)++) = htonl(p->param);
+      break;
+
+    case PGTH_OPCMD_LONGGROP:         /* 2 byte */
+    case PGTH_OPCMD_LOCALPROP:
+      *(((unsigned short *)bp)++) = htons(p->param);
+      break;
+
+    case PGTH_OPCMD_LONGGET:          /* 1 byte */
+    case PGTH_OPCMD_LONGSET:
+      *(bp++) = p->param;
+      break;
+     
+    case PGTH_OPCMD_PROPERTY:         /* 2 x 2 byte */
+      *(((unsigned short *)bp)++) = htons(p->param);
+      *(((unsigned short *)bp)++) = htons(p->param2);
+      break;
+
+    default: 
+      break;
+    }
+
     p = p->next;
   }
+
+  /* Finish the header */
+  req->size = htonl(bp-buf-sizeof(struct pgrequest));
+
+  /* We add the loader node here, the loadernode is given
+     its object and property fields when it is assigned to
+     a property, and the backend inserts and links it. */
+  $$.ldnode = newloader(buf,bp-buf);
+  $$.loader = PGTH_LOAD_REQUEST;
 }
          ;
 
@@ -207,15 +279,23 @@ fsvar_list: fsvar                { $$ = $1; }
           | fsvar_list ',' fsvar { $$ = fsnodecat($1,$3); }
           ;
 
-fsvar: UNKNOWNSYM                { $$ = fsnewnode(0,0); }
+fsvar: UNKNOWNSYM                { $$ = fsnewnode(PGTH_OPSIMPLE_LITERAL); }
      ;
 
 fsstmt_list: fsstmt              { $$ = $1; }
            | fsstmt_list fsstmt  { $$ = fsnodecat($1,$2); }
 	   ;
 
-fsstmt: FSVAR '=' fsexp ';'          { $$ = fsnodecat($3,fsnewnode(0,0)); }
-      | FSFUNC '(' fsarglist ')' ';' { $$ = fsnodecat($3,fsnewnode(0,0)); }
+fsstmt: FSVAR '=' fsexp ';'          { 
+  struct fsnode *n;
+  $$ = fsnodecat($3,n = fsnewnode(PGTH_OPCMD_LONGSET));
+  n->param = $1;
+}
+      | FSFUNC '(' fsarglist ')' ';' { 
+  struct fsnode *n;
+  $$ = fsnodecat($3,n = fsnewnode(PGTH_OPCMD_LONGGROP));
+  n->param = $1;
+}
       ;
 
 fsarglist:                     { $$ = NULL; }
@@ -223,10 +303,16 @@ fsarglist:                     { $$ = NULL; }
          | fsarglist ',' fsexp { $$ = fsnodecat($1,$3); }
          ;
 
-fsexp: '(' fsexp ')'    { $$ = $2; }                                         %prec VARPAREN 
-     | fsexp '+' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(0,0)); } %prec VARPLUS  
-     | fsexp '*' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(0,0)); } %prec VARMULT  
-     | NUMBER           { $$ = fsnewnode(0,$1); }               
+fsexp: '(' fsexp ')'    { $$ = $2; } %prec VARPAREN 
+     | fsexp '+' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_PLUS)); } %prec VARPLUS  
+     | fsexp '-' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MINUS)); } %prec VARPLUS 
+     | fsexp '*' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_MULTIPLY)); } %prec VARMULT  
+     | fsexp '/' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_DIVIDE)); } %prec VARMULT  
+     | fsexp '|' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_OR)); } %prec VAROR  
+     | fsexp '&' fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_AND)); } %prec VARAND  
+     | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); } %prec VARSHIFT 
+     | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); } %prec VARSHIFT 
+     | NUMBER           { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }               
      ;
 
 %%

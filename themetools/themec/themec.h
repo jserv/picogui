@@ -1,4 +1,4 @@
-/* $Id: themec.h,v 1.7 2000/10/07 07:47:03 micahjd Exp $
+/* $Id: themec.h,v 1.8 2000/10/07 22:06:08 micahjd Exp $
  *
  * themec.h - definitions used internally in the theme compiler
  *
@@ -33,6 +33,7 @@
 
 #include <picogui/constants.h>
 #include <picogui/theme.h>
+#include <picogui/network.h>
 
 #define MAXERRORS  20
 
@@ -54,6 +55,8 @@ extern struct symnode symboltab[];
 
 /*** Structures for the in-memory representation ***/
 
+struct loadernode;
+
 struct propnode {
   unsigned long data;
   unsigned long loader;
@@ -61,6 +64,7 @@ struct propnode {
   unsigned long *link_from;  /* If non-null, this location in the
 				theme heap is set to this property's
 				offset from the beginning of the heap */
+  struct loadernode *ldnode;
   struct propnode *next;
 };
 
@@ -73,11 +77,21 @@ struct objectnode {
 
 /* Opcode(s) in a fill style */
 struct fsnode {
-  int op;
+  unsigned char op;
   unsigned long param;
+  unsigned long param2;
   struct fsnode *next;
 };
 
+/* Linked list of loaders to link */
+struct loadernode {
+  unsigned char *data;
+  unsigned long datalen;
+  unsigned long *link_from;
+  struct loadernode *next;
+};
+
+extern struct loadernode *loaderlist;
 extern struct objectnode *objectlist;
 extern unsigned long num_tags;
 extern unsigned long num_thobj;
@@ -103,7 +117,8 @@ extern struct pgtheme_thobj  *thobjarray;
 int yyerror(const char *s);   /* Error reporting */
 int symlookup(const char *sym,unsigned long *value);
 struct fsnode *fsnodecat(struct fsnode *a,struct fsnode *b);
-struct fsnode *fsnewnode(int op,unsigned long param);
+struct fsnode *fsnewnode(unsigned char op);
+struct loadernode *newloader(unsigned char *data,unsigned long len);
 
 /*** Important functions ***/
 

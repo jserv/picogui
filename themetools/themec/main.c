@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.7 2000/10/07 07:47:03 micahjd Exp $
+/* $Id: main.c,v 1.8 2000/10/07 22:06:08 micahjd Exp $
  *
  * main.c - main() and some parser utility functions for
  *          the PicoGUI theme compiler.  The actual parsing
@@ -33,6 +33,7 @@
 
 int lineno = 1;
 int errors;
+struct loadernode *loaderlist;
 struct objectnode *objectlist;
 unsigned long num_tags;
 unsigned long num_thobj;
@@ -114,16 +115,34 @@ struct fsnode *fsnodecat(struct fsnode *a,struct fsnode *b) {
 }
 
 /* Allocate an fsnode */
-struct fsnode *fsnewnode(int op,unsigned long param) {
+struct fsnode *fsnewnode(unsigned char op) {
   struct fsnode *n;
   n = malloc(sizeof(struct fsnode));
   if (n) {
     memset(n,0,sizeof(struct fsnode));
     n->op = op;
-    n->param = param;
   }
   else
     yyerror("memory allocation error");
+  return n;
+}
+
+/* Allocate a loadernode for a chunk of data */
+struct loadernode *newloader(unsigned char *data,unsigned long len) {
+  struct loadernode *n;
+  n = malloc(sizeof(struct loadernode));
+  if (n) {
+    memset(n,0,sizeof(struct loadernode));
+    n->data = data;
+    n->datalen = len;
+    n->next = loaderlist;
+
+    datasz_loader += len;
+    loaderlist = n;
+  }
+  else
+    yyerror("memory allocation error");
+
   return n;
 }
 

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.l,v 1.8 2000/10/07 05:49:30 micahjd Exp $
+/* $Id: pgtheme.l,v 1.9 2000/10/07 22:06:08 micahjd Exp $
  *
  * pgtheme.l - lexer for processing PicoGUI theme source code
  *
@@ -44,11 +44,13 @@ x               { yylval.num = 0; return FSVAR; }
 y               { yylval.num = 1; return FSVAR; }
 w               { yylval.num = 2; return FSVAR; }
 h               { yylval.num = 3; return FSVAR; }
+"<<"            { return SHIFTL; }
+">>"            { return SHIFTR; }
 
    /* symbols, operators, and strings */
 
 [a-zA-Z_][a-zA-Z0-9_\.]* { return symlookup(yytext,&yylval.num); }
-[-+*/()=;{},]            { return yytext[0]; }
+[-+*/()=;{},\&\|]        { return yytext[0]; }
 \"[^"\n]*["\n]           { return STRING; }
 
    /* numeric constants */
