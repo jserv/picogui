@@ -11,13 +11,14 @@ object background {
      var bx,by;
 
      /* Mostly solid background */
-     Rect(x,y,w,h,ColorConv(0x5a81cf));
+     SetColor(0x5A81CF);
+     Rect(x,y,w,h);
 
      /* Stripes */
-     Bitmap(x+w-406,y,406,340,bitmap1,PG_LGOP_NONE,0,0);
+     Bitmap(x+w-406,y,406,340,bitmap1);
 
      /* Fading on the edge */
-     Gradient(x,y,w/8,h,0,0x91a0ba,0x5a81cf,0);
+     Gradient(x,y,w/8,h,0,0x91a0ba,0x5a81cf);
    };
 }
 

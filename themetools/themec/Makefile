@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2000/10/10 00:49:06 micahjd Exp $
+# $Id: Makefile,v 1.6 2001/04/29 17:29:06 micahjd Exp $
 #
 # Theme compiler makefile
 #
@@ -34,7 +34,7 @@ LEXSRC := pgtheme.l
 YACCSRC := pgtheme.y
 
 HDR := y.tab.h themec.h ../include/picogui/*.h
-CONSTANTS := ../include/picogui/constants.h
+CONSTANTS := ../include/picogui/*.h
 
 CFLAGS := -I../include
 
@@ -77,7 +77,7 @@ y.tab.h : y.tab.c
 # Auto-generated symtab
 
 symtab.c : $(CONSTANTS) mksymtab.pl
-	$(MKSYMTAB) < $(CONSTANTS) > symtab.c
+	$(MKSYMTAB) $(CONSTANTS) > symtab.c
 
 ### The End ###
 

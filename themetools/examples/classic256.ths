@@ -1,4 +1,4 @@
-/* $Id: classic256.ths,v 1.5 2001/03/30 06:47:14 micahjd Exp $
+/* $Id: classic256.ths,v 1.6 2001/04/29 17:29:06 micahjd Exp $
  *
  * PicoGUI theme, modeled after the original 256-color
  * theme used in the old theme system.
@@ -8,7 +8,7 @@
 
 object background {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+    Bitmap(x,y,w,h,bitmap1);
   };
   bitmap1 = LoadBitmap("data/bg.pnm");
 }
@@ -25,8 +25,10 @@ object checkbox.on      bgcolor = 0xF0F080;
 object toolbar        bgcolor = 0xC0C0C0;
 object scroll {
   bgfill = fillstyle {
-    Frame(x,y,w,h,ColorConv(0x000000));
-    Rect(x+1,y+1,w-2,h-2,ColorConv(0x808080));
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(0x808080);
+    Rect(x+1,y+1,w-2,h-2);
   };
   bgcolor = 0xFFFFC0;
   width = 10;
@@ -35,16 +37,20 @@ object scroll.hilight bgcolor = 0xC0E0FF;
 object scroll.on      bgcolor = 0xC0C0FF;
 object indicator {
   bgfill = fillstyle {
-    Frame(x,y,w,h,ColorConv(0xC0C0C0));
-    Frame(x+1,y+1,w-2,h-2,ColorConv(0x000000));
+    SetColor(0xC0C0C0);
+    Frame(x,y,w,h);
+    SetColor(0x000000);
+    Frame(x+1,y+1,w-2,h-2);
     x = x+2;
     y = y+2;
     w = w-4;
     h = h-4;
-    Rect(x,y,w,h,ColorConv(0x404080));
+    SetColor(0x404080);
+    Rect(x,y,w,h);
   };
   overlay = fillstyle {
-    Rect(x,y,w,h,ColorConv(0x8080FF));
+    SetColor(0x8080FF);
+    Rect(x,y,w,h);
   };
 }
 object panelbar {
@@ -57,7 +63,8 @@ object panelbar.on bgcolor = 0xC0C0FF;
 object popup bgcolor = 0xFFFFE0;
 object panel {
   bgfill = fillstyle {
-    Rect(x,y,w,h,ColorConv(bgcolor));
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
   };
   margin = 0;
 }

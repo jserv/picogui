@@ -1,4 +1,4 @@
-/* $Id: pseudo3d.ths,v 1.5 2001/03/30 06:11:09 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.6 2001/04/29 17:29:06 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
@@ -9,7 +9,8 @@
 object default {
   /* Simple fill */
   bgfill = fillstyle {
-    Rect(x,y,w,h,ColorConv(bgcolor));
+    SetColor(bgcolor);
+    Rect(x,y,w,h);
   };
 
   bgcolor = 0xC0C0C0;
@@ -25,15 +26,16 @@ object default {
 object base.interactive {
   /* Black border, hilights, and a dynamic offset */
   bgfill = fillstyle {
-    var hc,sc;
-    hc = ColorConv(hilightcolor);
-    sc = ColorConv(shadowcolor);
-    Frame(x,y,w,h,ColorConv(0x000000));
-    Rect(x+2,y+2,w-4,h-4,ColorConv(bgcolor));
-    Slab(x+1,y+1,w-2,1,hc);
-    Slab(x+1,y+h-2,w-2,1,sc);
-    Bar(x+1,y+1,1,h-2,hc);
-    Bar(x+w-2,y+1,1,h-2,sc);
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetColor(bgcolor);
+    Rect(x+2,y+2,w-4,h-4);
+    SetColor(hilightcolor);
+    Slab(x+1,y+1,w-2,1);
+    Bar(x+1,y+1,1,h-2);
+    SetColor(shadowcolor);
+    Slab(x+1,y+h-2,w-2,1);
+    Bar(x+w-2,y+1,1,h-2);
     x = x + offset;
     y = y + offset;
   };
@@ -43,7 +45,7 @@ object base.interactive {
 /* Check boxes */
 object checkbox {
    bgfill = fillstyle {
-      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
       x = x + 16;
    };
    bitmap1 = LoadBitmap("data/check_unchecked.pnm");
@@ -58,14 +60,14 @@ object base.tlcontainer bgfill = Copy(base.interactive::bgfill);
 /* A slightly simpler bevel for containers */
 object base.container {
   bgfill = fillstyle {
-    var hc,sc;
-    hc = ColorConv(hilightcolor);
-    sc = ColorConv(shadowcolor);
-    Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
-    Slab(x,y,w-1,1,hc);
-    Slab(x,y+h-1,w-1,1,sc);
-    Bar(x,y,1,h-1,hc);
-    Bar(x+w-1,y,1,h-1,sc);
+    SetColor(bgcolor);
+    Rect(x+1,y+1,w-2,h-2);
+    SetColor(hilightcolor);
+    Slab(x,y,w-1,1);
+    Bar(x,y,1,h-1);
+    SetColor(shadowcolor);
+    Slab(x,y+h-1,w-1,1);
+    Bar(x+w-1,y,1,h-1);
     x = x+2; y = y+2;
     w = w-4; h = h-4;
   };
@@ -82,7 +84,8 @@ object label.scroll bgfill = Copy(default::bgfill);
 
 /* Special overlay for indicators */
 object indicator overlay = fillstyle {
-  Rect(x,y,w,h,ColorConv(0x000080));
+  SetColor(0x000080);
+  Rect(x,y,w,h);
 };
 
 /* Button sizing */

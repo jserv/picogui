@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.26 2001/03/30 05:53:53 micahjd Exp $
+/* $Id: constants.h,v 1.27 2001/04/29 17:29:06 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -6,19 +6,19 @@
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  * 
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  * 
  * Contributors:
  * 
@@ -223,10 +223,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_CHECKBOX              41   /* Check box (customized button) */
 #define PGTH_O_CHECKBOX_HILIGHT      42   /* checkbox with mouse over it */
 #define PGTH_O_CHECKBOX_ON           43   /* checkbox when on */
+#define PGTH_O_FLATBUTTON            44   /* Flat button (customized button) */
+#define PGTH_O_FLATBUTTON_HILIGHT    45   /* flatbutton with mouse over it */
+#define PGTH_O_FLATBUTTON_ON         46   /* flatbutton with mouse down */
 
 /* If you add a themeobject, be sure to increment this and add
    an inheritance entry in theme/memtheme.c */
-#define PGTH_ONUM                    44
+#define PGTH_ONUM                    47
 
 /*** Loaders */
 
@@ -310,8 +313,8 @@ typedef unsigned long pghandle;
 
 /* Bits:  7 6 5 4 3 2 1 0
           
-          1 L L L L L L L    Short numeric literal
-	  0 1 G G G G G G    Build gropnode
+	  1 G G G G G G G    Build gropnode
+          0 1 L L L L L L    Short numeric literal
 	  0 0 1 C C C C C    Command code
           0 0 0 1 V V V V    Retrieve variable
 	  0 0 0 0 V V V V    Set variable 
@@ -323,8 +326,8 @@ typedef unsigned long pghandle;
 */
 
 /* Simple opcodes (or'ed with data) */
-#define PGTH_OPSIMPLE_LITERAL    0x80
-#define PGTH_OPSIMPLE_GROP       0x40
+#define PGTH_OPSIMPLE_GROP       0x80
+#define PGTH_OPSIMPLE_LITERAL    0x40
 #define PGTH_OPSIMPLE_CMDCODE    0x20
 #define PGTH_OPSIMPLE_GET        0x10
 #define PGTH_OPSIMPLE_SET        0x00
@@ -344,7 +347,6 @@ typedef unsigned long pghandle;
 #define PGTH_OPCMD_LONGSET       0x2B  /* Followed by a 1-byte var offset */
 #define PGTH_OPCMD_PROPERTY      0x2C  /* Followed by 2-byte object code and 2-byte property code */
 #define PGTH_OPCMD_LOCALPROP     0x2D  /* Followed by 2-byte property code */
-#define PGTH_OPCMD_COLOR         0x2E  /* Convert pgcolor to hwrcolor */
 #define PGTH_OPCMD_COLORADD      0x2F  /* Convert pgcolor to hwrcolor */
 #define PGTH_OPCMD_COLORSUB      0x30  
 #define PGTH_OPCMD_COLORMULT     0x31
@@ -363,29 +365,50 @@ typedef unsigned long pghandle;
 /* Gropnode types (gropnodes are a single element in a metafile-like
  * structure to hold GRaphics OPerations)
  *
- * Bits 4-7 indicate the number of parameters (in addition to
- * the standard x,y,w,h)
+ * The most frequently used grops should be 7 bits or less to keep theme opcode
+ * size at 8 bits. If it goes over 7 bits, the full 16 bits can be used
+ * for the gropnode type and a 16 bit theme opcode will be used.
+ * 
+ * The LSB (bit 0) is a 'nonvisual' flag indicating it does no rendering,
+ * only setup work. Bit 1 indicates that it is 'unpositioned' (does not use
+ * x,y,w,h parameters) Bits 2 and 3 indicate how many extra parameters are
+ * required. All other bits must be used to uniquely identify the gropnode
+ * type.
+ * 
+ * Sorry if this seems a little paranoid, but the point is to save as much
+ * space as possible in these structures as there will be many copies of them.
  */
-#define PG_GROP_NULL       0x0000	/* Doesn't do anything - for temporarily
-					 * turning something off, or for disabling
-					 * unused features while keeping the grop
-					 * node order constant */
-#define PG_GROP_PIXEL      0x0010
-#define PG_GROP_LINE   	   0x0011
-#define PG_GROP_RECT	   0x0012
-#define PG_GROP_FRAME      0x0013
-#define PG_GROP_SLAB       0x0014
-#define PG_GROP_BAR        0x0015
-#define PG_GROP_DIM        0x0001
-#define PG_GROP_TEXT       0x0030
-#define PG_GROP_BITMAP     0x0040
-#define PG_GROP_GRADIENT   0x0041
-#define PG_GROP_TILEBITMAP 0x0050
-#define PG_GROP_TEXTV      0x0031
-#define PG_GROP_TEXTGRID   0x0042
+#define PG_GROP_RECT	   0x00
+#define PG_GROP_FRAME      0x10
+#define PG_GROP_SLAB       0x20
+#define PG_GROP_BAR        0x30
+#define PG_GROP_PIXEL      0x40
+#define PG_GROP_LINE   	   0x50
+#define PG_GROP_TEXT       0x04   /* Param: string                   */
+#define PG_GROP_BITMAP     0x14   /* Param: bitmap                   */
+#define PG_GROP_TILEBITMAP 0x24   /* Param: bitmap                   */ 
+#define PG_GROP_GRADIENT   0x0C   /* Param: angle, c1, c2            */
+#define PG_GROP_TEXTGRID   0x1C   /* Param: string, bufferw, offset  */
+#define PG_GROP_NOP        0x03
+#define PG_GROP_RESETCLIP  0x13   /* Reset clip to whole divnode     */
+#define PG_GROP_SETOFFSET  0x01   /* this grop's rect sets offset    */
+#define PG_GROP_SETCLIP    0x11   /* this grop's rect sets clipping  */
+#define PG_GROP_SETSRC     0x21   /* this grop's rect sets src_* for */
+#define PG_GROP_SETMAPPING 0x05   /* Param: type (grop's rect used too)*/
+#define PG_GROP_SETCOLOR   0x07   /* Param: pgcolor                  */
+#define PG_GROP_SETFONT    0x17   /* Param: font                     */
+#define PG_GROP_SETLGOP    0x27   /* Param: lgop                     */
+#define PG_GROP_SETANGLE   0x37   /* Param: angle in degrees         */
 
 /* Find any gropnode's number of parameters */
-#define PG_GROPPARAMS(x)   ((x)>>4)
+#define PG_GROPPARAMS(x)   (((x)>>2)&0x03)
+
+/* Returns nonzero if the gropnode type specified does not actually draw
+ * something, only sets up state information */
+#define PG_GROP_IS_NONVISUAL(x)  ((x)&1)
+
+/* Returns nonzero if the gropnode doesn't require position data (x,y,w,h) */
+#define PG_GROP_IS_UNPOSITIONED(x) ((x)&2)
 
 /* Grop flags */
 #define PG_GROPF_TRANSLATE    (1<<0)  /* Apply the divnode's tx,ty */
@@ -393,6 +416,8 @@ typedef unsigned long pghandle;
 				       * updates. Not rendered normally. */
 #define PG_GROPF_PSEUDOINCREMENTAL (1<<2)  /* Always rendered, but this flag
 					    * is cleared afterwards. */
+#define PG_GROPF_TRANSIENT    (1<<3)  /* Always render, delete after using
+				       * once */
 
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
@@ -405,17 +430,21 @@ typedef unsigned long pghandle;
 #define PG_FM_OFF             2      /* Turns off specified flags */
 #define PG_FM_TOGGLE          3      /* Toggles specified flags */
 
-/* Logical operations for blits */
+/* Logical operations for any primitive */
 #define PG_LGOP_NULL        0   /* Don't blit */
-#define PG_LGOP_NONE        1   /* Blit, but don't use an LGOP */
+#define PG_LGOP_NONE        1   /* Copy directly to the screen */
 #define PG_LGOP_OR          2
 #define PG_LGOP_AND         3
 #define PG_LGOP_XOR         4
-#define PG_LGOP_INVERT      5
-#define PG_LGOP_INVERT_OR   6
+#define PG_LGOP_INVERT      5   
+#define PG_LGOP_INVERT_OR   6   /* Inverts the source data beforehand */
 #define PG_LGOP_INVERT_AND  7
 #define PG_LGOP_INVERT_XOR  8
-#define PG_LGOPMAX          8   /* For error-checking */
+#define PG_LGOP_ADD         9
+#define PG_LGOP_SUBTRACT    10
+#define PG_LGOP_MULTIPLY    11
+
+#define PG_LGOPMAX          11  /* For error-checking */
 
 /******************** Widgets */
 
@@ -443,7 +472,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
 #define PG_WIDGET_CANVAS     13
 #define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
-#define PG_WIDGETMAX         14    /* For error checking */
+#define PG_WIDGET_FLATBUTTON 15    /* Yet another customized button */
+#define PG_WIDGETMAX         15    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -469,6 +499,7 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
+#define PG_WP_STATE       25    /* theme object - the widget's current state */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
@@ -497,8 +528,9 @@ typedef unsigned long pghandle;
 #define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
 
 /* Constants for PG_WP_DIRECTION */
-#define PG_DIR_HORIZONTAL 0
-#define PG_DIR_VERTICAL   90
+#define PG_DIR_HORIZONTAL     0
+#define PG_DIR_VERTICAL       90
+#define PG_DIR_ANTIHORIZONTAL 180
 
 /******************** Events */
 

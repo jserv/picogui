@@ -1,4 +1,4 @@
-/* $Id: aqua.ths,v 1.27 2001/03/30 08:07:27 micahjd Exp $
+/* $Id: aqua.ths,v 1.28 2001/04/29 17:29:06 micahjd Exp $
  *
  * The obligatory Aqua theme (every OS has one, right :)
  * Looks nice, and it's a good test of the server's bitmap primitives.
@@ -9,7 +9,7 @@
 /* The stripey background */
 object default {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+    Bitmap(x,y,w,h,bitmap1);
   };
   bitmap1 = LoadBitmap("data/aq_bg.pnm");
 margin=0;
@@ -20,9 +20,11 @@ object button {
   bitmap1 = LoadBitmap("data/aq_button.pnm");
   bgfill = fillstyle {
     /* Cut and paste things to resize the button bitmap */
-    Bitmap(x,y,12,20,bitmap1,PG_LGOP_NONE,0,0);
-    Bitmap(x+w-12,y,12,20,bitmap1,PG_LGOP_NONE,49,0);
-    Tilebitmap(x+12,y,w-24,20,bitmap1,15,0,1,20);
+    Bitmap(x,y,12,20,bitmap1);
+    SetSrc(49,0,0,0);
+    Bitmap(x+w-12,y,12,20,bitmap1);
+    SetSrc(15,0,1,20);
+    Tilebitmap(x+12,y,w-24,20,bitmap1);
   };
   height = 20;
   width  = 21;   // Tiny buttons get a cute sphere shape :)
@@ -33,6 +35,11 @@ object button {
 object button.on bitmap1 = LoadBitmap("data/aq_button_on.pnm");
 object button.hilight bitmap1 = LoadBitmap("data/aq_button_over.pnm");
 
+object flatbutton {
+  margin = 6;
+  spacing = 1;
+}
+   
 /* This defines a resizable grey box, used in all base.display-derived
    widgets, and a few others (like scroll) 
 */
@@ -43,21 +50,30 @@ object base.display {
        fill with a solid color */
 
     /* Top edge */
-    Tilebitmap(x+5,y,w-10,10,bitmap1,5,0,5,10);
-    Bitmap(x,y,5,10,bitmap1,PG_LGOP_NONE,0,0);
-    Bitmap(x+w-5,y,5,10,bitmap1,PG_LGOP_NONE,12,0);
+    SetSrc(5,0,5,10);
+    Tilebitmap(x+5,y,w-10,10,bitmap1);
+    SetSrc(0,0,0,0);
+    Bitmap(x,y,5,10,bitmap1);
+    SetSrc(12,0,0,0);
+    Bitmap(x+w-5,y,5,10,bitmap1);
 
     /* Bottom edge */
-    Tilebitmap(x+5,y+h-10,w-10,10,bitmap1,5,9,5,10);
-    Bitmap(x,y+h-10,5,10,bitmap1,PG_LGOP_NONE,0,9);
-    Bitmap(x+w-5,y+h-10,5,10,bitmap1,PG_LGOP_NONE,12,9);
+    SetSrc(5,9,5,10);
+    Tilebitmap(x+5,y+h-10,w-10,10,bitmap1);
+    SetSrc(0,9,0,0);
+    Bitmap(x,y+h-10,5,10,bitmap1);
+    SetSrc(12,9,0,0);
+    Bitmap(x+w-5,y+h-10,5,10,bitmap1);
 
     /* Left and right edges */
-    Tilebitmap(x,y+10,5,h-20,bitmap1,0,8,5,4);
-    Tilebitmap(x+w-5,y+10,5,h-20,bitmap1,12,8,5,4);
+    SetSrc(0,8,5,4);
+    Tilebitmap(x,y+10,5,h-20,bitmap1);
+    SetSrc(12,8,5,4);
+    Tilebitmap(x+w-5,y+10,5,h-20,bitmap1);
 
     /* Filling */
-    Rect(x+5,y+10,w-10,h-20,ColorConv(0xe7e7e7));
+    SetColor(0xE7E7E7);
+    Rect(x+5,y+10,w-10,h-20);
 
     /* space from the edge */
     x = x+2; y = y+2;
@@ -68,7 +84,7 @@ object base.display {
 object indicator {
   /* Same overlay as scroll bar */
   overlay = Copy(scroll::overlay);
-  width = 16;
+  width = 14;
   margin = 0;
 }
 
@@ -82,9 +98,13 @@ object scroll {
     hz = w>h;
     bmp = hz ? scroll::bitmap3 : scroll::bitmap2;
 
-    Bitmap(x,y,hz?5:10,hz?10:5,bmp,PG_LGOP_NONE,0,0);
-    Tilebitmap(x+(hz?5:0),y+(hz?0:5),hz?w-10:w,hz?h:h-10,bmp,hz?5:0,hz?0:5,10,10);
-    Bitmap(hz?x+w-5:x,hz?y:y+h-5,hz?5:10,hz?10:5,bmp,PG_LGOP_NONE,hz?17:0,hz?0:17);
+     SetSrc(0,0,0,0);    /* Because the rendering engine is not
+			  * reset before drawing an overlay */
+     Bitmap(x,y,hz?5:10,hz?10:5,bmp);
+     SetSrc(hz?5:0,hz?0:5,10,10);
+     Tilebitmap(x+(hz?5:0),y+(hz?0:5),hz?w-10:10,hz?10:h-10,bmp);
+     SetSrc(hz?17:0,hz?0:17,0,0);
+     Bitmap(hz?x+w-5:x,hz?y:y+h-5,hz?5:10,hz?10:5,bmp);
   };
   width = 13;
   margin = 0;
@@ -92,9 +112,11 @@ object scroll {
   /* A simple background for the thumb to slide in */
   bitmap1 = LoadBitmap("data/aq_trough_v.pnm");
   bgfill = fillstyle {
-    Bitmap(x,y,13,20,scroll::bitmap1,PG_LGOP_NONE,0,0);
-    Tilebitmap(x,y+20,13,h-40,scroll::bitmap1,0,20,13,5);
-    Bitmap(x,y+h-20,13,20,scroll::bitmap1,PG_LGOP_NONE,0,25);
+    Bitmap(x,y,13,20,scroll::bitmap1);
+    SetSrc(0,20,13,5);
+    Tilebitmap(x,y+20,13,h-40,scroll::bitmap1);
+    SetSrc(0,25,0,0);
+    Bitmap(x,y+h-20,13,20,scroll::bitmap1);
 
     /* Don't quite go all the way to the top/bottom */
     y = y+4;
@@ -109,7 +131,8 @@ object label margin = 8;
 /* Use a simple scrollbar-safe background when the label scrolls */
 object label.scroll {
   bgfill = fillstyle {
-    Rect(x,y,w,h,ColorConv(0xe7e7e7));
+    SetColor(0xE7E7E7);
+    Rect(x,y,w,h);
   };
 }
 
@@ -122,8 +145,9 @@ object panelbar {
   bitmap1 = LoadBitmap("data/aq_title_wht_v.pnm");
   bitmap2 = LoadBitmap("data/aq_title_wht_h.pnm");
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,h>w ? bitmap1 : bitmap2,PG_LGOP_NONE,0,0);
-    Frame(x,y,w,h,ColorConv(0xC0C0C0));
+    Bitmap(x,y,w,h,h>w ? bitmap1 : bitmap2);
+    SetColor(0xC0C0C0);
+    Frame(x,y,w,h);
   };
   width = 20;
 }
@@ -156,10 +180,13 @@ object box {
 
 object toolbar {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
-    Frame(x,y,w,h,ColorConv(0x808080));
-    Gradient(x,y,margin,h,0,0x404040,0x000000,-1);
-    Gradient(x,y,w,margin,90,0x404040,0x000000,-1);
+    Bitmap(x,y,w,h,bitmap1);
+    SetColor(0x808080);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_SUBTRACT);
+    Gradient(x,y,margin,h,0,0x404040,0x000000);
+    Gradient(x,y,w,margin,90,0x404040,0x000000);
+    SetLgop(PG_LGOP_NONE);   /* for text in dlgtitle */
   };
   margin = 5;
 }
@@ -168,10 +195,12 @@ object popup {
   /* Normal background, but with shading on the edge, and 
      a thin black border */
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
-    Frame(x,y,w,h,ColorConv(0x000000));
-    Gradient(x+w-margin,y,margin,h,0,0x000000,0x808080,-1);
-    Gradient(x,y+h-margin,w,margin,90,0x000000,0x808080,-1);
+    Bitmap(x,y,w,h,bitmap1);
+    SetColor(0x000000);
+    Frame(x,y,w,h);
+    SetLgop(PG_LGOP_SUBTRACT);
+    Gradient(x+w-margin,y,margin,h,0,0x000000,0x808080);
+    Gradient(x,y+h-margin,w,margin,90,0x000000,0x808080);
   };
   
   /* Extra padding */
@@ -181,11 +210,12 @@ object popup {
 
   /*** Dim the stuff behind us */
 
-  /* This method is pretty nifty */
-  //  backdrop = fillstyle { Gradient(x,y,w,h,0,0x000000,0xFFFFFF,-1); }; 
-
-  /* Regular dim */
-  //  backdrop = fillstyle { Dim(x,y,w,h); };
+/*
+  backdrop = fillstyle { 
+    SetLgop(PG_LGOP_MULTIPLY);
+    Gradient(x,y,w,h,75,0x808040,0x404040);
+  };
+ */
 }
 object label.dlgtitle {
   bitmap1 = LoadBitmap("data/aq_title_blu_h.pnm");
@@ -196,8 +226,9 @@ object label.dlgtitle {
 /* Menus */
 object popup.menu {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
-    Frame(x,y,w,h,ColorConv(0x808080));
+    Bitmap(x,y,w,h,bitmap1);
+    SetColor(0x808080);
+    Frame(x,y,w,h);
   };
   margin = 1;
   
@@ -212,7 +243,7 @@ object menuitem.hilight bitmap1 = LoadBitmap("data/aq_menuselect.pnm");
 /* Check boxes */
 object checkbox {
    bgfill = fillstyle {
-      Bitmap(x+1,y+((h-21)>>1)-1,19,21,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+1,y+((h-21)>>1)-1,19,21,bitmap1);
       x = x + 24;
    };
    bitmap1 = LoadBitmap("data/aq_check.pnm");

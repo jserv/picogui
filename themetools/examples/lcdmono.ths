@@ -1,6 +1,7 @@
-/* $Id: lcdmono.ths,v 1.8 2001/04/18 01:59:07 micahjd Exp $
+/* $Id: lcdmono.ths,v 1.9 2001/04/29 17:29:06 micahjd Exp $
  *
- * Monochrome theme for LCDs
+ * Monochrome theme for LCDs. Rounded buttons and dialogs, a background
+ * that looks good on a handheld, and handheld-friendly key mappings
  *
  * Micah Dowty
  */
@@ -11,7 +12,8 @@ object default {
    spacing = 0;
    margin = 0;
    bgfill = fillstyle {
-      Rect(x,y,w,h,ColorConv(bgcolor));
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
    };
 
    /* Helvetica8 is nice, but it's kinda broken now
@@ -21,27 +23,31 @@ object default {
    font = Font("Lucida",10,0);
    height = 14;
    width = 14;
+
+   hotkey.ok      = PGKEY_RETURN;
+   hotkey.cancel  = PGKEY_ESCAPE;
+   hotkey.yes     = PGKEY_RETURN;
+   hotkey.no      = PGKEY_ESCAPE;
 }
 
 object button {
+   /* Rounded rectangle */
    bgfill = fillstyle {
-      var fgc;
-      fgc = ColorConv(0x000000);
-      
-      /* Rounded rectangle */
-      Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
-      Slab(x+4,y,w-8,1,fgc);
-      Slab(x+4,y+h-1,w-8,1,fgc);
-      Bar(x,y+4,1,h-8,fgc);
-      Bar(x+w-1,y+4,1,h-8,fgc);
-      Line(x,y+3,3,-3,fgc);
-      Line(x+w-1,y+3,-3,-3,fgc);
-      Line(x,y+h-4,3,3,fgc);
-      Line(x+w-1,y+h-4,-3,3,fgc);
-      Pixel(x+1,y+1,1,1,fgc);
-      Pixel(x+w-2,y+1,1,1,fgc);
-      Pixel(x+1,y+h-2,1,1,fgc);
-      Pixel(x+w-2,y+h-2,1,1,fgc);
+      SetColor(bgcolor);
+      Rect(x+1,y+1,w-2,h-2);
+      SetColor(0x000000);
+      Slab(x+4,y,w-8,1);
+      Slab(x+4,y+h-1,w-8,1);
+      Bar(x,y+4,1,h-8);
+      Bar(x+w-1,y+4,1,h-8);
+      Line(x,y+3,3,-3);
+      Line(x+w-1,y+3,-3,-3);
+      Line(x,y+h-4,3,3);
+      Line(x+w-1,y+h-4,-3,3);
+      Pixel(x+1,y+1,1,1);
+      Pixel(x+w-2,y+1,1,1);
+      Pixel(x+1,y+h-2,1,1);
+      Pixel(x+w-2,y+h-2,1,1);
    };
    spacing = 3;
    margin = 4;
@@ -58,11 +64,14 @@ object menuitem.hilight {
 
 object indicator {
    overlay = fillstyle {
-      Rect(x+1,y+1,w-2,h-2,ColorConv(0x000000));
+      SetColor(0x000000);
+      Rect(x+1,y+1,w-2,h-2);
    };
    bgfill = fillstyle {
-      Frame(x,y,w,h,ColorConv(0x000000));
-      Rect(x+1,y+1,w-2,h-2,ColorConv(0xFFFFFF));
+      SetColor(0x000000);
+      Frame(x,y,w,h);
+      SetColor(0xFFFFFF);
+      Rect(x+1,y+1,w-2,h-2);
    };
 }
 
@@ -71,18 +80,18 @@ object indicator {
 object background {
    text = "PicoGUI";
    font = Font("Utopia",25,PG_FSTYLE_BOLD);
-   bitmap1 = LoadBitmap("data/gray_mono.pbm");
    bitmap2 = LoadBitmap("data/bg_mono.pbm");
    bgfill = fillstyle {
-      var f,b;
-      f = ColorConv(0x000000);
-      b = ColorConv(0xFFFFFF);
-      Rect(x,y,33,h,b);
-      Bitmap(x+34,y,w-34,h,bitmap2,PG_LGOP_NONE,0,0);
-      Bar(x+30,y,1,h,f);
-      Bar(x+32,y,1,h,f);
-      Bar(x+33,y,1,h,f);
-      Textv(x+3,y+h-4,1,1,text,font,f);
+      SetColor(0xFFFFFF);
+      Rect(x,y,33,h);
+      Bitmap(x+34,y,w-34,h,bitmap2);
+      SetColor(0x000000);
+      Bar(x+30,y,1,h);
+      Bar(x+32,y,1,h);
+      Bar(x+33,y,1,h);
+      SetFont(font);
+      SetAngle(90);
+      Text(x+3,y+h-4,1,1,text);
    };
 }
 
@@ -93,32 +102,32 @@ object popup {
 //   bgcolor = 0xA0A0A0;
    
    bgfill = fillstyle {
-      var f,b;
-      f = ColorConv(0x000000);
-      b = ColorConv(0xFFFFFF);
-      
       /* Nifty hollow rounded rectangle thingy */
 
-      Slab(x+1,y,w-2,1,b);
-      Slab(x+1,y+h-1,w-2,1,b);
-      Bar(x,y+1,1,h-2,b);
-      Bar(x+w-1,y+1,1,h-2,b);
-      Pixel(x+1,y+1,1,1,b);
-      Pixel(x+w-2,y+1,1,1,b);
-      Pixel(x+1,y+h-2,1,1,b);
-      Pixel(x+w-2,y+h-2,1,1,b);
+      SetColor(0xFFFFFF);
+      Slab(x+1,y,w-2,1);
+      Slab(x+1,y+h-1,w-2,1);
+      Bar(x,y+1,1,h-2);
+      Bar(x+w-1,y+1,1,h-2);
+      Pixel(x+1,y+1,1,1);
+      Pixel(x+w-2,y+1,1,1);
+      Pixel(x+1,y+h-2,1,1);
+      Pixel(x+w-2,y+h-2,1,1);
       
-      Rect(x+2,y+1,w-4,2,f);
-      Rect(x+2,y+h-3,w-4,2,f);
-      Rect(x+1,y+2,2,h-4,f);
-      Rect(x+w-3,y+2,2,h-4,f);
+      SetColor(0x000000);
+      Rect(x+2,y+1,w-4,2);
+      Rect(x+2,y+h-3,w-4,2);
+      Rect(x+1,y+2,2,h-4);
+      Rect(x+w-3,y+2,2,h-4);
 
-      Rect(x+3,y+3,w-6,h-6,ColorConv(bgcolor));
-      
-      Pixel(x+3,y+3,1,1,f);
-      Pixel(x+w-4,y+3,1,1,f);
-      Pixel(x+3,y+h-4,1,1,f);
-      Pixel(x+w-4,y+h-4,1,1,f);
+      SetColor(bgcolor);
+      Rect(x+3,y+3,w-6,h-6);
+
+      SetColor(0x000000);
+      Pixel(x+3,y+3,1,1);
+      Pixel(x+w-4,y+3,1,1);
+      Pixel(x+3,y+h-4,1,1);
+      Pixel(x+w-4,y+h-4,1,1);
    };
 }
 
@@ -126,29 +135,28 @@ object label.dlgtitle {
    bgcolor = 0x000000;
    fgcolor = 0xFFFFFF;
    bgfill = fillstyle {
-      var bgc;
-      bgc = ColorConv(0xFFFFFF);
-      
-      Rect(x,y,w,h,ColorConv(bgcolor));
-      Pixel(x,y,1,1,bgc);
-      Pixel(x+w-1,y+h-1,1,1,bgc);
-      Pixel(x+w-1,y,1,1,bgc);
-      Pixel(x,y+h-1,1,1,bgc);
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+      SetColor(0xFFFFFF);
+      Pixel(x,y,1,1);
+      Pixel(x+w-1,y+h-1,1,1);
+      Pixel(x+w-1,y,1,1);
+      Pixel(x,y+h-1,1,1);
    };
    font = Font(NULL,10,PG_FSTYLE_BOLD);
 }
 
 object panelbar {
    bgfill = fillstyle {
-      var bgc;
-      bgc = ColorConv(0xFFFFFF);
-      
-      Frame(x,y,w,h,bgc);
-      Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
-      Pixel(x+1,y+1,1,1,bgc);
-      Pixel(x+w-2,y+h-2,1,1,bgc);
-      Pixel(x+w-2,y+1,1,1,bgc);
-      Pixel(x+1,y+h-2,1,1,bgc);
+      SetColor(0xFFFFFF);
+      Frame(x,y,w,h);
+      SetColor(bgcolor);
+      Rect(x+1,y+1,w-2,h-2);
+      SetColor(0xFFFFFF);
+      Pixel(x+1,y+1,1,1);
+      Pixel(x+w-2,y+h-2,1,1);
+      Pixel(x+w-2,y+1,1,1);
+      Pixel(x+1,y+h-2,1,1);
    };
    bgcolor = 0x000000;
    fgcolor = 0xFFFFFF;
@@ -183,7 +191,7 @@ object scroll width = 8;
 /* Check boxes */
 object checkbox {
    bgfill = fillstyle {
-      Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+1,y+((h-12)>>1)-1,11,11,bitmap1);
       x = x + 15;
    };
    bitmap1 = LoadBitmap("data/lcd_check_unchecked.pnm");
@@ -194,8 +202,10 @@ object checkbox.on bitmap1 = LoadBitmap("data/lcd_check_checked.pnm");
 
 object toolbar {
    bgfill = fillstyle {
-      Rect(x,y,w,h,ColorConv(bgcolor));
-      Slab(x,y+h-1,w,1,ColorConv(fgcolor));
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+      SetColor(fgcolor);
+      Slab(x,y+h-1,w,1);
    };
    margin = 2;
 }

@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.27 2001/02/08 06:00:31 micahjd Exp $
+/* $Id: pgtheme.y,v 1.28 2001/04/29 17:29:06 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -83,7 +83,7 @@
 %type <fsn>      fsprop
 
    /* Reserved words */
-%token OBJ FILLSTYLE VAR SHIFTR SHIFTL CNVCOLOR COLORADD COLORSUB COLORDIV COLORMULT
+%token OBJ FILLSTYLE VAR SHIFTR SHIFTL COLORADD COLORSUB COLORDIV COLORMULT
 %token CLASS EQUAL NOT LTEQ GTEQ
 
 %right '?' ':'
@@ -323,12 +323,12 @@ fillstyle: FILLSTYLE  { yyerror("fillstyle requires parameters"); }
     }      
 
     /* Pack short values when possible */
-    if (p->op == PGTH_OPCMD_LONGLITERAL &&
-	p->param < PGTH_OPSIMPLE_LITERAL)
-      p->op = PGTH_OPSIMPLE_LITERAL | p->param;
-    else if (p->op == PGTH_OPCMD_LONGGROP &&
+    if (p->op == PGTH_OPCMD_LONGGROP &&
 	     p->param < PGTH_OPSIMPLE_GROP)
       p->op = PGTH_OPSIMPLE_GROP | p->param;
+    else if (p->op == PGTH_OPCMD_LONGLITERAL &&
+	p->param < PGTH_OPSIMPLE_LITERAL)
+      p->op = PGTH_OPSIMPLE_LITERAL | p->param;
     else if (p->op == PGTH_OPCMD_LONGGET &&
 	     p->param < PGTH_OPSIMPLE_GET)
       p->op = PGTH_OPSIMPLE_GET | p->param;
@@ -449,7 +449,6 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | NUMBER             { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }
      | FSVAR               { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
      | fsprop              { $$ = $1; }
-     | CNVCOLOR '(' fsexp ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLOR)); }
      | COLORADD '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORADD)); }
      | COLORSUB '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORSUB)); }
      | COLORMULT '(' fsarglist ')' { $$ = fsnodecat($3,fsnewnode(PGTH_OPCMD_COLORMULT)); }

@@ -1,7 +1,7 @@
-/* $Id: nifty3d.ths,v 1.4 2001/03/30 07:14:53 micahjd Exp $
+/* $Id: nifty3d.ths,v 1.5 2001/04/29 17:29:06 micahjd Exp $
  *
  * This theme's pretty darn cpu-intensive, but it
- * demonstrates the neat things that can be done width
+ * demonstrates the neat things that can be done with
  * fillstyles and gradients.
  * Uses much less memory than Aqua, but probably not faster.
  *
@@ -18,30 +18,32 @@ object default {
     var m,a,p1,p2,hc;
 
     /* Black frame around it all */
-    Frame(x,y,w,h,ColorConv(0x000000));    
+    SetColor(0x000000);
+    Frame(x,y,w,h);
 
     /* Thickness of the border */
     m = margin/2 + 1;
     /* Displace angles by... */
     a = offset;
-    /* Polarity of gradient */
-    p1 = a ? -1 : 1;
-    p2 = a ? 1 : -1;
     /* Preload hilight color */
     hc = hilightcolor;
 
     /* Body of the surface */
-    Gradient(x+1,y+1,w-2,h-2,a ? 205 : 25,bgcolor,ColorSub(bgcolor,shadowcolor),0);
+    Gradient(x+1,y+1,w-2,h-2,a ? 205 : 25,bgcolor,ColorSub(bgcolor,shadowcolor));
 
     /* Hilights */
-    Gradient(x+1,y+1,m,h-2,0,hc,0,p1);
-    Gradient(x+1,y+1,w-2,m,90,hc,0,p1);
-    Gradient(x+w-m-1,y+1,m,h-2,180,hc,0,p2);
-    Gradient(x+1,y+h-m-1,w-2,m,270,hc,0,p2);
+    SetLgop(a ? PG_LGOP_SUBTRACT : PG_LGOP_ADD);
+    Gradient(x+1,y+1,m,h-2,0,hc,0);
+    Gradient(x+1,y+1,w-2,m,90,hc,0);
+    SetLgop(a ? PG_LGOP_ADD : PG_LGOP_SUBTRACT);
+    Gradient(x+w-m-1,y+1,m,h-2,180,hc,0);
+    Gradient(x+1,y+h-m-1,w-2,m,270,hc,0);
 
     /* Displacement */
     x = x+a;
     y = y+a;
+
+    SetLgop(PG_LGOP_NONE);
   };
 
   bgcolor = 0xC0C0C0;
@@ -74,7 +76,7 @@ object button.on      offset = 1;
 /* Background */
 object background {
   bgfill = fillstyle {
-    Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+    Bitmap(x,y,w,h,bitmap1);
   };
   bitmap1 = LoadBitmap("data/bluesquares.pnm");
 }
@@ -116,7 +118,7 @@ object label.dlgtitle {
 /* Menus */
 object menuitem {
   bgfill = fillstyle {
-    Gradient(x,y,w,h,42,bgcolor,ColorSub(bgcolor,shadowcolor),0);
+    Gradient(x,y,w,h,42,bgcolor,ColorSub(bgcolor,shadowcolor));
   };
   spacing = 0;
   shadowcolor = 0x505050;
@@ -133,7 +135,8 @@ object popup.messagedlg {
 
 /* A scroll-safe background */
 object label.scroll bgfill = fillstyle {
-  Rect(x,y,w,h,ColorConv(bgcolor));
+  SetColor(bgcolor);
+  Rect(x,y,w,h);
 };
 object box shadowcolor = 0;
 
@@ -148,14 +151,15 @@ object indicator {
   margin = 4;
   width = 15;
   overlay = fillstyle {
-    Gradient(x+1,y+1,w-2,h-2,w>h ? 0 : 90,0x808000,0,1);
+    SetLgop(PG_LGOP_ADD);
+    Gradient(x+1,y+1,w-2,h-2,w>h ? 0 : 90,0x808000,0);
   };
 }
 
 /* Check boxes */
 object checkbox {
    bgfill = fillstyle {
-      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x+1,y+((h-12)>>1)-1,12,12,bitmap1);
       x = x + 16;
    };
    bitmap1 = LoadBitmap("data/check_unchecked.pnm");

@@ -5,7 +5,7 @@
 object background {
    bitmap1 = LoadBitmap("data/vol5_10a.pnm");
    bgfill = fillstyle {
-      Bitmap(x,y,w,h,bitmap1,PG_LGOP_NONE,0,0);
+      Bitmap(x,y,w,h,bitmap1);
    };
 }
 
