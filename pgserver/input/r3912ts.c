@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.5 2002/01/06 09:22:58 micahjd Exp $
+/* $Id: r3912ts.c,v 1.6 2002/01/07 16:22:14 carpman Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -48,157 +48,15 @@ struct tpanel_sample {
 /* This section is pretty much all by Jay Carlson (or whoever he
  * 'borrowed' code from ;-) */
 
-#define TRANSFORMATION_UNITS_PER_PIXEL 4
-
 typedef struct
 {
-	/*
-	 * Coefficients for the transformation formulas:
-	 *
-	 *     m = (ax + by + c) / s
-	 *     n = (dx + ey + f) / s
-	 *
-	 * These formulas will transform a device point (x, y) to a
-	 * screen point (m, n) in fractional pixels.  The fraction
-	 * is 1 / TRANSFORMATION_UNITS_PER_PIXEL.
-	 */
-
-	int a, b, c, d, e, f, s;
-} TRANSFORMATION_COEFFICIENTS;
-
-typedef struct
-{
-        int x, y;
+        s16 x, y;
 } XYPOINT;
-
-
-int enable_pointing_coordinate_transform = 1;
-
-static TRANSFORMATION_COEFFICIENTS tc;
 
 int GetPointerCalibrationData()
 {
-        extern int errno;
-        /*
-	 * Read the calibration data from the calibration file.
-	 * Calibration file format is seven coefficients separated by spaces.
-	 */
-
-	/* Get pointer calibration data from this file */
-	const char cal_filename[] = "/etc/pointercal";
-
-	int items;
-
-	FILE* f = fopen(cal_filename, "r");
-	if ( f == NULL )
-	{
-		fprintf(stderr, "Error %d opening pointer calibration file %s.\n",
-			errno, cal_filename);
-		return -1;
-	}
-
-	items = fscanf(f, "%d %d %d %d %d %d %d",
-		&tc.a, &tc.b, &tc.c, &tc.d, &tc.e, &tc.f, &tc.s);
-
-        fclose(f);
-   
-        if ( items != 7 )
-	{
-		fprintf(stderr, "Improperly formatted pointer calibration file %s.\n",
-			cal_filename);
-		return -1;
-	}
-
-	return 0;
+	return touchscreen_init();
 }
-
-inline XYPOINT DeviceToScreen(XYPOINT p)
-{
-	/*
-	 * Transform device coordinates to screen coordinates.
-	 * Take a point p in device coordinates and return the corresponding
-	 * point in screen coodinates.
-	 * This can scale, translate, rotate and/or skew, based on the coefficients
-	 * calculated above based on the list of screen vs. device coordinates.
-	 */
-
-	static XYPOINT prev;
-	/* set slop at 3/4 pixel */
-	const short slop = TRANSFORMATION_UNITS_PER_PIXEL * 3 / 4;
-	XYPOINT new, out;
-
-	/* transform */
-	new.x = (tc.a * p.x + tc.b * p.y + tc.c) / tc.s;
-	new.y = (tc.d * p.x + tc.e * p.y + tc.f) / tc.s;
-
-	/* hysteresis (thanks to John Siau) */
-	if ( abs(new.x - prev.x) >= slop )
-		out.x = (new.x | 0x3) ^ 0x3;
-	else
-		out.x = prev.x;
-
-	if ( abs(new.y - prev.y) >= slop )
-		out.y = (new.y | 0x3) ^ 0x3;
-	else
-		out.y = prev.y;
-
-	prev = out;
-
-	return out;
-}
-
-/* Currently this just maps the silkscreen buttons to keyboard keys.
- * Input in the handwriting area is currently ignored, I'll find the best way
- * to pass that on to a handwriting recognizer later. 
- */
-
-void handle_silkscreen_buttons(int x, int y, int state) {
-   int column = -1, row;
-   short key;
-   /* Mapping of silkscreen buttons to keys. */
-   static short keymap[] = {
-      PGKEY_F1, PGKEY_RETURN, PGKEY_F3,
-      PGKEY_F2, PGKEY_ESCAPE, PGKEY_F4
-   };
-
-   /* Ignore stylus dragging in buttons */
-   if (state==2)
-     return;
-   
-   if (y < 169)
-     return;
-   
-   if (y < 187)
-     row = 0; /* Edit/kbd */
-   else if (y < 203)
-     row = 1; /* OK/exit */
-   else
-     row = 2; /* main/123 */
-   
-   if (x < 20)
-     column = 0;
-   else if (x > 141)
-     column = 1;
-   
-   if  (column == -1) {
-      /* FIXME: handwriting input goes here */
-      
-      return;
-   }
-   
-   /* Map silkscreen buttons to keyboard */
-   key = keymap[3 * column + row];
-   
-   /* Send keyboard event */
-   if (state) {
-      if (key < 128)  /* Not a 'weird' key */
-	dispatch_key(TRIGGER_CHAR,key,0);
-      dispatch_key(TRIGGER_KEYDOWN,key,0);
-   }
-   else
-     dispatch_key(TRIGGER_KEYUP,key,0);
-}
-
 
 /******************************************** Implementations */
 
@@ -235,11 +93,9 @@ int r3912ts_fd_activate(int fd) {
      return 1;
    
    /* Convert to screen coordinates */
-   dev.x = ts.x;
-   dev.y = ts.y;
-   scr = DeviceToScreen(dev);
-   scr.x >>= 2;
-   scr.y >>= 2;
+   scr.x = ts.x;
+   scr.y = ts.y;
+   touchscreen_pentoscreen(&scr.x, &scr.y);
 
    /* What type of pointer event? */
    if (ts.state) {
@@ -255,47 +111,6 @@ int r3912ts_fd_activate(int fd) {
 	return 1;
    }
    
-   /* Clip to screen resolution
-    *
-    * If it's offscreen, ignore unless it's a TRIGGER_UP
-    */
-   if (scr.x < 0) {
-      if (trigger==TRIGGER_UP)
-	scr.x = 0;
-      else
-	return 1;
-   }
-   else if (scr.x >= vid->xres) {
-      if (trigger==TRIGGER_UP)
-	scr.x = vid->xres-1;
-      else
-	return 1;
-   }
-   if (scr.y < 0) {
-      if (trigger==TRIGGER_UP)
-	scr.y = 0;
-      else
-	return 1;
-   }
-   else if (scr.y >= vid->yres) {
-      /* If it's off the bottom of the screen, handle
-       * the silk-screened buttons */
-#ifdef DRIVER_R3912TS_HELIOSS
-      handle_silkscreen_buttons(scr.x,scr.y,ts.state);
-      if (state) {
-	 scr.y = vid->yres-1;
-	 trigger = TRIGGER_UP;
-      }
-      else
-	return 1;
-#else
-      if (trigger==TRIGGER_UP)
-	scr.y = vid->yres-1;
-      else
-	return 1;
-#endif
-   }
-   
    /* If we got this far, accept the new state and send the event */
    state = (trigger != TRIGGER_UP);
    dispatch_pointing(trigger,scr.x,scr.y,state);
@@ -308,6 +123,7 @@ int r3912ts_fd_activate(int fd) {
 g_error r3912ts_regfunc(struct inlib *i) {
   i->init = &r3912ts_init;
   i->close = &r3912ts_close;
+  i->message = &touchscreen_message;
   i->fd_activate = &r3912ts_fd_activate;
   i->fd_init = &r3912ts_fd_init;
   return success;
