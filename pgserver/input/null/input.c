@@ -1,6 +1,6 @@
 /*
  * input.c - Stub input layer that does nothing
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -11,7 +11,7 @@
 #include <g_error.h>
 #include <input.h>
 
-g_error input_init() {
+g_error input_init(void (*request_quit)(void)) {
   return sucess;
 }
 

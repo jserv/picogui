@@ -1,6 +1,6 @@
 /*
  * mainloop.c - initializes and shuts down everything, main loop
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -18,14 +18,19 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <sys/types.h>
 
 volatile int proceed;
 extern long memref;
+pid_t my_pid;
 
 void sigterm_handler(int x);
+void request_quit(void);
 
 int main(int argc, char **argv) {
   struct dtstack *s;
+
+  my_pid = getpid();
 
   /*************************************** Initialization */
 
@@ -34,7 +39,7 @@ int main(int argc, char **argv) {
   if (prerror(req_init(s)).type != ERRT_NONE) exit(1);
   if (prerror(appmgr_init(s)).type != ERRT_NONE) exit(1);
   if (prerror(hwr_init()).type != ERRT_NONE) exit(1);
-  if (prerror(input_init()).type != ERRT_NONE) exit(1);
+  if (prerror(input_init(&request_quit)).type != ERRT_NONE) exit(1);
 
   /* Signal handler (it's usually good to have a way to exit!) */
   if (signal(SIGTERM,&sigterm_handler)==SIG_ERR) {
@@ -62,6 +67,9 @@ int main(int argc, char **argv) {
 
 void sigterm_handler(int x) {
   proceed = 0;
+}
+void request_quit(void) {
+  kill(my_pid,SIGTERM);
 }
 
 /* The End */

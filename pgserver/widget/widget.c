@@ -126,9 +126,12 @@ glob widget_get(struct widget *w, int property) {
 int find_hotkey(void) {
 }
 
-void dispatch_pointing(long type,int x,int y) {
+void dispatch_pointing(long type,int x,int y,int btn) {
 #ifdef DEBUG
-  printf("Pointing device event: 0x%08X (%d %d)\n",type,x,y);
+  printf("Pointing device event: 0x%08X (%d %d %c%c%c)\n",type,x,y,
+	 (btn & 1) ? '*' : '-',
+	 (btn & 2) ? '*' : '-',
+	 (btn & 4) ? '*' : '-');
 #endif
 }
 

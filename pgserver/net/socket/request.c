@@ -1,7 +1,7 @@
 /*
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * 
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -495,7 +495,8 @@ g_error rqh_in_point(int owner, struct uipkt_request *req,
   struct rqhd_in_point *arg = (struct rqhd_in_point *) data;
   if (req->size < sizeof(struct rqhd_in_point)) 
     return mkerror(ERRT_BADPARAM,"rqhd_in_point too small");
-  dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y));
+  dispatch_pointing(ntohl(arg->type),ntohs(arg->x),ntohs(arg->y),
+		    ntohs(arg->btn));
   return sucess;
 }
 

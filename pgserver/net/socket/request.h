@@ -1,7 +1,7 @@
 /*
  * request.h - this connection is for sending requests to the server
  *             and passing return values back to the client
- * $Revision: 1.3 $ 
+ * $Revision: 1.4 $ 
  *
  * Micah Dowty <micah@homesoftware.com>
  * 
@@ -122,6 +122,8 @@ struct rqhd_in_point {
   unsigned long type;   /* A TRIGGER_* constant */
   unsigned short x;
   unsigned short y;
+  unsigned short btn;  /* button bitmask */
+  unsigned short dummy;
 };
 struct rqhd_in_direct {
   unsigned long param;   /* The arbitrary parameter */

@@ -208,13 +208,18 @@ int find_hotkey(void);
 
 /**** These are entry points for the various input drivers. */
 
-/* This is a pointing device event.  'type' should be a pointing-device
-   trigger type such as TRIGGER_UP or TRIGGER_DRAG.
+/* This is a pointing device event.
    The trigger parameter is a struct pointing_trigger.
    x and y here are absolute coords. The divtree is traversed to find the
    node at those coords.
+
+   btn specifies the buttons down on the pointing device. Bit 0 is the
+   first mouse button, bit 1 is the second, etc.
+   Pointing device events need only be sent here for MOVE, UP, DOWN.
+   The other events will be generated, however they can be sent directly
+   if needed.
 */
-void dispatch_pointing(long type,int x,int y);
+void dispatch_pointing(long type,int x,int y,int btn);
 
 /* This dispatches a key.  It is first checked against the global
    key owner table, and if not found there it is sent to the currently 
