@@ -94,9 +94,10 @@ class activityLog:
             lastTime[0] = time
         self.walk(fillRRD, [self.startTime])
         
-if __name__ = '__main__':
+if __name__ == '__main__':
     log = activityLog()
-    log.getUserSummary(open("foo.html",'w'))
-    log.createRRD('test.rrd')
-    os.system("rrdtool graph boing.gif -s now-5year DEF:revs=test.rrd:revs:AVERAGE CDEF:f=revs LINE2:f#FF0000")
-    os.system("ee boing.gif")
+    print "Saving user summary..."
+    log.getUserSummary(open("user_summary.html",'w'))
+    #log.createRRD('test.rrd')
+    ##os.system("rrdtool graph boing.gif -s now-5year DEF:revs=test.rrd:revs:AVERAGE CDEF:f=revs LINE2:f#FF0000")
+    #os.system("ee boing.gif")
