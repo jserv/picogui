@@ -1,4 +1,4 @@
-/* $Id: if_pntr_normalize.c,v 1.5 2002/07/28 11:37:51 micahjd Exp $
+/* $Id: if_pntr_normalize.c,v 1.6 2002/08/13 07:51:21 micahjd Exp $
  *
  * if_pntr_normalize.c - Convert the various pointer events to a standard form
  *
@@ -54,8 +54,25 @@ void infilter_pntr_normalize_handler(struct infilter *self, u32 trigger, union t
 
   /* Get physical cursor position for use later */
   cursor_getposition(param->mouse.cursor, &x, &y);
-  if (!param->mouse.is_logical)
+  if (!param->mouse.is_logical) {
+#ifdef CONFIG_ROTATIONBASE_NOPOINTING
+    /* We have to do funky stuff to avoid taking the rotation base into account */
+    switch (vid->flags & PG_VID_ROTATEMASK) {
+    case PG_VID_ROTATE90: 
+      rotate90_coord_physicalize(&x,&y);
+      break;
+    case PG_VID_ROTATE180: 
+      rotate180_coord_physicalize(&x,&y);
+      break;
+    case PG_VID_ROTATE270: 
+      rotate270_coord_physicalize(&x,&y);
+      break;
+    }
+#else
+    /* Normal rotation handling */
     VID(coord_physicalize)(&x,&y);
+#endif
+  }
 
   /* Convert relative motion to absolute motion.
    * We have to be careful about which coordinate system the input is in.
