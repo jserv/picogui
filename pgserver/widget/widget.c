@@ -9,6 +9,7 @@
  */
 
 #include <widget.h>
+#include <divtree.h>
 #include <g_malloc.h>
 
 struct widget *key_owners[NUM_KEYS];

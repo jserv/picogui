@@ -62,7 +62,7 @@ struct widgetdef {
 					      to it */
   void (*getfocus)(struct widget *self);
   void (*removefocus)(struct widget *self);
-  void (*trigger)(struct widget *self,int type);
+  void (*trigger)(struct widget *self,long type,long param);
 
   /* Setting/getting properties */
   g_error (*set)(struct widget *self, int property, glob data);

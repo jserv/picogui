@@ -1,5 +1,5 @@
 # Makefile for PicoGUI
-# $Revision: 1.2 $
+# $Revision: 1.3 $
 #
 # Micah Dowty <micah@homesoftware.com> 
 #
@@ -18,7 +18,7 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
 
 HDR := widget/widget.h gcore/divtree.h gcore/g_malloc.h \
        gcore/font.h gcore/handle.h gcore/g_error.h gcore/video.h \
-       appmgr/appmgr.h
+       appmgr/appmgr.h gcore/input.h
 
 CFLAGS := -Iwidget -Igcore -Iappmgr
 
@@ -105,6 +105,9 @@ HDR := $(HDR) video/$(VIDLIB)/$(VIDMODE)/mode.h
 SRC := $(SRC) net/$(NET)/request.c net/$(NET)/mainloop.c
 CFLAGS := $(CFLAGS) -Inet/$(NET)
 HDR := $(HDR) net/$(NET)/request.h
+
+# Input-specific source files
+SRC := $(SRC) input/$(INPUT)/input.c
 
 OBJ := $(SRC:.c=.o) font/fontdata.o
 
