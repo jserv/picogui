@@ -25,9 +25,6 @@ def request(reqtype, data='', id=None):
 	data = str(data)
 	if id is None:
 		id = reqtype
-	# Pad the data to the next 32-bit boundary
-	if (len(data)&3) != 0:
-		data += "\0" * (4 - (len(data)&3))
 	return pack('LLHxx', id, len(data), reqtype) + data
 
 # specific requests
@@ -122,13 +119,13 @@ def mkinfilter(insert_after, accept_trigs, absorb_trigs, id=None):
 	return request(11, pack('LLL', insert_after, accept_trigs, absorb_trigs), id=id)
 
 def mkstring(s, id=None):
-	return request(5, s + '\x00', id=id)
+	return request(5, s, id=id)
 
 def mktemplate(wt, id=None):
 	return request(50, wt, id=id)
 
 def mktheme(data, id=None):
-	return request(9, data + '\x00', id=id)
+	return request(9, data, id=id)
 	
 def mkwidget(relationship, type, parent, id=None):
 	return request(2, pack('HHL', relationship,  type, parent), id=id)

@@ -44,6 +44,11 @@ class stream(object):
     # FIXME: mkstring, mkfont and mkbitmap are global
     # (this requires decoding the packet, sigh
     self.num_instance += 1
+
+    # Pad the data to the next 32-bit boundary
+    if (len(request)&3) != 0:
+      request += "\0" * (4 - (len(request)&3))
+
     self.instance += request
 
   def recv(self, size):
