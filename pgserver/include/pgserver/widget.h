@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.10 2000/11/19 04:48:20 micahjd Exp $
+/* $Id: widget.h,v 1.11 2000/12/31 16:52:32 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -112,8 +112,29 @@ extern struct widgetdef widgettab[];
 
 /* Finally, and actual widget structure */
 struct widget {
+  /***** 16/8-bit packed values */
+   
+  /* If this is a root widget, an unprivelidged app can only derive
+     widgets inside it, not before or after it */
+  unsigned char isroot;
+
   /* Defines the type of widget */
   int type;
+
+  /* Connection that created the widget.  Any handles the widget make
+   * take on this owner
+   */
+  int owner;
+
+
+  /* If not null, the widget is contained within this widget (a toolbar,
+   * panel, etc...
+   */
+  handle container;
+
+
+  /***** 32-bit values */
+   
   struct widgetdef *def;  /* (Methods) */
    
   /* These pointers indicate the input, output, and sub of the
@@ -132,24 +153,10 @@ struct widget {
      as when a theme is loaded */
   void (*resize)(struct widget *self);
   
-  /* If this is a root widget, an unprivelidged app can only derive
-     widgets inside it, not before or after it */
-  int isroot;
-
-  /* If not null, the widget is contained within this widget (a toolbar,
-     panel, etc...
-  */
-  handle container;
-
-  /* Connection that created the widget.  Any handles the widget make
-     take on this owner
-  */
-  int owner;
-
   /* Widget's private data (Properties) */
   void *data;
 
-  /**** Used for management of triggers */
+  /* Used for management of triggers: */
  
   /*
    For any trigger to be accepted, it must be or'ed into 'trigger_mask'
@@ -303,7 +310,7 @@ extern struct widget *kbdfocus;
 /* Customizes the button's appearance
    (used by other widgets that embed buttons in themeselves) */
 void customize_button(struct widget *self,int state,int state_on,int state_hilight,
-		      void *extra, void (*event)(void *extra,struct widget *button));
+		      void *extra, void (*event)(struct widget *extra,struct widget *button));
 
 #endif /* __WIDGET_H */
 

@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.7 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: divtree.h,v 1.8 2000/12/31 16:52:32 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -77,9 +77,6 @@ struct divnode {
    * first. */
   struct divnode *next;
   
-  unsigned short int flags;
-  int split;   /* Depending on flags, the pixels or percent to split at */
-  
   /* When the widget is resized or changes state, this is used to rebuild the
      groplist. It defines the appearance of the widget. */
   void (*build)(struct gropctxt *c,unsigned short state,struct widget *self);
@@ -87,9 +84,6 @@ struct divnode {
   /* If this pointer is not null, the groplist is rendered to this divnode */
   struct gropnode *grop;
   
-  /* The divnode's state - indicates which theme object to get parameters from */
-  unsigned short state;
-   
   /* Widget that owns it, used for updating widget 'where' pointers
      on deleting a widget */
   struct widget *owner;
@@ -99,15 +93,21 @@ struct divnode {
    * the coordinates can be specified absolutely, however this is normally
    * not reccomended (but could be useful for constructs such as popup menus)
    */
-  int x,y;
+  short int x,y;
   
   /* Width and height, of course */
-  int w,h;
+  short int w,h;
   
   /* Coordinates to translate the grop's by, for scrolling */
-  int tx,ty;
+  short int tx,ty;
   /* Scrolling coordinates as of last redraw */
-  int otx,oty;
+  short int otx,oty;
+
+  unsigned short int flags;
+  short int split;   /* Depending on flags, the pixels or percent to split at */
+
+  /* The divnode's state - indicates which theme object to get parameters from */
+  unsigned short state;
 };
    
 /* flags used in divnode.flags */
@@ -125,6 +125,7 @@ struct divnode {
 #define DIVNODE_SPLIT_EXPAND   (1<<11) /* Expand div to all available space */
 #define DIVNODE_PROPAGATE_REDRAW (1<<12) /* redraw spreads through next also*/
 #define DIVNODE_SCROLL_ONLY     (1<<13)  /* Only tx/ty changed */
+#define DIVNODE_INCREMENTAL     (1<<14)  /* Only incremental redraw */
 
 /* Side value macros and stuff */
 typedef unsigned short int sidet;
@@ -143,7 +144,7 @@ typedef unsigned short int sidet;
 #define NUMGROPPARAMS    5
 
 struct gropnode {
-  short int type,x,y,w,h,flags;
+  short int type,flags,x,y,w,h;
   struct gropnode *next;   
   unsigned long param[NUMGROPPARAMS];
 };

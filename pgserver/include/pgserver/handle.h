@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.5 2000/10/19 01:21:23 micahjd Exp $
+/* $Id: handle.h,v 1.6 2000/12/31 16:52:32 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -49,11 +49,15 @@ typedef unsigned short handle;
 
 struct handlenode {
   handle id;
-  int owner;        /* the connection that owns this handle */
-  unsigned char type;          /* Most of this represents the data type
-				  that this handle points to. Upper 2 bits
-				  are for HFLAGs */
-  int context;
+   
+  short int owner;        /* the connection that owns this handle */
+  unsigned char type;     /* Most of this represents the data type
+			   * that this handle points to. Upper 2 bits
+			   * are for HFLAGs */
+  signed char context;    /* Would usually be a short- trying char to
+			   * make this structure pack better */
+
+  /* 32-bit fields */
   unsigned long int payload;   /* Client-definable data */
   void *obj;
   struct handlenode *group;  /* Parent of this handle group */

@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.13 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: video.h,v 1.14 2000/12/31 16:52:32 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -63,16 +63,25 @@ struct stdbitmap {
 
 /* A sprite node, overlaid on the actual picture */
 struct sprite {
-  hwrbitmap *bitmap, *mask, *backbuffer;
+  hwrbitmap bitmap,mask,backbuffer;
   int x,y;   /* Current coordinates */
   int ox,oy; /* Coordinates last time it was drawn */
   int w,h;   /* Dimensions of all buffers */
   int ow,oh; /* The blit last time, with clipping */
   struct divnode *clip_to;
   struct sprite *next;
+  unsigned int onscreen : 1;   /* Displayed on screen now */
+  unsigned int visible  : 1;   /* Displayed under normal circumstances */
 };
 /* List of sprites to overlay */
 extern struct sprite *spritelist;
+
+/* The text clipping is generally more complex than it would be
+ * fun to do in grop.c, so a clipping rectangle is passed along for them.
+ */
+struct cliprect {
+   signed short int x1,y1,x2,y2;
+};
 
 /* This structure contains a pointer to each graphics function
    in use, forming a definition for a driver. Initially, all functions
@@ -213,13 +222,6 @@ struct vidlib {
 		   pgcolor c1, pgcolor c2,int translucent);
   
   /* Optional
-   *   Frames an area with a hollow rectangle
-   *
-   * Default implementation: uses slab() and bar()
-   */
-  void (*frame)(int x,int y,int w,int h,hwrcolor c);
-
-  /* Optional
    *   Dims or 'grays out' everything in the rectangle
    *
    * Default implementation: color #0 checkerboard pattern
@@ -274,7 +276,7 @@ struct vidlib {
    */
   void (*charblit)(unsigned char *chardat,int dest_x,
 		   int dest_y,int w,int h,int lines,
-		   hwrcolor c);
+		   hwrcolor c,struct cliprect *clip);
      
   /* Optional
    *   Like charblit, but rotates the character 90 degrees counterclockwise
@@ -284,7 +286,7 @@ struct vidlib {
    */
   void (*charblit_v)(unsigned char *chardat,int dest_x,
 		     int dest_y,int w,int h,int lines,
-		     hwrcolor c);
+		     hwrcolor c,struct cliprect *clip);
 
   /***************** Bitmaps */
 
@@ -367,6 +369,15 @@ struct vidlib {
   void (*sprite_hideall)(void);
   void (*sprite_showall)(void);
 
+  /* Optional
+   *   Removes any necessary sprites from a given area to protect it from
+   *   screen updates. If applicable, only hides sprites starting with
+   *   and above the specified sprite.
+   * 
+   * Default implementation: Calls sprite_hide for sprites in the area
+   */
+  void (*sprite_protectarea)(struct cliprect *in,struct sprite *from);
+   
 };
 
 /* Currently in-use video driver */
@@ -391,7 +402,8 @@ g_error load_vidlib(g_error (*regfunc)(struct vidlib *v),
 /* Registration functions */
 g_error sdlfb_regfunc(struct vidlib *v);
 g_error sdl_regfunc(struct vidlib *v);
-g_error svga_regfunc(struct vidlib *v);
+g_error svgagl_regfunc(struct vidlib *v);
+g_error svgafb_regfunc(struct vidlib *v);
 g_error chipslice_video_regfunc(struct vidlib *v);
 
 /* List of installed video drivers */
@@ -409,7 +421,6 @@ void free_sprite(struct sprite *s);
 
 /* Sprite vars */
 extern struct sprite *spritelist;
-extern unsigned char sprites_hidden;
 
 /* Helper functions for keeping an update region, used
    for double-buffering by the video drivers */
@@ -418,6 +429,7 @@ extern int upd_y;
 extern int upd_w;
 extern int upd_h;
 void add_updarea(int x,int y,int w,int h);
+void realize_updareas(void);
 
 hwrcolor textcolors[16];   /* Table for converting 16 text colors
 			      to hardware colors */
@@ -426,6 +438,7 @@ hwrcolor textcolors[16];   /* Table for converting 16 text colors
 
 g_error def_setmode(int xres,int yres,int bpp,unsigned long flags);
 void emulate_dos(void);
+void def_update(int x,int y,int w,int h);
 hwrcolor def_color_pgtohwr(pgcolor c);
 pgcolor def_color_hwrtopg(hwrcolor c);
 void def_addpixel(int x,int y,pgcolor c);
@@ -437,13 +450,14 @@ void def_line(int x1,int y1,int x2,int y2,hwrcolor c);
 void def_rect(int x,int y,int w,int h,hwrcolor c);
 void def_gradient(int x,int y,int w,int h,int angle,
 		  pgcolor c1, pgcolor c2,int translucent);
-void def_frame(int x,int y,int w,int h,hwrcolor c);
 void def_dim(int x,int y,int w,int h);
 void def_scrollblit(int src_x,int src_y,int dest_x,int dest_y,int w,int h);
 void def_charblit(unsigned char *chardat,int dest_x,
-		  int dest_y,int w,int h,int lines,hwrcolor c);
+		  int dest_y,int w,int h,int lines,hwrcolor c,
+		  struct cliprect *clip);
 void def_charblit_v(unsigned char *chardat,int dest_x,
-		    int dest_y,int w,int h,int lines,hwrcolor c);
+		    int dest_y,int w,int h,int lines,hwrcolor c,
+		    struct cliprect *clip);
 g_error def_bitmap_loadxbm(struct stdbitmap **bmp,unsigned char *data,
 			   int w,int h,hwrcolor fg,hwrcolor bg);
 g_error def_bitmap_loadpnm(struct stdbitmap **bmp,unsigned char *data,
@@ -459,6 +473,7 @@ void def_sprite_hide(struct sprite *spr);
 void def_sprite_update(struct sprite *spr);
 void def_sprite_showall(void);
 void def_sprite_hideall(void);
+void def_sprite_protectarea(struct cliprect *in,struct sprite *from);
 
 /************** Registration functions for Video Base Libraries */
 void setvbl_default(struct vidlib *vid);

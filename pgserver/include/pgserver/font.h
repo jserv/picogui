@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.3 2000/10/10 00:33:37 micahjd Exp $
+/* $Id: font.h,v 1.4 2000/12/31 16:52:32 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -105,13 +105,15 @@ struct font {
  * requested by the fontdesc.
  */
 void outchar(struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,char c);
+	     int *x, int *y,hwrcolor col,char c,struct cliprect *clip);
 
 /* These functions interpret the '\n' character, but no other control
  * chars
  */
 void outtext(struct fontdesc *fd,
-	     int x,int y,hwrcolor col,char *txt);
+	     int x,int y,hwrcolor col,char *txt,struct cliprect *clip);
+void outtext_v(struct fontdesc *fd,
+	       int x,int y,hwrcolor col,char *txt,struct cliprect *clip);
 void sizetext(struct fontdesc *fd, int *w, int *h, char *txt);
 
 /* Find a font with specified characteristics, and prepare
