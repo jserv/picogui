@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: kbcompile.pl,v 1.11 2001/11/12 17:45:38 cgrigis Exp $
+# $Id: kbcompile.pl,v 1.12 2001/12/16 22:40:42 micahjd Exp $
 #
 # This script converts a .kbs keyboard definition source to the .kb
 # binary representation as defined in kbfile.h
@@ -152,8 +152,7 @@ sub request {
     $req_table{$pattern} .= pack "N", length($pat_table{$pattern}) + 4 * $pnum;
     $req_count{$pattern}++;
 	 
-    $req_table{$pattern} .= pack("nnN",$symbols{'PGREQ_'.$req},0,
-				 length($data)).$data;
+    $req_table{$pattern} .= pack("NNnn",0,length($data),$symbols{'PGREQ_'.$req},0).$data;
 }
 
 sub loadfile {
