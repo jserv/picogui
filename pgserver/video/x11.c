@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.4 2001/11/20 01:42:08 micahjd Exp $
+/* $Id: x11.c,v 1.5 2001/11/20 05:52:28 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -42,8 +42,19 @@ Display *xdisplay;
 struct x11bitmap {
   Drawable d;
   s16 w,h;
-  struct groprender *rend;
+  struct groprender *rend;   /* Context for pgRender() */
+  struct x11bitmap *tile;    /* Cached tile            */
 } x11_display;
+
+/* In X11 there is a comparatively large per-blit penalty, and
+ * no API function for tiling a bitmap. To speed things up
+ * substantially, bitmaps below this size that need to be tiled
+ * are pre-tiled up to at least this size and stored in the
+ * bitmap's 'tile' variable.
+ *
+ * Larger values for this increase speed and memory consumption.
+ */
+#define X11_TILESIZE 128
 
 /* A table of graphics contexts for each LGOP mode */
 GC x11_gctab[PG_LGOPMAX+1];
@@ -169,17 +180,44 @@ void x11_pixel(hwrbitmap dest,s16 x,s16 y,hwrcolor c,s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
 
-#if 1         /* We can comment out pixel() so it's easy to see what's
-	       * being done by X and what defaultvbl has to do
-	       */
+#ifdef CONFIG_X11_NOPIXEL
+  /* Paint it bright red, marking areas we can't render */
+  c = vid->color_pgtohwr(0xFF0000);
+  g = x11_gctab[PG_LGOP_NONE];
+#else
   if (!g) {
     def_pixel(dest,x,y,c,lgop);
     return;
   }
+#endif
   XSetForeground(xdisplay,g,c);
   XDrawPoint(xdisplay,xb->d,g,x,y);
+}
+
+hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
+#ifdef CONFIG_X11_NOPIXEL
+  /* Return bright red, to mark the areas we're blocking out */
+  return vid->color_pgtohwr(0xFF0000);
+#else
+
+  struct x11bitmap *xb = (struct x11bitmap *) src;
+  XImage *img;
+  hwrcolor c;
+
+  /* This is really _really_ damn slow. Our goal is to never 
+   * have to actually use this function, but we need it for
+   * compatibility. I thought about caching the XImage to
+   * improve consecutive reads from the same drawable, but
+   * there's no good way to determine if the drawable's been
+   * modified since the last call.
+   */
+  img = XGetImage (xdisplay, xb->d, x, y, 1, 1, AllPlanes, ZPixmap);
+  c = XGetPixel(img,0,0);
+  XDestroyImage(img);
+  return c;
 #endif
 }
+
 
 void x11_rect(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
@@ -229,6 +267,7 @@ void x11_bar(hwrbitmap dest, s16 x,s16 y,s16 h, hwrcolor c, s16 lgop) {
   XFillRectangle(xdisplay,xb->d,g,x,y,1,h);
 }
 
+#ifndef CONFIG_X11_DEFAULTELLIPSE
 void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -240,7 +279,6 @@ void x11_ellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   XSetForeground(xdisplay,g,c);
   XDrawArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
-
 void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) {
   struct x11bitmap *xb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
@@ -252,11 +290,7 @@ void x11_fellipse(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h,hwrcolor c, s16 lgop) 
   XSetForeground(xdisplay,g,c);
   XFillArc(xdisplay,xb->d,g,x,y,w,h,0,360*64);
 }
-
-hwrcolor x11_getpixel(hwrbitmap src,s16 x,s16 y) {
-  /* FIXME: Can you get a pixel from an X drawable? */
-  return 0;
-}
+#endif
 
 /* Blit the backbuffer to the display */
 void x11_update(s16 x,s16 y,s16 w,s16 h) {
@@ -365,6 +399,8 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h) {
 
 void x11_bitmap_free(hwrbitmap bmp) {
   struct x11bitmap *xb = (struct x11bitmap *) bmp;
+  if (xb->tile)
+    x11_bitmap_free((hwrbitmap) xb->tile);
   if (xb->rend)
     g_free(xb->rend);
   XFreePixmap(xdisplay,xb->d);
@@ -377,16 +413,36 @@ void x11_blit(hwrbitmap dest, s16 x,s16 y,s16 w,s16 h, hwrbitmap src,
   struct x11bitmap *dxb = (struct x11bitmap *) dest;
   GC g = x11_gctab[lgop];
 
-  /* If it's an unsupported LGOP, or we're tiling, fall back on def_blit.
-   * If we're tiling, def_blit breaks it down into tiles and calls us back
-   * for each tile, so it's only a slight performance hit.
+  /* If it's an unsupported LGOP fall back on def_blit.
    */
-  if (!g || w > sxb->w || h > sxb->h) {
+  if (!g) {
     def_blit(dest,x,y,w,h,src,src_x,src_y,lgop);
     return;
   }
-  
-  XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
+
+  /* If we're tiling, expand the bitmap to the minimum tile size
+   * if necessary, and cache it. Then, if the tile is still smaller
+   * than our blit size send it to the default blitter to be
+   * decomposed into individual tiles.
+   */
+
+  if ((w > sxb->w || h > sxb->h) && 
+      (sxb->w < X11_TILESIZE || sxb->h < X11_TILESIZE)) {
+    /* Create a pre-tiled image */
+    if (!sxb->tile) {
+      vid->bitmap_new( (hwrbitmap)&sxb->tile,
+		       (X11_TILESIZE/sxb->w + 1) * sxb->w,
+		       (X11_TILESIZE/sxb->h + 1) * sxb->h );
+      def_blit((hwrbitmap)sxb->tile,0,0,sxb->tile->w,
+	       sxb->tile->h,(hwrbitmap)sxb,0,0,PG_LGOP_NONE);
+    }
+    sxb = sxb->tile;
+  }
+
+  if (w > sxb->w || h > sxb->h)
+    def_blit(dest,x,y,w,h,(hwrbitmap) sxb,src_x,src_y,lgop);
+  else
+    XCopyArea(xdisplay,sxb->d,dxb->d,g,src_x,src_y,w,h,x,y);
 }
 
 
@@ -410,8 +466,10 @@ g_error x11_regfunc(struct vidlib *v) {
   v->slab = &x11_slab;
   v->bar = &x11_bar;
   v->line = &x11_line;
+#ifndef CONFIG_X11_DEFAULTELLIPSE
   v->ellipse = &x11_ellipse;
   v->fellipse = &x11_fellipse;
+#endif
 
   return sucess;
 }
