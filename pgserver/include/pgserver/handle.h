@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.25 2002/03/26 04:13:14 instinc Exp $
+/* $Id: handle.h,v 1.26 2002/03/26 17:49:03 instinc Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -68,7 +68,7 @@ struct handlenode {
 			   * make this structure pack better */
 
   /* 32-bit fields */
-  unsigned long int payload;   /* Client-definable data */
+  u32 payload;   /* Client-definable data */
   const void *obj;
   struct handlenode *left,*right,*parent;  /* For the red-black tree */
 };
