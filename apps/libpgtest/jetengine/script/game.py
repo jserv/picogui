@@ -3,16 +3,19 @@ import PicoGUI, math, time
 print "Python module imported"
 
 class input:
-    lastClick = (0,0,0,0)
-
     def handler(self, t, sender):
         # Move the ship and camera in reaction to the mouse position
         if t.dev == 'mouse':
             if t.name == 'down':
-                self.lastClick = (t.x, t.y, 0,0)
+                self.lastX = t.x
+                self.lastY = t.y
             if t.name == 'move' and t.buttons:
-                camera.yaw = -float(t.x - self.lastClick[0] + self.lastClick[2])
-                camera.pitch = float(t.y - self.lastClick[1] + self.lastClick[3])
+                dx = t.x - self.lastX
+                dy = t.y - self.lastY
+                self.lastX = t.x
+                self.lastY = t.y
+                camera.yaw -= dx * 0.1
+                camera.pitch += dy * 0.1
         
 def velocityChange(ev, widget):
     # Completely nonscientific equations to both set the velocity
