@@ -34,10 +34,16 @@ int map_canvas_size;
 pghandle info_widget, map_canvas, title_label,
   hp_indicator, sp_indicator, gr_indicator, food_indicator,
   hp_label, sp_label, gr_label, food_label,
-  resistances_tb, stats_pane, stats_tb;
+  resistances_tb, stats_pane, stats_tb,
+  default_look_title, temp_look_title;
+
+#define MAX_LIST_ITEMS		1023
+pghandle inv_items[MAX_LIST_ITEMS + 1], look_items[MAX_LIST_ITEMS + 1];
+
 
 struct Map the_map;
 PlayerPosition pl_pos;
+item *looking_at = NULL;
 
 static struct pgmemdata colorcmd[] = {
   /* these have to be all of the same len (13), so they follow a strict format:
@@ -88,15 +94,6 @@ void command_show (char *params)
 }
 
 
-void open_container (item *op) 
-{
-}
-
-void close_container (item *op) 
-{
-}
-
-
 void x_set_echo() {
   /* does nothing */
 }
@@ -106,6 +103,57 @@ void
 draw_prompt (const char *str)
 {
   draw_info(str, NDI_BLACK);
+}
+
+
+/******************************************************************************
+ *
+ * Functions dealing with inventory and look lists
+ *
+ *****************************************************************************/
+
+
+void open_container (item *op) 
+{
+  looking_at = op;
+  looking_at->inv_updated = 1;
+  temp_look_title = pgNewString(op->d_name);
+  pgSetWidget(pgGetWidget(look_items[0], PG_WP_PANELBAR_LABEL),
+	      PG_WP_TEXT, temp_look_title,
+	      0);
+}
+
+
+void close_container (item *op) 
+{
+  if (looking_at == op)
+    {
+      client_send_apply (looking_at->tag);
+      looking_at = cpl.below;
+      looking_at->inv_updated = 1;
+      if(temp_look_title)
+	pgDelete(temp_look_title);
+      temp_look_title = 0;
+      pgSetWidget(pgGetWidget(look_items[0], PG_WP_PANELBAR_LABEL),
+		  PG_WP_TEXT, default_look_title,
+		  0);
+    }
+}
+
+
+void draw_list (item *op, pghandle *items)
+{
+  printf("should draw inventory for `%s' now\n", op->d_name);
+  op->inv_updated = 0;
+}
+
+
+void draw_lists ()
+{
+  if (cpl.ob->inv_updated)
+    draw_list(cpl.ob, inv_items);
+  if (looking_at->inv_updated)
+    draw_list(looking_at, look_items);
 }
 
 
@@ -594,6 +642,7 @@ void draw_magic_map()
   fprintf(stderr, ">>> called void draw_magic_map()\n");
 }
 
+
 /******************************************************************************
  *
  * The functions dealing with startup and shutdown follow
@@ -639,8 +688,7 @@ void set_map_darkness(int x, int y, uint8 darkness)
 
 int get_info_width()
 {
-    return 40;	/* would be better to return some real info here  - I'll have to look at it later
-		 * to see how easy it is to get that */
+    return 50;
 }
 
 
@@ -825,7 +873,7 @@ void save_defaults()
 
 int init_windows(int argc, char **argv)
 {
-  pghandle main_pane, inv_pane, info_pane, vitals_box, bar;
+  pghandle main_pane, info_pane, vitals_box, bar;
   int h;
   struct pgmemdata lf;
 
@@ -849,7 +897,7 @@ int init_windows(int argc, char **argv)
     }
   else
     {
-      map_canvas_size = 352; /* 32 * 11 */
+      map_canvas_size = 11 * DEFAULT_IMAGE_SIZE;
       printf("graphical client\n");
     }
   pgSetWidget(PGDEFAULT,
@@ -976,21 +1024,25 @@ int init_windows(int argc, char **argv)
 	      0);
 
 
-  inv_pane = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, main_pane);
+  look_items[0] = pgNewWidget(PG_WIDGET_PANEL, PG_DERIVE_AFTER, main_pane);
   pgDelete(pgGetWidget(PGDEFAULT, PG_WP_PANELBAR_CLOSE));
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE, PG_S_TOP,
 	      PG_WP_SIZEMODE, PG_SZMODE_PERCENT,
 	      PG_WP_SIZE, 75,
 	      0);
-  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
+  inv_items[0] = pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_INSIDE, PGDEFAULT);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT, pgNewString("Inventory comes here, eventually"),
 	      0);
-  pgNewWidget(PG_WIDGET_LABEL, PG_DERIVE_AFTER, inv_pane);
-  pgSetWidget(PGDEFAULT,
-	      PG_WP_TEXT, pgNewString("`Look' comes here, eventually"),
+  temp_look_title = 0;
+  default_look_title = pgNewString("You see:");
+  pgSetWidget(pgGetWidget(look_items[0], PG_WP_PANELBAR_LABEL),
+	      PG_WP_TEXT, default_look_title,
 	      0);
+  looking_at = cpl.below;
+  memset (inv_items + 1, 0, MAX_LIST_ITEMS * sizeof(pghandle));
+  memset (look_items + 1, 0, MAX_LIST_ITEMS * sizeof(pghandle));
 
   pgUpdate();
   pgWriteData(info_widget, colorcmd[0]);
@@ -1035,6 +1087,7 @@ void mySelectBH(int result, fd_set *readfds)
     return;
 
   DoClient(&csocket);
+  draw_lists();
 }
 
 
