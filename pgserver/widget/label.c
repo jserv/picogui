@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.10 2000/06/09 21:54:34 micahjd Exp $
+/* $Id: label.c,v 1.11 2000/06/10 00:38:15 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -114,6 +114,8 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->in->flags |= ((sidet)data) | DIVNODE_NEED_RECALC |
       DIVNODE_PROPAGATE_RECALC;
     resizelabel(self);
+    if (DATA->transparent)
+      redraw_bg(self);
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
 
@@ -132,6 +134,8 @@ g_error label_set(struct widget *self,int property, glob data) {
 
   case WP_TRANSPARENT:
     DATA->transparent = (data != 0);
+    if (DATA->transparent)
+      redraw_bg(self);
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -150,8 +154,11 @@ g_error label_set(struct widget *self,int property, glob data) {
     DATA->font = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
-    if (self->in->split != psplit)
+    if (self->in->split != psplit) {
+      if (DATA->transparent)
+	redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    }
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -162,8 +169,11 @@ g_error label_set(struct widget *self,int property, glob data) {
     DATA->text = (handle) data;
     psplit = self->in->split;
     resizelabel(self);
-    if (self->in->split != psplit)
+    if (self->in->split != psplit) {
+      if (DATA->transparent)
+	redraw_bg(self);
       self->in->flags |= DIVNODE_PROPAGATE_RECALC;
+    }
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
