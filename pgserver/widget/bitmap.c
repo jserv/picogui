@@ -1,4 +1,4 @@
-/* $Id: bitmap.c,v 1.11 2000/06/09 01:53:39 micahjd Exp $
+/* $Id: bitmap.c,v 1.12 2000/08/05 06:17:29 micahjd Exp $
  *
  * bitmap.c - just displays a bitmap, similar resizing and alignment to labels
  *
@@ -28,7 +28,7 @@
 #include <widget.h>
 
 struct bitmapdata {
-  handle bitmap;
+  handle bitmap,bitmask;
   int align,lgop,transparent;
   devcolort fill;
 };
@@ -50,6 +50,14 @@ void bitmap(struct divnode *d) {
     w = bit->w;
     h = bit->h;
     align(d,DATA->align,&w,&h,&x,&y);
+
+    /* Optional bitmask */
+    if (DATA->bitmask && (rdhandle((void **) &bit,TYPE_BITMAP,-1,
+	DATA->bitmask).type==ERRT_NONE) && bit)
+      grop_bitmap(&d->grop,x,y,w,h,DATA->bitmask,LGOP_AND);
+    else
+      grop_null(&d->grop);
+
     grop_bitmap(&d->grop,x,y,w,h,DATA->bitmap,DATA->lgop);
   }
 }
@@ -149,6 +157,15 @@ g_error bitmap_set(struct widget *self,int property, glob data) {
     else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap handle");
     break;
 
+  case WP_BITMASK:
+    if (rdhandle((void **)&bit,TYPE_BITMAP,-1,data).type==ERRT_NONE && bit) {
+      DATA->bitmask = (handle) data;
+      self->in->flags |= DIVNODE_NEED_RECALC;
+      self->dt->flags |= DIVTREE_NEED_RECALC;
+    }
+    else return mkerror(ERRT_HANDLE,"WP_BITMASK invalid bitmap mask handle");
+    break;
+
   default:
     return mkerror(ERRT_BADPARAM,"Invalid property for bitmap");
   }
@@ -176,6 +193,9 @@ glob bitmap_get(struct widget *self,int property) {
 
   case WP_BITMAP:
     return (glob) DATA->bitmap;
+
+  case WP_BITMASK:
+    return (glob) DATA->bitmask;
   }
   return 0;
 }

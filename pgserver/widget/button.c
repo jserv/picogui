@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.26 2000/08/05 03:37:36 micahjd Exp $
+/* $Id: button.c,v 1.27 2000/08/05 06:17:29 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -268,7 +268,7 @@ g_error button_set(struct widget *self,int property, glob data) {
       self->in->flags |= DIVNODE_NEED_RECALC;
       self->dt->flags |= DIVTREE_NEED_RECALC;
     }
-    else return mkerror(ERRT_HANDLE,"WP_BITMAP invalid bitmap mask handle");
+    else return mkerror(ERRT_HANDLE,"WP_BITMASK invalid bitmap mask handle");
     break;
 
   case WP_FONT:
