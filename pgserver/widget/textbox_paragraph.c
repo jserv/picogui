@@ -1,4 +1,4 @@
-/* $Id: textbox_paragraph.c,v 1.22 2002/11/01 02:11:03 micahjd Exp $
+/* $Id: textbox_paragraph.c,v 1.23 2002/11/01 02:29:08 micahjd Exp $
  *
  * textbox_paragraph.c - Build upon the text storage capabilities
  *                       of pgstring, adding word wrapping, formatting,
@@ -424,9 +424,10 @@ void paragraph_scroll_to_cursor(struct paragraph_cursor *crsr) {
   if (crsr->par->doc && crsr->par->doc->autoscroll) {
     struct divnode fakediv = *crsr->par->doc->container_div->owner->in->div;
 
-    /* FIXME: Using update() like this is very extremely sloppy! */
+    /* FIXME: BIG UGLY HACK ALERT! */
     update(NULL,1);
     fakediv.r = crsr->last_rect;
+    fakediv.r.h++;
     scroll_to_divnode(&fakediv);
     update(NULL,1);
   }

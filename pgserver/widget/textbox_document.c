@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.56 2002/11/01 02:11:01 micahjd Exp $
+/* $Id: textbox_document.c,v 1.57 2002/11/01 02:28:58 micahjd Exp $
  *
  * textbox_document.c - High-level interface for managing documents
  *                      with multiple paragraphs, formatting, and
@@ -239,10 +239,15 @@ void document_seek(struct textbox_document *doc, s32 offset, int whence) {
 
 }
 
-/* Seek up/down in the document, snapping the cursor to the nearest character */
+/* Seek up/down in the document, snapping the cursor to the nearest character 
+ *
+ * This works by finding the proper paragraph, Then using the
+ * last known cursor location to move directly vertical.
+ */
 void document_lineseek(struct textbox_document *doc, s32 offset) {
   struct pgstr_iterator i;
   struct paragraph *par;
+  struct paragraph_cursor *oldcrsr;
 
   /* Up */
   while (offset<0) {
@@ -251,9 +256,11 @@ void document_lineseek(struct textbox_document *doc, s32 offset) {
       par = par->prev;
     if (!par)
       return;
+    oldcrsr = doc->crsr;
+    doc->crsr = &par->cursor;
     paragraph_movecursor(doc->crsr, par,
-			 doc->crsr->last_rect.x - par->div->div->r.x,
-			 doc->crsr->last_rect.y - par->div->div->r.y - 1);
+			 oldcrsr->last_rect.x - par->div->div->r.x,
+			 oldcrsr->last_rect.y - par->div->div->r.y - 1);
     offset++;
   }
     
@@ -264,9 +271,11 @@ void document_lineseek(struct textbox_document *doc, s32 offset) {
       par = par->next;
     if (!par)
       return;
+    oldcrsr = doc->crsr;
+    doc->crsr = &par->cursor;
     paragraph_movecursor(doc->crsr, par,
-			 doc->crsr->last_rect.x - par->div->div->r.x,
-			 doc->crsr->last_rect.y + doc->crsr->line->height + 1 - par->div->div->r.y);
+			 oldcrsr->last_rect.x - par->div->div->r.x,
+			 oldcrsr->last_rect.y + oldcrsr->line->height + 1 - par->div->div->r.y);
     offset--;
   }
 }
