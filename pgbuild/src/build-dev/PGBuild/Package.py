@@ -100,6 +100,10 @@ class VersionSpec:
 
     def match(self, version):
         """Return true if the given version name matches this spec"""
+        # If we have no spec, match all versions
+        if self.specString == None:
+            return 1
+        # We only support exact matches so far
         if version == self.specString:
             return 1
         else:
@@ -144,7 +148,7 @@ class Package:
         for versionNode in versionNodes:
             self.versions[versionNode.attributes['name'].value] = PackageVersion(self, versionNode)
 
-    def findVersion(self, version):
+    def findVersion(self, version=None):
         """Find a particular version of thie package. If the given version
            isn't already a VersionSpec it is converted to one.
            """

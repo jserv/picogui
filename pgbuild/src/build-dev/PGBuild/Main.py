@@ -32,7 +32,13 @@ import os, re, shutil
 def run(config, progress):
     """Examine the provided configuration and take the specified actions"""
 
-    print config.packages.findPackage('conf-dev')
+    import PGBuild.Site
+    t = progress.task("Debuggative cruft")
+    p = config.packages.findPackage('picogui')
+    t.report('package', p)
+    v = p.findVersion()
+    t.report('version', v)
+    t.report('site', PGBuild.Site.resolve(config, progress, v.configNode.getElementsByTagName('a')))
 
     treeDumpFile = config.eval("invocation/option[@name='treeDumpFile']/text()")
     if treeDumpFile:
