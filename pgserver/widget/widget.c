@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.75 2001/04/10 00:54:57 micahjd Exp $
+/* $Id: widget.c,v 1.76 2001/04/12 02:37:57 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -344,11 +344,9 @@ glob inline widget_get(struct widget *w, int property) {
     
     case PG_WP_ABSOLUTEX:      /* Absolute coordinates */
       return w->in->div->x;
-	break;
     case PG_WP_ABSOLUTEY:
       return w->in->div->y;
-	break;
-      
+
     default:
       return (*w->def->get)(w,property);
    }

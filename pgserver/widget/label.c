@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.31 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: label.c,v 1.32 2001/04/12 02:37:56 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -155,6 +155,10 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->dt->flags |= DIVTREE_NEED_REDRAW;
     break;
 
+  case PG_WP_STATE:
+    self->in->div->state = data;
+    break;
+       
   default:
     return mkerror(ERRT_PASS,0);
   }

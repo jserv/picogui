@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.14 2001/04/07 22:41:45 micahjd Exp $
+/* $Id: box.c,v 1.15 2001/04/12 02:37:56 micahjd Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -79,6 +79,10 @@ g_error box_set(struct widget *self,int property, glob data) {
     case PG_WP_TRANSPARENT:
       self->in->div->build = data ? NULL : (&build_bgfill_only);
       break;	
+
+    case PG_WP_STATE:
+      self->in->div->state = data;
+      break;
       
     default:
       return mkerror(ERRT_PASS,0);
