@@ -99,7 +99,7 @@ class Progress:
 
     def task(self, name, unimportance=0):
         """Create a new Progress object representing a hierarchial task"""
-        return Progress(self.verbosityLevel - unimportance, self, name)
+        return self.__class__(self.verbosityLevel - unimportance, self, name)
 
     def _warning(self, text):
         """Hook for displaying a warning message"""
@@ -132,7 +132,7 @@ class Interface:
        settings, but it includes hooks for adding a UI.
        """
     progressClass = Progress
-
+    
     def __init__(self, config):
         self.config = config
 
@@ -140,9 +140,11 @@ class Interface:
         self.verbosity = int(config.eval("invocation/option[@name='verbosity']/text()"))
         self.progress = self.progressClass(self.verbosity)
 
+        self.progress.message("Using UI module %s" % self.__class__.__module__, 2)
+
     def run(self):
         """Examine the provided configuration and take the specified actions"""
-        
+
         import PGBuild.Site
         t = self.progress.task("Debuggative cruft")
         p = self.config.packages.findPackage('picogui')
@@ -156,6 +158,13 @@ class Interface:
             f = open(treeDumpFile, "w")
             f.write(self.config.toprettyxml())
             f.close()
+
+    def exception(self, exc_info):
+        """This is called when PGBuild.Main catches an exception. The default implementation
+           transparently passes it along, but this gives subclasses a chance to reformat
+           the exception in a way that makes sense for a particular UI.
+           """
+        raise exc_info[0], exc_info[1], exc_info[2]
 
 ### The End ###
         

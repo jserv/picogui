@@ -21,17 +21,14 @@ The 'help' UI, that just lists the available UIs and exits
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.UI.none
-import sys
+# We'll base this off the Text UI so we can use it's purdy Progress class
+import PGBuild.UI.Text
 
-description = "List the available UIs and exit"
-priority = 0
-
-class Interface(PGBuild.UI.none.Interface):
+class Interface(PGBuild.UI.Text.Interface):
     def run(self):
         text = "Available UI modules:\n\n"
-        for module in PGBuild.UI.getPrioritizedModules():
-            text += "%10s: %s\n" % (module.__name__.split(".")[-1], module.description)
+        for module in PGBuild.UI.catalog:
+            text += "%10s: %s\n" % module
         self.progress.message(text[:-1])
         
 ### The End ###

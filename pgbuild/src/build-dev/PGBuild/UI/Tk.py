@@ -21,15 +21,14 @@ A Tkinter-based frontend for PGBuild
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 # 
 
-import PGBuild.UI.none
-import PGBuild
-import sys
-import tkMessageBox
+import PGBuild.UI.None
+import PGBuild.Errors
+try:
+    import tkMessageBox
+except ImportError:
+    raise PGBuild.Errors.EnvironmentError("Tkinter doesn't seem to be installed")
 
-description = "Tkinter-based frontend"
-priority = 20
-
-class Interface(PGBuild.UI.none.Interface):
+class Interface(PGBuild.UI.None.Interface):
     def run(self):
         tkMessageBox.showerror(PGBuild.name,
                                "The tk UI is not implemented yet")

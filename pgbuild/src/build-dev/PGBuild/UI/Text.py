@@ -72,7 +72,7 @@ class Progress(PGBuild.UI.None.Progress):
     def _init(self):
         # Set up our Colorizer object
         if self.parent:
-            self.color = parent.color
+            self.color = self.parent.color
         else:
             self.color = Colorizer()
 
@@ -101,7 +101,7 @@ class Progress(PGBuild.UI.None.Progress):
     def _error(self, text):
         self._textBlock("Error: " + text, ('bold', 'red'))
 
-    def message(self, text):
+    def _message(self, text):
         self._textBlock(text)
 
 

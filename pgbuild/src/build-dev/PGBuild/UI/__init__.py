@@ -24,32 +24,24 @@ command line based interfaces.
 # 
 
 import PGBuild.Errors
-import os, glob
 
 
+# List of UI module names and descriptions, sorted by priority.
+# The most preferred UIs should go first.
+catalog = [
+    ("Tk",    "Tkinter based front-end"),
+    ("Text",  "Command line front-end, with optional colorizing"),
+    ("None",  "No front-end"),
+    ("Help",  "List the available UI modules"),
+    ("Auto",  "Automatically choose a UI module"),
+    ]
 
-def getNames():
-    """List the names of all UI modules"""
-    modules = []
-    for file in os.listdir(__path__[0]):
-        if file[-3:] == ".py" and file != "__init__.py":
-            modules.append(file[:-3])
-    return modules
-
-def getPrioritizedModules():
-    """List the working UI modules, highest priority first"""
-    guiList = []
-    for name in PGBuild.UI.getNames():
-        try:
-            guiList.append(PGBuild.UI.find(name))
-        except:
-            pass
-    def prioritySort(a,b):
-        return cmp(b.priority, a.priority)
-    guiList.sort(prioritySort)
-    return guiList
 
 def find(name):
+    """Given a UI module name, this tries loading it. The given name is case-insensitive,
+       this function will munge its case to match our naming convention.
+       """
+    name = name[0].upper() + name[1:].lower()
     try:
         return __import__(name, globals(), locals())
     except ImportError:

@@ -23,11 +23,15 @@ The 'auto' UI, that automatically picks a UI module in order of preference
 
 import PGBuild.UI
 
-description = "Automatically choose a UI"
-priority = 0
-
-# Transmogrify our interface into the highest priority UI
-Interface = PGBuild.UI.getPrioritizedModules()[0].Interface
+# Try loading each UI in the catalog, transmogrify our Interface into the
+# Interface of the first one that loads successfully.
+for (name, description) in PGBuild.UI.catalog:
+    try:
+        mod = PGBuild.UI.find(name)
+        break
+    except:
+        pass
+Interface = mod.Interface
         
 ### The End ###
         

@@ -184,15 +184,24 @@ def main(bootstrap, argv):
        """
 
     config = PGBuild.Config.Tree()
+    ui = None
     try:
-        # Load the options passed to use by build.py into the <bootstrap> section
-        boot(config, bootstrap)
+        try:
+            # Load the options passed to use by build.py into the <bootstrap> section
+            boot(config, bootstrap)
 
-        # Parse command line options into the <invocation> section
-        parseCommandLine(config, argv)
+            # Parse command line options into the <invocation> section
+            parseCommandLine(config, argv)
 
-        # Load a UI module and run it
-        PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config).run()
+            # Load a UI module and run it
+            ui = PGBuild.UI.find(config.eval("invocation/option[@name='ui']/text()")).Interface(config)
+            ui.run()
+        except:
+            # If we have a UI yet, try to let it handle the exception. Otherwise just reraise it.
+            if ui:
+                ui.exception(sys.exc_info())
+            else:
+                raise
     finally:
         config.commit()
 
