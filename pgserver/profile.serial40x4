@@ -1,0 +1,106 @@
+#
+# Automatically generated make config: don't edit
+#
+
+#
+# Target System
+#
+CONFIG_LINUX_GENERIC=y
+# UCLINUX is not set
+# CONFIG_LINUX_MIPS is not set
+# WINDOWS is not set
+ASM_INTEL=y
+
+#
+# Debugging
+#
+# CONFIG_TEXT is not set
+# CONFIG_NOSTRIP is not set
+# DEBUG_KEYS is not set
+# CONFIG_VIDEOTEST is not set
+# CONFIG_NO_OPTIMIZE is not set
+# CONFIG_EFENCE is not set
+# CONFIG_GCOV is not set
+# CONFIG_GPROF is not set
+# BOTHERSOME_TERMINAL is not set
+# DEBUG_WIDGET is not set
+# DEBUG_EVENT is not set
+# DEBUG_VIDEO is not set
+# DEBUG_THEME is not set
+# DEBUG_NET is not set
+# DEBUG_INIT is not set
+# DEBUG_MEMORY is not set
+# CONFIG_STDERR_GURU is not set
+
+#
+# Fonts
+#
+# FONT_HELVETICA10 is not set
+# FONT_CLEAN12 is not set
+# FONT_LUCIDA10 is not set
+# FONT_CLEAN6 is not set
+# FONT_CONSOLE8 is not set
+# FONT_COURIER12 is not set
+# FONT_HELVETICA8 is not set
+# FONT_HELVETICA12 is not set
+# FONT_HELVETICA14 is not set
+# FONT_HELVETICA18 is not set
+# FONT_HELVETICA24 is not set
+# FONT_TIMES10 is not set
+# FONT_UTOPIA25 is not set
+
+#
+# Video Drivers
+#
+# DRIVER_FBDEV is not set
+# DRIVER_SDLFB is not set
+# DRIVER_SVGAFB is not set
+# DRIVER_EZ328 is not set
+# DRIVER_NCURSES is not set
+DRIVER_SERIAL40X4=y
+# DRIVER_NULL is not set
+
+#
+# Input Drivers
+#
+# DRIVER_SDLINPUT is not set
+# DRIVER_SVGAINPUT is not set
+# DRIVER_NCURSESINPUT is not set
+# DRIVER_TSINPUT is not set
+# DRIVER_R3912TS is not set
+
+#
+# Video Base Libraries
+#
+# CONFIG_VBL_LINEAR1 is not set
+# CONFIG_VBL_LINEAR2 is not set
+# CONFIG_VBL_LINEAR4 is not set
+CONFIG_VBL_LINEAR8=y
+# CONFIG_VBL_LINEAR16 is not set
+# CONFIG_VBL_LINEAR24 is not set
+# CONFIG_VBL_LINEAR32 is not set
+# CONFIG_ROTATE is not set
+# CONFIG_ROTATE180 is not set
+
+#
+# Widget Options
+#
+CONFIG_WIDGET_TERMINAL=y
+CONFIG_WIDGET_CANVAS=y
+CONFIG_NOPANELBAR=y
+CONFIG_DRAGSOLID=y
+CONFIG_MAX_ZOMBIEGROPS=150
+
+#
+# Bitmap Formats
+#
+# CONFIG_FORMAT_XBM is not set
+CONFIG_FORMAT_PNM=y
+
+#
+# Security
+#
+# CONFIG_NOREMOTEINPUT is not set
+# CONFIG_NOEXCLUSIVE is not set
+CONFIG_MAXPACKETSZ=5000000
+# CONFIG_QUOTA is not set
