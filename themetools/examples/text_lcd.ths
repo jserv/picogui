@@ -1,0 +1,63 @@
+/* $Id: text_lcd.ths,v 1.1 2001/05/12 21:22:41 micahjd Exp $
+ *
+ * PicoGUI theme for text LCD drivers like serial40x4.
+ * Minimalistic theme. Designed to be used without a panelbar compiled
+ * in (it takes too much space on a text LCD) so it is not defined.
+ *
+ * Micah Dowty
+ */
+
+object default {
+   bgfill = fillstyle {
+      SetColor(bgcolor);
+      Rect(x,y,w,h);
+   };
+   bgcolor = 0xFFFFFF;
+   fgcolor = 0x000000;
+   
+   width = 1;
+   height = 1;
+   margin = 0;
+   spacing = 0;
+}
+
+object background {
+   bgcolor = 0x20000006;      /* custom character- dots */
+}
+
+object popup {
+   height = 1;
+   width  = 1;
+   margin = 0;
+   bgcolor = 0x000000;
+   bgfill = 0;
+}
+
+object label.dlgtitle {
+   bgcolor = 0x20000007;    /* custom character- horizontal dashes */
+}
+
+object button {
+   width = 1;
+   height = 1;
+   margin = 1;
+   spacing = 1;
+   bgfill = fillstyle {
+      SetColor(0x20000000 | '[');
+      Bar(x,y,1,h);
+      SetColor(0x20000000 | ']');
+      Bar(x+w-1,y,1,h);
+      SetColor(bgcolor);
+      Rect(x+1,y,w-2,h);
+   }; 
+}
+obj button.on bgfill = fillstyle {
+   SetColor(0x20000000 | '<');
+   Bar(x,y,1,h);
+   SetColor(0x20000000 | '>');
+   Bar(x+w-1,y,1,h);
+   SetColor(bgcolor);
+   Rect(x+1,y,w-2,h);
+}; 
+   
+/* The End */
