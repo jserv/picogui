@@ -1,0 +1,197 @@
+# -*- python -*-
+
+from Bee.Autoconf import compile, install, clean
+from Bee.Logic import S
+import os
+
+multicompile     = 1
+
+help = """
+Provides the PicoGUI demonstration applications
+"""
+
+license = ''' GNU GPL '''
+
+prefix = '/'
+
+depends = [ 'picoguiclient', 'processmanager' ]
+
+asserts = [
+    (S ('module/picoguiapps/pgboard_run_us_qwerty') |
+     S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') |
+     S ('module/picoguiapps/pgboard_run_fitaly') |
+     S ('module/picoguiapps/pgboard_run_ch_qwertz')) >>
+            
+    (S ('module/picoguiapps/pgboard_run_us_qwerty') ^
+     S ('module/picoguiapps/pgboard_run_us_qwerty_bitmap') ^
+     S ('module/picoguiapps/pgboard_run_fitaly') ^
+     S ('module/picoguiapps/pgboard_run_ch_qwertz'))
+    ]
+
+declare = [ 'option/picoguiapps/debug' ]
+
+runtime = [
+    Runtime ( 'pterm', 'Terminal',
+              content = [ 'bin/pterm',
+                          'share/Terminal.app' ],
+              help = "PicoGUI terminal" ),
+    Runtime ( 'pgboard', 'Virtual Keyboard',
+              depends = [ 'picoguiclient/library' ],
+              content = [ 'bin/pgboard' ],
+              help = "Virtual Keyboard for PicoGUI" ),
+    Runtime ( 'fitaly', 'Fitaly Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_fitaly_160.kb' ],
+              help = "Fitaly Keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'us_qwerty', 'US QWERTY Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_qwerty_scalable.kb' ],
+              help = "US QWERTY keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'us_qwerty_bitmap', 'US QWERTY Keymap (Bitmap 240x80)',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/us_qwerty_240.kb' ],
+              help = "US QWERTY keymap for the PicoGUI Virtual Keyboard (Bitmap 240x80)" ),
+    Runtime ( 'ch_qwertz', 'CH QWERTZ Keymap',
+              depends = [ 'picoguiapps/pgboard' ],
+              content = [ 'share/pgboard/ch_qwertz_scalable.kb' ],
+              help = "CH QWERTZ keymap for the PicoGUI Virtual Keyboard" ),
+    Runtime ( 'pgboard_run_fitaly', 'Run PGBoard with Fitaly keymap',
+              depends = [ 'picoguiserver/start',
+                          'picoguiapps/fitaly',
+                          'pocketguiapps/finder/sd_finder_run',
+                          ],
+              content = [ 'etc/rm.d/pgboard' ]),
+    Runtime ( 'pgboard_run_us_qwerty', 'Run PGBoard with US QWERTY keymap',
+              depends = [ 'picoguiserver/start',
+                          'picoguiapps/us_qwerty',
+                          'pocketguiapps/finder/sd_finder_run',
+                          ],
+              content = [ 'etc/rm.d/pgboard' ]),
+    Runtime ( 'pgboard_run_us_qwerty_bitmap', 'Run PGBoard with US QWERTY keymap (Bitmap 240x80)',
+              depends = [ 'picoguiserver/start',
+                          'picoguiapps/us_qwerty_bitmap',
+                          'pocketguiapps/finder/sd_finder_run',
+                          ],
+              content = [ 'etc/rm.d/pgboard' ]),
+    Runtime ( 'pgboard_run_ch_qwertz', 'Run PGBoard with CH QWERTZ keymap',
+              depends = [ 'picoguiserver/start',
+                          'picoguiapps/ch_qwertz',
+                          'pocketguiapps/finder/sd_finder_run',
+                          ],
+              content = [ 'etc/rm.d/pgboard' ]),
+    Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
+              content = [ 'bin/pgboard_cmds' ],
+              help = "Test application to send commands to the Virtual Keyboard" ),
+    Runtime ( 'fieldtest', 'Field test',
+              content = [ 'bin/fieldtest' ],
+              help = "Text input widget" ),
+    Runtime ( 'omnibar', 'omnibar',
+              content = [ 'bin/omnibar' ],
+              help = "Basic launcher" ),
+    Runtime ( 'pgtuxphone', 'pgtuxphone',
+              content = [ 'bin/pgtuxphone' ],
+              help = "PicoGUI tuxphone client" ),
+    Runtime ( 'battleship', 'battleship',
+              content = [ 'bin/battleship' ],
+              help = "Battleship!" ),
+    Runtime ( 'canvastst', 'canvastst',
+              content = [ 'bin/canvastst' ],
+              help = "Canvas Test" ),
+    Runtime ( 'galaxy', 'galaxy',
+              content = [ 'bin/galaxy' ],
+              help = "Galaxy graphics stress test" ),
+    Runtime ( 'dialogdemo', 'dialogdemo',
+              content = [ 'bin/dialogdemo' ],
+              help = "Dialog Demo" ),
+    Runtime ( 'imgview', 'imgview',
+              content = [ 'bin/imgview' ],
+              help = "Image viewer" ),
+     Runtime ( 'scribble', 'scribble',
+              content = [ 'bin/scribble' ],
+              help = "Scribble Pad" ),
+     Runtime ( 'atomicnav', 'atomicnav',
+              content = [ 'bin/atomicnav' ],
+              help = "Atomic Web Navigator"),
+     Runtime ( 'shmtest', 'shmtest',
+              depends = [ 'picoguiclient/library' ],
+              content = [ 'bin/shmtest' ],
+              help = "Shared memory test" ),
+
+    SharedRuntime ('library', 'pgboard shared library',
+                   content = ['lib/libpgboard.so.0.0.0',
+                              'lib/libpgboard.so.0',
+                              'lib/libpgboard.so']),
+    ]
+
+
+
+def prepare (module, platform, project):
+
+    command = "../configure"
+
+    command = command + " --enable-bee"
+    command = command + " --prefix=%s" % module.path ['prefix']
+
+    if not platform.native:
+        command = command + " --with-prefix=%s --host=%s" % \
+                  (platform.toolchain,
+                   platform.platform)
+        
+    command = command + " --enable-optimisation"
+
+    command = command + " --enable-pocketbee"
+
+    command = command + " --with-picogui=%s" % \
+              project ['module/picoguiclient'].path ['dfl']
+
+    command = command + " --with-pm=%s" % \
+              project ['module/processmanager'].path ['dfl']
+
+    if project.value ['option/picoguiapps/debug'] :
+        command += ' --enable-debug'
+
+    message ("running: %s" % command)
+
+    sequence ("rm -f config.status",
+              "test ! -f ../autogen.sh || (cd .. ; ./autogen.sh || true)",
+              command)
+    return
+
+
+def install (module, platform, project):
+    sequence ("make install prefix=%s" % module.path ['frz'])
+
+    sequence ("ln -sf %s/bin/pterm %s/share/Terminal.app" % \
+              (module.path ['frz'], module.path ['frz']))
+
+    # try to install the mdl file in the root of the frozen directory
+    installfile (module.file, module.path ['r_frz'])
+
+    # generate the RM file
+    file = os.path.join (module.path ['frz'], 'etc', 'rm.d', 'pgboard')
+    makedirs (os.path.dirname (file))
+
+    # Determine pgboard keymap file
+    pgboard_arg = ""
+
+    if project.value ['module/picoguiapps/pgboard_run_fitaly'] :
+        pgboard_arg = "%s/share/pgboard/us_fitaly_160.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_us_qwerty'] :
+        pgboard_arg = "%s/share/pgboard/us_qwerty_scalable.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_us_qwerty_bitmap'] :
+        pgboard_arg = "%s/share/pgboard/us_qwerty_240.kb" % prefix
+    elif project.value ['module/picoguiapps/pgboard_run_ch_qwertz'] :
+        pgboard_arg = "%s/share/pgboard/ch_qwertz_scalable.kb" % prefix
+
+    fd = open (file, 'w')
+    fd.write ('''
+name = pgboard
+argv = %s/bin/pgboard %s
+
+wait = sd-finder
+restart  = 1
+announce = 1
+blocked  = 0
+    ''' % (prefix, pgboard_arg) )
+    fd.close ()
+    return

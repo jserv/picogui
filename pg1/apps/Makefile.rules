@@ -1,0 +1,20 @@
+# Set this to cross compile
+CROSS	= 
+#CROSS	= arm-linux
+#CROSS	= arm-uclibc
+
+# Change this to the path of your cli_c headers
+INCLUDE = -I../../cli_c/include
+
+# Change this to your install prefix
+PREFIX	= /usr/local
+
+# Programs we need
+CC      = $(CROSS)gcc
+LD	= $(CROSS)ld
+AR	= $(CROSS)ar
+STRIP   = $(CROSS)strip
+
+LDFLAGS	= -lpgui
+CFLAGS	= -O3 -fno-strict-aliasing
+

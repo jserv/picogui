@@ -1,0 +1,186 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl
+dnl $Id: configure.in,v 1.33 2003/01/09 15:56:11 pney Exp $
+dnl
+
+AC_INIT(working/pgboard/pgboard.c)
+
+AM_CONFIG_HEADER(config.h)
+
+AM_INIT_AUTOMAKE(picogui-apps, 0.5)
+
+AM_ACLOCAL_INCLUDE(macros)
+
+AM_PGUI_CROSSCOMPILE
+
+AM_PROG_LIBTOOL
+
+AC_CHECK_LIB(util, forkpty)
+AC_CHECK_FUNCS(forkpty)
+
+dnl Checks for programs.
+
+dnl Checks for libraries.
+
+dnl
+dnl init : no special compilation flags
+dnl
+CFLAGS_ADD=""
+
+dnl
+dnl to enable optimisation
+dnl
+AC_ARG_ENABLE(optimisation,
+[  --enable-optimisation    enable optimisation (-O2)],
+  if test "$enable_optimisation" = yes; then
+    CFLAGS_ADD="${CFLAGS_ADD} -O2 "
+  fi
+)
+
+dnl
+dnl final setup of CFLAGS
+dnl
+CFLAGS="${CFLAGS_ADD}"
+
+dnl Checks for header files.
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+dnl Checks for library functions.
+AC_HEADER_STDC
+
+dnl
+dnl to specify the path to PicoGUI
+dnl 
+AC_ARG_WITH(picogui,
+[  --with-picogui=<prefix>       path to picogui client installation],
+[
+  PICOGUI_CFLAGS="-I${withval}/include"
+  PICOGUI_LDFLAGS="-L${withval}/lib"
+  PICOGUI_LIBS="-lpgui"
+  PICOGUI_LOCATION="${withval}"
+],[
+  PICOGUI_CFLAGS=""
+  PICOGUI_LDFLAGS=""
+  PICOGUI_LIBS="-lpgui"
+  if test "x$prefix" != xNONE; then
+    PICOGUI_LOCATION="$prefix"
+  else
+    PICOGUI_LOCATION="$ac_default_prefix"
+  fi
+]
+)
+
+AC_SUBST(PICOGUI_CFLAGS)
+AC_SUBST(PICOGUI_LDFLAGS)
+AC_SUBST(PICOGUI_LIBS)
+AC_SUBST(PICOGUI_LOCATION)
+
+dnl
+dnl to enable usage of the PocketBee Process Manager
+dnl
+AC_ARG_WITH(pm,
+[  --with-pm=<prefix>            path to PocketBee Process Manager installation],
+[
+  if test "$with_pm" != no; then
+    AC_DEFINE(USE_PM, 1)
+    PM_CFLAGS="-I${with_pm}/include" 
+    PM_LDFLAGS="-L${with_pm}/lib"
+    PM_LIBS=""
+  fi
+],[
+  PM_CFLAGS=""
+  PM_LDFLAGS=""
+  PM_LIBS=""
+]
+)
+
+AC_SUBST(PM_CFLAGS)
+AC_SUBST(PM_LDFLAGS)
+AC_SUBST(PM_LIBS)
+
+dnl
+dnl to enable debug
+dnl
+AC_ARG_ENABLE(debug,
+[  --enable-debug           enable runtime debugging code],
+  if test "$enable_debug" = yes; then
+    AC_DEFINE(DEBUG, 1)
+  fi
+)
+
+dnl
+dnl Check target architecture and add specific entries for uClinux
+dnl
+
+case "$host" in
+  m68k-pic-*)
+        CFLAGS="${CFLAGS} -fPIC -DRUNTIME_FUNCPTR -d_NEED_NTOHS_FRIENDS_"
+        PLATFORM="uclinux"
+        ;;
+esac
+
+AC_SUBST(PLATFORM)
+AC_SUBST(LIB_OS)
+
+dnl for integration in the bee compilation system
+AM_BEE_RPMPROFILE
+
+AC_ARG_ENABLE(bee, 
+[  --enable-bee     use the bee building system])
+
+AM_CONDITIONAL(ENABLE_BEE, test "${enable_bee}" = "yes")
+
+dnl indicate we are compiling for PocketBee
+AC_ARG_ENABLE(pocketbee,
+[  --enable-pocketbee     compile for PocketBee],
+  if test "$enable_pocketbee" = yes; then
+    AC_DEFINE(POCKETBEE, 1)
+  fi
+)
+
+
+AC_OUTPUT(
+	Makefile
+	picogui-apps.spec
+	dev/Makefile
+	dev/atomicnav/Makefile
+	dev/pgl/Makefile
+	dev/pgl/pgl-toolbar/Makefile
+	dev/pgl/pgl-launcher/Makefile
+	dev/pgl/pgl-clock/Makefile
+	dev/pgl/pgl-keyboard/Makefile
+	dev/pgl/pgl-rotate/Makefile
+	dev/pgtuxphone/Makefile
+	dev/picomail/Makefile
+	test/Makefile
+	test/bouncyball/Makefile
+	test/bouncyball/data/Makefile
+	test/canvastiles/Makefile
+	test/canvastst/Makefile
+	test/dialogdemo/Makefile
+	test/fieldtest/Makefile
+	test/galaxy/Makefile
+	test/hello/Makefile
+	test/msgdemo/Makefile
+	test/omnibar/Makefile
+	test/shm/Makefile
+	test/textedit/Makefile
+	working/Makefile
+	working/battleship/Makefile
+	working/blackout/Makefile
+	working/connectfour/Makefile
+	working/gridgame/Makefile
+	working/imgview/Makefile
+	working/pgboard/Makefile
+	working/pgboard/examples/Makefile
+	working/pgedit/Makefile
+	working/pgmon/Makefile
+	working/picosm/Makefile
+	working/pqw/Makefile
+	working/pterm/Makefile
+	working/scribble/Makefile
+	working/tpcal/Makefile
+	working/vrcalc/Makefile
+	working/wclock/Makefile
+)
