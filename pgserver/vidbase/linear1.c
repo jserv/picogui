@@ -1,4 +1,4 @@
-/* $Id: linear1.c,v 1.4 2001/04/11 02:28:59 micahjd Exp $
+/* $Id: linear1.c,v 1.5 2001/04/12 05:45:32 bauermeister Exp $
  *
  * Video Base Library:
  * linear1.c - For 1-bit packed pixel devices (most black and white displays)
@@ -113,6 +113,62 @@ void linear1_bar(int x,int y,int h,hwrcolor c) {
    }
 }
 
+/*********************************************** 180 deg stuff */
+
+#define X180  (vid->xres-1-x)
+#define Y180  (vid->yres-1-y)
+#define XW180 (vid->xres-x-w)
+#define YH180 (vid->yres-y-h)
+
+
+void linear1_pixel_180(int x,int y,hwrcolor c) {
+  linear1_pixel(X180, Y180, c);
+}
+
+hwrcolor linear1_getpixel_180(int x,int y) {
+  return linear1_getpixel(X180, Y180);
+}
+
+void linear1_slab_180(int x,int y,int w,hwrcolor c) {
+  return linear1_slab(XW180, Y180, w, c);
+}
+
+void linear1_bar_180(int x,int y,int h,hwrcolor c) {
+  return linear1_bar(X180, YH180, h, c);
+}
+
+#ifdef CONFIG_ROTATE180
+# define LINEAR1_PIXEL      linear1_pixel_180
+# define LINEAR1_GETPIXEL   linear1_getpixel_180
+# define LINEAR1_SLAB       linear1_slab_180
+# define LINEAR1_BAR        linear1_bar_180
+# define LINEAR1_LINE       linear1_line_180
+# define LINEAR1_RECT       linear1_rect_180
+# define LINEAR1_GRADIENT   linear1_gradient_180
+# define LINEAR1_DIM        linear1_dim_180
+# define LINEAR1_SCROLLBLIT linear1_scrollblit_180
+# define LINEAR1_CHARBLIT   linear1_charblit_180
+# define LINEAR1_CHARBLIT_V linear1_charblit_v_180
+# define LINEAR1_TILEBLIT   linear1_tileblit_180
+# define LINEAR1_BLIT       linear1_blit_180
+# define LINEAR1_UNBLIT     linear1_unblit_180
+#else
+# define LINEAR1_PIXEL      linear1_pixel
+# define LINEAR1_GETPIXEL   linear1_getpixel
+# define LINEAR1_SLAB       linear1_slab
+# define LINEAR1_BAR        linear1_bar
+# define LINEAR1_LINE       linear1_line
+# define LINEAR1_RECT       linear1_rect
+# define LINEAR1_GRADIENT   linear1_gradient
+# define LINEAR1_DIM        linear1_dim
+# define LINEAR1_SCROLLBLIT linear1_scrollblit
+# define LINEAR1_CHARBLIT   linear1_charblit
+# define LINEAR1_CHARBLIT_V linear1_charblit_v
+# define LINEAR1_TILEBLIT   linear1_tileblit
+# define LINEAR1_BLIT       linear1_blit
+# define LINEAR1_UNBLIT     linear1_unblit
+#endif
+
 /*********************************************** Registration */
 
 /* Load our driver functions into a vidlib */
@@ -121,22 +177,22 @@ void setvbl_linear1(struct vidlib *vid) {
    setvbl_default(vid);
    
    /* Minimum functionality */
-   vid->pixel          = &linear1_pixel;
-   vid->getpixel       = &linear1_getpixel;
+   vid->pixel          = &LINEAR1_PIXEL;
+   vid->getpixel       = &LINEAR1_GETPIXEL;
    
    /* Accelerated functions */
-   vid->slab           = &linear1_slab;
-   vid->bar            = &linear1_bar;
-//  vid->line           = &linear1_line;
-//   vid->rect           = &linear1_rect;
-//  vid->gradient       = &linear1_gradient;
-//  vid->dim            = &linear1_dim;
-//  vid->scrollblit     = &linear1_scrollblit;
-//  vid->charblit       = &linear1_charblit;
-//  vid->charblit_v     = &linear1_charblit_v;
-//  vid->tileblit       = &linear1_tileblit;
-//  vid->blit           = &linear1_blit;
-//  vid->unblit         = &linear1_unblit;
+   vid->slab           = &LINEAR1_SLAB;
+   vid->bar            = &LINEAR1_BAR;
+//  vid->line           = &LINEAR1_LINE;
+//  vid->rect           = &LINEAR1_RECT;
+//  vid->gradient       = &LINEAR1_GRADIENT;
+//  vid->dim            = &LINEAR1_DIM;
+//  vid->scrollblit     = &LINEAR1_SCROLLBLIT;
+//  vid->charblit       = &LINEAR1_CHARBLIT;
+//  vid->charblit_v     = &LINEAR1_CHARBLIT_v;
+//  vid->tileblit       = &LINEAR1_TILEBLIT;
+//  vid->blit           = &LINEAR1_BLIT;
+//  vid->unblit         = &LINEAR1_UNBLIT;
 }
 
 /* The End */

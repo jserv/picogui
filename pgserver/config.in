@@ -95,6 +95,7 @@ bool 'Linear framebuffer @ 4bpp'  CONFIG_VBL_LINEAR4
 bool 'Linear framebuffer @ 8bpp'  CONFIG_VBL_LINEAR8
 bool 'Linear framebuffer @ 16bpp' CONFIG_VBL_LINEAR16
 bool 'Video rotation support'     CONFIG_ROTATE
+bool '180 deg rotated hardware'   CONFIG_ROTATE180
 endmenu
 
 mainmenu_option next_comment

@@ -1,5 +1,27 @@
 2001-03-23    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
 
+Added support for video 180 degree rotation. This is provided as an option in
+the config. When selected, the whole display is rotated by 180 degree (any
+time, and not under control of applications). Aadditional 90 degree is still
+possible, of course. This is for the case the display is rotated physically
+(for mechanical/construction reasons).
+
+It could be done by inserting a wrapper in the linear driver that intercepts
+function calls and modifies their geometry parameters. The matter of one
+effective lines of code per function. This illustrates the cool design PicoGUI,
+need I say more ?  As mentionned, this is a compile-time option (alright, if
+someone wants to port MAME ;-) and support cocktail mode, just make it a
+dynamic option).
+
+Currently only the linear1 driver is done.
+
+	* config.in: added option CONFIG_ROTATE180
+
+	* vidbase/linear1.c: added handling for CONFIG_ROTATE180
+
+
+2001-03-23    Pascal Bauermeister <pascal.bauermeister@smartdata.ch>
+
 Now we have yet another platform on which PicoGUI works very nicely !
 
 I have tweaked Xcopilot to have a 320x240 lcd panel. Later I'll introduce some
