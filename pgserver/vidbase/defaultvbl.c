@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.71 2002/01/30 12:03:16 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.72 2002/01/31 15:47:53 cgrigis Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -1797,7 +1797,7 @@ g_error def_bitmap_modeunconvert(struct stdbitmap **bmp) {
    int h,i,x,y;
    hwrcolor c;
 
-   if (srcbit->bpp == 32)
+   if ((*bmp)->bpp == 32)
      return success;
    
    /* New bitmap at 32bpp (this is hackish, but I don't see anything
