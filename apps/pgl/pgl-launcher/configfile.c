@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.1 2001/12/14 12:42:25 carpman Exp $
+/* $Id: configfile.c,v 1.2 2001/12/15 15:58:59 carpman Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -62,7 +62,7 @@ struct cfg_section *configfile_getsection(const char *section) {
   struct cfg_section *p;
 
   /* Cache the last lookup */
-  if (cache && !strcmp(cache->name,section))
+  if (sections && cache && !strcmp(cache->name,section))
     return cache;
 
   p = sections;
