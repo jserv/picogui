@@ -1,4 +1,4 @@
-/* $Id: client_c.h,v 1.12 2000/10/18 17:59:08 pney Exp $
+/* $Id: client_c.h,v 1.13 2000/10/19 17:01:36 pney Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
@@ -154,7 +154,7 @@ void pgSetWidget(pghandle widget, ...);
 long pgGetWidget(pghandle widget,short property);
 
 /* Create a new bitmap object. */
-pghandle pgNewBitmap(const char* image,int width,int height);
+pghandle pgNewBitmap(struct pgmemdata obj);
 
 /* Create a new string object */
 pghandle pgNewString(const char *str);

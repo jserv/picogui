@@ -1,4 +1,4 @@
-/* $Id: picogui_client.c,v 1.12 2000/10/18 17:57:13 pney Exp $
+/* $Id: picogui_client.c,v 1.13 2000/10/19 17:00:38 pney Exp $
  *
  * picogui_client.c - C client library for PicoGUI
  *
@@ -791,33 +791,21 @@ pghandle pgNewPopup(int width,int height) {
   return pgNewPopupAt(-1,-1,width,height);
 }
 
-pghandle pgNewBitmap(const char* image,int width,int height) {
-  struct pgmemdata im;
-  struct pgreqd_mkbitmap arg;
-  void *p;
+pghandle pgNewBitmap(struct pgmemdata obj) {
+  /* FIXME: I should probably find a way to do this that
+     doesn't involve copying the data- probably flushing any
+     pending packets, then writing the mmap'd file data directly
+     to the socket.
 
-  arg.w = 0;        /* Debug: passing .pnm image as default */
-  arg.h = 0;
-  arg.fg = 0;
-  arg.bg = 0;
-  
-  im = pgFromFile(image);
-  
-  p = malloc((long)sizeof(arg) + im.size);
-  memcpy(p,&arg,sizeof(arg));
-  memcpy(p+sizeof(arg),im.pointer,im.size);
-
-
-  _pg_add_request(PGREQ_MKBITMAP,&p,(long)sizeof(arg) + im.size);
+     The current method is memory hungry when dealing with larger files.
+  */
+  _pg_add_request(PGREQ_MKBITMAP,obj.pointer,obj.size);
+  _pg_free_memdata(obj);
 
   /* Because we need a result now, flush the buffer */
   pgFlushRequests();
-  
-  /* Free allocations */
-  _pg_free_memdata(im);
-  free(p);
 
-  /* Return the new handle */
+  /* Return the property */
   return _pg_return.e.retdata;
 }
 
