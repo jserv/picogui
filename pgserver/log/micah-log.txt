@@ -9,7 +9,15 @@ both the sine and cosine values were zero. This shouldn't happen... Turns
 out that the trigtab[] has been clobbered! About the second half of it or so
 has been zeroed out. It appears ok in the binary, so it's probably not a
 linker problem. This could be a pain to debug... Good night.
+<Later that day...>
+Well, after using a macro to test trigtab all throughout initialization, i
+find that it _begins_ with only half the table! I think I'll just have to
+chalk this one up to compiler/linker error... I can use the same workaround
+I used for some of the function tables, just populate them at runtime.
 
+After further analysis, it appears that a bunch of memory is getting
+clobbered before main() even starts. This is almost definitely a bug in the
+compiler, and I posted a mail to the list with details.
 
 2001-06-5    Micah Dowty <micahjd@users.sourceforge.net>
 
