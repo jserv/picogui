@@ -25,7 +25,7 @@ depends = [
     ('libjpeg', ~S ('platform/m68k-pic-coff')),
     ('libpng', ~S ('platform/m68k-pic-coff')),
     ('busybox', S ('platform/ppc-linux')),
-    'btkey-report',
+    ('btkey-report', S ('platform/native-linux')),
     ]
 
 asserts = [
@@ -72,13 +72,17 @@ def prepare (module, platform, project):
     cflags, libs = flags ((('processmanager', 'library'),),
                            platform, project)
 
+    # Other cflags and libs
+    ocflags, olibs = flags ((('btkey-report', 'library'),),
+                            platform, project)
+
     command = [
         "--sysconfdir=/etc",
         "--prefix=%s" % module.path ['prefix'],
         "--with-profile=%s" % profile,
         "--enable-bee",
-        "--with-extra-ipath='%s/include -I%s/include'" % (project ['module/kernel'].path ['dfl'],
-                                                          project ['module/btkey-report'].path['dfl']),
+        "--with-extra-ipath='%s/include %s'" % (project ['module/kernel'].path ['dfl'],
+                                                ocflags),
         "--with-pm-cflags='%s'" % cflags,
         ]
 
