@@ -104,9 +104,12 @@ class Application(Widget.Widget):
                 self._dispatch_lock = parent._dispatch_lock
 
     def panelbar(self):
-        handle = self.__getattr__('panelbar')
+        handle = self.server.get(self.handle, 'panelbar')
         if handle:
-            return Widget.Widget(self.server, handle, self)
+            try:
+                return self.getWidget(handle)
+            except KeyError:
+                return Widget.Widget(self.server, handle, self)
 
     def createWidget(self, wtype, wrapper_class=Widget.Widget):
         'convenience method to create an unparented widget'
