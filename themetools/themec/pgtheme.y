@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.41 2002/01/24 21:01:23 lonetech Exp $
+/* $Id: pgtheme.y,v 1.42 2002/03/05 21:53:33 lonetech Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -641,7 +641,8 @@ fsexp: '(' fsexp ')'    { $$ = $2; }
      | fsexp SHIFTL fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTL)); }
      | fsexp SHIFTR fsexp  { $$ = fsnodecat(fsnodecat($1,$3),fsnewnode(PGTH_OPCMD_SHIFTR)); }
      | '-' NUMBER %prec UMINUS { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = -$2; }
-     | '-' fsexp %prec UMINUS { $$ = fsnodecat(fsnodecat(0,$2),fsnewnode(PGTH_OPCMD_MINUS)); }
+     | '-' fsexp %prec UMINUS { $$ = fsnodecat(fsnodecat(fsnewnode(PGTH_OPCMD_LONGLITERAL),$2),
+     		fsnewnode(PGTH_OPCMD_MINUS)); }
      | '+' fsexp %prec UPLUS { $$ = $2; }     
      | NUMBER       { ($$ = fsnewnode(PGTH_OPCMD_LONGLITERAL))->param = $1; }
      | FSVAR          { $$ = fsnewnode(PGTH_OPCMD_LONGGET); $$->param = $1; }
