@@ -12,6 +12,7 @@ cat <<EOF
 
 <html>
 <head><title>CIA bot statistics</title></head>
+<body>
 <h1>CIA bot statistics</h1>
 
 <p>Number of messages posted per project:</p>
@@ -36,5 +37,6 @@ sort $CHANNELFILE | xargs -n1 -i echo "<li>" {} "</li>"
 cat <<EOF
 </ul>
 
+</body>
 </html>
 EOF
