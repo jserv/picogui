@@ -1,4 +1,4 @@
-/* $Id: pgboard.c,v 1.19 2001/11/09 18:10:38 cgrigis Exp $
+/* $Id: pgboard.c,v 1.20 2001/11/13 14:12:56 cgrigis Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
@@ -449,11 +449,6 @@ int main(int argc,char **argv) {
 	      PG_WP_TRANSPARENT,1,
 	      0);
 
-  initKbdCanvas ();
-
-  /* Set up an event handler for the received messages */
-  pgBind (wApp, PG_WE_APPMSG, &evtMessage, NULL);
-
 #ifdef POCKETBEE
   /* Signal the parent of a proper start */
   kill (getppid (), SIGUSR1);
@@ -483,6 +478,11 @@ int main(int argc,char **argv) {
       }
   }
 #endif /* POCKETBEE */
+
+  initKbdCanvas ();
+
+  /* Set up an event handler for the received messages */
+  pgBind (wApp, PG_WE_APPMSG, &evtMessage, NULL);
 
   pgEventLoop();
   return 0;
