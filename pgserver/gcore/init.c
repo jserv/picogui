@@ -1,4 +1,4 @@
-/* $Id: init.c,v 1.12 2003/03/10 23:48:07 micahjd Exp $
+/* $Id: init.c,v 1.13 2003/04/20 07:25:01 micahjd Exp $
  *
  * init.c - High level pgserver initialization and shutdown
  *
@@ -54,71 +54,71 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   g_error e;
   int n;
 
-  DBG("operating system init");
+  DBG("operating system init\n");
   e = os_init();
   errorcheck;
 
   if (!(flags & PGINIT_NO_CONFIGFILE)) {
-    DBG("configuration files");
+    DBG("configuration files\n");
     e = configfile_parse_default();
     errorcheck;
   }
 
 #ifdef CONFIG_OS_POSIX
   if (!(flags & PGINIT_NO_COMMANDLINE)) {
-    DBG("command line");
+    DBG("command line\n");
     e = commandline_parse(argc,argv);
     errorcheck;
   }
 #endif
  
-  DBG("error message table");
+  DBG("error message table\n");
   e = errorload(get_param_str("pgserver","messagefile",NULL));
   errorcheck;
 
-  DBG("input drivers");
+  DBG("input drivers\n");
   e = input_init();
   errorcheck;
 
-  DBG("input filters");
+  DBG("input filters\n");
   e = infilter_init();
   errorcheck;
 
-  DBG("video");
+  DBG("video\n");
   e = video_init();
   errorcheck;
 
-  DBG("fonts");
+  DBG("fonts\n");
   e = font_init();
   errorcheck;
 
-  DBG("app manager");
+  DBG("app manager\n");
   e = appmgr_init();
   errorcheck;
 
-  DBG("network");
+  DBG("network\n");
   e = net_init();
   errorcheck;
 
-  DBG("globals");
+  DBG("globals\n");
   e = globals_init();
   errorcheck;
 
-  DBG("timers");
+  DBG("timers\n");
   timer_init();
 
-  DBG("initial themes");
+  DBG("initial themes\n");
   e = reload_initial_themes();
   errorcheck;
 
-  DBG("Initial mouse cursor");
+  DBG("Initial mouse cursor\n");
   cursor_retheme();
 
 #ifdef CONFIG_TOUCHSCREEN
   /* This will queue up the touchscreen calibrator 
    * app as a child process if needed 
    */
-  DBG("touchscreen calibration");
+  DBG("touchscreen calibration\n");
   e = touchscreen_init();
   errorcheck;
 #endif
@@ -138,7 +138,7 @@ g_error pgserver_init(int flags, int argc, char **argv) {
   /* Start the first child process */
   childqueue_pop();
 
-  DBG("Initialization done");
+  DBG("Initialization done\n");
   return success;
 }
 
