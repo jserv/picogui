@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.28 2001/09/22 10:33:01 micahjd Exp $
+/* $Id: divtree.h,v 1.29 2001/09/23 00:05:55 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -40,6 +40,7 @@ struct divtree;
 struct divnode;
 struct gropnode;
 struct gropctxt;
+struct rect;
 
 /* This is a stack of divtrees.  The one on top is the currently active
  * tree, and is updated by the renderer.  Trees below this are grayed out
@@ -240,12 +241,23 @@ typedef unsigned short int sidet;
 
 /***************** divnode functions */
 
+/* Recursively recalculate divnode positions. This is the core of the
+ * layout engine. The pn parameter should be a pointer to the parent's
+ * pointer to this divnode. This is important in case this divnode is moved
+ * to another location in the tree. The parent parameter optionally points
+ * to this divnode's parent, or NULL.
+ *
+ * The return value is 1 if the recalc was aborted and should be restarted.
+ */
+int divnode_recalc(struct divnode **pn, struct divnode *parent);
+
+/* Split a divnode into two rectangles according to its flags */
 void divnode_split(struct divnode *n,struct rect *div,
 		   struct rect *next);
-void divnode_recalc(struct divnode **pn);
 void divnode_redraw(struct divnode *n,int all);
 g_error newdiv(struct divnode **p,struct widget *owner);
 void r_divnode_free(struct divnode *n);
+void r_set_nextline(struct divnode *n, struct divnode *nl);
 
 /* Little helper to rotate a side constant 90 degrees counterclockwise */
 int rotate_side(int s);

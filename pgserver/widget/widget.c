@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.112 2001/09/21 20:48:14 micahjd Exp $
+/* $Id: widget.c,v 1.113 2001/09/23 00:05:55 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -863,8 +863,10 @@ void r_div_dump(struct divnode *div, const char *label, int level) {
    printf(label);
    for (i=0;i<level;i++)
      printf("\t");
-   printf("Div 0x%08X: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d)\n",
-	  div,div->flags,div->split,div->pw,div->ph,div->cw,div->ch);
+   printf("Div 0x%08X: flags=0x%04X split=%d prefer=(%d,%d) child=(%d,%d) "
+	  "nextline=0x%08X\n",
+	  div,div->flags,div->split,div->pw,div->ph,
+	  div->cw,div->ch,div->nextline);
 
    r_div_dump(div->div," Div:",level+1);
    r_div_dump(div->next,"Next:",level+1);

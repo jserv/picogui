@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.55 2001/09/22 10:33:01 micahjd Exp $
+/* $Id: div.c,v 1.56 2001/09/23 00:05:55 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -331,11 +331,12 @@ void divnode_split(struct divnode *n, struct rect *divrect,
  * x,y,w,h and it's split. Also rebuilds child divnodes.
  * Recurse into all the node's children.
  */
-void divnode_recalc(struct divnode **pn) {
+int divnode_recalc(struct divnode **pn, struct divnode *parent) {
    struct divnode *n = *pn;
    struct rect divrect, nextrect;
 
-   if (!n) return;
+   if (!n)
+     return 0;
 
    if (n->flags & DIVNODE_NEED_RECALC) {
      
@@ -348,15 +349,19 @@ void divnode_recalc(struct divnode **pn) {
        /* If we're mushed, move this node to the next line. Normally
 	* it isn't a great idea to rearrange the divtree while it's
 	* recalculating...
+	*
+	* This condition also prevents wrapping if this is the first node
+	* on the line. If we allow lines with no nodes on them, in some
+	* cases we could end up with an infinite number of lines! (if there
+	* is a node wider than the line)
+	*
 	* If this node gets relocated to a part of the tree that hasn't
 	* been traversed yet, it will probably be safe to continue.
 	* But, consider that it is relocated to somewhere we've already
 	* visited. It's safest to just redo the whole recalc. If we keep the
 	* flags straight, the recalc will reset itself and traverse again.
-	*
-	* FIXME: implement this ^
 	*/
-       if (!(nextrect.w && nextrect.h)) {
+       if ((!(nextrect.w && nextrect.h)) && ((!parent) || parent->div!=n)) {
 
 	 /* Send to the next line */
 	 if (n->nextline) {
@@ -374,14 +379,17 @@ void divnode_recalc(struct divnode **pn) {
 	   /* Unlink from current position */
 	   *pn = NULL;            
 
-	   /* Set recalc for the nextline */
-	   n->nextline->flags |= DIVNODE_NEED_RECALC |
-	     DIVNODE_PROPAGATE_RECALC;
+	   /* Recalculate preferred sizes. This is more processing than
+	    * I would prefer to do here, but a change here could possibly
+	    * change the sizing for an entire application. The autosplit
+	    * code is smart enough to set flags properly.
+	    */
+	   divresize_recursive(n->owner->dt->head);
 
-	   /* Update the nextline for this node and all children */
+	   /* Update the nextline pointer for this node and all children */
 	   r_set_nextline(n,n->nextline->nextline);
-	   
-	   return;
+
+	   return 1;   /* Abort! */
 	 }
 	 else {
 	   /* Create a new line */
@@ -392,7 +400,7 @@ void divnode_recalc(struct divnode **pn) {
        
        /* Otherwise, check whether there's extra room */
        else if (n->nextline && (!n->next)) {
-	 struct divnode **p;
+       	 struct divnode **p;
 	 s16 avw,avh;       /* Available width/height */
 
 	 avw = nextrect.w;
@@ -402,14 +410,14 @@ void divnode_recalc(struct divnode **pn) {
 	 p = &n->nextline->div;
 	 while (*p) {
 	   if ((*p)->flags & (DIVNODE_SPLIT_LEFT|DIVNODE_SPLIT_RIGHT))
-	     avw -= 10;//(*p)->pw;
+	     avw -= (*p)->pw;
 	   if ((*p)->flags & (DIVNODE_SPLIT_TOP|DIVNODE_SPLIT_BOTTOM))
-	     avh -= 10;//(*p)->ph;
+	     avh -= (*p)->ph;
 	   if (avw<=0 || avh<=0)
 	     break;
 	   p = &(*p)->next;
 	 }
-	 
+
 	 /* After this loop, *p points to the first node that can't be
 	  * moved to the current line. Munge the pointers a little to
 	  * move all that we can. Insert the subtree, and fix up
@@ -421,8 +429,31 @@ void divnode_recalc(struct divnode **pn) {
 	   n->nextline->div = *p;
 	   *p = NULL;
 	   r_set_nextline(n->next,n->nextline);
+
+	   /* If we just emptied the next line completely, that's a Bad
+	    * Thing. Try to transfer one node over from the line after that.
+	    * When this node recalcs, it should maintain proper flow between
+	    * lines.
+	    */
+	   
+	   if ((!n->nextline->div) && n->nextline->nextline && 
+	       n->nextline->nextline->div) {
+	     n->nextline->div = n->nextline->nextline->div;
+	     n->nextline->nextline->div = n->nextline->nextline->div->next;
+	     n->nextline->div->next = NULL;
+	     n->nextline->div->nextline = n->nextline->nextline;
+	     n->nextline->div->flags |= DIVNODE_NEED_RECALC;
+	   }
+
+	   /* Recalculate preferred sizes. This is more processing than
+	    * I would prefer to do here, but a change here could possibly
+	    * change the sizing for an entire application. The autosplit
+	    * code is smart enough to set flags properly.
+	    */
+	   divresize_recursive(n->owner->dt->head);
+
+	   return 1;  /* Abort! */
 	 }
-	
        }
      }
      
@@ -445,8 +476,11 @@ void divnode_recalc(struct divnode **pn) {
    }
 
    /* A child node might need a recalc even if we aren't forcing one */
-   divnode_recalc(&n->div);
-   divnode_recalc(&n->next);
+   if (divnode_recalc(&n->div,n))
+     return 1;                      /* Allow child nodes to abort */
+   if (divnode_recalc(&n->next,n))
+     return 1;
+   return 0;
 }
 
 /* Redraw the divnodes if they need it.
@@ -548,7 +582,7 @@ void update(struct divnode *subtree,int show) {
 	return;
     }
 
-    divnode_recalc(&subtree);
+    while (divnode_recalc(&subtree,NULL));
     divnode_redraw(subtree,0);
   }
   else 
@@ -590,7 +624,10 @@ void r_dtupdate(struct divtree *dt) {
 #ifdef DEBUG_VIDEO
     printf("divnode_recalc\n",dt->head);
 #endif
-    divnode_recalc(&dt->head);
+
+    /* Recalc, repeat if aborted */
+    while (divnode_recalc(&dt->head,NULL));
+
     /* If we recalc, at least one divnode will need redraw */
     dt->flags |= DIVTREE_NEED_REDRAW;
 
