@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # patch distutils if it can't cope with the "classifiers" keyword
 import sys, os, re
 if sys.version < '2.2.3':
@@ -28,8 +30,4 @@ setup (name = "PicoGUI",
        ],
        license = "LGPL",
        packages = ['PicoGUI'],
-       # add the samples
-       data_files=[('share/picogui/python/sample',
-                    listdir ('PicoGUI/sample/', 'py$'))
-                   ],
        )
