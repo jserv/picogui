@@ -1,4 +1,4 @@
-/* $Id: sdlremote.c,v 1.4 2001/05/13 01:30:46 micahjd Exp $
+/* $Id: sdlremote.c,v 1.5 2001/05/31 22:53:41 micahjd Exp $
  * 
  * sdlremote.c - pgremote is a networked PicoGUI input driver.
  *               This uses SDL, so hopefully it is fairly portable.
@@ -52,6 +52,8 @@ int main(int argc, char **argv) {
       else
 	scale = 300/mi.yres;
    }
+   if (scale<1) 
+     scale = 1;
 	
    /* Start up SDL */
    if (SDL_Init(SDL_INIT_VIDEO)) {
