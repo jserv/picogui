@@ -1,4 +1,4 @@
-/* $Id: pseudo3d.ths,v 1.1 2000/11/08 06:36:21 micahjd Exp $
+/* $Id: pseudo3d.ths,v 1.2 2000/11/11 09:36:11 micahjd Exp $
  *
  * Theme with simple (and boring?) grey 3d-ish hilights
  * But hey, it works on a 16-color display!
@@ -7,27 +7,71 @@
  */
 
 object default {
-  /* The default fill, shaded on the edges */
+  /* Simple fill */
   bgfill = fillstyle {
-    var hc,sc;
-    hc = ColorConv(hilightcolor);
-    sc = ColorConv(shadowcolor);
-    Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
-    Slab(x,y,w,1,hc);
-    Slab(x,y+h-1,w,1,sc);
-    Bar(x,y,1,h,hc);
-    Bar(x+w-1,y,1,h,sc);
-    x = x + offset;
-    y = y + offset;
+    Rect(x,y,w,h,ColorConv(bgcolor));
   };
+
   bgcolor = 0xC0C0C0;
   hilightcolor = 0xFFFFFF;
   shadowcolor = 0x808080;
 
   /* Some consistant spacings and margins */
-  spacing = 2;
-  margin = 2;
+  spacing = 3;
+  margin = 3;
 }
+
+/* Beveled fill for buttons and things */
+object base.interactive {
+  /* Black border, hilights, and a dynamic offset */
+  bgfill = fillstyle {
+    var hc,sc;
+    hc = ColorConv(hilightcolor);
+    sc = ColorConv(shadowcolor);
+    Frame(x,y,w,h,ColorConv(0x000000));
+    Rect(x+2,y+2,w-4,h-4,ColorConv(bgcolor));
+    Slab(x+1,y+1,w-2,1,hc);
+    Slab(x+1,y+h-2,w-2,1,sc);
+    Bar(x+1,y+1,1,h-2,hc);
+    Bar(x+w-2,y+1,1,h-2,sc);
+    x = x + offset;
+    y = y + offset;
+  };
+  overlay = Copy(base.interactive::bgfill);
+}
+
+/* Top-level containers need the same bevel */
+object base.tlcontainer bgfill = Copy(base.interactive::bgfill);
+
+/* A slightly simpler bevel for containers */
+object base.container {
+  bgfill = fillstyle {
+    var hc,sc;
+    hc = ColorConv(hilightcolor);
+    sc = ColorConv(shadowcolor);
+    Rect(x+1,y+1,w-2,h-2,ColorConv(bgcolor));
+    Slab(x,y,w-1,1,hc);
+    Slab(x,y+h-1,w-1,1,sc);
+    Bar(x,y,1,h-1,hc);
+    Bar(x+w-1,y,1,h-1,sc);
+    x = x+2; y = y+2;
+    w = w-4; h = h-4;
+  };
+  /* Containers are beveled 'in to the screen' */
+  hilightcolor = Copy(default::shadowcolor);
+  shadowcolor = Copy(default::hilightcolor);
+}
+
+/* Display widgets are similar */
+object base.display bgfill = Copy(base.container::bgfill);
+
+/* Extra fun. The fill for base.display doesn't scroll nicely, so make it simpler */
+object label.scroll bgfill = Copy(default::bgfill);
+
+/* Special overlay for indicators */
+object indicator overlay = fillstyle {
+  Rect(x,y,w,h,ColorConv(0x000080));
+};
 
 /* Button sizing */
 object button {
@@ -54,12 +98,6 @@ object button.on {
   offset = 1;
 }
 
-/* Toolbars, with reversed 'colors' and a different margin */ 
-object toolbar {
-  hilightcolor = Copy(default::shadowcolor);
-  shadowcolor = Copy(default::hilightcolor);
-}
-
 /* Panelbars */
 object panelbar {
   width = 17;
@@ -68,3 +106,34 @@ object panelbar {
   hilightcolor = 0x0000FF;
   shadowcolor = 0x000000;
 }
+
+/* Dialog box title, just like a panelbar */
+object label.dlgtitle {
+  margin = 5;
+  bgfill = Copy(panelbar::bgfill);
+  fgcolor = Copy(panelbar::fgcolor);
+  bgcolor = Copy(panelbar::bgcolor);
+  hilightcolor = Copy(panelbar::hilightcolor);
+  shadowcolor = Copy(panelbar::shadowcolor);
+}
+
+/* A "Dark Cyan" background */
+object background bgcolor = 0x008080;
+
+/* Menu items are pretty simple */
+object menuitem {
+  bgfill = Copy(default::bgfill);
+  spacing = 0;
+}
+object menuitem.hilight {
+  bgcolor = Copy(menuitem::fgcolor);
+  fgcolor = Copy(menuitem::bgcolor);
+}
+
+/* A little 'fudge factor' for the dialogs */
+object popup.messagedlg {
+  width = 10;
+  height = 30;
+}
+
+/* The End */
