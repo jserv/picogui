@@ -51,7 +51,7 @@ def readStats():
     # Yucky hack to strip off "#"
 
     # iterate over each channel in the list
-    channels = ""
+    channels = []
     for channelFile in glob.glob(channelBaseFile + ".*"):
         channels = channels + open(channelFile).read().strip().split("\n")
     channels.sort()
