@@ -89,7 +89,7 @@ def rmtree(path, progress):
 version = detectVersion()
 
 
-class SVNRepository:
+class Repository:
     def __init__(self, url):
         self.url = url
 
@@ -143,7 +143,9 @@ class SVNRepository:
 if __name__ == '__main__':
     import sys
     from StdProgress import StdProgress
-    repo = SVNRepository(sys.argv[1])
+    repo = Repository(sys.argv[1])
     progress = StdProgress()
     progress.task('Checking for updates').report('result', repo.isUpdateAvailable(sys.argv[2]))
     repo.update(sys.argv[2], progress.task('Testing CmdlineSVN update()'))
+
+### The End ###
