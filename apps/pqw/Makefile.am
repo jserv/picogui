@@ -1,5 +1,5 @@
 bin_PROGRAMS = pqw
-hello_SOURCES = pqw.c
+pqw_SOURCES = pqw.c
 
 LDFLAGS += @PICOGUI_LDFLAGS@
 LDADD = @PICOGUI_LIBS@
