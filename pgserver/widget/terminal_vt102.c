@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.21 2003/03/26 02:14:58 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.22 2003/03/26 02:49:34 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -565,19 +565,22 @@ void term_ecma48sgr(struct widget *self) {
 
       /* 0 - reset to normal */
     case 0:
-       DATA->current.attr = DATA->attr_default;
+      DBG("reset\n");
+      DATA->current.attr = DATA->attr_default;
       break;
 
       /* 1 - bold */
       /* 4 - underline (we treat it like a bold) */
     case 1:
     case 4:
-       DATA->current.attr |= 0x08;
+      DBG("bold/underline\n");
+      DATA->current.attr |= 0x08;
       break;
 
       /* 5 - blink (not really, it's like bold for backgrounds) */
     case 5:
-       DATA->current.attr |= 0x80;
+      DBG("blink\n");
+      DATA->current.attr |= 0x80;
       break;
 
     case 10:  /* 10 - reset selected mapping, display control flag, toggle meta flag */
@@ -587,10 +590,15 @@ void term_ecma48sgr(struct widget *self) {
       break;
 
       /* 7 - reverse video on */
-      /* 27 - reverse video off */
     case 7:
+      DBG("reverse video on\n");
+      DATA->current.reverse_video = 1;
+      break;
+
+      /* 27 - reverse video off */
     case 27:
-      DATA->current.attr = (DATA->current.attr >> 4) | (DATA->current.attr << 4);
+      DBG("reverse video off\n");
+      DATA->current.reverse_video = 0;
       break;
 
       /* 21 or 22 - normal intensity */
@@ -598,46 +606,51 @@ void term_ecma48sgr(struct widget *self) {
     case 21:
     case 22:
     case 24:
-       DATA->current.attr &= 0xF7;
+      DBG("normal intensity, underline off\n");
+      DATA->current.attr &= 0xF7;
       break;
 
       /* 25 - blink off */
     case 25:
+      DBG("blink off\n");
       DATA->current.attr &= 0x7F;
       break;
       
       /* 30 through 37 - foreground colors */
-    case 30: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x00; break;
-    case 31: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x01; break;
-    case 32: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x02; break;
-    case 33: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x03; break;
-    case 34: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x04; break;
-    case 35: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x05; break;
-    case 36: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x06; break;
-    case 37: DATA->current.attr = (DATA->current.attr & 0xF8) | 0x07; break;
+    case 30: DBG("fg black\n");   DATA->current.attr = (DATA->current.attr & 0xF8) | 0x00; break;
+    case 31: DBG("fg red\n");     DATA->current.attr = (DATA->current.attr & 0xF8) | 0x01; break;
+    case 32: DBG("fg green\n");   DATA->current.attr = (DATA->current.attr & 0xF8) | 0x02; break;
+    case 33: DBG("fg brown\n");   DATA->current.attr = (DATA->current.attr & 0xF8) | 0x03; break;
+    case 34: DBG("fg blue\n");    DATA->current.attr = (DATA->current.attr & 0xF8) | 0x04; break;
+    case 35: DBG("fg magenta\n"); DATA->current.attr = (DATA->current.attr & 0xF8) | 0x05; break;
+    case 36: DBG("fg cyan\n");    DATA->current.attr = (DATA->current.attr & 0xF8) | 0x06; break;
+    case 37: DBG("fg white\n");   DATA->current.attr = (DATA->current.attr & 0xF8) | 0x07; break;
 
       /* 38 - set default foreground, underline on */
     case 38:
+      DBG("default foreground, underline on\n");
       DATA->current.attr = (DATA->current.attr & 0xF0) | ((DATA->attr_default & 0x0F) | 0x08);
       break;
 
       /* 39 - set default foreground, underline off */
     case 39:
+      DBG("default foreground, underline off\n");
       DATA->current.attr = (DATA->current.attr & 0xF0) | (DATA->attr_default & 0x0F);
       break;
 
       /* 40 through 47 - background colors */
-    case 40: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x00; break;
-    case 41: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x10; break;
-    case 42: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x20; break;
-    case 43: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x30; break;
-    case 44: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x40; break;
-    case 45: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x50; break;
-    case 46: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x60; break;
-    case 47: DATA->current.attr = (DATA->current.attr & 0x1F) | 0x70; break;
+    case 40: DBG("bg black\n");   DATA->current.attr = (DATA->current.attr & 0x8F) | 0x00; break;
+    case 41: DBG("bg red\n");     DATA->current.attr = (DATA->current.attr & 0x8F) | 0x10; break;
+    case 42: DBG("bg green\n");   DATA->current.attr = (DATA->current.attr & 0x8F) | 0x20; break;
+    case 43: DBG("bg brown\n");   DATA->current.attr = (DATA->current.attr & 0x8F) | 0x30; break;
+    case 44: DBG("bg blue\n");    DATA->current.attr = (DATA->current.attr & 0x8F) | 0x40; break;
+    case 45: DBG("bg magenta\n"); DATA->current.attr = (DATA->current.attr & 0x8F) | 0x50; break;
+    case 46: DBG("bg cyan\n");    DATA->current.attr = (DATA->current.attr & 0x8F) | 0x60; break;
+    case 47: DBG("bg white\n");   DATA->current.attr = (DATA->current.attr & 0x8F) | 0x70; break;
 
       /* 49 - default background */
     case 49:
+      DBG("default background\n");
       DATA->current.attr = (DATA->current.attr & 0x0F) | (DATA->attr_default & 0xF0);
       break;
 

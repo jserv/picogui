@@ -1,4 +1,4 @@
-/* $Id: terminal.h,v 1.8 2003/03/26 00:29:07 micahjd Exp $
+/* $Id: terminal.h,v 1.9 2003/03/26 02:49:34 micahjd Exp $
  *
  * terminal.h - Header file shared by components of the terminal emulator widget
  *
@@ -49,6 +49,7 @@ struct terminal_state {
   u8 attr;                       /* Default attribute for new characters */
   int scroll_top, scroll_bottom; /* Scrolling region set with CSI r */
   char g[4];                     /* Character set selections */
+  unsigned int reverse_video:1;
   unsigned int cursor_hidden:1;
   unsigned int no_autowrap:1;
 };
