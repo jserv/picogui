@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.13 2001/01/07 09:37:05 micahjd Exp $
+/* $Id: request.c,v 1.14 2001/01/10 03:30:32 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -368,12 +368,23 @@ void net_iteration(void) {
      I used to try to make PicoGUI reentrant, but everything boiled down
      to drawing operations which neither needed to be nor could be reentrant.
   */
+#ifndef WINDOWS
   sigemptyset(&sigmask);
   sigprocmask(SIG_SETMASK,&sigmask,NULL);
+#endif
+   
   req_in_select = 1;
+
   i = select(con_n,&rfds,NULL,NULL,&tv);
-  sigfillset(&sigmask);
+
+#ifndef WINDOWS
+  sigaddset(&sigmask,SIGPIPE);
+  sigaddset(&sigmask,SIGCHLD);
+  sigaddset(&sigmask,SIGALRM);
+
   sigprocmask(SIG_SETMASK,&sigmask,NULL);
+#endif
+   
   req_in_select = 0;
 
 #ifdef DEBUG_NET
