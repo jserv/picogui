@@ -47,14 +47,19 @@ class StatPage(navi_cgi.NaviPage):
                 # This is the current sort key. Embolden the title and link to the opposite sort direction.
                 boldOpen = "<b>"
                 boldClose = "</b>"
+		# If we're already sorting by this key, clicking toggles directions
                 if sortDirection == "A":
                     url = self.linkURL({'sort': "%s_D" % heading})
                 else:
                     url = self.linkURL({'sort': "%s_A" % heading})
             else:
-                # This isn't the current sort key. Default to ascending sort.
+                # This isn't the current sort key. Pick the default direction based on the heading-
+		# Most default to descending, but MTBC and project name make more sense in ascending.
                 boldOpen = boldClose = ""
-                url = self.linkURL({'sort': "%s_D" % heading})
+		if heading in ("project", "mtbc"):
+		    url = self.linkURL({'sort' : "%s_A" % heading})
+		else:
+                    url = self.linkURL({'sort': "%s_D" % heading})
 
             write('<th><a href="%s">%s%s%s</a></th>' %
                   (url, boldOpen, cia_statreader.statHeadings[heading], boldClose))
