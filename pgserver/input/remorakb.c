@@ -1,4 +1,4 @@
-/* $Id: remorakb.c,v 1.6 2001/11/21 17:47:30 bauermeister Exp $
+/* $Id: remorakb.c,v 1.7 2001/11/26 20:54:05 bauermeister Exp $
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
@@ -50,10 +50,17 @@
 
 /*****************************************************************************/
 
+#define LOCAL_INFO  1
 #define LOCAL_DEBUG 0
 #define LOCAL_TRACE 0
 
 /* ------------------------------------------------------------------------- */
+
+#if LOCAL_INFO
+# define INFO(x...)    printf(__FILE__": " x)
+#else
+# define INFO(x...)
+#endif
 
 #if LOCAL_DEBUG
 # define DPRINTF(x...) printf(__FILE__": " x)
@@ -545,7 +552,7 @@ static int lookup(u16 hwcode)
   int upper_index = sizeof(key_def_table)/sizeof(HwKeyDef) -1;
   int lower_index = 0;
 
-  TRACEF(">>> lookup(%04X)\n", hwcode);
+  INFO("remorakb: lookup(%04X)\r\n", hwcode);
 
   /* Dichotomic search for the hwcode in the table */
   while(1) {
@@ -927,16 +934,19 @@ static g_error kb_init(void)
 {
   struct termios options;
   const char* device = get_param_str("remora-kb", "device", NULL);
+  int baud_shift = atoi(get_param_str("remora-kb", "baud_shift", "0"));
+
 
   TRACEF(">>> kb_init()\n");
 
   if(device==NULL) {
     /* keyboard not connected, this is not an error */
-    WARNF("kb_init: no kb found\n");
+    WARNF("remorakb: not using hard kb\n");
     kb_fd = -1;
     return sucess;
   }
-  DPRINTF("kb_init: trying [%s] Nr %d\n", device, device[strlen(device)-1]);
+  DPRINTF("remorakb: trying [%s] Nr %d\n",
+	  device, device[strlen(device)-1] - '0');
 
   TRACEF("device=[%s]\n", device);
   kb_fd = open(device, O_RDONLY | O_NOCTTY | O_NDELAY);
@@ -965,14 +975,25 @@ static g_error kb_init(void)
   tcsetattr(kb_fd, TCSANOW, &options);
 
   /* other misc stuff */
-  if(device[strlen(device)-1]=='0')
-    UMISC |= 0x0008;        /* set uart to invert receive polarity */
-  else
-    UMISC2 |= 0x0008;       /* set uart2 to invert receive polarity */
-  kb_init_mods();           /* init states*/
+  if(baud_shift) {
+    if(device[strlen(device)-1]=='0') {
+      DPRINTF("remorakb: changing UMISC\n");
+      UMISC |= 0x0008;        /* set uart to invert receive polarity */
+    }
+    else {
+      DPRINTF("remorakb: changing UMISC2\n");
+      UMISC2 |= 0x0008;       /* set uart2 to invert receive polarity */
+    }
+  }
+  else {
+    DPRINTF("remorakb: no baud shift\n");
+  }
+
+  /* init states*/
+  kb_init_mods();
 
 
-  TRACEF("  > kb_init done\n");
+  TRACEF("remorakb: done\n");
   return sucess;
 }
 

@@ -34,10 +34,14 @@ echo  >/var/pgserver.dynconf "[pgserver]"
 # pre-calibrate the /dev/ts device using bios env var
 bioscall --ts-calibrate=PG_TS_CALIBRATION
 
-if bioscall --test PG_TS_REMORAKB_ON -eq 1
+if bioscall --test PG_REMORAKB_ON -eq 1
 then
   echo "/etc/rc: Using Remora keyboard on ttyS0"
   remorakb_checker --force=0 >>/var/pgserver.dynconf
+  if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
+  then
+    echo "baud_shift 1" >>/var/pgserver.dynconf
+  fi
 fi
 
 # start pgserver
