@@ -52,7 +52,7 @@ author=`svnlook author -r "$REV" "$REPOS"`
    echo "Content-Type: text/plain;"
    echo "Subject: Announce $project_name"
    echo
-   echo -n "{aqua}$basedir{normal} r$REV {green}$author{normal}: "
+   echo -n "{light blue}$basedir{normal} r{yellow}$REV{normal} {green}$author{normal}: "
    svnlook log -r "$REV" "$REPOS" | head -n $log_message_lines
 ) | $sendmail_command
 
