@@ -27,7 +27,6 @@
 #include <termios.h>
 #include <sys/poll.h>
 
-#include <pgserver/autoconf.h>
 #include <pgserver/common.h>
 #include <pgserver/input.h>
 #include <pgserver/widget.h>
@@ -42,7 +41,7 @@
 
 #define	BTKEY_FIFO_PATH	"/dev/btfifo"  
 
-#define LOCAL_DEBUG 	0
+#define LOCAL_DEBUG 	1
 
 #if LOCAL_DEBUG
 # define DPRINTF(x...) 	printf(__FILE__": " x)
@@ -167,14 +166,16 @@ int btkey_fd_activate(int fd)
       infilter_send_key(PG_TRIGGER_KEYDOWN,pg_key,0);
     }
     
-    else if ((key != 0) && (key <= 255)) {
+    else if (key != 0) {
       /* Give key-up or key-down event */
       if (pressed) {
-	infilter_send_key(PG_TRIGGER_CHAR,key,0);
-	infilter_send_key(PG_TRIGGER_KEYDOWN,key,0);
+	if (! (key & 0xFF0000) ) { /* Printable */
+	  infilter_send_key(PG_TRIGGER_CHAR,key,0);
+	}
+	infilter_send_key(PG_TRIGGER_KEYDOWN,key & 0xFFFF,0);
       }
       else {
-	infilter_send_key(PG_TRIGGER_KEYUP,key,0);
+	infilter_send_key(PG_TRIGGER_KEYUP,key & 0xFFFF,0);
       }
     }
     
