@@ -334,8 +334,12 @@ class PgRequest:
     return self
 
 class PgThProp:
+  def name(self):
+    return lookup_propname(self.id)
+  def type(self):
+    return lookup_proptype(self.name())
   def __str__(self):
-    me = lookup_propname(self.id)
+    me = self.name()
     if self.loader == constants['PGTH_LOAD_FINDTHOBJ']:
       val='FindThemeObject("'+quote_string(self.data)+'")'
     elif type(self.data) == StringType:
@@ -371,20 +375,27 @@ class PgThProp:
     return self
 
 class PgThObj:
+  def name(self):
+    return lookup_objname(self.id)
   def __str__(self):
-    me='object '+lookup_objname(self.id)+' {\n'
-    for property in self.prop:
-      me=me+str(property)
-    return me+"}\n\n"
+    me='object '+self.name()
+    if len(self.prop)>1:
+      me=me+' {\n'
+      for property in self.prop:
+	me=me+str(property)
+      return me+"}\n\n"
+    else:
+      return me+str(self.prop[0])+'\n'
   def __init__(self):
     self.id = constants['PGTH_O_CUSTOM']
     self.prop=[]
   def fromTh(self, themestr, p):
-    (self.id, num_prop, proplist) = unpack(ThemeObjFmt, \
+    (self.id, num_prop, proplist) = unpack(ThemeObjFmt,
     	themestr[p:p+ThemeObjLen])
     p=proplist
     while num_prop:
-      self.prop.append(PgThProp().fromTh(themestr, p))
+      prop=PgThProp().fromTh(themestr, p)
+      self.prop.append(prop)
       num_prop=num_prop-1
       p=p+ThemePropLen
     return self
