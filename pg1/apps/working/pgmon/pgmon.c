@@ -1,4 +1,4 @@
-/* $Id: pgmon.c,v 1.2 2003/01/01 03:42:51 micahjd Exp $
+/* $Id$
  * 
  * pgmon.c  - Network monitor, based on lcdnet.c, from lcdclock application
  *
