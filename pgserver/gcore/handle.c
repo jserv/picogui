@@ -1,4 +1,4 @@
-/* $Id: handle.c,v 1.41 2001/06/28 21:44:15 micahjd Exp $
+/* $Id: handle.c,v 1.42 2001/06/30 08:54:05 micahjd Exp $
  *
  * handle.c - Handles for managing memory. Provides a way to refer to an
  *            object such that a client can't mess up our memory
@@ -372,6 +372,7 @@ void object_free(struct handlenode *n) {
 /************ Public functions */
 
 #ifdef DEBUG_KEYS
+
 /* Dump the handle tree to stdout */
 void r_handle_dump(struct handlenode *n,int level) {
    int i;
@@ -393,6 +394,25 @@ void handle_dump(void) {
    printf("---------------- Begin handle tree dump\n");
    r_handle_dump(htree,0);
    printf("---------------- End handle tree dump\n");
+}
+
+
+/* Dump strings to stdout */
+void r_string_dump(struct handlenode *n) {
+   int i;
+   
+   if (!n) return;
+   if (n==NIL) return;
+   r_string_dump(n->left);
+	if ((n->type & ~(HFLAG_RED|HFLAG_NFREE))==PG_TYPE_STRING)
+					 printf("0x%04X : %s\n",
+							  n->id,n->obj);
+   r_string_dump(n->right);
+}
+void string_dump(void) {
+   printf("---------------- Begin string dump\n");
+   r_string_dump(htree);
+   printf("---------------- End string dump\n");
 }
 #endif
 
@@ -433,7 +453,12 @@ g_error mkhandle(handle *h,unsigned char type,int owner,void *obj) {
   return sucess;
 }
 
-/* Add handle to another handle's group so they are freed at the same time */
+/* Group a handle with the theme containing it. Puts the 'to' handle in the
+ * group of the theme 'from'.
+ * 
+ * Also sets the owner of 'to' to -1 (system) so anyone has read-only access
+ * to it, which is necessary for themes.
+ */
 g_error handle_group(int owner,handle from, handle to) {
   /* First, validate both handles */
   struct handlenode *f = htree_find(from);

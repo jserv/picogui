@@ -1,4 +1,4 @@
-/* $Id: handle.h,v 1.14 2001/04/10 00:54:57 micahjd Exp $
+/* $Id: handle.h,v 1.15 2001/06/30 08:54:05 micahjd Exp $
  *
  * handle.h - Functions and data structures for allocating handles to
  *            represent objects, converting between handles and pointers,
@@ -126,6 +126,8 @@ g_error handle_iterate(u8 type,g_error (*iterator)(void **pobj));
 #ifdef DEBUG_KEYS
 /* Debugging function to dump handle tree to stdout on CTRL-ALT-H */
 void handle_dump(void);
+/* Dump strings on CTRL-ALT-S */
+void string_dump(void);
 #endif
 
 #endif /* __HANDLE_H */

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.81 2001/06/28 21:06:44 micahjd Exp $
+/* $Id: widget.c,v 1.82 2001/06/30 08:54:05 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -736,6 +736,10 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
 
     case PGKEY_h:           /* CTRL-ALT-h dumps the handle tree */
       handle_dump();
+      return;
+
+    case PGKEY_s:           /* CTRL-ALT-s dumps all strings */
+      string_dump();
       return;
 
     case PGKEY_n:           /* CTRL-ALT-n dumps all gropnodes */

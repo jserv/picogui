@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.42 2001/06/28 21:06:43 micahjd Exp $
+/* $Id: global.c,v 1.43 2001/06/30 08:54:05 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -182,10 +182,10 @@ g_error appmgr_init(void) {
 	       errortext(mkerror(0,24)));
   errorcheck;
   e = mkhandle(&string_pguiwarn,PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,29)));
+	       errortext(mkerror(0,31)));
   errorcheck;
   e = mkhandle(&string_pguierrdlg,PG_TYPE_STRING | HFLAG_NFREE,-1,
-	       errortext(mkerror(0,31)));
+	       errortext(mkerror(0,29)));
   errorcheck;
   e = mkhandle(&string_pguicompat,PG_TYPE_STRING | HFLAG_NFREE,-1,
 	       errortext(mkerror(0,32)));

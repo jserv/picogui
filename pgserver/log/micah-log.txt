@@ -1,3 +1,19 @@
+2001-06-29    Micah Dowty <micahjd@users.sourceforge.net>
+
+Ugh. There's a bug somewhere causing the client to use the wrong messages.
+-
+Aha! Two problems- the messages were a bit mixed up in appmgr/global.c. Also,
+I forgot that the pointer returned from pgGetString is only valid until the
+next PicoGUI call. Now netcore.c makes copies using alloca and strcpy, and
+it seems to work fine.
+Now that I have got the client reading its messages from the server, I can
+internationalize the server :)
+
+		* appmgr/global.c: Fixed out-of-order strings
+		
+		* cli_c/netcore.c: copy strings before use
+
+
 2001-06-28    Micah Dowty <micahjd@users.sourceforge.net>
 
 Continuing interationalizing server
@@ -10,6 +26,10 @@ Continuing interationalizing server
 		
 		* net/dispatch.c: Implemented the new PGREQ_THLOOKUP request, for
 		  performing theme lookups on the client side.
+
+		* cli_c/include/c_client.h: Added pgThemeLookup API function
+		
+		* cli_c/src/netcore.c: Client now looks up its error messages
 
 2001-06-27    Micah Dowty <micahjd@users.sourceforge.net>
 

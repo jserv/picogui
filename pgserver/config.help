@@ -65,6 +65,7 @@ DEBUG_KEYS
       CTRL-ALT-B : Black screen
       CTRL-ALT-U : Blue screen
       CTRL-ALT-P : Display all loaded bitmaps
+      CTRL-ALT-S : Display all loaded strings
       CTRL-ALT-H : Dump _complete_ handle tree to stdout
       CTRL-ALT-N : Dump all gropnodes to stdout
       CTRL_ALT-D : Dump all divnodes to stdout
