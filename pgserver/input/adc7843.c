@@ -1,4 +1,4 @@
-/* $Id: adc7843.c,v 1.6 2002/07/03 22:03:29 micahjd Exp $
+/* $Id: adc7843.c,v 1.7 2002/11/06 00:30:10 micahjd Exp $
  *
  * adc7843.c - input driver for adc7843.c touch screen found on the Psion 5mx
  *             Other touch screens using the same data format should
@@ -60,16 +60,16 @@ static struct cal *cal = NULL;
 
 int adc7843_fd;
 
-struct tpanel_sample {
-	u16 state;
-	u16 x;
-	u16 y;
-};
-
 /******************************************** Implementations */
 
 g_error adc7843_init(void) {
    adc7843_fd = open("/dev/tpanel",O_NONBLOCK);
+
+   /* devfs name */
+
+   if (adc7843_fd <= 0)
+      adc7843_fd = open("/dev/misc/adc7843", O_NONBLOCK);
+
    if (adc7843_fd <= 0)
      return mkerror(PG_ERRT_IO, 74);
    
@@ -87,9 +87,10 @@ void adc7843_fd_init(int *n,fd_set *readfds,struct timeval *timeout) {
 }
 
 int adc7843_fd_activate(int fd) {
-   struct tpanel_sample ts;
+   int state;
    char buffer[6];
-   int trigger, x, y;
+   int trigger;
+   static int x=0, y=0;
 
    if (!cal) {
       if (!vid)
@@ -107,17 +108,22 @@ int adc7843_fd_activate(int fd) {
      return 1;
     
    /* Convert the bytes to unsigned integers... */
-   ts.state = ( ( (buffer[0]) << 8 ) + buffer[1] );
-   ts.x = ( ( (buffer[2]) << 8 ) + buffer[3] );
-   ts.y = ( ( (buffer[4]) << 8 ) + buffer[5] );
-   x = ts.x;
-   y = ts.y;
+   state = ( ( (buffer[0]) << 8 ) + buffer[1] );
 
-   /* Converte to screen coordinates... */
-   x = ( ( ts.x - cal->min_x ) * cal->x_res / ( cal->max_x - cal->min_x ) );
-   y = ( ( ts.y - cal->min_y ) * cal->y_res / ( cal->max_y - cal->min_y ) );
+   /* save x,y in static variables. when pen up, send the last known
+      coordinates */
+
+   if (state) { 
+      x = ( ( (buffer[2]) << 8 ) + buffer[3] );
+      y = ( ( (buffer[4]) << 8 ) + buffer[5] );
+
+      /* Convert to screen coordinates... */
+      x = ( ( x - cal->min_x ) * cal->x_res / ( cal->max_x - cal->min_x ) );
+      y = ( ( y - cal->min_y ) * cal->y_res / ( cal->max_y - cal->min_y ) );
+   }
    
-   infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,x,y,ts.state,NULL);
+   infilter_send_pointing(PG_TRIGGER_PNTR_STATUS,x,y,state,NULL);
+
    return 1;
 }
    
