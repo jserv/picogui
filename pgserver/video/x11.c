@@ -1,4 +1,4 @@
-/* $Id: x11.c,v 1.33 2002/10/23 02:09:08 micahjd Exp $
+/* $Id: x11.c,v 1.34 2002/11/04 04:20:58 micahjd Exp $
  *
  * x11.c - Use the X Window System as a graphics backend for PicoGUI
  *
@@ -35,9 +35,6 @@
 #include <X11/Xutil.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef CONFIG_X11_XFT
-#include <X11/Xft/Xft.h>
-#endif
 
 /* Global X display- shared with x11input driver */
 Display *xdisplay;
@@ -48,9 +45,6 @@ struct x11bitmap {
   s16 w,h;
   struct groprender *rend;   /* Context for pgRender() */
   struct x11bitmap *tile;    /* Cached tile            */
-#ifdef CONFIG_X11_XFT
-  XftDraw *xftd;
-#endif
 } x11_display;
 
 /* This is our back-buffer when we double-buffer. Even if we're not
@@ -309,13 +303,6 @@ g_error x11_bitmap_new(hwrbitmap *bmp,s16 w,s16 h,u16 bpp) {
    */
   (*pxb)->d  = XCreatePixmap(xdisplay,x11_display.d,w,h,vid->bpp);
 
-#ifdef CONFIG_X11_XFT
-  /* Allocate an XftDraw */
-  (*pxb)->xftd = XftDrawCreate(xdisplay, (Drawable) (*pxb)->d,
-			  DefaultVisual(xdisplay, 0),
-			  DefaultColormap(xdisplay, 0));
-#endif
-
   return success;
 }
 
@@ -325,9 +312,6 @@ void x11_bitmap_free(hwrbitmap bmp) {
     x11_bitmap_free((hwrbitmap) xb->tile);
   if (xb->rend)
     g_free(xb->rend);
-#ifdef CONFIG_X11_XFT
-  XftDrawDestroy(xb->xftd);
-#endif
   XFreePixmap(xdisplay,xb->d);
   g_free(xb);
 }
@@ -439,158 +423,6 @@ void x11_message(u32 message, u32 param, u32 *ret) {
   }
 }
 
-/******************************************** XFreeType text rendering */
-#ifdef CONFIG_X11_XFT
-
-struct font const x11_font = {
-   w: 10, 
-   h: 10,
-   defaultglyph: ' ',
-   ascent: 1,
-   descent: 0,
-   bitmaps: NULL,
-   glyphs: NULL,
-};
-
-/* Bogus fontstyle node */
-struct fontstyle_node x11_font_style = {
-   name: "X11 FreeType font",
-   size: 1,
-   flags: 0,
-   next: NULL,
-   normal: (struct font *) &x11_font,
-   bold: NULL,
-   italic: NULL,
-   bolditalic: NULL,
-   boldw: 0
-};
-
-void x11_xft_font_outchar_hook(hwrbitmap *dest, struct fontdesc **fd,
-			       s16 *x,s16 *y,hwrcolor *col,int *c,
-			       struct quad **clip, s16 *lgop, s16 *angle) {
-  s16 ch = (s16) *c;
-  XftFont *font = (XftFont *) (*fd)->extra;
-  struct x11bitmap *xb = (struct x11bitmap *) *dest;
-  XftColor color;
-  pgcolor pgc = vid->color_hwrtopg(*col);
-  XGlyphInfo xgi;
-  
-  color.color.red = getred(pgc) << 8;
-  color.color.green = getgreen(pgc) << 8;
-  color.color.blue = getblue(pgc) << 8;
-  color.color.alpha = 0x00FFFF;
-  color.pixel = *col;
-
-  XftTextExtents16(xdisplay,font,&ch,1,&xgi);
-
-  /* Draw character- XFreeType measures from the bottom-left, so add height */
-  XftDrawString16(xb->xftd,&color,font, *x, *y + xgi.height,&ch, 1);  
-
-  /* Update cursor position */
-  *x += 10;
-  *y += xgi.yOff;
-
-  /* Disable normal rendering */
-  *lgop = PG_LGOP_NULL;
-}
-
-void x11_xft_font_sizetext_hook(struct fontdesc *fd, s16 *w, s16 *h, 
-				const struct pgstring *txt) {
-  XGlyphInfo xgi;
-  XftFont *font = (XftFont *) fd->extra;
- 
-  /* FIXME: This doesn't use pgstring properly */
-  XftTextExtentsUtf8(xdisplay,font,(char*)txt->buffer,txt->num_chars,&xgi);
-  
-  if (w) *w = xgi.xOff;
-  if (h) *h = xgi.height;
-}
-
-/* Override outtext to provide proper sub-pixel character spacing */
-void x11_xft_font_outtext_hook(hwrbitmap *dest, struct fontdesc **fd,
-			       s16 *x,s16 *y,hwrcolor *col,const struct pgstring **txt,
-			       struct quad **clip, s16 *lgop, s16 *angle) {
-  XftFont *font = (XftFont *) (*fd)->extra;
-  struct x11bitmap *xb = (struct x11bitmap *) (*dest); 
-  XftColor color;
-  pgcolor pgc = vid->color_hwrtopg(*col);
-  XGlyphInfo xgi;
-
-  color.color.red = getred(pgc) << 8;
-  color.color.green = getgreen(pgc) << 8;
-  color.color.blue = getblue(pgc) << 8;
-  color.color.alpha = 0x00FFFF;
-  color.pixel = *col;
-
-  /* FreeType measures y coordinates relative to the bottom-left */
-  /* FIXME: This doesn't use pgstring properly */
-  XftTextExtentsUtf8(xdisplay,font,(char*)(*txt)->buffer,(*txt)->num_chars,&xgi);
-  *y += xgi.height;
-
-  /* Do we have clipping?
-   * FIXME: XFreeType clipping is slow
-   */
-  if (*clip) {
-    Region clipreg;
-    XRectangle rect;
-    
-    rect.x = (*clip)->x1;
-    rect.y = (*clip)->y1;
-    rect.width = (*clip)->x2 - (*clip)->x1 + 1;
-    rect.height = (*clip)->y2 - (*clip)->y1 + 1;
-    
-    clipreg = XCreateRegion();
-    XUnionRectWithRegion(&rect,clipreg,clipreg);
-    XftDrawSetClip(xb->xftd,clipreg);
-    XDestroyRegion(clipreg);  
-  }
-  else
-    XftDrawSetClip(xb->xftd,NULL);
-
-  /* Draw text */
-  /* FIXME: This doesn't use pgstring properly */
-  XftDrawStringUtf8(xb->xftd,&color,font,*x,*y,(char*)(*txt)->buffer,(*txt)->num_chars);
-
-  /* Suppress normal outtext behavior */
-  *txt = pgstring_tmpwrap("");
-}
-
-void x11_xft_font_newdesc(struct fontdesc *fd, const u8 *name,
-			  int size, int flags) {
-  XftFont *f;
-
-  /* a little trickery to make the font look legit */
-  fd->font = (struct font *) &x11_font;
-  fd->italicw = 0;
-  fd->fs = &x11_font_style;
-
-  /* Default size */
-  if (!size)
-    size = 10;
-
-  /* Default family */
-  if (!name)
-    name = "lucidux";
-
-  /* Allocate an XftFont */
-  f = XftFontOpen(xdisplay, 0,
-		  XFT_FAMILY, XftTypeString, name,
-		  XFT_PIXEL_SIZE, XftTypeInteger, size,
-		  XFT_SLANT,XftTypeInteger,(flags & PG_FSTYLE_ITALIC) ?
-		      XFT_SLANT_ITALIC : XFT_SLANT_ROMAN,
-		  XFT_WEIGHT,XftTypeInteger,(flags & PG_FSTYLE_BOLD) ?
-		      XFT_WEIGHT_BOLD : XFT_WEIGHT_LIGHT,
-		  0);
-  fd->extra = (void *) f;
-}
-
-struct fontglyph const *x11_xft_font_getglyph(struct fontdesc *fd, int c) {
-  static struct fontglyph dummy_fg;
-  return &dummy_fg;
-}
-
-#endif /* CONFIG_X11_XFT */
-
 #ifdef CONFIG_X11_ICON
 # include <X11/xpm.h>
 # include "x11logo/pglogo-dblborder.xpm"
@@ -617,8 +449,7 @@ static void set_icon(Display* d, Window w) {
 
   XFree((void *)wm_hints);
 }
-
-#endif
+#endif /* CONFIG_X11_ICON */
 
 /******************************************** Init/shutdown */
 
@@ -669,13 +500,6 @@ g_error x11_setmode(s16 xres,s16 yres,s16 bpp,u32 flags) {
   vid->bpp  = DefaultDepth(xdisplay,0);
   x11_display.w = xres;
   x11_display.h = yres;
-
-#ifdef CONFIG_X11_XFT
-  /* Allocate an XftDraw for the x11_display */
-  x11_display.xftd = XftDrawCreate(xdisplay, x11_display.d,
-				   DefaultVisual(xdisplay, 0), 
-				   DefaultColormap(xdisplay, 0));
-#endif
 
   /* Set up some kind of double-buffering */
   switch (get_param_int("video-x11","doublebuffer",1)) {
@@ -824,14 +648,6 @@ g_error x11_regfunc(struct vidlib *v) {
   v->bar = &x11_bar;
   v->line = &x11_line;
   v->message = &x11_message;
-
-#ifdef CONFIG_X11_XFT
-  v->font_newdesc = &x11_xft_font_newdesc;
-  v->font_sizetext_hook = &x11_xft_font_sizetext_hook;
-  v->font_outtext_hook = &x11_xft_font_outtext_hook;
-  v->font_outchar_hook = &x11_xft_font_outchar_hook;
-  v->font_getglyph = &x11_xft_font_getglyph;
-#endif
 
   if (!get_param_int("video-x11","defaultellipse",0)) {
     v->ellipse = &x11_ellipse;
