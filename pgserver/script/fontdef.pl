@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fontdef.pl,v 1.17 2001/10/17 23:03:40 micahjd Exp $
+# $Id: fontdef.pl,v 1.18 2001/10/18 07:02:28 micahjd Exp $
 #
 # This script turns a directory full of .fi and .bdf font files
 # into C source code that is compiled into the PicoGUI server.
@@ -148,7 +148,7 @@ foreach $fntname (sort keys %fdfs) {
 			# We will later replace these extras with copies of the default glyph
 			for ($i=$1-$encoding-1;$i;$i--) {
 			    $numglyphs++;
-			    push @glyphs, "";
+			    push @glyphs, "0,0,0,0,0,0";
 
 			}
 		    }
