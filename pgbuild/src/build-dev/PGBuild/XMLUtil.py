@@ -160,9 +160,27 @@ class Document(PGBuild.XML.dom.minidom.Document):
             return n[0]
         return n
 
-def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None):
+def formatCommentBlock(text):
+    """Given a block of text, format it into an XML comment, reindenting the
+       text and stripping blank lines from the top and bottom.
+       """
+    # Stick the text we were given in a comment, reindented and with
+    # blank lines stripped from the beginning and end.
+    output = "<!--\n"
+    lines = [line.strip() for line in text.split("\n")]
+    while lines and not lines[0]:
+        del lines[0]
+    while lines and not lines[-1]:
+        del lines[-1]
+    for line in lines:
+        output += "\t%s\n" % line
+    output += "-->\n"
+    return output
+
+def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None, procInstructions=None):
     """Write part of a document to a file in XML format, optionally renaming
-       and replacing the attributes of its root element.
+       and replacing the attributes of its root element. If procInstrutions is specified,
+       all processing instruction elements in the list will be output.
        """
 
     # If we were passed an SCons file node or a string instead of an opened file,
@@ -172,15 +190,30 @@ def writeSubtree(root, dest, rootName=None, rootAttributes=None, comment=None):
         dest = open(str(dest), "w")
         needClose = 1
 
-    dest.write("<?xml version="1.0" ?>\n")
-
+    # Write <?xml?> tag and optional comment block
+    dest.write('<?xml version="1.0" ?>\n')
     if comment:
-        dest.write("\n<!--\n")
-        for line in comment.split("\n"):
-            dest.write("\t%s" % line)
-        dest.write("-->\n\n")
+        dest.write(formatCommentBlock(comment))
+    dest.write("\n")
 
-    # FIXME: finish this!
+    # Write optional processing instructions.
+    if procInstructions:
+        for node in procInstructions:
+            if node.nodeType == node.PROCESSING_INSTRUCTION_NODE:
+                node.writexml(dest, "", "\t", "\n")
+
+    # Make a clone of the root node so we can change the name and attributes
+    rootClone = root.cloneNode(0)
+    rootClone.childNodes = root.childNodes
+
+    # Optionally change the attributes and name of the root node
+    if rootName:
+        rootClone.tagName = rootName
+    if rootAttributes:
+        rootClone._attrs = rootAttributes
+    
+    # Write the given root node
+    rootClone.writexml(dest, "", "\t", "\n")
 
     if needClose:
         dest.close()

@@ -310,8 +310,8 @@ class Tree(PGBuild.XMLUtil.Document):
             if minfo.hasMode("w"):
                 mountElement = self.resolveMountPath(minfo.getRoot())
                 PGBuild.XMLUtil.writeSubtree(mountElement, minfo.file,
-                                             self.rootName,minfo.attributes,
-                                             comment)
+                                             self.rootName, minfo.attributes,
+                                             comment, self.childNodes)
                 
 default = Tree()
 
