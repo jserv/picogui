@@ -30,6 +30,7 @@
 
 struct indicatordata {
   long value;
+  pgcolor color;
 };
 #define WIDGET_SUBCLASS 0
 #define DATA WIDGET_DATA(indicatordata)
@@ -80,6 +81,8 @@ g_error indicator_install(struct widget *self) {
 
   WIDGET_ALLOC_DATA(indicatordata);
 
+  DATA->color = theme_lookup(PGTH_O_INDICATOR, PGTH_P_FGCOLOR);
+
   e = newdiv(&self->in,self);
   errorcheck;
   self->in->flags |= PG_S_TOP;
@@ -88,6 +91,8 @@ g_error indicator_install(struct widget *self) {
   errorcheck;
   self->in->div->build = &build_indicator;
   self->in->div->state = PGTH_O_INDICATOR;
+
+  self->sub = &self->in->div->div;
 
   return success;
 }
@@ -107,6 +112,11 @@ g_error indicator_set(struct widget *self,int property, glob data) {
     set_widget_rebuild(self);
     break;
 
+   case PG_WP_COLOR:
+    DATA->color = (pgcolor) data;
+    set_widget_rebuild(self);
+    break;
+
   default:
     return mkerror(ERRT_PASS,0);
   }
@@ -118,6 +128,9 @@ glob indicator_get(struct widget *self,int property) {
 
   case PG_WP_VALUE:
     return DATA->value;
+
+  case PG_WP_COLOR:
+    return (glob) DATA->color;
 
   }
   return widget_base_get(self,property);
