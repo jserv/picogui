@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.25 2000/08/05 01:08:36 micahjd Exp $
+/* $Id: button.c,v 1.26 2000/08/05 03:37:36 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -361,6 +361,8 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DOWN:
     if (param->mouse.chbtn==1)
       DATA->on=1;
+    else
+      return;
     break;
 
   case TRIGGER_UP:
@@ -368,11 +370,15 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
       event = 0;
       DATA->on=0;
     }
+    else
+      return;
     break;
 
   case TRIGGER_RELEASE:
     if (param->mouse.chbtn==1)
       DATA->on=0;
+    else
+      return;
     break;
 
   case TRIGGER_HOTKEY:

@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.31 2000/08/05 01:08:36 micahjd Exp $
+/* $Id: widget.c,v 1.32 2000/08/05 03:37:36 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -121,25 +121,10 @@ void widget_remove(struct widget *w) {
   printf("widget_remove(0x%08X)\n",w);
 #endif
 
-  /* If this widget has a hotkey, see if we're in the hkwidgets list */
-  if (w->hotkey) {
-    if (w==hkwidgets) {
-      hkwidgets = w->hknext;
-    }
-    else {
-      struct widget *p = hkwidgets;
-      while (p->hknext)
-	if (p->hknext == w) {
-	  /* Take us out */
-	  p->hknext = w->hknext;
-	  break;
-	}
-	else
-	  p = p->hknext;
-    }
-  }
-
   if (!in_shutdown) {
+    /* Get us out of the hotkey list */
+    install_hotkey(w,0);
+
     /* Get rid of any pointers we have to it */
     if (w==under) under = NULL;
     if (w==prev_under) prev_under = NULL;
@@ -262,12 +247,29 @@ long find_hotkey(void) {
 */
 void install_hotkey(struct widget *self,long hotkey) {
 
-  if (!self->hotkey) {
+  if ((!self->hotkey) && hotkey) {
     /* Add to the hotkey widget list if this is our first hotkey */
     self->hknext = hkwidgets;
     hkwidgets = self;
   }
-
+  else if (self->hotkey && (!hotkey)) {
+    /* Remove us from the list */
+    if (self==hkwidgets) {
+      hkwidgets = self->hknext;
+    }
+    else {
+      struct widget *p = hkwidgets;
+      while (p->hknext)
+	if (p->hknext == self) {
+	  /* Take us out */
+	  p->hknext = self->hknext;
+	  break;
+	}
+	else
+	  p = p->hknext;
+    }
+  }
+  
   self->hotkey = hotkey;
 }
 
