@@ -8,8 +8,8 @@ import mimetypes
 class mimeInterface:
     def __init__(self):
         self.handlerDict = dict()
-        self.addHandler(('audio/mpeg', None), "/usr/bin/mpg123", ["<FILENAME>"])
-        self.addHandler(('image/jpeg', None), "/home/carpman/projects/picogui/apps/imgview/imgview", ["<FILENAME>"])
+        self.addHandler(('audio/mpeg', None), "mpg123 <FILENAME>")
+        self.addHandler(('image/jpeg', None), "imgview <FILENAME>")
 
     def getMimeType(self, filename):
         type = mimetypes.guess_type(filename)
@@ -18,22 +18,16 @@ class mimeInterface:
         else:
             return type[0]
 
-    def addHandler(self, mime, path, args):
-        self.handlerDict[mime] = (path, args)
+    def addHandler(self, mime, command):
+        self.handlerDict[mime] = command
 
     def callHandler(self, filename):
         mimeType = mimetypes.guess_type(filename)
         print mimeType
         if self.handlerDict.has_key(mimeType):
-            handlerData = self.handlerDict[mimeType]
-            newArgs = list()
-            newArgs.append(handlerData[0])
-            for arg in handlerData[1]:
-                if arg == "<FILENAME>":
-                    newArgs.append(filename)
-                else:
-                    newArgs.append(arg)
+            command = self.handlerDict[mimeType]
+            command = command.replace("<FILENAME>",filename)
             #should probably use fsi's version of this, later.
             if os.fork() == 0:
-                os.execv(handlerData[0], newArgs)
+                os.system(command)
             
