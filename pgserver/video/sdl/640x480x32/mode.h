@@ -1,4 +1,4 @@
-/* $Id: mode.h,v 1.6 2000/06/01 23:11:42 micahjd Exp $
+/* $Id: mode.h,v 1.7 2000/06/08 07:51:40 micahjd Exp $
  *
  * Definitions for 640x480x32 mode
  *
@@ -42,7 +42,6 @@ typedef Uint32 * devbmpt;
 #define HWR_LINEW   (HWR_PIXELW*HWR_WIDTH)
 #define TITLE       HWR
 #define SDL_BPP     32
-#define DIM_ALGO(x) (((x)>>1) & HWR_BPPMASK)
 
 /* Macro to make a color from RGB values 
  * Values between 0 and 255
@@ -54,5 +53,7 @@ typedef Uint32 * devbmpt;
 #define getblue(c) ((c)&0xFF)
 /* Same thing, but for a grayscale v between 0 and m */
 #define mkgray(v,m) mkcolor(v*255/m,v*255/m,v*255/m)
+
+#define DIM_ALGO(x) mkcolor(getred(x)>>1,getgreen(x)>>1,getblue(x)>>1)
 
 /* The End */

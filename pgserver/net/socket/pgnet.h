@@ -1,4 +1,4 @@
-/* $Id: pgnet.h,v 1.5 2000/06/08 06:54:44 micahjd Exp $
+/* $Id: pgnet.h,v 1.6 2000/06/08 07:51:40 micahjd Exp $
  *
  * pgnet.h - header for all PicoGUI networking stuff (request/packet/event...)
  *
@@ -41,6 +41,8 @@
 #if defined(__WIN32__) || defined(WIN32)
 #define WINDOWS
 #include <windows.h>
+#define EAGAIN WSAEWOULDBLOCK
+#define ioctl ioctlsocket
 #else
 #include <fcntl.h>
 #include <sys/types.h>
