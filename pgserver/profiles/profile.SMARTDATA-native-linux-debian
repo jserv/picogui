@@ -5,11 +5,9 @@
 #
 # Target System
 #
-CONFIG_LINUX_GENERIC=y
-# UCLINUX is not set
-# CONFIG_LINUX_MIPS is not set
-# WINDOWS is not set
-# ASM_INTEL is not set
+CONFIG_OS_POSIX=y
+# CONFIG_OS_WINDOWS is not set
+# CONFIG_OS_UCLINUX is not set
 CONFIG_UNIX_SOCKET=y
 # CONFIG_OPTIMIZE_SIZE is not set
 # CONFIG_OPTIMIZE_SPEED is not set
@@ -51,6 +49,7 @@ CONFIG_ERROR_TRACE=y
 # Fonts
 #
 # CONFIG_FONTENGINE_FREETYPE is not set
+# CONFIG_FONTENGINE_TEXTMODE is not set
 CONFIG_FONTENGINE_BDF=y
 FONT_HELVETICA10=y
 FONT_CLEAN12=y
@@ -186,6 +185,12 @@ CONFIG_WIDGET_TOOLBAR=y
 # CONFIG_APPMGR_MANAGED_ROOTLESS is not set
 # CONFIG_APPMGR_PANEL is not set
 CONFIG_APPMGR_NULL=y
+
+#
+# Client/Server Networking
+#
+# CONFIG_NET_TCPIP is not set
+# CONFIG_NET_LIBPGSERVER is not set
 
 #
 # File Formats
