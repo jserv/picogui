@@ -1,4 +1,4 @@
-/* $Id: pgl-clock.c,v 1.2 2001/08/10 11:52:10 micahjd Exp $
+/* $Id: pgl-clock.c,v 1.3 2001/08/10 13:52:32 micahjd Exp $
  * 
  * pgl-clock.c - This is a simple clock applet for PGL
  *
@@ -97,14 +97,17 @@ int btnDialog(struct pgEvent *btnevt) {
   w24hour = pgNewWidget(PG_WIDGET_CHECKBOX,PG_DERIVE_INSIDE,wOptionBox);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("24-hour clock"),
+	      PG_WP_ON,currentClock.enable24hour,
 	      0);
   wSeconds = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Show seconds"),
+	      PG_WP_ON,currentClock.enableSeconds,
 	      0);
   wColon = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Flash colon"),
+	      PG_WP_ON,currentClock.flashColon,
 	      0);
   wSetFont = pgNewWidget(PG_WIDGET_BUTTON,0,0);
   pgSetWidget(PGDEFAULT,
@@ -114,18 +117,22 @@ int btnDialog(struct pgEvent *btnevt) {
   wWeekDay = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Show weekday"),
+	      PG_WP_ON,currentClock.enableWeekDay,
 	      0);
   wDay = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Show day"),
+	      PG_WP_ON,currentClock.enableDay,
 	      0);
   wMonth = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Show month"),
+	      PG_WP_ON,currentClock.enableMonth,
 	      0);
   wYear = pgNewWidget(PG_WIDGET_CHECKBOX,0,0);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_TEXT,pgNewString("Show year"),
+	      PG_WP_ON,currentClock.enableYear,
 	      /* Give the last one PG_S_ALL to avoid extra margin at the
 	       * bottom of wCheckBoxBox
 	       */
@@ -164,7 +171,7 @@ int btnDialog(struct pgEvent *btnevt) {
   currentClock.wClock = pgNewWidget(PG_WIDGET_FLATBUTTON,PG_DERIVE_INSIDE,
 				    wSampleTB);
   pgSetWidget(PGDEFAULT,
-	      PG_WP_SIDE,PG_S_RIGHT,
+	      PG_WP_SIDE,PG_S_ALL,
 	      0);
 
   /* Run the dialog */
@@ -202,8 +209,25 @@ int btnDialog(struct pgEvent *btnevt) {
       currentClock.wClock = oldData.wClock;
       break;
     }
+
+    /* Set various flags */
+    else if (evt.from == wColon)
+      currentClock.flashColon ^= 1;
+    else if (evt.from == w24hour)
+      currentClock.enable24hour ^= 1;
+    else if (evt.from == wSeconds)
+      currentClock.enableSeconds ^= 1;
+    else if (evt.from == wWeekDay)
+      currentClock.enableWeekDay ^= 1;
+    else if (evt.from == wDay)
+      currentClock.enableDay ^= 1;
+    else if (evt.from == wMonth)
+      currentClock.enableMonth ^= 1;
+    else if (evt.from == wYear)
+      currentClock.enableYear ^= 1;
   }
   pgLeaveContext();
+  mungeSettings();
   return 0;
 }
 
@@ -301,7 +325,6 @@ int main(int argc,char **argv) {
 
   /* Set up default clock */
   currentClock.fClockFont = pgNewFont(NULL,0,PG_FSTYLE_FIXED);
-  currentClock.enableSeconds = currentClock.enable24hour = 1;
   mungeSettings();
 
   pgEventLoop();
