@@ -1,4 +1,4 @@
-/* $Id: memtheme.c,v 1.47 2002/01/04 14:28:30 gobry Exp $
+/* $Id: memtheme.c,v 1.48 2002/01/05 14:37:55 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
@@ -581,12 +581,11 @@ g_error theme_load(handle *h,int owner,char *themefile,
 	  handle_free(owner,*h);
 	  return mkerror(PG_ERRT_FILEFMT,86); /* Out-of-range  */
 	}
-#ifdef UCLINUX
 	if (mpropp->data & 3) {
 	   handle_free(owner,*h);
 	   return mkerror(PG_ERRT_FILEFMT,100); /* not aligned */
 	}
-#endif  
+
 	req = (struct pgrequest *) (themefile_start + mpropp->data);
 	req->type = ntohs(req->type);
 	req->size = ntohl(req->size);
@@ -608,7 +607,9 @@ g_error theme_load(handle *h,int owner,char *themefile,
 
       } break;
 
-      case PGTH_LOAD_COPY:   /* Copy loaders are handled later */
+      /* Copy and Findthobj loaders handled later to support forward references */
+      case PGTH_LOAD_COPY:   
+      case PGTH_LOAD_FINDTHOBJ:
       case PGTH_LOAD_NONE:
 	break;
 	
@@ -633,15 +634,38 @@ g_error theme_load(handle *h,int owner,char *themefile,
   th->next = memtheme;
   memtheme = th;
 
-  /* Process copy loaders. This can't be done at the same time as the other
-     loaders because it needs to reference information that may not exist yet */
+  /* Process copy loaders and findthobj loaders. This can't be done at the
+   * same time as the other loaders because it needs to reference
+   * information that may not exist yet */
 
   for (i=0,mthop = thobjarray;i<hdr->num_thobj;i++,mthop++)
     for (j=0,mpropp = mthop->proplist.ptr;j<mthop->num_prop;j++,mpropp++)
-      if (mpropp->loader == PGTH_LOAD_COPY) {
-	unsigned long d = mpropp->data;
-	/* Sometimes this confuses the compiler :( */
-	mpropp->data = theme_lookup(d >> 16,d & 0xFFFF);
+      switch (mpropp->loader) {
+
+      case PGTH_LOAD_COPY:
+	mpropp->data = theme_lookup(mpropp->data >> 16,mpropp->data & 0xFFFF);
+	break;
+
+      case PGTH_LOAD_FINDTHOBJ:
+	/* Validate offset */
+	if (mpropp->data >= (themefile_len-1)) {
+	  handle_free(owner,*h);
+	  return mkerror(PG_ERRT_FILEFMT,86); /* Out-of-range  */
+	}
+	if (mpropp->data & 3) {
+	   handle_free(owner,*h);
+	   return mkerror(PG_ERRT_FILEFMT,100); /* not aligned */
+	}
+
+	{
+	  s16 id;
+	  if (find_named_thobj((const u8 *)(themefile_start + mpropp->data), &id))
+	    mpropp->data = id;
+	  else
+	    mpropp->data = 0;
+	}
+	break;
+
       }
 
   /* Reload the mouse cursor */

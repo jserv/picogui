@@ -1,5 +1,5 @@
 %{
-/* $Id: pgtheme.y,v 1.35 2002/01/04 05:56:25 lonetech Exp $
+/* $Id: pgtheme.y,v 1.36 2002/01/05 14:37:55 micahjd Exp $
  *
  * pgtheme.y - yacc grammar for processing PicoGUI theme source code
  *
@@ -223,26 +223,8 @@ propertyval:  constexp          { $$.data = $1; $$.loader = PGTH_LOAD_NONE; $$.l
   $$.loader = PGTH_LOAD_REQUEST;
 }	   	   
            |  FINDTHEMEOBJECT '(' STRING ')' {
-  struct pgrequest *req;
-  unsigned char *buf;
-  int len=strlen($3);
-
-  /* Allocate the buffer */
-  if (!(buf = malloc(sizeof(struct pgrequest)+len)))
-    yyerror("memory allocation error");
-
-  /* Reserve space for the request header */
-  req = (struct pgrequest *) buf;
-  memset(req,0,sizeof(struct pgrequest));
-  req->type = htons(PGREQ_FINDTHOBJ);
-  req->size = htonl(len);
-
-  /* copy string and discard original */
-  memcpy(buf+sizeof(struct pgrequest),$3,len);
-  free($3);
-
-  $$.ldnode = newloader(buf,(sizeof(struct pgrequest)+len));
-  $$.loader = PGTH_LOAD_REQUEST;
+  $$.ldnode = newloader(strdup($3),strlen($3)+1);
+  $$.loader = PGTH_LOAD_FINDTHOBJ;
 }
            |  LOADBITMAP '(' STRING ')' {
   FILE *bitf;

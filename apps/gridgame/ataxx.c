@@ -65,7 +65,7 @@ static void ataxx_drag(int x1, int y1, int x2, int y2)
   showplayer();
  }
 
-static const char * const themes[]={"checkers.th", "checkers.th", NULL};
+static const char * const themes[]={"checkers.th", NULL};
 
 static struct gridgame ataxx = {
   name: "Ataxx",

@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.45 2002/01/05 06:29:56 micahjd Exp $
+/* $Id: constants.h,v 1.46 2002/01/05 14:37:55 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -255,7 +255,7 @@ typedef unsigned long pghandle;
 #define PG_TYPE_ARRAY      7    //!< Created by pgNewArray()
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
 #define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
-
+#define PG_TYPE_GROP       10   //!< A graphical operation (used by the canvas widget)
 
 #define PG_TYPEMASK        0x1F
 
@@ -399,6 +399,17 @@ typedef unsigned long pghandle;
  * as the property's value.
  */
 #define PGTH_LOAD_COPY       2   
+/*!
+ * \brief Find a theme object by name
+ *
+ * The property data is a file-offset to a zero-terminated
+ * string representing the name of a theme object.
+ * The theme object's ID is used as the property's new value.
+ * This could be accomplished using PGTH_LOAD_REQUEST and 
+ * PGREQ_FINDTHOBJ, but that wouldn't work for loding from
+ * the current theme.
+ */
+#define PGTH_LOAD_FINDTHOBJ  3
 
 //! \}
 
@@ -693,7 +704,6 @@ typedef unsigned long pghandle;
 #define PG_MAP_SCALE          1      
 #define PG_MAP_SQUARESCALE    2      //!< Like PG_MAP_SCALE, but constrain the aspect ratio
 
-
 //! \}
 
 /*!
@@ -864,6 +874,8 @@ typedef unsigned long pghandle;
 #define PG_WP_SELECTED_HANDLE 34 /* List property to return a handle to the selected row */
 #define PG_WP_AUTOSCROLL  35    /* For the textbox, scroll to any new text that's inserted */
 #define PG_WP_LINES       36    /* Height, in lines */
+#define PG_WP_PREFERRED_W 37    /* Read only (for now) properties to get any widget's preferred size */
+#define PG_WP_PREFERRED_H 38
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
