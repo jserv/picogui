@@ -40,7 +40,7 @@ then
   remorakb_checker --force=0 >>/var/pgserver.dynconf
   if bioscall --test PG_REMORAKB_BAUD_SHIFT -eq 1
   then
-    echo "baud_shift 1" >>/var/pgserver.dynconf
+    echo "baud_shift = 1" >>/var/pgserver.dynconf
   fi
 fi
 
