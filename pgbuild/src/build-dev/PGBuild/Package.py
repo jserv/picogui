@@ -76,7 +76,31 @@ class PackageVersion(object):
        # still report our progress. This makes a --merge-all with an already up to date local
        # packages directory much less uninteresting.
        progress.showTaskHeading()
-       return self.getRepository(progress).update(self.getLocalPath(), progress.task("Updating package %s" % self))
+       localPath = self.getLocalPath()
+       task = progress.task("Checking for updates in package %s" % self)
+       repo = self.getRepository(progress)
+
+       # If we're updating a bootstrap package we have to do a little dance
+       # so that our build system doesn't get hosed if the update fails.
+       if str(self) in self.package.list.getBootstrapPackages():
+           tempPathNew = localPath + ".temp-new"
+           tempPathOld = localPath + ".temp-old"
+
+           # Since updating a bootstrap package is a big deal, check for updates first
+           if repo.isUpdateAvailable(localPath):
+               task.warning("Updating bootstrap package %s" % self)
+               isUpdated = repo.update(tempPathNew, task)
+               if isUpdated:
+                   os.rename(localPath, tempPathOld)
+                   os.rename(tempPathNew, localPath)
+                   shutil.rmtree(tempPathOld)
+           else:
+               isUpdated = False
+       else:
+
+           # Not a bootstrap package, normal update
+           isUpdated = repo.update(localPath, task)
+       return isUpdated
 
     def merge(self, progress):
         """Make sure a package is up to date, then load in configuration and build targets from it"""
@@ -91,12 +115,13 @@ class Package(object):
        Holds details common to all package versions.
        """
     
-    def __init__(self, config, name):
-        self.config = config
+    def __init__(self, list, name):
+        self.list = list
+        self.config = list.config
         self.name = name
         
         # Save the root of the package configuration
-        self.configNode = config.xpath('packages/package[@name="%s"]' % self.name)
+        self.configNode = self.config.xpath('packages/package[@name="%s"]' % self.name)
         if len(self.configNode) > 1:
             raise PGBuild.Errors.ConfigError("More than one package with the name '%s'" % self.name)
         if len(self.configNode) == 0:
@@ -170,7 +195,7 @@ class PackageList(object):
             version = nameVersion
 
         if not self.packages.has_key(name):
-            self.packages[name] = Package(self.config, name)
+            self.packages[name] = Package(self, name)
         package = self.packages[name]
 
         if version == None:
