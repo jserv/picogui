@@ -1,10 +1,20 @@
-import PicoGUI
+import PicoGUI, math
 
 
 def inputHandler(t, sender):
     if t.dev == 'mouse' and t.name == 'move':
         ship.yaw = t.x
         
+def velocityChange(ev, widget):
+    # Completely nonscientific equations to both set the velocity
+    # of the moving texture, and stretch out the texture when going
+    # fast, to give a magnified sense of motion.
+    scale = 150.0
+    max_v = 1000/scale
+    v = (1000-widget.value)/scale
+    world.velocity = v
+    world.vrepeat = 5+math.pow(max_v,2)-math.pow(v,2)
+
 
 def thread():
 
@@ -14,8 +24,6 @@ def thread():
         ])
 
     # Event handler for the velocity slider
-    def velocityChange(ev, widget):
-        world.velocity = (1000-widget.value) / 150.0
     app.VelocitySlider.size = 1000
     app.VelocitySlider.value = 1000
     app.link(velocityChange,app.VelocitySlider,'activate')
