@@ -34,7 +34,7 @@ class DownloaderPool:
         self.queueSem = threading.Semaphore()
         self.numSleeping = 0
         self.threads = []
-        self.running = True
+        self.running = 1
 
         # Create and start all threads
         for i in xrange(numThreads):
@@ -75,7 +75,7 @@ class DownloaderThread(threading.Thread):
                 for item in newItems:
                     self.pool.queue.append(item)
                 self.pool.queueSem.release()
-        self.pool.running = False
+        self.pool.running = 0
 
     def download(self, item):
         """Download an item from the queue, returning a list of
