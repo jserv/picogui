@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.24 2001/02/07 08:25:11 micahjd Exp $
+/* $Id: constants.h,v 1.25 2001/02/13 05:11:34 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -273,6 +273,8 @@ typedef unsigned long pghandle;
 #define PGTH_P_BACKDROP      23  /* H fillstyle   Fillstyle on the screen behind a popup */
 #define PGTH_P_WIDGETBITMAP  24  /* H bitmap      Bitmap for something like a button */
 #define PGTH_P_WIDGETBITMASK 25  /* H bitmap      Bitmask for something like a button */
+#define PGTH_P_CURSORBITMAP  26  /* H bitmap      Bitmap for the (mouse) pointer */
+#define PGTH_P_CURSORBITMASK 27  /* H bitmap      Bitmask for the (mouse) pointer */
 
 /* String properties (usually part of PGTH_O_DEFAULT) */
 #define PGTH_P_STRING_OK             501
@@ -519,6 +521,16 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_UP     0x1205
 #define PG_NWE_PNTR_DOWN   0x1204
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
+
+/* These are event constants used for networked input drivers. It is a subset
+ * of the TRIGGER_* constants in the server, representing only those needed
+ * for input drivers. */
+#define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
+#define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
+#define PG_TRIGGER_UP         (1<<8)  /* Mouse up */
+#define PG_TRIGGER_DOWN       (1<<9)  /* Mouse down */
+#define PG_TRIGGER_MOVE       (1<<10) /* any mouse movement in node */
+#define PG_TRIGGER_CHAR       (1<<14) /* A processed ASCII/Unicode character */
 
 
 #endif /* __H_PG_CONSTANTS */
