@@ -1,4 +1,4 @@
-/* $Id: font.h,v 1.7 2001/04/29 17:28:39 micahjd Exp $
+/* $Id: font.h,v 1.8 2001/05/13 06:36:42 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
@@ -105,7 +105,7 @@ struct font {
  * requested by the fontdesc.
  */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,char c,struct quad *clip,
+	     int *x, int *y,hwrcolor col,unsigned char c,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle);
 
 /* These functions interpret the '\n' character, but no other control

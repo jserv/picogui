@@ -1,4 +1,4 @@
-/* $Id: font.c,v 1.22 2001/05/13 06:04:08 micahjd Exp $
+/* $Id: font.c,v 1.23 2001/05/13 06:36:42 micahjd Exp $
  *
  * font.c - loading and rendering fonts
  *
@@ -56,7 +56,7 @@ int fontcmp(struct fontstyle_node *fs,char *name, int size, stylet flags);
 
 /* Outputs a character. It also updates (*x,*y) as a cursor position. */
 void outchar(hwrbitmap dest, struct fontdesc *fd,
-	     int *x, int *y,hwrcolor col,char c,struct quad *clip,
+	     int *x, int *y,hwrcolor col,unsigned char c,struct quad *clip,
 	     bool fill, hwrcolor bg, s16 lgop, s16 angle) {
    int i,j;
    int cel_w; /* Total width of this character cel */
@@ -170,7 +170,7 @@ void outchar(hwrbitmap dest, struct fontdesc *fd,
 /* A version of outchar that doesn't make any
    output. Used for sizetext */
 void outchar_fake(struct fontdesc *fd,
-	     s16 *x, s16 *y,char c) {
+	     s16 *x, s16 *y,unsigned char c) {
   int i,j;
   int cel_w; /* Total width of this character cel */
   int glyph_w,glyph_h;
@@ -247,7 +247,7 @@ void outtext(hwrbitmap dest, struct fontdesc *fd,
 	   
 	}
       else
-	outchar(dest,fd,&x,&y,col,*txt,clip,fill,bg,lgop,angle);
+	outchar(dest,fd,&x,&y,col,(unsigned char) *txt,clip,fill,bg,lgop,angle);
       txt++;
    }
 }
