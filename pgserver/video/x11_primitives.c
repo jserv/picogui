@@ -1,4 +1,4 @@
-/* $Id: x11_primitives.c,v 1.14 2002/11/11 09:46:50 micahjd Exp $
+/* $Id: x11_primitives.c,v 1.15 2002/11/14 22:30:07 micahjd Exp $
  *
  * x11_primitives.c - Implementation of picogui primitives on top of the
  *                    X window system.
@@ -254,31 +254,62 @@ void x11_update(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h) {
 
 void x11_multiblit(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h,
 		   hwrbitmap src, s16 sx, s16 sy, s16 sw, s16 sh, s16 xo, s16 yo, s16 lgop) {
-  GC g = x11_gctab[lgop];
-  
-  /* Use the default multiblit if:
-   *   1. The source isn't the entire bitmap. X can't handle this case
-   *   2. We're using stippling. This needs to set the X fill style too, so there
-   *      would be a conflict and the stipple GC would be reset incorrectly.
-   *   3. The destination rectangle isn't larger than the source. In this case the
-   *      extra setup work here isn't worth it.
-   *   4. We're using another LGOP that X can't do
-   */
-  if (sx!=0 || sy!=0 || sw!=XB(src)->sb.w || sh!=XB(src)->sb.h || 
-      lgop==PG_LGOP_STIPPLE || (w<=sw && h<=sh) || !g) {
+  s16 i,j;
+  int blit_x, blit_y, blit_w, blit_h, blit_src_x, blit_src_y;
+  int full_line_y = -1;
+
+  if (!(sw && sh)) return;
+
+  if (!use_shm2(src,dest)) {
     def_multiblit(dest,x,y,w,h,src,sx,sy,sw,sh,xo,yo,lgop);
     return;
   }
 
-  /* Now if we got this far, this is probably a large background area that's
-   * tiled with a complete pixmap, so it will be efficiently handled by X (we hope)
+  /* Split the tiled blit up into individual blits clipped against the destination.
+   * We do y clipping once per line, since only x coordinates change in the inner loop
    */
-  set_shm1(dest,0);
-  XSetTile(x11_display,g,XB(src)->d);
-  XSetTSOrigin(x11_display,g,x-xo,y-yo);
-  XSetFillStyle(x11_display,g,FillTiled);
-  x11_rect(dest,x,y,w,h,0,lgop);
-  XSetFillStyle(x11_display,g,FillSolid);
+  
+  for (j=-yo;j<h;j+=sh) {
+    blit_y = y+j;
+    blit_h = sh;
+    blit_src_y = sy;
+    if (j<0) {
+      blit_y = y;
+      blit_h += j;
+      blit_src_y -= j;
+    }
+    if (blit_y + blit_h > y + h)
+      blit_h = y + h - blit_y;
+    
+    if (lgop == PG_LGOP_NONE && full_line_y >= 0 && blit_h == sh) {
+      /* If this blit isn't blended, this line is full-height, and there's already been
+       * one full-height line drawn, we can copy that line instead of drawing a new one.
+       * This can reduce the total number of blits from approximately (w/sw)*(h/sw) to (w/sw)+(h/sw)
+       */
+      
+      XB(dest)->lib->blit(&XB(dest)->sb,x,blit_y,w,blit_h,&XB(dest)->sb,x,full_line_y,lgop);
+    }
+    else {
+      /* Draw the line normally */
+      
+      for (i=-xo;i<w;i+=sw) {
+	blit_x = x+i;
+	blit_w = sw;
+	blit_src_x = sx;
+	if (i<0) {
+	  blit_x = x;
+	  blit_w += i;
+	  blit_src_x -= i;
+	}
+	if (blit_x + blit_w > x + w)
+	  blit_w = x + w - blit_x;
+	
+	XB(dest)->lib->blit(&XB(dest)->sb,blit_x,blit_y,blit_w,blit_h,&XB(src)->sb,blit_src_x,blit_src_y,lgop);
+      }
+      if (blit_h == sh)
+	full_line_y = blit_y;
+    }
+  }
 }
 
 void x11_charblit(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
