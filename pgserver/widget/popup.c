@@ -1,4 +1,4 @@
-/* $Id: popup.c,v 1.38 2001/11/06 07:31:34 micahjd Exp $
+/* $Id: popup.c,v 1.39 2001/11/07 02:41:39 micahjd Exp $
  *
  * popup.c - A root widget that does not require an application:
  *           creates a new layer and provides a container for other
@@ -107,7 +107,26 @@ g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner) {
 }
 
 void build_popupbg(struct gropctxt *c,unsigned short state,struct widget *self) {
-  /* exec_fillstyle knows not to use the default rectangle fill on a backdrop */
+  struct divnode *ntb;
+
+  /* If the popup is not allowed to overlap toolbars, clip to the nontoolbar
+   * area. Otherwise, just clip to the root divnode to make sure we stay on
+   * the display. */
+  if (self->in->div->flags & DIVNODE_POPUP_NONTOOLBAR)
+    ntb = appmgr_nontoolbar_area();
+  else
+    ntb = dts->root->head;
+
+  /* Set the popup backdrop to only display over the nontoolbar
+   * area when applicable.
+   */
+  c->x = ntb->x;
+  c->y = ntb->y;
+  c->w = ntb->w;
+  c->h = ntb->h;
+
+  /* exec_fillstyle knows not to use the default
+     rectangle fill on a backdrop */
   exec_fillstyle(c,state,PGTH_P_BACKDROP);
 }
 
