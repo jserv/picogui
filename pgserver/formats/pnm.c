@@ -1,4 +1,4 @@
-/* $Id: pnm.c,v 1.8 2001/11/19 00:12:38 micahjd Exp $
+/* $Id: pnm.c,v 1.9 2001/11/20 23:58:55 micahjd Exp $
  *
  * pnm.c - Functions to convert any of the pbmplus formats (PGM, PBM, PPM)
  *         collectively referred to as PNM
@@ -131,7 +131,7 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
     return efmt;
 
   /* Set up the bitmap */
-  e = VID(bitmap_new)(hbmp,w,h);
+  e = vid->bitmap_new(hbmp,w,h);
   errorcheck;
 
   /* Read in the values, convert colors, output them... */
@@ -191,7 +191,7 @@ g_error pnm_load(hwrbitmap *hbmp, const u8 *data, u32 datalen) {
       }
 
       /* Store it in the picogui bitmap */
-      VID(pixel)(*hbmp,x,y,VID(color_pgtohwr)(mkcolor(r,g,b)),PG_LGOP_NONE);
+      vid->pixel(*hbmp,x,y,VID(color_pgtohwr)(mkcolor(r,g,b)),PG_LGOP_NONE);
     }
   }
   
