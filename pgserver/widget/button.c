@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.109 2002/05/22 00:13:09 micahjd Exp $
+/* $Id: button.c,v 1.110 2002/05/22 00:30:29 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -397,9 +397,8 @@ g_error button_set(struct widget *self,int property, glob data) {
 
   case PG_WP_SPACING:
     DATA->spacing = data;
-    self->in->flags |= DIVNODE_NEED_RECALC;
-    self->dt->flags |= DIVTREE_NEED_RECALC;
-    redraw_bg(self);
+    resizewidget(self);
+    set_widget_rebuild(self);
     break;
 
   default:
@@ -777,7 +776,7 @@ void button_resize(struct widget *self) {
       (self->in->flags & PG_S_BOTTOM)) {
 
      /* Vertical */
-     h += theme_lookup(DATA->state,PGTH_P_SPACING);
+     h += DATA->spacing * theme_lookup(DATA->state,PGTH_P_SPACING);
 
      /* Overridden with PG_WP_SIZE? */
      if (!(self->in->flags & DIVNODE_SIZE_AUTOSPLIT))
@@ -787,7 +786,12 @@ void button_resize(struct widget *self) {
 	   (self->in->flags & PG_S_RIGHT)) {
 
      /* Horizontal */
-     w += theme_lookup(DATA->state,PGTH_P_SPACING);
+     w += DATA->spacing * theme_lookup(DATA->state,PGTH_P_SPACING);
+
+     /* FIXME: When the size is overridden, we don't take account for the spacing,
+      *        but simply moving the next few lines up won't work since that assumes
+      *        the size will be in pixels.
+      */
 
      /* Overridden with PG_WP_SIZE? */
      if (!(self->in->flags & DIVNODE_SIZE_AUTOSPLIT))
