@@ -52,17 +52,12 @@ class Task(object):
            """
         pass
 
-class UserTask(Task):
-    """Task subclass that indicates something the user must specifically
-       invoke. Specifically, these tasks having been executed or being in
-       the pending tasks list will prevent an error when there aren't any
-       build targets.
-       """
-    pass
+    def preventAutoBuild(self):
+        """Return true if this task should prevent automatically building
+           the default targets if no explicit targets have been specified.
+           """
+        return False
 
-class InternalTask(Task):
-    """The opposite of a UserTask"""
-    pass
 
 class TaskList(object):
     def __init__(self, ui, tasks=[]):
@@ -100,13 +95,13 @@ class TaskList(object):
 
 ################### Tasks
 
-class BuildSystemInitTask(InternalTask):
+class BuildSystemInitTask(Task):
     """Invoke the build system to build targets"""
     def execute(self):
         import PGBuild.Build
         self.ui.buildSystem = PGBuild.Build.System(self.config)
 
-class MergeBootstrapTask(InternalTask):
+class MergeBootstrapTask(Task):
     def execute(self):
         """Merge the bootstrap packages. This performs everything
            except the actual configuration mount, since we had to do that
@@ -116,17 +111,19 @@ class MergeBootstrapTask(InternalTask):
         for package in self.config.packages.getBootstrapPackages():
             self.config.packages.findPackageVersion(package).merge(bootMergeTask, False)
 
-class NukeTask(UserTask):
+class NukeTask(Task):
     """Handle --nuke command line option"""
     def isActive(self):
         return self.config.eval("invocation/option[@name='nuke']/text()")
+
     def execute(self):
         self.config.packages.nuke(self.progress)
 
-class MergeAllTask(UserTask):
+class MergeAllTask(Task):
     """Handle --merge-all command line option"""
     def isActive(self):
         return self.config.eval("invocation/option[@name='mergeAll']/text()")
+
     def execute(self):
         mergeTask = self.progress.task("Merging all packages")
         packages = self.config.listEval("packages/package/@name")
@@ -134,44 +131,69 @@ class MergeAllTask(UserTask):
         for name in packages:
             self.config.packages.findPackageVersion(name).merge(mergeTask)
 
-class MergeTask(UserTask):
+class MergeTask(Task):
     """Handle --merge command line option"""
     def init(self):
         self.mergeList = self.config.listEval("invocation/option[@name='merge']/item/text()")
+
     def isActive(self):
         return not not self.mergeList
+
     def execute(self):
         mergeTask = self.progress.task("Merging user-specified packages")
         for name in self.mergeList:
             self.config.packages.findPackageVersion(name).merge(mergeTask)
 
-class BuildSystemRunTask(InternalTask):
+class BuildSystemRunTask(Task):
     """Invoke the build system to build targets"""
     def execute(self):
-        self.ui.buildSystem.run(self.progress)
+        # The build task is always active, but it only takes action if:
+        #  ... the user explicitly specified targets
+        #  ... or, all pending and completed tasks' preventAutoBuild() members return False
+        # Note that this logic would generally go in isActive(), but since this depends
+        # on having all other tasks already sorted into pending or inactive, we have to do
+        # it here.
+        enabled = True
+        for task in self.taskList.pending + self.taskList.completed:
+            if task.preventAutoBuild():
+                enabled = False
+        if self.config.listEval('invocation/target/text()'):
+            enabled = True
+        if enabled:
+            self.ui.buildSystem.run(self.progress)
 
-class CleanupUITask(InternalTask):
+class CleanupUITask(Task):
     """Call the UI's cleanup() method to, if applicable, put us back in plain text mode"""
     def execute(self):
         self.ui.cleanup()
 
-class DumpTreeTask(UserTask):
+class DumpTreeTask(Task):
     """Handle --dump-tree command line option"""
     def init(self):
         self.dumpFile = self.config.eval("invocation/option[@name='treeDumpFile']/text()")
+
     def isActive(self):
         return not not self.dumpFile
+
     def execute(self):
         self.config.dump(self.dumpFile, self.progress)
 
-class ListTask(UserTask):
+    def preventAutoBuild(self):
+        return True
+
+class ListTask(Task):
     """Handle --list command line option"""
     def init(self):
         self.listPath = self.config.eval("invocation/option[@name='listPath']/text()")
+
     def isActive(self):
         return not not self.listPath
+
     def execute(self):
         self.ui.list(self.listPath)
+
+    def preventAutoBuild(self):
+        return True
 
 ################### Primary task list
 #
