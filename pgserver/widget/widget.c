@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.109 2001/09/10 10:05:50 micahjd Exp $
+/* $Id: widget.c,v 1.110 2001/09/10 10:58:03 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -1049,12 +1049,17 @@ void dispatch_key(u32 type,s16 key,s16 mods) {
   /* Ignore CHAR events for keys modified by ALT or CTRL */
   if (type == TRIGGER_CHAR && (mods & (PGMOD_ALT | PGMOD_CTRL))) return;
 
-  /* Iterate through the hotkey-owning widgets if there's a KEYDOWN */
+  /* Iterate through the hotkey-owning widgets if there's a KEYUP */
   p = dts->top->hkwidgets;
   while (p) {
     if (p->hotkey == keycode) {
       suppress = 1;
-      if (type == TRIGGER_KEYDOWN)
+      /* FIXME?? : This has to be a KEYUP to avoid problems with a
+       * hotspot situation immediately following a hotkey situation.
+       * The hotkey picks up the KEYDOWN and the hotspot picks up the KEYUP
+       * for the same key
+       */
+      if (type == TRIGGER_KEYUP)
 	send_trigger(p,TRIGGER_HOTKEY,NULL);
     }
     p = p->hknext;
