@@ -29,47 +29,45 @@
 #include "ai2.h"
 #include "ai3.h"
 
-/*
+
 #define DEBUG
-*/
+#define FUNCTION_DEBUG
 
 void ai3(struct board *it)
 {
-  int temp = nextmovewin(it);
+  int temp;
+
+  temp = nextmovewin(it);
+#ifdef DEBUG
+    fprintf(stderr,"nextmovewin returned %d\n",temp);
+#endif
 
   if(temp != -1)
   {
-#ifdef DEBUG
-    fprintf(stderr,"I GOT IT\n");
-#endif
     move(it,temp);
     return;
   }
-#ifdef DEBUG
-  fprintf(stderr,"I can't win this turn\n");
-#endif
   temp = nextmovelose(it,-1);
+#ifdef DEBUG
+  fprintf(stderr,"nextmovelose returned %d\n",temp);
+#endif
   if(temp != -1)
   {
-#ifdef DEBUG
-    int i;
-    for(i=0;i<7;i++)
-      fprintf(stderr,"%d:%d   ",i,paramcheck(temp,i));
-    fprintf(stderr,"\n");
-#endif
     notmove(it,temp);
     return;
   }
 
-#ifdef DEBUG  
-  fprintf(stderr,"Random Move... temp was\n");
-#endif
   randommove(it);
 }
 
 int nextmovelose(struct board *it, int param)
 {
   int x,y,total,i;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"nextmovelose called - param = %d.\n",param);
+#endif
+
   //zero slope
   for(x=0;x<4;x++)
     for(y=1;y<6;y++)
@@ -117,23 +115,50 @@ int nextmovelose(struct board *it, int param)
 void notmove(struct board *it, int param)
 {
   int spot;
-  while(1)
+  int tester = 0;
+#ifdef FUNCTION_DEBUG  
+  fprintf(stderr,"notmove called - param = %d.\n",param);
+#endif
+
+  /* try for a random good spot 100 times */
+  while(tester != 100)
   {
     spot = rand() % 7;
     if(paramcheck(param,spot) == -1)
     {
-      move(it,spot);
-      return;
+      if(move(it,spot) != -1)
+	return;
+    }
+    tester++;
+  }
+  
+  /* make sure that it wasn't a fluke I missed it */
+  for(tester = 0 ; tester < 7 ; tester++)
+  {
+    if(paramcheck(param,spot) == -1)
+    {
+      if(move(it,spot) != -1)
+	return;
     }
   }
+  
+  randommove(it);
 }
 
 int paramcheck(int param, int test)
 {
   int temp;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"paramcheck called - param = %d, test = %d.\n",param,test);
+#endif
+  
+
   while(param > 0)
   {
     temp = param % 10;
+    if(temp == 8)
+      temp = 0;
     if(temp == test)
       return test;
     else
@@ -144,10 +169,11 @@ int paramcheck(int param, int test)
 
 int paramadd(int param, int add)
 {
-#ifdef DEBUG
-  fprintf(stderr,"Paramater %d added\n",add);
-#endif /* DEBUG */
-
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"paramadd called - param = %d, add = %d.\n",param,add);
+#endif /* DEBUG_STUFF */
+  if(add == 0)
+    add = 8;
   if(param == -1)
     return add;
   else

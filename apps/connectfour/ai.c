@@ -31,6 +31,7 @@
 #include "ai.h"
 #include "rules.h"
 
+#define FUNCTION_DEBUG
 
 void aicall(struct board *it)
 {
@@ -49,16 +50,27 @@ void aicall(struct board *it)
       ai4(it);
       break;
     }
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"\n");
+#endif
 }
 
 void randommove(struct board *it)
 {
   int i = 0;
-  while(move(it,rand()%7) < 0)
-    fprintf(stderr,"randommove itteration %d\n",++i);
+  
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"randommove called\n");
+#endif
+  while(move(it,rand()%7) < 0);
+  
 }
 
 int move(struct board *it, int location)
 {
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"move called - location = %d.\n",location);
+#endif
   return putpiece(location,COMP,it);
 }

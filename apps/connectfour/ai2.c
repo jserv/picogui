@@ -27,6 +27,7 @@
 #include "ai1.h"
 #include "ai.h"
 
+#define FUNCTION_DEBUG
 
 void ai2(struct board *it)
 {
@@ -45,6 +46,10 @@ int nextmovewin(struct board *it)
   int y;
   int total;
   int toreturn;
+
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"nextmovewin called\n");
+#endif
 
   //zero slope
   for(x=0;x<4;x++)

@@ -30,11 +30,17 @@
 #include "ai3.h"
 #include "ai4.h"
 
+#define FUNCTION_DEBUG
+#define DEBUG
+
 void ai4(struct board *it)
 {
   int temp;
 
   temp = nextmovewin(it);
+#ifdef DEBUG
+  fprintf(stderr,"nextmovewin returned %d\n",temp);
+#endif
   if(temp != -1)
   {
     move(it,temp);
@@ -42,6 +48,9 @@ void ai4(struct board *it)
   }
 
   temp = linetrap(it);
+#ifdef DEBUG
+  fprintf(stderr,"linetrap returned %d\n",temp);
+#endif
   if(temp != -1)
   {
     move(it,temp);
@@ -49,6 +58,9 @@ void ai4(struct board *it)
   }
 
   temp = nextmovelose(it,-1);
+#ifdef DEBUG
+  fprintf(stderr,"nextmovelose returned %d\n",temp);
+#endif
   if(temp != -1)
   {
     notmove(it,temp);
@@ -63,7 +75,11 @@ int linetrap(struct board *it)
   int x, y;
   int total;
   int i;
-
+  
+#ifdef FUNCTION_DEBUG
+  fprintf(stderr,"linetrap called\n");
+#endif
+  
   /*horizontal line traps*/
   for(x=1;x<4;x++)
     for(y=0;y<6;y++)

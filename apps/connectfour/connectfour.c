@@ -90,6 +90,9 @@ int NewGame(struct pgEvent *evt)
     case 4:
       pgReplaceTextFmt(info,"Skill Level Four");
       break;
+    default:
+      return;
+      break;
     }
   if(!(evt->extra == NULL)) free(evt -> extra);
   evt -> extra = malloc(sizeof(board));
