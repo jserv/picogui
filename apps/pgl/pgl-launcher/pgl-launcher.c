@@ -26,6 +26,8 @@
 
 #include <picogui.h>
 #include <dirent.h>
+#include <string.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
