@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.38 2001/08/29 17:06:49 micahjd Exp $
+/* $Id: label.c,v 1.39 2001/08/30 02:57:04 micahjd Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -32,8 +32,8 @@
 
 struct labeldata {
   handle text,font;
-  unsigned char transparent;
   short int align,direction;
+  u8 transparent, alignset;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -128,6 +128,7 @@ g_error label_set(struct widget *self,int property, glob data) {
   case PG_WP_ALIGN:
     if (data > PG_AMAX) return mkerror(PG_ERRT_BADPARAM,11);
     DATA->align = (alignt) data;
+    DATA->alignset = 1;
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
@@ -198,6 +199,10 @@ void label_resize(struct widget *self) {
   char *str;
   handle font = DATA->font ? DATA->font : 
     theme_lookup(self->in->div->state,PGTH_P_FONT);
+
+  /* If the client hasn't aligned it, use the theme's default. */
+  if (!DATA->alignset)
+    DATA->align = theme_lookup(self->in->div->state,PGTH_P_ALIGN);
 
   if (iserror(rdhandle((void **)&fd,PG_TYPE_FONTDESC,-1,font))
 	      || !fd) return;
