@@ -31,7 +31,7 @@ if [ "$UCLINUX" != "y" ]; then
 fi
 
 comment 'Debuggative spew'
-bool 'Terminal prints unknown escapes'  BOTHERSOME_TERMINAL
+bool 'Terminal widget debugging'        DEBUG_TERMINAL
 bool 'Widget debugging'                 DEBUG_WIDGET
 bool 'Event debugging'                  DEBUG_EVENT
 if [ "$DEBUG_EVENT" = "y" ]; then
