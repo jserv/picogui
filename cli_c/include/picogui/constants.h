@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.85 2001/10/08 04:08:36 micahjd Exp $
+/* $Id: constants.h,v 1.86 2001/10/20 05:11:49 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -244,8 +244,10 @@ typedef unsigned long pghandle;
 #define PG_TYPE_STRING     4    //!< Created by pgNewString()
 #define PG_TYPE_THEME      5    //!< Created by pgLoadTheme()
 #define PG_TYPE_FILLSTYLE  6    //!< Used internally to store a theme's fillstyles
-#define PG_TYPE_ARRAY      7
+#define PG_TYPE_ARRAY      7    //!< Created by pgNewArray()
 #define PG_TYPE_DRIVER     8    //!< Created by pgLoadDriver()
+#define PG_TYPE_PALETTE    9    //!< An array of pgcolors, transformed into hwrcolors
+
 
 #define PG_TYPEMASK        0x1F
 
@@ -343,9 +345,10 @@ typedef unsigned long pghandle;
 #define PGTH_O_RADIOBUTTON_ON        55   //!< Radio button (cust. button)
 #define PGTH_O_RADIOBUTTON_ON_NOHILIGHT 56 //!< Radio button (cust. button)
 #define PGTH_O_TEXTBOX               57   //!< Textbox widget
+#define PGTH_O_TERMINAL              58   //!< Terminal widget
 
 //! If you add a themeobject, be sure to increment this and add an inheritance entry in theme/memtheme.c
-#define PGTH_ONUM                    58
+#define PGTH_ONUM                    59
 
 //! \}
 
@@ -422,6 +425,12 @@ typedef unsigned long pghandle;
 #define PGTH_P_CURSORBITMAP  26  //!< Bitmap for the (mouse) pointer 
 #define PGTH_P_CURSORBITMASK 27  //!< Bitmask for the (mouse) pointer 
 #define PGTH_P_HIDEHOTKEYS   28  //!< Set to a PG_HHK_* constant
+#define PGTH_P_ATTR_DEFAULT  29  //!< Default attribute for the terminal
+#define PGTH_P_ATTR_CURSOR   30  //!< Default attribute for the terminal
+#define PGTH_P_TEXTCOLORS    31  //!< Text color pallete for the terminal
+#define PGTH_P_TIME_ON       32  //!< Milliseconds on for flashing cursor
+#define PGTH_P_TIME_OFF      33  //!< Milliseconds off for flashing cursor
+#define PGTH_P_TIME_DELAY    34  //!< Milliseconds to wait before flashing
 
 #define PGTH_P_STRING_OK          501    //!< String property (usually in PGTH_O_DEFAULT)
 #define PGTH_P_STRING_CANCEL      502    //!< String property (usually in PGTH_O_DEFAULT)
@@ -738,10 +747,14 @@ typedef unsigned long pghandle;
 #define PGDM_SDC_CHAR         5   //!< Send a character to the secondary display channel
 #define PGDM_BRIGHTNESS       6   //!< Set display brightness, 0x00-0xFF
 #define PGDM_CONTRAST         7   //!< Set display contrast, 0x00-0xFF
+#define PGDM_INPUT_RAW        8   //!< Send PG_NWE_PNTR_RAW from the specified widget
+#define PGDM_INPUT_SETCAL     9   //!< param is a handle to a new calibration string
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
 #define PG_SND_VISUALBELL     3   //!< Flash the visual bell if available
+#define PG_SND_ALARM          4
+#define PG_SND_SHORTBEEP      5   //!< Shorter beep
 
 #define PG_POWER_OFF          0   //!< Turn completely off
 #define PG_POWER_SLEEP       50   //!< Stop CPU, turn off peripherals
@@ -809,7 +822,8 @@ typedef unsigned long pghandle;
 #define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
 #define PG_WP_ABSOLUTEY   23
 #define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
-#define PG_WP_STATE       25    /* theme object - the widget's current state */
+#define PG_WP_STATE       25    /* Deprecated! Use PG_WP_THOBJ instead */
+#define PG_WP_THOBJ       25    /* Set a widget's theme object */
 #define PG_WP_NAME        26    /* A widget's name (for named containers, etc) */
 #define PG_WP_PUBLICBOX   27    /* Set to 1 to allow other apps to make widgets
 				 * in this container */
@@ -881,6 +895,7 @@ typedef unsigned long pghandle;
 #define PG_NWE_PNTR_UP     0x1205
 #define PG_NWE_PNTR_DOWN   0x1204
 #define PG_NWE_BGCLICK     0x120D /* The user clicked the background widget */
+#define PG_NWE_PNTR_RAW    0x1101 /* Raw coordinates, for tpcal */
 
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed

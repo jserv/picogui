@@ -1,4 +1,4 @@
-/* $Id: canvas.h,v 1.52 2001/10/08 04:08:36 micahjd Exp $
+/* $Id: canvas.h,v 1.53 2001/10/20 05:11:49 micahjd Exp $
  *
  * picogui/canvas.h - This defines the commands sent from the client to a
  *                    canvas widget (Via RQH_WRITETO)
