@@ -37,6 +37,7 @@ typenames = {
     0x306:	'data',		# Widget is streaming data to the app 
     0x107:	'resize',	# For terminal widgets 
     0x108:	'build',	# Sent from a canvas, clients can rebuild groplist 
+    0x109:      'scrollwheel',  # Scroll wheel event with x,y deltas for the scroll wheel
     0x209:	'pntr move',	# The "mouse" moved 
     0x40A:	'kbd char',	# A focused keyboard character recieved 
     0x40B:	'kbd keyup',	# A focused raw keyup event 
@@ -68,7 +69,7 @@ class Event(object):
         paramtype = (evtype & 0x0f00) >> 8
         try:
             self.paramtype = _paramtypes[paramtype]
-        except KeyError:
+        except IndexError:
             raise ParameterError(paramtype)
         self.type = evtype
         self.name = typenames.get(self.type)

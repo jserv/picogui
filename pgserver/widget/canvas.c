@@ -1,4 +1,4 @@
-/* $Id: canvas.c,v 1.52 2003/01/01 03:43:08 micahjd Exp $
+/* $Id: canvas.c,v 1.53 2003/01/18 07:50:36 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
@@ -185,6 +185,18 @@ void canvas_trigger(struct widget *self, s32 type, union trigparam *param) {
    /* Nope, it was some sort of event to pass on to the app */
 
    switch (type) {
+
+     /* Scroll wheel events */
+
+    case PG_TRIGGER_SCROLLWHEEL:
+      post_event(PG_WE_SCROLLWHEEL,self,
+		 (param->mouse.x << 16) | param->mouse.y,
+		 0,NULL);
+      evt = 0;
+      break;
+
+     /* Events that can be all processed as canvas-relative coordinates */
+
     case PG_TRIGGER_UP:
       evt = PG_WE_PNTR_UP;
       break;

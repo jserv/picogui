@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.177 2003/01/01 03:43:02 micahjd Exp $
+/* $Id: constants.h,v 1.178 2003/01/18 07:50:36 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -1069,6 +1069,7 @@ typedef unsigned long pghandle;
 #define PG_WE_DATA        0x306 /* Widget is streaming data to the app */
 #define PG_WE_RESIZE      0x107 /* For terminal widgets */
 #define PG_WE_BUILD       0x108 /* Sent from a canvas, clients can rebuild groplist */
+#define PG_WE_SCROLLWHEEL 0x109 /* Sent from a canvas, includes x,y delta of scroll wheel */
 #define PG_WE_PNTR_MOVE   0x209 /* The "mouse" moved */
 #define PG_WE_KBD_CHAR    0x40A /* A focused keyboard character recieved */
 #define PG_WE_KBD_KEYUP   0x40B /* A focused raw keyup event */
