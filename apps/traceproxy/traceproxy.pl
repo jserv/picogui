@@ -126,7 +126,7 @@ while (1) {
     elsif ($rsptype==2) {
 	# Return value
 	read($server,$rsp_ret,6) or die $!;
-	($rspid,$rspdata) = unpack("nn",$rsp_ret);
+	($rspid,$rspdata) = unpack("nN",$rsp_ret);
 	printf "%d (0x%X)\n",$rspdata,$rspdata;
 	print $client $rsptypeword.$rsp_ret;
     }
