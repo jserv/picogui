@@ -1,4 +1,4 @@
-/* $Id: sdlgl.h,v 1.18 2002/09/19 21:50:07 micahjd Exp $
+/* $Id: sdlgl.h,v 1.19 2002/09/19 22:34:27 micahjd Exp $
  *
  * sdlgl.h - OpenGL driver for picogui, using SDL for portability
  *           This file holds definitions shared between components of
@@ -144,6 +144,14 @@ struct gl_fontload {
   int tx,ty,tline;
 };
 
+union gl_camera {
+  double array[6];
+  struct {
+    double tx,ty,tz;
+    double rx,ry,rz;
+  } e;
+};
+
 /* Since calls to get_param_* are splattered out everywhere, define the
  * configfile section here.
  */
@@ -191,10 +199,7 @@ struct sdlgl_data {
   int camera_mode;
 
   /* Current camera position */
-  struct {
-    float tx,ty,tz;
-    float rx,ry,rz;
-  } camera;
+  union gl_camera camera, smoothed_cam;
 
   /* For the camera movement, keep track of which keys are pressed */
   u8 pressed_keys[PGKEY_MAX];
@@ -211,6 +216,7 @@ struct sdlgl_data {
   int continuous;
   int update_throttle;
   int wireframe;
+  int resetting;
 
   /* save the old font list so we can restore it on exit */
   struct fontstyle_node *old_fonts;
@@ -255,6 +261,7 @@ void gl_osd_printf(int *y, const char *fmt, ...);
 void gl_matrix_pixelcoord(void);
 void gl_matrix_camera(void);
 void gl_process_camera_keys(void);
+void gl_process_camera_smoothing(void);
 void gl_render_grid(void);
 g_error gl_load_font_style(struct gl_fontload *fl,TTF_Font *ttf, struct font **ppf, int style);
 g_error gl_load_font(struct gl_fontload *fl,const char *file);

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_util.c,v 1.16 2002/09/19 21:50:07 micahjd Exp $
+/* $Id: sdlgl_util.c,v 1.17 2002/09/19 22:34:27 micahjd Exp $
  *
  * sdlgl_util.c - OpenGL driver for picogui, using SDL for portability.
  *                This file has utilities shared by multiple components of the driver.
@@ -208,7 +208,7 @@ void gl_frame(void) {
   }
 
   gl_process_camera_keys();
-
+  gl_process_camera_smoothing();
 
   if (gl_global.showfps)
     gl_osd_printf(&i,"FPS: %.2f",gl_global.fps);
@@ -433,23 +433,6 @@ void gl_make_texture(struct glbitmap *glb) {
 
 void gl_set_wireframe(int on) {
   glPolygonMode(GL_FRONT_AND_BACK, on ? GL_LINE : GL_FILL);
-}
-
-void gl_matrix_camera(void) {
-  glLoadIdentity();
-  gl_matrix_pixelcoord();
-
-  glTranslatef(0,0,gl_global.camera.tz);
-
-  /* Rotate from the center of the screen */
-  glTranslatef(vid->xres/2,  vid->yres/2, 0);
-  glRotatef(gl_global.camera.rx,1,0,0);
-  glRotatef(gl_global.camera.ry,0,1,0);
-  glRotatef(gl_global.camera.rz,0,0,1);
-  glTranslatef(-vid->xres/2, -vid->yres/2, 0);
-
-  glTranslatef(gl_global.camera.tx,
-	       gl_global.camera.ty,0);
 }
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: sdlgl_camera.c,v 1.7 2002/09/19 21:50:07 micahjd Exp $
+/* $Id: sdlgl_camera.c,v 1.8 2002/09/19 22:34:27 micahjd Exp $
  *
  * sdlgl_camera.c - OpenGL driver for picogui, using SDL for portability.
  *                  This is an input filter that traps keyboard and mouse
@@ -48,6 +48,8 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       /* Camera modes */
 
     case PGKEY_q:
+      if (gl_global.camera_mode == SDLGL_CAMERAMODE_NONE)
+	gl_global.grid = 1;
       if (gl_global.camera_mode == SDLGL_CAMERAMODE_TRANSLATE)
 	gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
       else
@@ -56,6 +58,8 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       return;
 
     case PGKEY_e:
+      if (gl_global.camera_mode == SDLGL_CAMERAMODE_NONE)
+	gl_global.grid = 1;
       if (gl_global.camera_mode == SDLGL_CAMERAMODE_ROTATE)
 	gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
       else
@@ -65,12 +69,13 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
 
     case PGKEY_r:
       gl_global.camera_mode = SDLGL_CAMERAMODE_NONE;
-      gl_global.camera.tx = 0;
-      gl_global.camera.ty = 0;
-      gl_global.camera.tz = 0;
-      gl_global.camera.rx = 0;
-      gl_global.camera.ry = 0;
-      gl_global.camera.rz = 0;
+      gl_global.camera.e.tx = 0;
+      gl_global.camera.e.ty = 0;
+      gl_global.camera.e.tz = 0;
+      gl_global.camera.e.rx = 0;
+      gl_global.camera.e.ry = 0;
+      gl_global.camera.e.rz = 0;
+      gl_global.resetting = 1;
       gl_global.need_update++;
       return;
 
@@ -153,15 +158,15 @@ void infilter_sdlgl_handler(struct infilter *self, u32 trigger, union trigparam 
       switch (gl_global.camera_mode) {
 	
       case SDLGL_CAMERAMODE_TRANSLATE:
-	gl_global.camera.tx += dx;
-	gl_global.camera.ty += dy;
-	gl_global.camera.tz += dz;
+	gl_global.camera.e.tx += dx;
+	gl_global.camera.e.ty += dy;
+	gl_global.camera.e.tz += dz;
 	break;
 	
       case SDLGL_CAMERAMODE_ROTATE:
-	gl_global.camera.ry += dx * 0.1;
-	gl_global.camera.rx -= dy * 0.1;
-	gl_global.camera.rz += dz * 0.1;
+	gl_global.camera.e.ry += dx * 0.1;
+	gl_global.camera.e.rx -= dy * 0.1;
+	gl_global.camera.e.rz += dz * 0.1;
 	break;
       }
     }
@@ -185,24 +190,84 @@ void gl_process_camera_keys(void) {
   switch (gl_global.camera_mode) {
     
   case SDLGL_CAMERAMODE_TRANSLATE:
-    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.tz += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.tz -= 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.ty += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.ty -= 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.tx += 5.0 * scale;
-    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.tx -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.e.tz += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.e.tz -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.e.ty += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.e.ty -= 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.e.tx += 5.0 * scale;
+    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.e.tx -= 5.0 * scale;
     break;
 
   case SDLGL_CAMERAMODE_ROTATE:
-    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.rz += 0.4 * scale;
-    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.rz -= 0.4 * scale;
-    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.rx += 0.4 * scale;
-    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.rx -= 0.4 * scale;
-    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.ry += 0.4 * scale;
-    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.ry -= 0.4 * scale;
-    break;
-    
+    if (gl_global.pressed_keys[PGKEY_w])     gl_global.camera.e.rz += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_s])     gl_global.camera.e.rz -= 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_UP])    gl_global.camera.e.rx += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_DOWN])  gl_global.camera.e.rx -= 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_LEFT])  gl_global.camera.e.ry += 0.4 * scale;
+    if (gl_global.pressed_keys[PGKEY_RIGHT]) gl_global.camera.e.ry -= 0.4 * scale;
+    break; 
   }
+}
+
+/* Handle smoothly moving our smoothed_cam to the camera position. This
+ * eliminates the jerkiness of the mouse wheel and keyboard, and in general
+ * increases this drivers niftiness :)
+ */
+void gl_process_camera_smoothing(void) {
+  int i;
+  float diff;
+  int done_resetting = 0;
+  int num_axes = (sizeof(gl_global.camera.array)/sizeof(double));
+
+  /* Loop through each element in the camera coords... */
+  for (i=0; i<num_axes; i++) {
+    diff = gl_global.camera.array[i] - gl_global.smoothed_cam.array[i];
+
+    /* Above some threshold, move smoothly to the position and cause a frame
+     * to be rendered. Below that threshlod, snap to the correct position and render
+     * one more frame. If it's zero, don't render anything.
+     */
+    if (fabs(diff) > 0.00001) {
+      gl_global.smoothed_cam.array[i] += diff * 0.1;
+      gl_global.need_update++;
+    }
+    else if (diff) {
+      gl_global.smoothed_cam.array[i] = gl_global.camera.array[i];
+      gl_global.need_update++;
+    }
+    else if (gl_global.resetting) {
+      /* We just finished smoothing out the camera motion from a camera reset,
+       * Make sure the camera is snapped to 0 so we don't get rounding errors.
+       */
+      gl_global.smoothed_cam.array[i] = 0;
+      done_resetting++;
+    }
+  }  
+
+  /* If every axis is done resetting, turn off the grid and resetting flags */
+  if (done_resetting == num_axes) {
+    gl_global.resetting = 0;
+    gl_global.grid = 0;
+  }
+}
+
+/* Set up the current OpenGL matrix to view from our camera 
+ */
+void gl_matrix_camera(void) {
+  glLoadIdentity();
+  gl_matrix_pixelcoord();
+
+  glTranslatef(0,0,gl_global.smoothed_cam.e.tz);
+
+  /* Rotate from the center of the screen */
+  glTranslatef(vid->xres/2,  vid->yres/2, 0);
+  glRotatef(gl_global.smoothed_cam.e.rx,1,0,0);
+  glRotatef(gl_global.smoothed_cam.e.ry,0,1,0);
+  glRotatef(gl_global.smoothed_cam.e.rz,0,0,1);
+  glTranslatef(-vid->xres/2, -vid->yres/2, 0);
+
+  glTranslatef(gl_global.smoothed_cam.e.tx,
+	       gl_global.smoothed_cam.e.ty,0);
 }
 
 /* Allow modifier keys to scale movements 
