@@ -1,4 +1,4 @@
-/* $Id: linear16.c,v 1.26 2002/10/16 23:12:17 micahjd Exp $
+/* $Id: linear16.c,v 1.27 2002/10/17 01:21:08 micahjd Exp $
  *
  * Video Base Library:
  * linear16.c - For 16bpp linear framebuffers
@@ -557,6 +557,7 @@ void linear16_blur(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, s16 radius) {
 }
 #endif /* CONFIG_FASTER_BLUR */
 
+
 /* This should be helpful for running SDL apps on a rotated display :)
  */
 void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
@@ -683,6 +684,397 @@ void linear16_rotateblit(hwrbitmap dest, s16 dest_x, s16 dest_y,
     linedest += bd;
   }
 }
+
+
+void linear16_charblit_0(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+			 s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			 int char_pitch) {
+  int iw,hc;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+  u16 *d,*dline;
+  int special = lines;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x>clip->x2 || dest_y>clip->y2 || (dest_x+w)<clip->x1 || 
+      (dest_y+h)<clip->y1)) return;
+
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->y2<(dest_y+h))
+      h = clip->y2-dest_y+1;
+    if (clip->y1>dest_y) {
+      hc = clip->y1-dest_y; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_x--;
+      }
+      dest_y += hc;
+      chardat += hc*char_pitch;
+    }
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x1>dest_x) {
+      xmin = clip->x1-dest_x;
+      special = 1;
+    }
+    if (clip->x2<(dest_x+w)) {
+      xmax = clip->x2-dest_x+1;
+      special = 1;
+    }
+  }
+
+  dline = PIXELADDR(dest_x,dest_y);
+
+  if (special) {
+    /* General purpose */
+    for (;hc<h;hc++,(u8*)dline+=FB_BPL) {
+      if (olines && lines==hc) {
+	lines += olines;
+	dline--;
+	flag=1;
+      }
+      for (d=dline,iw=char_pitch,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,d++,xpix++) {
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	    *d = c;
+	}
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
+    }
+  }
+  else {
+    /* Optimized for the most common case */
+    for (;hc<h;hc++,(u8*)dline+=FB_BPL)
+      for (d=dline,iw=char_pitch;iw;iw--) {
+	ch = *(chardat++);
+	if (ch & 0x80) *d = c;
+	d++;
+	if (ch & 0x40) *d = c;
+	d++;
+	if (ch & 0x20) *d = c;
+	d++;
+	if (ch & 0x10) *d = c;
+	d++;
+	if (ch & 0x08) *d = c;
+	d++;
+	if (ch & 0x04) *d = c;
+	d++;
+	if (ch & 0x02) *d = c;
+	d++;
+	if (ch & 0x01) *d = c;
+	d++;
+      }
+  }
+}
+
+void linear16_charblit_90(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+			  s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			  int char_pitch) {
+  int iw,hc;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+  u16 *d,*dline;
+  int special = lines;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x>clip->x2 || (dest_y-w)>clip->y2 || (dest_x+h)<clip->x1 || 
+      dest_y<clip->y1)) return;
+
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->x2<(dest_x+h-1))
+      h = clip->x2-dest_x+1;
+    if (clip->x1>dest_x) {
+      hc = clip->x1-dest_x; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_y++;
+      }
+      dest_x += hc;
+      chardat += hc*char_pitch;
+    }
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->y1>dest_y-w+1) {
+      xmax = 1+dest_y-clip->y1;
+      special = 1;
+    }
+    if (clip->y2<(dest_y)) {
+      xmin = dest_y-clip->y2;
+      special = 1;
+    }
+  }
+
+  dline = PIXELADDR(dest_x,dest_y);
+
+  if (special) {
+    /* General purpose */
+    for (;hc<h;hc++,dline++) {
+      if (olines && lines==hc) {
+	lines += olines;
+	(u8*)dline += FB_BPL;
+	flag=1;
+      }
+      for (iw=char_pitch,d=dline,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,(u8*)d-=FB_BPL,xpix++) {
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	    *d = c;
+	}
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
+    }
+  }
+  else {
+    /* Optimized for the most common case */
+    for (;hc<h;hc++,dline++)
+      for (d=dline,iw=char_pitch;iw;iw--) {
+	ch = *(chardat++);
+	if (ch & 0x80) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x40) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x20) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x10) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x08) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x04) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x02) *d = c;
+	(u8*)d-=FB_BPL;
+	if (ch & 0x01) *d = c;
+	(u8*)d-=FB_BPL;
+      }
+  }
+}
+
+void linear16_charblit_180(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+			   s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			   int char_pitch) {
+  int iw,hc,x;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+  u16 *d,*dline;
+  int special = lines;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x<clip->x1 || dest_y<clip->y1 || (dest_x-w)>clip->x2 || 
+      (dest_y-h)>clip->y2)) return;
+
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->y1>(dest_y-h))
+      h = dest_y-clip->y1+1;
+    if (clip->y2<dest_y) {
+      hc = dest_y-clip->y2; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_x--;
+      }
+      dest_y -= hc;
+      chardat += hc*char_pitch;
+    }
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->x2<dest_x) {
+      xmin = dest_x-clip->x2;
+      special = 1;
+    }
+    if (clip->x1>(dest_x-w)) {
+      xmax = dest_x-clip->x1+1;
+      special = 1;
+    }
+  }
+
+  dline = PIXELADDR(dest_x,dest_y);
+
+  if (special) {
+    /* General purpose */
+    for (;hc<h;hc++,(u8*)dline-=FB_BPL) {
+      if (olines && lines==hc) {
+	lines += olines;
+	dline--;
+	flag=1;
+      }
+      for (d=dline,iw=char_pitch,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,d--,xpix++) {
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	    *d = c;
+	}
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
+    }
+  }
+  else {
+    /* Optimized for the most common case */
+    for (;hc<h;hc++,(u8*)dline-=FB_BPL)
+      for (d=dline,iw=char_pitch;iw;iw--) {
+	ch = *(chardat++);
+	if (ch & 0x80) *d = c;
+	d--;
+	if (ch & 0x40) *d = c;
+	d--;
+	if (ch & 0x20) *d = c;
+	d--;
+	if (ch & 0x10) *d = c;
+	d--;
+	if (ch & 0x08) *d = c;
+	d--;
+	if (ch & 0x04) *d = c;
+	d--;
+	if (ch & 0x02) *d = c;
+	d--;
+	if (ch & 0x01) *d = c;
+	d--;
+      }
+  }
+}
+
+void linear16_charblit_270(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+			   s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,
+			   int char_pitch) {
+  int iw,hc,y;
+  int olines = lines;
+  int bit;
+  int flag=0;
+  int xpix,xmin,xmax;
+  unsigned char ch;
+  u16 *d,*dline;
+  int special = lines;
+
+  /* Is it at all in the clipping rect? */
+  if (clip && (dest_x<clip->x1 || (dest_y+w)<clip->y1 || (dest_x-h)>clip->x2 || 
+      dest_y>clip->y2)) return;
+
+  xmin = 0;
+  xmax = w;
+  hc = 0;
+
+  /* Do vertical clipping ahead of time (it does not require a special case) */
+  if (clip) {
+    if (clip->x1>(dest_x-h+1))
+      h = dest_x-clip->x1+1;
+    if (clip->x2<dest_x) {
+      hc = dest_x-clip->x2; /* Do it this way so skewing doesn't mess up when clipping */
+      while (lines < hc && olines) {
+	lines += olines;
+	dest_y--;
+      }
+      dest_x -= hc;
+      chardat += hc*char_pitch;
+    }
+    
+    /* Setup for horizontal clipping (if so, set a special case) */
+    if (clip->y1>dest_y) {
+      xmin = clip->y1-dest_y;
+      special = 1;
+    }
+    if (clip->y2<(dest_y+w)) {
+      xmax = clip->y2-dest_y+1;
+      special = 1;
+    }
+  }
+
+  dline = PIXELADDR(dest_x,dest_y);
+
+  if (special) {
+    /* General purpose */
+    for (;hc<h;hc++,dline--) {
+      if (olines && lines==hc) {
+	lines += olines;
+	(u8*)dline-=FB_BPL;
+	flag=1;
+      }
+      for (iw=char_pitch,d=dline,xpix=0;iw;iw--)
+	for (bit=8,ch=*(chardat++);bit;bit--,ch=ch<<1,(u8*)d+=FB_BPL,xpix++) {
+	  if (ch&0x80 && xpix>=xmin && xpix<xmax) 
+	    *d = c;
+	}
+      if (flag) {
+	xmax++;
+	flag=0;
+      }
+    }
+  }
+  else {
+    /* Optimized for the most common case */
+    for (;hc<h;hc++,dline--)
+      for (d=dline,iw=char_pitch;iw;iw--) {
+	ch = *(chardat++);
+	if (ch & 0x80) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x40) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x20) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x10) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x08) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x04) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x02) *d = c;
+	(u8*)d+=FB_BPL;
+	if (ch & 0x01) *d = c;
+	(u8*)d+=FB_BPL;
+      }
+  }
+}
+
+/* A meta-charblit to select the appropriate function based on angle */
+void linear16_charblit(hwrbitmap dest, u8 *chardat,s16 x,s16 y,s16 w,s16 h,
+		  s16 lines, s16 angle, hwrcolor c, struct quad *clip,
+		  s16 lgop, int char_pitch) {
+
+   void (*p)(hwrbitmap dest, u8 *chardat,s16 dest_x, s16 dest_y,
+	     s16 w,s16 h,s16 lines, hwrcolor c,struct quad *clip,int char_pitch);
+   
+   if (!FB_ISNORMAL(dest,lgop)) {
+     def_charblit(dest,chardat,x,y,w,h,lines,angle,c,clip,lgop,char_pitch);
+     return;
+   }
+
+   switch (angle) {
+    case 0:   p = &linear16_charblit_0;   break;
+    case 90:  p = &linear16_charblit_90;  break;
+    case 180: p = &linear16_charblit_180; break;
+    case 270: p = &linear16_charblit_270; break;
+    default:
+      return;
+   }
+
+   (*p)(dest,chardat,x,y,w,h,lines,c,clip,char_pitch);
+}
+
 
 #ifdef CONFIG_FONTENGINE_FREETYPE
 static u8 linear16_null_gammatable[256];
@@ -859,6 +1251,7 @@ void setvbl_linear16(struct vidlib *vid) {
   vid->slab           = &linear16_slab;
   vid->blit           = &linear16_blit;
   vid->scrollblit     = &linear16_scrollblit;
+  vid->charblit       = &linear16_charblit;
   vid->rotateblit     = &linear16_rotateblit;
 #ifdef CONFIG_FONTENGINE_FREETYPE
   vid->alpha_charblit = &linear16_alpha_charblit;
