@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.9 2001/01/05 11:25:12 micahjd Exp $
+/* $Id: terminal.c,v 1.10 2001/01/07 23:18:40 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -219,8 +219,8 @@ void build_terminal(struct gropctxt *c,unsigned short state,struct widget *self)
   addgrop(c,DATA->bitmap ? PG_GROP_BITMAP : PG_GROP_RECT,c->x,c->y,c->w,c->h);
   c->current->param[0] = DATA->bitmap;
   c->current->param[1] = PG_LGOP_NONE;
-  c->current->param[2] = -c->x;
-  c->current->param[3] = -c->y;
+  c->current->param[2] = 0;
+  c->current->param[3] = 0;
   DATA->bg = c->current;
 
   /* Incremental grop for the background */
@@ -536,8 +536,8 @@ void term_realize(struct widget *self) {
    DATA->bginc->y = DATA->inc->y = DATA->y + DATA->updy * DATA->celh;
    DATA->bginc->w = DATA->inc->w = DATA->updw * DATA->celw;
    DATA->bginc->h = DATA->inc->h = DATA->updh * DATA->celh;
-   DATA->bginc->param[2] = DATA->bginc->x - DATA->x;
-   DATA->bginc->param[3] = DATA->bginc->y - DATA->y;
+   DATA->bginc->param[2] = DATA->bginc->x;
+   DATA->bginc->param[3] = DATA->bginc->y;
 
    /* Set the incremental update flag */
    self->in->div->flags |= DIVNODE_INCREMENTAL;
