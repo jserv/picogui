@@ -1,4 +1,4 @@
-/* $Id: label.c,v 1.42 2001/11/15 13:25:40 micahjd Exp $
+/* $Id: label.c,v 1.43 2001/12/12 22:14:16 epchristi Exp $
  *
  * label.c - simple text widget with a filled background
  * good for titlebars, status info
@@ -33,10 +33,13 @@
 struct labeldata {
   handle text,font;
   short int align,direction;
+  u8 transparent, alignset;
+  int y;
+  u8 yanchorset;
+  int x;
+  u8 xanchorset;
+  u8 colorset;
   pgcolor color;
-  unsigned int transparent : 1;
-  unsigned int alignset : 1;
-  unsigned int colorset : 1;
 };
 #define DATA ((struct labeldata *)(self->data))
 
@@ -70,6 +73,10 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
      addgrop(c,PG_GROP_SETFONT);
      c->current->param[0] = font;
   }
+
+  //
+  // Override color
+  //
   addgrop(c,PG_GROP_SETCOLOR);
   c->current->param[0] = VID(color_pgtohwr) 
     (DATA->colorset ? DATA->color : theme_lookup(state,PGTH_P_FGCOLOR));
@@ -79,7 +86,15 @@ void build_label(struct gropctxt *c,unsigned short state,struct widget *self) {
      c->current->param[0] = DATA->direction; 
      y+=h;
   }
-   
+
+  //
+  // Override y anchor placement
+  //
+  if ( DATA->yanchorset )
+     y = DATA->y;
+  if ( DATA->xanchorset )
+     x = DATA->x;
+  
   addgropsz(c,PG_GROP_TEXT,x,y,w,h);
   c->current->param[0] = DATA->text;
 }
@@ -160,7 +175,48 @@ g_error label_set(struct widget *self,int property, glob data) {
     self->in->flags |= DIVNODE_NEED_RECALC;
     self->dt->flags |= DIVTREE_NEED_RECALC;
     break;
+    
+  case PG_WP_ABSOLUTEY:
+     DATA->yanchorset = 1;
+     DATA->y = (int)data;
+     break;
 
+  case PG_WP_ABSOLUTEX:
+     DATA->xanchorset = 1;
+     DATA->x = (int)data;
+     break;
+     
+  case PG_WP_HILIGHTED:
+    {
+      struct divnode *sub;
+
+      if ( data ) {
+
+         //
+         //
+         // Hilight this widget
+         //
+         widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL_HILIGHT);
+      }
+      else {
+
+         // 
+         // Un hilight this widget
+         //
+         widget_set(self, PG_WP_THOBJ, PGTH_O_LABEL);
+      }
+
+      //
+      // Pass the message onto the other sub widgets
+      //
+      if ( self->sub ) {
+         for (sub = *self->sub; sub != NULL; sub = sub->next ) {
+            widget_set(sub->owner, PG_WP_HILIGHTED, data);
+         }
+      }
+    }
+    break;
+     
   case PG_WP_COLOR:
     DATA->colorset = 1;
     DATA->color = (pgcolor) data;
