@@ -247,14 +247,12 @@ void bindUI(picosmUI *interface){
 int main(int argc, char **argv){
   picosmUI *interface;
   FILE *existCheck;
-  struct pgmemdata wTemplate; 
 
   pgInit(argc, argv);
 
-  if(existCheck = fopen("/etc/picogui/picosm.wt", "r")){
+  if(existCheck = fopen("picosm.wt", "r")){
     fclose(existCheck);
-    wTemplate = pgFromFile("/etc/picogui/picosm.wt");
-    pgLoadWidgetTemplate(wTemplate);
+    pgDup(pgLoadWidgetTemplate(pgFromFile("picosm.wt")));
   }
   interface = buildUI();
   bindUI(interface);
