@@ -1,4 +1,4 @@
-/* $Id: panel.c,v 1.18 2000/08/07 11:41:20 micahjd Exp $
+/* $Id: panel.c,v 1.19 2000/08/07 12:18:58 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
@@ -346,6 +346,24 @@ void themeify_panel(struct divnode *d) {
 	     &current_theme[E_PANELBAR_BORDER],state);
   applystate(d->grop->next,
 	     &current_theme[E_PANELBAR_FILL],state);
+
+  /* Rotate the gradient on the panelbar
+     depending on the side it is attached to */
+  switch (self->in->flags & (~SIDEMASK)) {
+  case S_RIGHT:
+    d->grop->param.gradient.angle += 90;
+    d->grop->next->param.gradient.angle += 90;
+    break;
+  case S_BOTTOM:
+    d->grop->param.gradient.angle += 180;
+    d->grop->next->param.gradient.angle += 180;
+    break;
+  case S_LEFT:
+    d->grop->param.gradient.angle += 270;
+    d->grop->next->param.gradient.angle += 270;
+    break;
+  }
+
 
   /* Redraw this node only */
   d->flags |= DIVNODE_NEED_REDRAW;
