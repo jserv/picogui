@@ -1,4 +1,4 @@
-/* $Id: terminal_vt102.c,v 1.11 2003/03/21 09:54:18 micahjd Exp $
+/* $Id: terminal_vt102.c,v 1.12 2003/03/23 02:51:57 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -185,8 +185,10 @@ void term_char(struct widget *self,u8 c) {
     DATA->current.crsrx = 0;
     DATA->current.crsry++;
   }
-  if (DATA->current.crsry < 0)
+  if (DATA->current.crsry < 0) {
     DATA->current.crsry = 0;
+    term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,1);
+  }
   else if (DATA->current.crsry >= DATA->bufferh) {  /* Scroll vertically */
     DATA->current.crsry = DATA->bufferh-1;
     term_scroll(self,DATA->current.scroll_top,DATA->current.scroll_bottom,-1);
