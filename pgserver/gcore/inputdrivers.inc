@@ -57,4 +57,8 @@
   DRV("x11input",&x11input_regfunc)
 #endif
 
+#ifdef DRIVER_PALMAXTS
+  DRV("palmaxts",&palmaxts_regfunc)
+#endif
+
 /* The End */

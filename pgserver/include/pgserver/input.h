@@ -1,4 +1,4 @@
-/* $Id: input.h,v 1.23 2001/11/24 10:33:17 gork Exp $
+/* $Id: input.h,v 1.24 2001/12/13 18:06:20 lonetech Exp $
  *
  * input.h - Abstract input driver interface
  *
@@ -122,6 +122,14 @@ int events_pending(void);
 /* Unload all drivers */
 void cleanup_inlib(void);
 
+/* Touchscreen calibration */
+#ifdef CONFIG_TOUCHSCREEN
+/* don't restrict output to screen size or calibration will fail */
+void touchscreen_pentoscreen(s16 *x, s16 *y);
+/* message function for the calibration codes */
+void touchscreen_message(u32 message, u32 param, u32 *ret);
+#endif
+
 /* Registration functions */
 g_error sdlinput_regfunc(struct inlib *i);
 g_error svgainput_regfunc(struct inlib *i);
@@ -139,6 +147,7 @@ g_error ttykb_regfunc(struct inlib *i);
 g_error remorakb_regfunc(struct inlib *i);
 g_error serialmouse_regfunc(struct inlib *i);
 g_error x11input_regfunc(struct inlib *i);
+g_error palmaxts_regfunc(struct inlib *i);
 
 /* List of installed input drivers */
 struct inputinfo {
