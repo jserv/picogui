@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.108 2002/01/18 16:43:35 pney Exp $
+/* $Id: constants.h,v 1.109 2002/01/20 08:40:38 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -648,10 +648,10 @@ typedef unsigned long pghandle;
 #define PG_GROP_LINE   	   0x50
 #define PG_GROP_ELLIPSE    0x60 
 #define PG_GROP_FELLIPSE   0x70
-#define PG_GROP_FPOLYGON   0x90 
 #define PG_GROP_TEXT       0x04   //!< Param: string 
 #define PG_GROP_BITMAP     0x14   //!< Param: bitmap 
 #define PG_GROP_TILEBITMAP 0x24   //!< Param: bitmap 
+#define PG_GROP_FPOLYGON   0x34   //!< Param: array
 #define PG_GROP_GRADIENT   0x0C   //!< Param: angle, c1, c2 
 #define PG_GROP_TEXTGRID   0x1C   //!< Param: string, bufferw, offset
 #define PG_GROP_NOP        0x03
@@ -788,6 +788,7 @@ typedef unsigned long pghandle;
 #define PGDM_CURSORBLKEN     10   //!< Cursor blanking on/off
 #define PGDM_INPUT_CALEN     11   //!< Turn calibration mode on/off
 #define PGDM_CURSORWARP      12   //!< Internal message, notify drivers of a cursor warp
+#define PGDM_SIGNAL          13   //!< Internal message, sends SIGUSR1/2 to drivers (param is signal)
 
 #define PG_SND_KEYCLICK       1   //!< Short click
 #define PG_SND_BEEP           2   //!< Terminal beep
@@ -923,6 +924,7 @@ typedef unsigned long pghandle;
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
 #define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
 #define PG_EXEV_EXCLUSIVE 0x0080  /* Button is mutually exclusive */
+#define PG_EXEV_FOCUS     0x0100  /* We want to receive PG_WE_FOCUS */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL     0
@@ -946,7 +948,8 @@ typedef unsigned long pghandle;
 #define PG_WE_ACTIVATE     0x001 /* Button has been clicked/selected  */
 #define PG_WE_DEACTIVATE   0x002 /* Sent when the user clicks outside the active popup */
 #define PG_WE_CLOSE        0x003 /* A top-level widget has closed */
-#define PG_WE_FOCUS        0x004 /* Sent when a widget is focused */
+#define PG_WE_FOCUS        0x004 /* Sent when a button is focused, only if it has 
+				  * PG_EXEV_FOCUS. The field widget always sends this. */
 #define PG_WE_PNTR_DOWN    0x204 /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP      0x205 /* The "mouse" button is now up */
 #define PG_WE_PNTR_RELEASE 0x206 /* The "mouse" button was released outside
@@ -974,8 +977,6 @@ typedef unsigned long pghandle;
 /* These are event constants used for networked input drivers. It is a subset
  * of the TRIGGER_* constants in the server, representing only those needed
  * for input drivers. */
-#define PG_TRIGGER_ACTIVATE   (1<<3)  /* Sent when it receives focus */
-#define PG_TRIGGER_DEACTIVATE (1<<4)  /* Losing focus */
 #define PG_TRIGGER_KEYUP      (1<<5)  /* Ignores autorepeat, etc. Raw key codes*/
 #define PG_TRIGGER_KEYDOWN    (1<<6)  /* Ditto. */
 #define PG_TRIGGER_UP         (1<<8)  /* Mouse up */

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.14 2001/12/29 21:41:53 micahjd Exp $
+/* $Id: main.c,v 1.15 2002/01/20 08:40:38 micahjd Exp $
  *
  * main.c - PicoGUI Terminal (the 'p' is silent :)
  *          This handles the PicoGUI init and events
@@ -38,7 +38,26 @@
 
 #define BUFFERSIZE    1024  /* Size of output buffer */
 int ptyfd;                  /* file descriptor of the pty master */
-pghandle wTerminal;         /* Widgets */
+pghandle wTerminal,wPanel;  /* Widgets */
+char *title = "Terminal";
+int terminalHasFont = 0;
+
+/****************************** UI functions ***/
+
+/* Handler for the menu
+ */
+int btnFont(struct pgEvent *evt) {
+  pghandle fnt;
+
+  fnt = pgFontPicker("Terminal Font");
+
+  if (fnt) {
+    if (terminalHasFont)
+      pgDelete(pgGetWidget(wTerminal,PG_WP_FONT));
+    pgSetWidget(wTerminal,PG_WP_FONT,fnt,0);
+    terminalHasFont = 1;
+  }  
+}
 
 /****************************** Terminal event handlers ***/
 
@@ -57,13 +76,16 @@ int termResize(struct pgEvent *evt) {
   struct winsize size;
 
   /* If we're rolled up just stay calm... */
-  if (!(evt->e.size.w || evt->e.size.h))
+  if (evt->e.size.w <= 0 || evt->e.size.h <= 0)
      return 0;
    
   memset(&size,0,sizeof(size));
   size.ws_row = evt->e.size.h;
   size.ws_col = evt->e.size.w;
   ioctl(ptyfd,TIOCSWINSZ,(char *) &size);
+
+  /* Update the title bar */
+  pgReplaceTextFmt(wPanel,"%s (%dx%d)",title,evt->e.size.w,evt->e.size.h);
 
   return 0;
 }
@@ -119,7 +141,6 @@ void printHelp(void) {
 
 int main(int argc, char **argv) {
   int childpid;
-  char *title = "Terminal";
   unsigned char fontsize = 0;
   unsigned char noexit = 0;
   pgInit(argc,argv);
@@ -156,17 +177,32 @@ int main(int argc, char **argv) {
    
   /*** PicoGUI Initialization */
 
-  pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
+  wPanel = pgRegisterApp(PG_APP_NORMAL,title,0);              /* Register app */
   
-  wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,0,0);   /* Make a terminal */
+  /* Use our supernifty panelbar functionality to add a font button 
+   */
+  pgNewWidget(PG_WIDGET_BUTTON, PG_DERIVE_BEFORE, 
+	      pgGetWidget(wPanel,PG_WP_PANELBAR_LABEL));
+  pgSetWidget(PGDEFAULT,
+	      PG_WP_SIDE, PG_S_LEFT,
+	      PG_WP_EXTDEVENTS, PG_EXEV_PNTR_DOWN,
+	      PG_WP_TEXT, pgNewString("f"),
+	      0);
+  pgBind(PGDEFAULT, PG_WE_PNTR_DOWN, btnFont, NULL);
+
+  /* Make a terminal 
+   */
+  wTerminal = pgNewWidget(PG_WIDGET_TERMINAL,PG_DERIVE_INSIDE,wPanel);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_TOP,
 	      PG_WP_LINES,300,
 	      PG_WP_AUTOSCROLL,1,
 	      0);
-  if (fontsize)
+  if (fontsize) {
      pgSetWidget(PGDEFAULT,PG_WP_FONT,
 		 pgNewFont(NULL,fontsize,PG_FSTYLE_FIXED),0);
+     terminalHasFont = 1;
+  }
   pgBind(PGDEFAULT,PG_WE_DATA,&termInput,NULL);      /* Input handler */
   pgCustomizeSelect(&mySelect,&mySelectBH);          /* select() wrapper for output */
   pgBind(PGDEFAULT,PG_WE_RESIZE,&termResize,NULL);   /* Resize handler */

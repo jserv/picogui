@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.79 2002/01/19 08:11:54 micahjd Exp $
+/* $Id: dispatch.c,v 1.80 2002/01/20 08:40:38 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -619,7 +619,7 @@ g_error rqh_batch(int owner, struct pgrequest *req,
     }
   }
 
-  return e;
+  return success;
 }
 
 g_error rqh_regowner(int owner, struct pgrequest *req,
