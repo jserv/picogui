@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.12 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: divtree.h,v 1.13 2000/06/02 07:41:32 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -185,6 +185,7 @@ struct divnode {
 #define DIVNODE_SPLIT_BORDER	(1<<7) /* Shave 'split' pixels off each side */
 #define DIVNODE_SPLIT_CENTER    (1<<8) /* Keep div's w and h, center it */
 #define DIVNODE_PROPAGATE_RECALC (1<<9)
+#define DIVNODE_SPLIT_IGNORE   (1<<10) /* Don't bother the nodes' positions */
 
 /* Values for the 'side' parameter */
 

@@ -1,4 +1,4 @@
-/* $Id: div.c,v 1.9 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: div.c,v 1.10 2000/06/02 07:41:32 micahjd Exp $
  *
  * div.c - calculate, render, and build divtrees
  *
@@ -151,7 +151,7 @@ void divnode_recalc(struct divnode *n) {
      }
 
      /* Otherwise give children same w,h,x,y */
-     else {
+     else if (!(n->flags & DIVNODE_SPLIT_IGNORE)) {
        if (n->next) {
 	 n->next->x = n->x;
 	 n->next->y = n->y;
@@ -267,7 +267,6 @@ void r_divnode_free(struct divnode *n) {
   if (!n) return;
   r_divnode_free(n->next);
   r_divnode_free(n->div);
-
   grop_free(&n->grop);
   g_free(n);
 }
@@ -350,11 +349,14 @@ void dts_free(void) {
 
 g_error dts_push(void) {
   g_error e;
-  struct divtree *otop;
-  otop = dts->top;
-  e = divtree_new(&dts->top);
+  struct divtree *t;
+
+  e = divtree_new(&t);
   if (e.type != ERRT_NONE) return e;
-  dts->top->next = otop;
+
+  t->next = dts->top;
+  dts->top = t;
+
   return sucess;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.11 2000/06/02 01:14:50 micahjd Exp $
+/* $Id: request.c,v 1.12 2000/06/02 07:41:32 micahjd Exp $
  *
  * request.c - this connection is for sending requests to the server
  *             and passing return values back to the client
@@ -60,6 +60,7 @@ DEF_REQHANDLER(in_direct)
 DEF_REQHANDLER(wait)
 DEF_REQHANDLER(themeset)
 DEF_REQHANDLER(register)
+DEF_REQHANDLER(mkpopup)
 DEF_REQHANDLER(undef)
 g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(ping)
@@ -78,6 +79,7 @@ g_error (*rqhtab[])(int,struct uipkt_request*,void*,unsigned long*,int*) = {
   TAB_REQHANDLER(wait)
   TAB_REQHANDLER(themeset)
   TAB_REQHANDLER(register)
+  TAB_REQHANDLER(mkpopup)
   TAB_REQHANDLER(undef)
 };
 
@@ -390,6 +392,15 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
   if (req->size < sizeof(struct rqhd_mkwidget)) 
     return mkerror(ERRT_BADPARAM,"rqhd_mkwidget too small");
 
+  /* Don't allow direct creation of 'special' widgets that must
+     be created by other means (app registration, popup boxes)
+  */
+  switch (ntohs(arg->type)) {
+  case WIDGET_PANEL:
+  case WIDGET_POPUP:
+    return mkerror(ERRT_BADPARAM,"Cannot create special widget with mkwidget");
+  }
+
   e = rdhandle((void**) &parent,TYPE_WIDGET,owner,ntohl(arg->parent));
   if (e.type != ERRT_NONE) return e;
   if (!parent) return mkerror(ERRT_BADPARAM,"NULL parent widget");
@@ -606,7 +617,7 @@ g_error rqh_register(int owner, struct uipkt_request *req,
   struct app_info i;
   g_error e;
   memset(&i,0,sizeof(i));
-  if (req->size < (sizeof(struct rqhd_register)+1)) 
+  if (req->size < (sizeof(struct rqhd_register))) 
     return mkerror(ERRT_BADPARAM,"rqhd_register too small");
 
   i.owner = owner;
@@ -626,6 +637,27 @@ g_error rqh_register(int owner, struct uipkt_request *req,
   *ret = i.rootw;
 
   return e;
+}
+
+g_error rqh_mkpopup(int owner, struct uipkt_request *req,
+		  void *data, unsigned long *ret, int *fatal) {
+  struct rqhd_mkpopup *arg = (struct rqhd_mkpopup *) data;
+  struct widget *w;
+  handle h;
+  g_error e;
+
+  if (req->size < (sizeof(struct rqhd_mkpopup))) 
+    return mkerror(ERRT_BADPARAM,"rqhd_mkpopup too small");
+
+  e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w);
+  if (e.type != ERRT_NONE) return e;
+
+  e = mkhandle(&h,TYPE_WIDGET,owner,w);
+  if (e.type != ERRT_NONE) return e;
+  
+  *ret = h;
+
+  return sucess;
 }
 
 /* The End */
