@@ -75,6 +75,27 @@ EOF
 ;;
 
     # ------------------------------
+    arm-linux-omapevm)
+    # ------------------------------
+
+cat<<EOF
+[pgserver]
+@INPUTDRIVERS@
+depth = 16
+
+[timers]
+cursorhide = 10
+backlightoff = 300
+sleep = 3000
+
+[sound]
+keyclick = 1
+
+. /var/pgserver.dynconf
+EOF
+;;
+
+    # ------------------------------
     *)
     # ------------------------------
 
