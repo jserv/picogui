@@ -102,7 +102,7 @@ void scene(void) {
 
  
 /* Our main program, wrapped with exception handling */ 
-g_error protected_main(void) {
+g_error protected_main(int argc, char **argv) {
   g_error e;
   struct request_data r;
   struct pgrequest req;
@@ -137,7 +137,7 @@ g_error protected_main(void) {
   errorcheck;
 
   /* Define a configuration without using the usual config files */
-  e = pgserver_init(PGINIT_NO_CONFIGFILE | PGINIT_NO_COMMANDLINE,0,NULL);
+  e = pgserver_init(PGINIT_NO_CONFIGFILE,argc,argv);
   errorcheck;
 
   /* Read in a compiled widget template */
@@ -210,9 +210,9 @@ g_error protected_main(void) {
 
 
 /* Exception handling wrapper for main */
-int main() {
+int main(int argc, char **argv) {
   g_error e;
-  e = protected_main();
+  e = protected_main(argc,argv);
   if (iserror(e)) {
     os_show_error(e);
     return 1;
