@@ -71,10 +71,10 @@ sub drawgrid {
     # Spacebar messes up the last row
     slab(0,3,$width);
     $pos = 0;
+    $pos = addkey ($pos, 5, 3);
+    $pos = addkey ($pos, 5, 3);
     $pos = addkey ($pos, 6, 3);
-    $pos = addkey ($pos, 4, 3);
-    $pos = addkey ($pos, 4, 3);
-    $pos = addkey ($pos, 13, 3);
+    $pos = addkey ($pos, 11, 3);
     $pos = addkey ($pos, 5, 3);
     $pos = addkey ($pos, 5, 3);
     $pos = addkey ($pos, 5, 3);
@@ -132,7 +132,7 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 	 " i:i:PGKEY_i",
 	 " o:o:PGKEY_o",
 	 " p:p:PGKEY_p",
-	 " -:-:PGKEY_MINUS",
+	 "<x|:\b:PGKEY_BACKSPACE",
 #	 "del:\b:PGKEY_BACKSPACE",
 
 	 " cap::::3",
@@ -163,14 +163,14 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 #	 "shf::::2",
 
 	 " ctl::::4",
-	 " #::::5",
-	 "\@::::6",
+	 "123::::5",
+	 "sym::::6",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
 	 " <-::PGKEY_LEFT",
 	 " ->::PGKEY_RIGHT",
-	 "<x|:\b:PGKEY_BACKSPACE",
+	 " -:-:PGKEY_MINUS",
 	 "  ret:\r:PGKEY_RETURN");
 
 ####################################### Shift pattern (2)
@@ -194,7 +194,7 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 	 " I:I:PGKEY_i",
 	 " O:O:PGKEY_o",
 	 " P:P:PGKEY_p",
-	 " _:_:PGKEY_UNDERSCORE",
+	 "<x|:\b:PGKEY_BACKSPACE",
 #	 "del:\b:PGKEY_BACKSPACE",
 
 	 " cap::::3",
@@ -225,14 +225,14 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 #	 "shf",
 
 	 " ctl::::4",
-	 " #::::5",
-	 "\@::::6",
+	 "123::::5",
+	 "sym::::6",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
 	 " <-::PGKEY_LEFT",
 	 " ->::PGKEY_RIGHT",
-	 "<x|:\b:PGKEY_BACKSPACE",
+	 " _:_:PGKEY_UNDERSCORE",
 	 "  ret:\r:PGKEY_RETURN");
 
 # Show the shift keys as inverted
@@ -259,7 +259,7 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 	 " I:I:PGKEY_i",
 	 " O:O:PGKEY_o",
 	 " P:P:PGKEY_p",
-	 " -:-:PGKEY_MINUS",
+	 "<x|:\b:PGKEY_BACKSPACE",
 #	 "del:\b:PGKEY_BACKSPACE",
 
 	 " cap::::1",
@@ -290,14 +290,14 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 #	 "shf::::1",
 
 	 " ctl::::4",
-	 " #::::5",
-	 "\@::::6",
+	 "123::::5",
+	 "sym::::6",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
 	 " <-::PGKEY_LEFT",
 	 " ->::PGKEY_RIGHT",
-	 "<x|:\b:PGKEY_BACKSPACE",
+	 " -:-:PGKEY_MINUS",
 	 "  ret:\r:PGKEY_RETURN");
 
 # Show the caps lock as inverted
@@ -322,7 +322,7 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 	 "^i:#9:PGKEY_i",
 	 "^o:#15:PGKEY_o",
 	 "^p:#16:PGKEY_p",
-	 " -:-:PGKEY_MINUS",
+	 "<x|:\b:PGKEY_BACKSPACE",
 #	 "del:\b:PGKEY_BACKSPACE",
 
 	 " cap::::3",
@@ -355,20 +355,20 @@ drawgrid(" ->|:\t:PGKEY_TAB",
 #	 "shf::::2",
 
 	 " ctl",
-	 " #::::5",
-	 "\@::::6",
+	 "123::::5",
+	 "sym::::6",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
 	 " <-::PGKEY_LEFT",
 	 " ->::PGKEY_RIGHT",
-	 "<x|:\b:PGKEY_BACKSPACE",
+	 " -:-:PGKEY_MINUS",
 	 "  ret:\r:PGKEY_RETURN");
 
 # Show the ctrl as inverted
 setlgop(PG_LGOP_XOR);
 setcolor(0xFFFFFF);
-rect(0,3,6,1);
+rect(0,3,5,1);
 
 ####################################### Numbers pattern (5)
 
@@ -469,7 +469,7 @@ drawgrid(" esc:\e:PGKEY_ESCAPE",
 	 " 8:8:PGKEY_8",
 	 " 9:9:PGKEY_9",
 	 " 0:0:PGKEY_0",
-	 " |:|:124",
+	 "<x|:\b:PGKEY_BACKSPACE",
 #	 "\\:\\:PGKEY_BACKSLASH",
 
 	 "  ~:~:126",
@@ -501,20 +501,20 @@ drawgrid(" esc:\e:PGKEY_ESCAPE",
 #	 "shf::::2",
 
 	 " ctl::::4",
-	 " #::::5",
-	 "\@",
+	 "123::::5",
+	 "sym",
 	 ": :PGKEY_SPACE",
 #	 "/\\::PGKEY_UP",
 #	 "\\/::PGKEY_DOWN",
 	 " <-::PGKEY_LEFT",
 	 " ->::PGKEY_RIGHT",
-	 "<x|:\b:PGKEY_BACKSPACE",
+	 " |:|:124",
 	 "  ret:\r:PGKEY_RETURN");
 
 # Show the symbol button as inverted
 setlgop(PG_LGOP_XOR);
 setcolor(0xFFFFFF);
-rect(10,3,4,1);
+rect(10,3,6,1);
 
 ### The End ###
 
