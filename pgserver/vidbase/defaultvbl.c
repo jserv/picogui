@@ -1,4 +1,4 @@
-/* $Id: defaultvbl.c,v 1.39 2001/05/10 04:12:28 micahjd Exp $
+/* $Id: defaultvbl.c,v 1.40 2001/05/31 07:15:15 micahjd Exp $
  *
  * Video Base Library:
  * defaultvbl.c - Maximum compatibility, but has the nasty habit of
@@ -14,7 +14,7 @@
  * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
+ * modify it under the terms of the GNU General Public License  
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  * 
@@ -391,6 +391,112 @@ void def_rect(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,hwrcolor c,s16 lgop) {
   for (;h;h--,y++) (*vid->slab) (dest,x,y,w,c,lgop);
 }
 
+#define SYMMETRY(X,Y) (*vid->pixel) (dest,xoff+X,yoff+Y,c,lgop); \
+                      (*vid->pixel) (dest,xoff-X,yoff+Y,c,lgop); \
+                      (*vid->pixel) (dest,xoff-X,yoff-Y,c,lgop); \
+                      (*vid->pixel) (dest,xoff+X,yoff-Y,c,lgop)
+
+void def_ellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop) { 
+  s16 xoff, yoff; 
+  int w2, h2, S, T; 
+  w=--w>>1; 
+  h=--h>>1; 
+  w2 = w*w; 
+  h2 = h*h; 
+  S = w2*(1-(h<<1)) + (h2<<1); 
+  T = h2 - (w2*((h<<1)-1)<<1); 
+  xoff=x+w; 
+  yoff=y+h; 
+  x=0; 
+  y=h; 
+  do 
+    { 
+      if (S<0) 
+    { 
+      S += h2*((x<<1)+3)<<1; 
+      T += h2*(x+1)<<2; 
+      x++; 
+    } 
+      else if (T<0) 
+    { 
+      S += (h2*((x<<1)+3)<<1) - (w2*(y-1)<<2); 
+      T += (h2*(x+1)<<2) - (w2*((y<<1)-3)<<1); 
+      x++; 
+      y--; 
+    } 
+      else 
+    { 
+      S -= w2*(y-1)<<2; 
+      T -= w2*((y<<1)-3)<<1; 
+      y--; 
+    } 
+      SYMMETRY(x,y); 
+ 
+    } 
+  while (y>0); 
+} 
+#undef SYMMETRY 
+ 
+ 
+#define SYMLINE(X,Y)  (*vid->slab) (dest,xoff-X,yoff+Y,(X<<1)+1,c,lgop); \
+                      (*vid->slab) (dest,xoff-X,yoff-Y,(X<<1)+1,c,lgop)
+/* De Silva elliptical drawing algorithm, with lots of other optimizations :) */ 
+ 
+void def_fellipse(hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop) { 
+  s16 xoff, yoff; 
+  long int conda, condb, ddinc0, ddinc1; 
+  /* Change following var's to long long if you want to draw *huge* ellipses */ 
+  long int dd, w22, h22, w2, h2; 
+  w=--w>>1; 
+  h=--h>>1; 
+  w2 = w*w; 
+  h2 = h*h; 
+  w22 = w2<<1; 
+  h22 = h2<<1; 
+  xoff=x+w; 
+  yoff=y+h; 
+  x=0; 
+  y=h; 
+  ddinc0=(h2<<1)+h2; 
+  ddinc1=(2-(y<<1))*w2; 
+  dd=h2-w2*h+h2>>2; 
+  conda=w2*y-(w2>>1); 
+  condb=h2; 
+  while(conda>condb) { 
+    if(dd>=0) { 
+      dd+=ddinc1; 
+      conda-=w2; 
+      y--; 
+      ddinc1+=w22; 
+    } 
+    dd+=ddinc0; 
+    x++; 
+    condb+=h2; 
+    ddinc0+=h22; 
+    SYMLINE(x,y); 
+  } 
+  if(h2 > 10000 && w2 > 10000) { /* Get around using long long */ 
+    dd=(((h2>>6)*((x<<1)+1)*((x<<1)+1))>>2) + ((w2>>6)*(y-1)*(y-1) - (w2>>6)*h2); 
+    dd=dd<<6; 
+  } 
+  else 
+    dd=((h2*((x<<1)+1)*((x<<1)+1))>>2) + (w2*(y-1)*(y-1) - w2*h2); 
+  ddinc0=w2*(3-(y<<1)); 
+  ddinc1=h2*((x<<1)+2); 
+  while (y>0) { 
+    if(dd<0) { 
+      dd += ddinc1; 
+      x++; 
+      ddinc1+=h22; 
+    } 
+    dd += ddinc0; 
+    y--; 
+    ddinc0+=w22; 
+    SYMLINE(x,y); 
+  } 
+} 
+#undef SYMLINE 
+ 
 void def_gradient(hwrbitmap dest,s16 x,s16 y,s16 w,s16 h,s16 angle,
 		  pgcolor c1, pgcolor c2, s16 lgop) {
   /*
@@ -1279,6 +1385,8 @@ void setvbl_default(struct vidlib *vid) {
   vid->gradient = &def_gradient;
   vid->charblit = &def_charblit;
   vid->tileblit = &def_tileblit;
+  vid->ellipse = &def_ellipse; 
+  vid->fellipse = &def_fellipse; 
 #ifdef CONFIG_FORMAT_XBM
   vid->bitmap_loadxbm = &def_bitmap_loadxbm;
 #endif

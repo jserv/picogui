@@ -1,4 +1,4 @@
-/* $Id: video.h,v 1.40 2001/05/13 06:04:13 micahjd Exp $
+/* $Id: video.h,v 1.41 2001/05/31 07:15:15 micahjd Exp $
  *
  * video.h - Defines an API for writing PicoGUI video
  *           drivers
@@ -299,6 +299,9 @@ struct vidlib {
   void (*charblit)(hwrbitmap dest, u8 *chardat, s16 x, s16 y, s16 w, s16 h,
 		   s16 lines, s16 angle, hwrcolor c, struct quad *clip,
 		   bool fill, hwrcolor bg, s16 lgop);
+ 
+  void (*ellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
+  void (*fellipse) (hwrbitmap dest, s16 x, s16 y, s16 w, s16 h, hwrcolor c, s16 lgop); 
    
   /***************** Bitmaps */
 
