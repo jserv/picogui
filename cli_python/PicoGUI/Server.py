@@ -160,7 +160,7 @@ _wtype_consts = {
             'label':		(1, {}),
             'scroll':		(2, {}),
             'indicator':	(3, {}),
-            'bitmap':		(4, {}),
+            'managedwindow':	(4, {}),
             'button':		(5, {}),
             'panel':		(6, {}),
             'popup':		(7, {}),
@@ -181,6 +181,7 @@ _wtype_consts = {
             'dialogbox':        (22, {}),       # a type of popup that is always autosized and has a title
             'messagedialog':    (23, {}),       # a type of dialogbox that displays a message and gets feedback
             'scrollbox':        (24, {}),       # box widget with built-in horizontal and/or vertical scrollbars
+            'textedit':         (25, {}),
     }
 
 constants = {
@@ -295,6 +296,16 @@ constants = {
         'hotkey':			(19, {
         }),
         'extdevents':			(20, {	# for buttons, a mask of extra events to send
+            'pointer up':      (0x0001, {}),
+            'pointer down':    (0x0002, {}),
+            'noclick':         (0x0004, {}),
+            'pointer move':    (0x0008, {}),
+            'key':             (0x0010, {}),
+            'char':            (0x0020, {}),
+            'toggle':          (0x0040, {}),
+            'exclusive':       (0x0080, {}),
+            'focus':           (0x0100, {}),
+            'no hotspot':      (0x0200, {}),
         }),
         'direction':			(21, {
             'horizontal':	(0, {}),
