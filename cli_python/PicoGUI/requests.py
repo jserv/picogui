@@ -94,8 +94,8 @@ def loaddriver(name,  id=None):
 def mkarray(data,  id=None):
 	return request(33, data + '\x00', id=id)
 	
-def mkbitmap(width, height, id=None):
-	return request(3, pack('HH', width, height, id=id))
+def mkbitmap(image, id=None):
+	return request(3, image, id=id)
 	
 def mkcontext(id=None):
 	return request(23, id=id)
@@ -118,8 +118,8 @@ def mktheme(data, id=None):
 def mkwidget(relationship, type, parent, id=None):
 	return request(2, pack('HHL', relationship,  type, parent), id=id)
 	
-def newbitmap(width, height, image, id=None):
-	return request(35, pack('HH', width, height) + image, id=id)
+def newbitmap(width, height, id=None):
+	return request(35, pack('HH', width, height), id=id)
 	
 def ping(id=None):
 	return request(0, id=id)

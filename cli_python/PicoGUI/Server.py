@@ -294,9 +294,9 @@ class Server(object):
         return self._strings[text]
 
     def getBitmap(self, image):
-        # problem: how to calculate X and Y?
-        # what format is the image data in?
-        raise "Sorry, not implemented"
+        if not self._bitmaps.has_key(text):
+            self._bitmaps[text] = self.mkbitmap(text)
+        return self._bitmaps[text]
 
     def getFont(self, spec):
         if not self._fonts.has_key(spec):
