@@ -152,33 +152,42 @@ object base.display {
 object indicator {
   width = 15;
   margin = 0;
+  fgcolor = 0x4080af;
 }
 
 /* Horizontal indicator */
 object indicator.h {
   bitmap1 = LoadBitmap("data/aq_indicator_gray_h.pnm");	
-  bitmap2 = LoadBitmap("data/aq_indicator_h.pnm");
+  bitmap2 = LoadBitmap("data/aq_indicator_h.png");
 
   bgfill = fillstyle {
     Bitmap(x,y+(h-15)/2,w,15,bitmap1);
   };
     
   overlay = fillstyle {
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x-w,y+(h-13)/2,w*2,13);
+    SetLgop(PG_LGOP_ALPHA);
     Bitmap(x-w,y+(h-15)/2,w*2,15,bitmap2);
+    SetLgop(PG_LGOP_NONE);
   };
 }
 
 /* Vertical indicator */
 object indicator.v {
   bitmap1 = LoadBitmap("data/aq_indicator_gray_v.pnm");	
-  bitmap2 = LoadBitmap("data/aq_indicator_v.pnm");
+  bitmap2 = LoadBitmap("data/aq_indicator_v.png");
 
   bgfill = fillstyle {
     Bitmap(x+(w-15)/2,y,15,h,bitmap1);
   };
     
   overlay = fillstyle {
-    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap1);
+    SetColor(widget::PG_WP_COLOR);
+    Rect(x+(w-13)/2,y-h,13,h*2);
+    SetLgop(PG_LGOP_ALPHA);
+    Bitmap(x+(w-15)/2,y-h,15,h*2,bitmap2);
+    SetLgop(PG_LGOP_NONE);
   };
 }
 
