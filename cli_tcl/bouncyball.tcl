@@ -11,14 +11,13 @@ if { $connection == 0 } {
 	exit 1
 }
 
-pgEnterContext
+pgui entercontext
 
 set imgnr 0
 while {$imgnr<$NUMFRAMES} {
-	set img($imgnr) [pgLoadBitmap [format $imagebase $imgnr]]
+	set img($imgnr) [pgui createbitmap -name [format $imagebase $imgnr]]
 	incr imgnr
 }
-
 set dlg [pgDialog "Boing!"]
 set ok [pgCreateWidget button]
 set bmp [pgNewBitmap $img(0)]

@@ -203,17 +203,6 @@ proc pgFromFile { filename } {
 	close $f
 	return $data
 }
-proc pgLoadBitmap {data} {
-	global pg_request
-	if {[file exists $data] ==1} {
-		set data [pgFromFile $data]
-	}
-	send_packet [pack_pgrequest 1 [string length $data] \
-		$pg_request(mkbitmap)]
-	send_packet $data
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgNewLabel {{text ""} {rship 0} {parent 0}} {
 	set label [pgNewWidget label $rship $parent]
 	pgSetText $label $text
@@ -239,7 +228,7 @@ proc pgNewBitmap {{image 0} {rship 0} {parent 0}} {
 	} elseif {[isInteger $image] == 1} {
 		pgSetBitmap $bitmap $image
 	} else {
-		pgSetBitmap $bitmap [pgLoadBitmap $image]
+		pgSetBitmap $bitmap [pgui createbitmap $image]
 	}
 	return $bitmap
 }
@@ -333,14 +322,9 @@ proc pgAttach {widget rship parent} {
 	array set ret [pgGetResponse]
 	return $ret(data)
 }
-proc pgEnterContext {} {
-	global pg_request
-	send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
-	array set ret [pgGetResponse]
-	return $ret(data)
-}
 proc pgui {command args} {
-	global connection display server
+	global connection pg_request
+	global display server
 	array set aa $args
 	if {$command == "connect"} {
 		if {[lsearch $args -display]==-1} {
@@ -357,5 +341,36 @@ proc pgui {command args} {
 		fconfigure $connection -translation binary
 		set data [read $connection 8]
 		binary scan $data "ISS" magic protover dummy
-	}
+	} elseif {$command =="entercontext"} {
+		send_packet [pack_pgrequest 1 0 $pg_request(mkcontext)]
+		array set ret [pgGetResponse]
+		return $ret(data)
+	} elseif {$command =="createbitmap"} {
+		if {[info exists aa(-name)] == 1} {
+			set aa(-data) [pgFromFile $aa(-name)]
+		} 
+		if {[info exists aa(-data)]} {
+			send_packet [pack_pgrequest 1 [string length \
+				$aa(-data)] $pg_request(mkbitmap)]
+			send_packet $aa(-data)
+			array set ret [pgGetResponse]
+			return $ret(data)
+		} elseif {[expr [info exists aa(-width)] && [info exists aa(-height)]]} {
+			send_packet [pack_pgrequest 1 4 $pg_request(newbitmap)]
+			send_packet [binary format "SS" $aa(-width) $aa(-height)]
+			array set ret [pgGetResponse]
+			parray ret
+			return $ret(data)
+		} elseif {[expr [info exists aa(-width)] || [info exists aa(-height)]]} {
+			puts "wrong # args: should be pgui $command -width width -height height"
+		} else {
+			puts "unknown arguments for pgui createbitmap"
+		}
+	} 
 }
+# A list of implemented procedures to be moved into the readme file
+#pgui connect ?-server servername? ?-display displaynum?
+#pgui entercontext
+#pgui createbitmap -name filename|-data filedata
+#pgui createbitmap -width width -height height
+# -- in progress -- 
