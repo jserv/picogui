@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.214 2002/11/17 04:21:51 micahjd Exp $
+/* $Id: widget.c,v 1.215 2002/11/19 06:27:59 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -146,23 +146,22 @@ g_error widget_attach(struct widget *w, struct divtree *dt,struct divnode **wher
   w->container = container;
   
   /* If this widget is already in the divtree, remove it */
-  if (w->where) {
-    if (w->out) {
+  if (w->out) {
+    if (w->where)
       *w->where = *w->out;
-      /* Make sure that the attachment point is connected to the _beginning_
-       * of another widget. (Necessary to prevent improper detachment when
-       * a widget is embedded within another)
-       */
-      if (*w->out && (*w->out)->owner && (*w->out)==(*w->out)->owner->in)
-	(*w->out)->owner->where = w->where;
-      *w->out = NULL;
-    }
-    else 
-      *w->where = NULL;
-
-    /* Take off all the unnecessary divscroll flags */
-    r_div_unscroll(w->in);
+    /* Make sure that the attachment point is connected to the _beginning_
+     * of another widget. (Necessary to prevent improper detachment when
+     * a widget is embedded within another)
+     */
+    if (*w->out && (*w->out)->owner && (*w->out)==(*w->out)->owner->in)
+      (*w->out)->owner->where = w->where;
+    *w->out = NULL;
   }
+  else if (w->where)
+    *w->where = NULL;
+
+  /* Take off all the unnecessary divscroll flags */
+  r_div_unscroll(w->in);
   
   /* Add the widget to the divtree */
   w->where = where;
@@ -265,7 +264,7 @@ void widget_remove(struct widget *w) {
   widget_attach(w,NULL,NULL,0);
 
   /* Detach all children from this widget */
-  while ((child = widget_traverse(w,PG_TRAVERSE_CHILDREN,0))) {
+  while ((child = widget_traverse(w,PG_TRAVERSE_CHILDREN,0)) && child->where) {
     DBG("removing child %p, type %d. where %p\n",child,child->type,child->where);
     widget_attach(child,NULL,NULL,0);
   }
@@ -274,7 +273,7 @@ void widget_remove(struct widget *w) {
    * if it doesn't have any real children, if it was used inside another widget.
    * We need to reattach any child divnodes this widget still has back to its insertion
    * point, so that they are properly deleted when the widget owning this subtree is
-   * finishes removing its component pieces.
+   * finished removing its component pieces.
    * Note that we're attaching it to the widget's former "where" attachment point,
    * since by this time it's been detached from the widget tree and w->where
    * should be NULL.
@@ -289,16 +288,19 @@ void widget_remove(struct widget *w) {
     n = *w->sub;
     while (n->next) n = n->next;
     n->next = *w->out;
-    *old_where = *w->sub;
+    if (old_where)
+      *old_where = *w->sub;
     *w->out = *w->sub = NULL;
   }
   /* If there's only one child, link it directly */
   else if (w->out && *w->out) {
-    *old_where = *w->out;
+    if (old_where)
+      *old_where = *w->out;
     *w->out = NULL;
   }
   else if (w->sub && *w->sub) {
-    *old_where = *w->sub;
+    if (old_where)
+      *old_where = *w->sub;
     *w->sub = NULL;
   }
 

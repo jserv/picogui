@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.74 2002/11/11 08:18:28 micahjd Exp $
+/* $Id: scroll.c,v 1.75 2002/11/19 06:27:59 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -135,8 +135,8 @@ void build_scroll(struct gropctxt *c,u16 state,struct widget *self) {
     }
 
     DBG("Resizing to res %d, div->h = %d, calch = %d, oldres = %d, value = %d, t = (%d,%d)\n",
-	DATA->res, wgt->in->div->h, wgt->in->div->calch,oldres, DATA->value,
-	self->in->div->tx, self->in->div->ty);
+	DATA->res, wgt->in->div->r.h, wgt->in->div->calc.h,oldres, DATA->value,
+	self->in->div->translation.x, self->in->div->translation.y);
   }
 
   if ( (oldres==0) != (DATA->res==0) ) {
