@@ -12,4 +12,12 @@
 # you can download it from http://picogui.org/ or http://PyPicoGUI.laranja.org/
 # or download the license terms from http://www.gnu.org/)
 
-from Server import Server
+import Server
+server = Server
+Server = Server.Server
+import Widget
+widget = Widget
+Widget = Widget.Widget
+import Application
+application = Application
+Application = Application.Application

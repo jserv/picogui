@@ -251,7 +251,7 @@ class Request(object):
 # the class itself
 
 class Server(object):
-    def __init__(self, address='localhost', display='0'):
+    def __init__(self, address='localhost', display=0):
         self._connection = network.sock(address, display)
         self._strings = {}
         self._fonts = {}
