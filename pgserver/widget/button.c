@@ -13,10 +13,13 @@
 #include <g_malloc.h>
 #include <appmgr.h>
 
-/* This widget has extra data we can't store in the divnodes themselves */
+/* Button content offsetted in X and Y coords by this much when on */
+#define ON_OFFSET 1
 
+/* This widget has extra data we can't store in the divnodes themselves */
 struct btndata {
   int on,over;
+  int x,y;      /* Coordinates of the button's content (bitmap or text) */
   int text;     /* If this is nonzero, this is a bitmap button instead
 		   of a text button and the 'bitmap' param structure
 		   will be used. */
@@ -27,14 +30,9 @@ void bitbutton(struct divnode *d) {
   int x,y,w,h;
   struct bitmap *bit;
   struct widget *self = d->owner;
-  x = y = 0;
-  w = d->w;
-  h = d->h;
 
-  grop_frame(&d->grop,x,y,w,h,btn_b1); x++; y++; w-=2; h-=2;
-  grop_frame(&d->grop,x,y,w,h,
-	     DATA->over ? btn_over : btn_b2); x++; y++; w-=2; h-=2;
-  grop_rect(&d->grop,x,y,w,h,
+  /* Fill color */
+  grop_rect(&d->grop,2,2,d->w-4,d->h-4,
 	    DATA->on ? btn_on : btn_off); x++; y++; w-=2; h-=2;
 
   /* We need at least the main bitmap for alignment.  The mask
@@ -46,9 +44,20 @@ void bitbutton(struct divnode *d) {
     align(d,d->param.bitmap.align,&w,&h,&x,&y);
 
     /* AND the mask, then OR the bitmap. Yay for transparency effects! */
+    DATA->x = x;
+    DATA->y = y;
+    if (DATA->on) {
+      x+=ON_OFFSET;
+      y+=ON_OFFSET;
+    }
     grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.mask,LGOP_AND);
     grop_bitmap(&d->grop,x,y,w,h,d->param.bitmap.bitmap,LGOP_OR);
   }
+
+  /* The frame */
+  grop_frame(&d->grop,0,0,d->w,d->h,btn_b1);
+  grop_frame(&d->grop,1,1,d->w-2,d->h-2,
+	     DATA->over ? btn_over : btn_b2); x++; y++; w-=2; h-=2;
 }
 
 /* Pointers, pointers, and more pointers. What's the point?
@@ -197,14 +206,24 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
      require recreating grop-lists.
      Redraws don't spread to other nodes, and they are very fast.
   */
-  if (DATA->on)
-    self->in->div->grop->next->next->param.c = btn_on;
-  else
-    self->in->div->grop->next->next->param.c = btn_off;
+  if (DATA->on) {
+    self->in->div->grop->param.c = btn_on;
+    self->in->div->grop->next->x = DATA->x + ON_OFFSET;
+    self->in->div->grop->next->next->x = DATA->x + ON_OFFSET;
+    self->in->div->grop->next->y = DATA->y + ON_OFFSET;
+    self->in->div->grop->next->next->y = DATA->y + ON_OFFSET;
+  }
+  else {
+    self->in->div->grop->param.c = btn_off;
+    self->in->div->grop->next->x = DATA->x;
+    self->in->div->grop->next->next->x = DATA->x;
+    self->in->div->grop->next->y = DATA->y;
+    self->in->div->grop->next->next->y = DATA->y;
+  }
   if (DATA->over)
-    self->in->div->grop->next->param.c = btn_over;
+    self->in->div->grop->next->next->next->next->param.c = btn_over;
   else
-    self->in->div->grop->next->param.c = btn_b2;
+    self->in->div->grop->next->next->next->next->param.c = btn_b2;
   self->in->div->flags |= DIVNODE_NEED_REDRAW;
   self->dt->flags |= DIVTREE_NEED_REDRAW;   
 }
