@@ -1,4 +1,4 @@
-SUBDIRS = pgboard pterm
+SUBDIRS = pgboard pterm fieldtest
 
 if ENABLE_BEE
 

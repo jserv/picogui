@@ -48,7 +48,10 @@ runtime = [
                           ( prefix, prefix )),
     Runtime ( 'pgboard_cmds', 'Virtual Keyboard Tester',
               content = [ 'bin/pgboard_cmds' ],
-              help = "Test application to send commands to the Virtual Keyboard" )
+              help = "Test application to send commands to the Virtual Keyboard" ),
+    Runtime ( 'fieldtest', 'Field test',
+              content = [ 'bin/fieldtest' ],
+              help = "Text input widget" )
     ]
 
 def prepare (module, platform, project):

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl
-dnl $Id: configure.in,v 1.5 2001/10/30 09:47:57 cgrigis Exp $
+dnl $Id: configure.in,v 1.6 2001/11/06 10:46:02 bauermeister Exp $
 dnl
 
 AC_INIT(pgboard/pgboard.c)
@@ -100,4 +100,5 @@ AC_OUTPUT(
 	pterm/Makefile
 	pgboard/Makefile
 	pgboard/examples/Makefile
+	fieldtest/Makefile
 )
