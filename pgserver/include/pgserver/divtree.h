@@ -1,4 +1,4 @@
-/* $Id: divtree.h,v 1.37 2002/01/22 12:25:08 micahjd Exp $
+/* $Id: divtree.h,v 1.38 2002/02/06 07:41:37 micahjd Exp $
  *
  * divtree.h - define data structures related to divtree management
  *
@@ -108,6 +108,11 @@ struct divnode {
   
   /* Width and height, of course */
   s16 w,h;
+
+  /* Old absolute coordinates, as of the last redraw. If they haven't changed,
+   * don't redraw due to a recalc.
+   */
+  s16 ox,oy,ow,oh;
 
   /* Calculated size. Normally the same as the size above, but:
    *  - The position will be different if DIVNODE_DIVSCROLL is on
