@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.29 2001/07/10 11:46:53 micahjd Exp $
+/* $Id: field.c,v 1.30 2001/08/03 10:13:24 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
@@ -191,7 +191,8 @@ g_error field_set(struct widget *self,int property, glob data) {
      /* Update text */
      strcpy(DATA->buffer,str);
      resizewidget(self); 
-//     div_setstate(self->in->div,self->in->div->state,1);
+     self->in->flags |= DIVNODE_NEED_RECALC;
+     self->dt->flags |= DIVTREE_NEED_RECALC;
      break;
 
    default:
