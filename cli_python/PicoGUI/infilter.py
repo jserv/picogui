@@ -1,7 +1,7 @@
 # support for input filters
 import struct
 
-trigger_base_format = '!' + ('L' * 16)
+trigger_base_format = '!' + ('l' * 16)
 
 trigger_types = {
   1<<0:		'timer',	# Timer event from install_timer 
