@@ -1,4 +1,4 @@
-/* $Id: svga.c,v 1.5 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: svga.c,v 1.6 2000/09/03 21:44:02 micahjd Exp $
  *
  * svga.c - video driver for (S)VGA cards, via vgagl and svgalib
  *
@@ -26,6 +26,7 @@
  */
 
 #include <pgserver/video.h>
+#include <pgserver/input.h>
 
 #include <vga.h>
 #include <vgagl.h>
@@ -50,6 +51,14 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
 #define VGA_MODE G640x480x16M
 
   vga_init();
+
+  /* Load a main input driver. Do this before setting
+   * video mode, so that the mouse is initialized
+   * correctly.
+   **/
+  e = load_inlib(&svgainput_regfunc,&inlib_main);
+  errorcheck;
+
   vga_setmode(VGA_MODE);
   gl_setcontextvga(VGA_MODE);
   svga_physical = gl_allocatecontext();
@@ -74,10 +83,18 @@ g_error svga_init(int xres,int yres,int bpp,unsigned long flags) {
   e = g_malloc((void**)&svga_buf,WIDTH*BYTESPERPIXEL);
   errorcheck;
 
+  /* In a GUI environment, we don't want VC switches,
+     plus they usually crash on my system anyway ;-)
+  */
+  vga_lockvc();
+
   return sucess;
 }
 
 void svga_close(void) {
+  /* Take out input driver */
+  unload_inlib(inlib_main);
+
   g_free(svga_buf);
   gl_clearscreen(0);
   vga_setmode(0);

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.25 2000/09/03 19:22:37 micahjd Exp $
+# $Id: Makefile,v 1.26 2000/09/03 21:44:01 micahjd Exp $
 #
 # PicoGUI small and efficient client/server GUI
 # Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -35,8 +35,8 @@ SRC := widget/bitmap.c widget/indicator.c widget/label.c \
        widget/field.c gcore/timer.c gcore/errortext.c gcore/video.c \
        gcore/input.c gcore/driverinfo.c gcore/pgmain.c net/request.c \
        net/dispatch.c net/eventq.c \
-       video/sdlmin.c video/sdl.c input/sdlinput.c \
-       video/svga.c
+       video/svga.c input/svgainput.c
+#       video/sdlmin.c video/sdl.c input/sdlinput.c \
 
 HDR := include/pgserver/*.h
 
@@ -111,8 +111,8 @@ endif
 	endif
 
         # Libraries and includes for SDL
-	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
-	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
+#	CFLAGS := $(CFLAGS) $(shell $(SDLCONFIG) --cflags) 
+#	LDFLAGS := $(LDFLAGS) $(shell $(SDLCONFIG) --libs)
 	LDFLAGS := $(LDFLAGS) -lvgagl -lvga
 
 OBJ := $(SRC:.c=.o) font/fontdata.o

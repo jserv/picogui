@@ -1,7 +1,6 @@
-/* $Id: driverinfo.c,v 1.3 2000/09/03 21:44:02 micahjd Exp $
+/* $Id: svgainput.c,v 1.1 2000/09/03 21:44:02 micahjd Exp $
  *
- * driverinfo.c - has a static array with information about
- *                installed drivers
+ * svgainput.h - input driver for SVGAlib
  *
  * PicoGUI small and efficient client/server GUI
  * Copyright (C) 2000 Micah Dowty <micah@homesoftware.com>
@@ -26,31 +25,42 @@
  * 
  */
 
-#include <pgserver/video.h>
 #include <pgserver/input.h>
+#include <pgserver/widget.h>
+#include <pgserver/pgnet.h>
 
-/* Video 
- * Order does matter here- if no driver is specified, the one listed 
- * first here will be tried first, trying the next if there is an error,
- * and so on...
- */
-struct vidinfo videodrivers[] = {
-  //  {"sdl",&sdl_regfunc},             
-  {"svga",&svga_regfunc},
-  //  {"sdlmin",&sdl_regfunc},
+#include <vga.h>
 
-  /* End */ {NULL,NULL}
-};
+/* Yes, this is a hack, but it's more efficient this way.
+   Note to the authors of SVGAlib: why hide these vars?
+*/
+extern int __svgalib_mouse_fd;
+extern int __svgalib_kbd_fd;
 
-/* Input
- * Usually this will be autoloaded by the video driver.  If no driver is
- * specified, no input. Order does not matter
- */
-struct inputinfo inputdrivers[] = {
-  //  {"sdlinput",&sdlinput_regfunc},
-  {"svgainput",&svgainput_regfunc},
+/******************************************** Implementations */
 
-  /* End */ {NULL,NULL}
-};
+g_error svgainput_init(void) {
+
+  if (keyboard_init()==-1)
+    return mkerror(ERRT_IO,73);
+  vga_setmousesupport(1);
+
+  printf("keyboard: %d, mouse: %d\n",__svgalib_kbd_fd,__svgalib_mouse_fd);
+
+  return sucess;
+}
+ 
+void svgainput_close(void) {
+  keyboard_close();
+}
+
+/******************************************** Driver registration */
+
+g_error svgainput_regfunc(struct inlib *i) {
+  i->init = &svgainput_init;
+  i->close = &svgainput_close;
+
+  return sucess;
+}
 
 /* The End */

@@ -1,4 +1,4 @@
-/* $Id: errortext.c,v 1.3 2000/09/03 19:27:59 micahjd Exp $
+/* $Id: errortext.c,v 1.4 2000/09/03 21:44:02 micahjd Exp $
  *
  * errortext.c - optional error message strings
  *
@@ -115,6 +115,8 @@ static const char *errors[] = {
   /* 70 */  "Context underflow",
   /* 71 */  "Can't create the input thread!",
   /* 72 */  "This driver doesn't support changing video modes",
+  /* 73 */  "Error initializing keyboard",
+  /* 74 */  "Error initializing mouse",
 };
 
 #endif /* TINY_MESSAGES */
