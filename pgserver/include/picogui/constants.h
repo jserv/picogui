@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.180 2003/03/19 04:59:08 micahjd Exp $
+/* $Id: constants.h,v 1.181 2003/03/19 18:08:33 lalo Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -938,7 +938,8 @@ typedef unsigned long pghandle;
 #define PG_WP_FONT        8
 #define PG_WP_TRANSPARENT 9
 #define PG_WP_BORDERCOLOR 10
-#define PG_WP_BITMAP      12
+#define PG_WP_IMAGE       12
+#define PG_WP_BITMAP      PG_WP_IMAGE   /* For backwards compatibility */
 #define PG_WP_LGOP        13
 #define PG_WP_VALUE       14
 #define PG_WP_BITMASK     15
@@ -980,7 +981,8 @@ typedef unsigned long pghandle;
 #define PG_WP_PANELBAR_CLOSE  46
 #define PG_WP_PANELBAR_ROTATE 47
 #define PG_WP_PANELBAR_ZOOM   48
-#define PG_WP_BITMAPSIDE      49
+#define PG_WP_IMAGESIDE       49
+#define PG_WP_BITMAPSIDE      PG_WP_IMAGESIDE   /* For backwards compatibility */
 #define PG_WP_PASSWORD        50
 #define PG_WP_HOTKEY_FLAGS    51  /* Keyboard event flags for the hotkey (PG_KF_*) */
 #define PG_WP_HOTKEY_CONSUME  52  /* Flag indicating whether to consume the key event when a hotkey comes in */
