@@ -5,6 +5,9 @@ AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(picogui-server, 0.0)
 AM_ACLOCAL_INCLUDE(macros)
 
+dnl before checking the compiler, save the CFLAGS from environment
+user_CFLAGS=${CFLAGS}
+
 AM_PGUI_CROSSCOMPILE
 
 dnl Get the configuration file for the system
@@ -105,9 +108,9 @@ fi
 
 AC_SUBST(LXDIALOG)
 
-dnl explicitely set CFLAGS to empty, as it will be recreated during the analysis of 
-dnl the profile
-CFLAGS=""
+dnl explicitely set CFLAGS to the value passed by the user
+
+CFLAGS=${user_CFLAGS}
 
 dnl ==================================================
 dnl Extra libraries depending on the selected profile
