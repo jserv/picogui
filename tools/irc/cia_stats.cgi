@@ -88,6 +88,23 @@ print """
   </div>
 </div>
 
+<div><span class="section">Totals</span></div>
+<div class="section">
+  <div class="sectionTop"></div>
+  <div class="row">
+    <ul>
+"""
+print "<li>%d channels</li>" % len(channels)
+print "<li>%d projects</li>" % len(projects)
+msgTotal = 0
+for projCount in projectCounts.values():
+    msgTotal += projCount[statSubdirs[0]]
+print "<li>%d messages</li>" % msgTotal
+print """
+    </ul>
+  </div>
+</div>
+
 </body>
 </html>
 """
