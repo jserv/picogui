@@ -1,10 +1,10 @@
-/* $Id: theme.h,v 1.6 2001/02/13 05:11:34 micahjd Exp $
+/* $Id: theme.h,v 1.7 2001/03/30 05:53:53 micahjd Exp $
  * 
  * theme.h - Defines the theme file format, used by the server and by
  *           programs that read and write theme files
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

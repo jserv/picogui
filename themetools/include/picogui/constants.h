@@ -1,10 +1,10 @@
-/* $Id: constants.h,v 1.25 2001/02/13 05:11:34 micahjd Exp $
+/* $Id: constants.h,v 1.26 2001/03/30 05:53:53 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -220,10 +220,13 @@ typedef unsigned long pghandle;
 #define PGTH_O_POPUP_MESSAGEDLG      38   /* A message dialog */
 #define PGTH_O_MENUITEM              39   /* Item in a popup menu (customized button) */
 #define PGTH_O_MENUITEM_HILIGHT      40   /* menuitem with the mouse over it */
+#define PGTH_O_CHECKBOX              41   /* Check box (customized button) */
+#define PGTH_O_CHECKBOX_HILIGHT      42   /* checkbox with mouse over it */
+#define PGTH_O_CHECKBOX_ON           43   /* checkbox when on */
 
 /* If you add a themeobject, be sure to increment this and add
-   an inheritance entry in theme/thobjtab.c */
-#define PGTH_ONUM                    41
+   an inheritance entry in theme/memtheme.c */
+#define PGTH_ONUM                    44
 
 /*** Loaders */
 
@@ -394,6 +397,13 @@ typedef unsigned long pghandle;
 /* Video mode flags */
 #define PG_VID_FULLSCREEN     0x0001
 #define PG_VID_DOUBLEBUFFER   0x0002
+#define PG_VID_ROTATE90       0x0004
+
+/* flagmode parameter for the setmode request */
+#define PG_FM_SET             0      /* Sets all flags to specified value */
+#define PG_FM_ON              1      /* Turns on specified flags */
+#define PG_FM_OFF             2      /* Turns off specified flags */
+#define PG_FM_TOGGLE          3      /* Toggles specified flags */
 
 /* Logical operations for blits */
 #define PG_LGOP_NULL        0   /* Don't blit */
@@ -432,7 +442,8 @@ typedef unsigned long pghandle;
 #define PG_WIDGET_MENUITEM   11    /* A variation on button */
 #define PG_WIDGET_TERMINAL   12    /* A full terminal emulator */
 #define PG_WIDGET_CANVAS     13
-#define PG_WIDGETMAX         13    /* For error checking */
+#define PG_WIDGET_CHECKBOX   14    /* Another variation of button */
+#define PG_WIDGETMAX         14    /* For error checking */
      
 /* Widget properties */
 #define PG_WP_SIZE        1
@@ -455,11 +466,15 @@ typedef unsigned long pghandle;
 #define PG_WP_HOTKEY      19
 #define PG_WP_EXTDEVENTS  20    /* For buttons, a mask of extra events to send */
 #define PG_WP_DIRECTION   21
+#define PG_WP_ABSOLUTEX   22    /* read-only, relative to screen */
+#define PG_WP_ABSOLUTEY   23
+#define PG_WP_ON          24    /* on-off state of button/checkbox/etc */
 
 /* Constants for SIZEMODE */
 #define PG_SZMODE_PIXEL         0
 #define PG_SZMODE_PERCENT       (1<<2)    /* The DIVNODE_UNIT_PERCENT flag */
-#define PG_SZMODEMASK           (~PG_SZMODE_PERCENT)
+#define PG_SZMODE_CNTFRACT      (1<<15)   /* The DIVNODE_UNIT_CNTFRACT flag */
+#define PG_SZMODEMASK           (PG_SZMODE_PERCENT|PG_SZMODE_PIXEL|PG_SZMODE_CNTFRACT)
 
 /* Constants for the message dialog box flags */
 #define PG_MSGBTN_OK      0x0001
@@ -475,10 +490,11 @@ typedef unsigned long pghandle;
 /* Constants for PG_WP_EXTDEVENTS, to enable extra events */
 #define PG_EXEV_PNTR_UP   0x0001
 #define PG_EXEV_PNTR_DOWN 0x0002
-#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) */
+#define PG_EXEV_NOCLICK   0x0004  /* (ignore clicks) in buttons */
 #define PG_EXEV_PNTR_MOVE 0x0008
 #define PG_EXEV_KEY       0x0010  /* Raw key events KEYUP and KEYDOWN */
 #define PG_EXEV_CHAR      0x0020  /* Processed characters */
+#define PG_EXEV_TOGGLE    0x0040  /* Clicks toggle the button's state */
 
 /* Constants for PG_WP_DIRECTION */
 #define PG_DIR_HORIZONTAL 0

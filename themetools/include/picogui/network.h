@@ -1,10 +1,10 @@
-/* $Id: network.h,v 1.4 2001/02/13 05:11:34 micahjd Exp $
+/* $Id: network.h,v 1.5 2001/03/30 05:53:53 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,13 +33,18 @@
 #define PG_PROTOCOL_VER    0x0004      /* Increment this whenever changes are made */
 #define PG_REQUEST_MAGIC   0x31415926
 
+#ifndef PGSERVER
+typedef unsigned short u16;
+typedef unsigned long  u32;
+#endif
+
 /******* Packet structures */
 
 /* Request, the only packet ever sent from client to server */
 struct pgrequest {
-  unsigned short type;
-  unsigned short id;  /* Just to make sure requests match up with responses */
-  unsigned long size; /* The request is followed by size bytes of data */
+  u16 type;
+  u16 id;  /* Just to make sure requests match up with responses */
+  u32 size; /* The request is followed by size bytes of data */
 };  
 
 /* various response packets, sent to the client after the 
@@ -49,41 +54,41 @@ struct pgrequest {
 
 #define PG_RESPONSE_ERR 1
 struct pgresponse_err {
-  unsigned short type;    /* RESPONSE_ERR - error code */
-  unsigned short id;
-  unsigned short errt;
-  unsigned short msglen;  /* Length of following message */
+  u16 type;    /* RESPONSE_ERR - error code */
+  u16 id;
+  u16 errt;
+  u16 msglen;  /* Length of following message */
 };
 
 #define PG_RESPONSE_RET 2
 struct pgresponse_ret {
-  unsigned short type;    /* RESPONSE_RET - return value */
-  unsigned short id;
-  unsigned long data;
+  u16 type;    /* RESPONSE_RET - return value */
+  u16 id;
+  u32 data;
 };
 
 #define PG_RESPONSE_EVENT 3
 struct pgresponse_event {
-  unsigned short type;    /* RESPONSE_EVENT */
-  unsigned short event;
-  unsigned long from;
-  unsigned long param;
+  u16 type;    /* RESPONSE_EVENT */
+  u16 event;
+  u32 from;
+  u32 param;
   /* If event == PG_WE_DATA, 'param' bytes of data follow */
 };
 
 #define PG_RESPONSE_DATA 4
 struct pgresponse_data {
-  unsigned short type;    /* RESPONSE_DATA */
-  unsigned short id;
-  unsigned long size;
+  u16 type;    /* RESPONSE_DATA */
+  u16 id;
+  u32 size;
   /* 'size' bytes of data follow */
 };
 
 /* This is sent to the client after establishing a connection */
 struct pghello {
-  unsigned long  magic;
-  unsigned short protover;
-  unsigned short dummy;   /* padding */
+  u32  magic;
+  u16 protover;
+  u16 dummy;   /* padding */
 };
 
 /******* Request handlers */
@@ -110,7 +115,7 @@ struct pghello {
 #define PGREQ_BATCH        18  /* Executes many requests         |  requests */
 #define PGREQ_REGOWNER     19  /* Get exclusive privileges       |  struct */
 #define PGREQ_UNREGOWNER   20  /* Give up exclusive privileges   |  struct */
-#define PGREQ__OLD__1      21  /* Will be replaced */
+#define PGREQ_SETMODE      21  /* Sets video mode/depth/rotation |  struct */
 #define PGREQ__OLD__2      22  /* Will be replaced */
 #define PGREQ_MKCONTEXT    23  /* Enters a new context           |  none */
 #define PGREQ_RMCONTEXT    24  /* Cleans up and kills the context|  none */
@@ -139,100 +144,100 @@ struct pghello {
  */
 
 struct pgreqd_handlestruct {
-  unsigned long h;   /* for requests that just use a handle */
+  u32 h;   /* for requests that just use a handle */
 };
 
 struct pgreqd_mkwidget {
-  unsigned short rship;
-  unsigned short type;
-  unsigned long parent;
-};
-struct pgreqd_mkbitmap {
-  unsigned short w;       /* If these are 0, the following data is a */
-  unsigned short h;       /* pnm bitmap.  Otherwise, these are the dimensions
-			     of xbm data following it. */
-  unsigned long fg;       /* Foreground and background colors if this is a */
-  unsigned long bg;       /* xbm bitmap. */
+  u16 rship;
+  u16 type;
+  u32 parent;
 };
 struct pgreqd_mkfont {
   char name[40];
-  unsigned long style;
-  unsigned short size;
-  unsigned short dummy;
+  u32 style;
+  u16 size;
+  u16 dummy;
 };
 struct pgreqd_set {
-  unsigned long widget;
-  unsigned long glob;
-  unsigned short property;
-  unsigned short dummy;
+  u32 widget;
+  u32 glob;
+  u16 property;
+  u16 dummy;
 };
 struct pgreqd_get {
-  unsigned long widget;
-  unsigned short property;
-  unsigned short dummy;
+  u32 widget;
+  u16 property;
+  u16 dummy;
 };
 struct pgreqd_in_key {
-  unsigned long type;   /* A TRIGGER_* constant */
-  unsigned short key;
-  unsigned short mods;
+  u32 type;   /* A TRIGGER_* constant */
+  u16 key;
+  u16 mods;
 };
 struct pgreqd_in_point {
-  unsigned long type;   /* A TRIGGER_* constant */
-  unsigned short x;
-  unsigned short y;
-  unsigned short btn;  /* button bitmask */
-  unsigned short dummy;
+  u32 type;   /* A TRIGGER_* constant */
+  u16 x;
+  u16 y;
+  u16 btn;  /* button bitmask */
+  u16 dummy;
 };
 struct pgreqd_in_direct {
-  unsigned long param;   /* The arbitrary parameter */
+  u32 param;   /* The arbitrary parameter */
   /* The rest of the packet is read as a string */
 };
 struct pgreqd_themeset {
-  unsigned long value;
-  unsigned short element;
-  unsigned short state;
-  unsigned short param;
-  unsigned short dummy;
+  u32 value;
+  u16 element;
+  u16 state;
+  u16 param;
+  u16 dummy;
 };
 struct pgreqd_register {
   /* This is just a subset of app_info, organized for network
      transmission */
 
-  unsigned long name;  /* string handle */
-  unsigned short type;
-  unsigned short dummy;
+  u32 name;  /* string handle */
+  u16 type;
+  u16 dummy;
 
   /* Followed by optional APPSPECs */
 };
+struct pgreqd_setmode {
+  u16 xres;      /* If these are zero, mode is not changed */
+  u16 yres;
+  u16 bpp;       /* Zero to leave alone */
+  u16 flagmode;  /* A PG_FM_* constant */
+  u32 flags;     /* Merged with existing flags according to flagmode */
+};
 struct pgreqd_mkpopup {
-  unsigned short x; /* can be a PG_POPUP_* constant */
-  unsigned short y; 
-  unsigned short w;
-  unsigned short h;
+  u16 x; /* can be a PG_POPUP_* constant */
+  u16 y; 
+  u16 w;
+  u16 h;
 };
 struct pgreqd_sizetext {
-  unsigned long text;  /* Handle to text and to font */
-  unsigned long font;
+  u32 text;  /* Handle to text and to font */
+  u32 font;
 };
 struct pgreqd_setpayload {
-  unsigned long h;  /* Any handle */
-  unsigned long payload;  /* 32-bits of data to store with
+  u32 h;        /* Any handle */
+  u32 payload;  /* 32-bits of data to store with
 			     the handle'd object */
 };
 struct pgreqd_mkmsgdlg {
-  unsigned long title;
-  unsigned long text;
-  unsigned long flags;
+  u32 title;
+  u32 text;
+  u32 flags;
 };
 struct pgreqd_regowner {
-  unsigned short res;     /* A resource to own: PG_OWN_* */
+  u16 res;     /* A resource to own: PG_OWN_* */
 };
 
 /* A structure for encapsulating commands, for example in canvas, within
  * a RQH_WRITETO */
 struct pgcommand {
-   unsigned short command;
-   unsigned short numparams;
+   u16 command;
+   u16 numparams;
    /* Followed by numparams * signed long */
 };
 
