@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.54 2000/12/17 05:53:50 micahjd Exp $
+/* $Id: widget.c,v 1.55 2001/01/05 06:42:28 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -456,7 +456,7 @@ void dispatch_pointing(long type,int x,int y,int btn) {
 		 (param.mouse.chbtn << 24) |
 		 (param.mouse.y << 12) |
 		 param.mouse.x,
-		 keyboard_owner);
+		 keyboard_owner,NULL);
     return;
   }
 
@@ -631,7 +631,7 @@ void dispatch_key(long type,int key,int mods) {
       /* Pack the mods into the high word and the key into the
 	 low word.
       */
-      post_event(evt,NULL,(type==TRIGGER_CHAR) ? key : keycode,keyboard_owner);
+      post_event(evt,NULL,(type==TRIGGER_CHAR) ? key : keycode,keyboard_owner,NULL);
     return;
   }
 

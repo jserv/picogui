@@ -1,4 +1,4 @@
-/* $Id: terminal.c,v 1.7 2001/01/05 03:18:53 micahjd Exp $
+/* $Id: terminal.c,v 1.8 2001/01/05 06:42:28 micahjd Exp $
  *
  * terminal.c - a character-cell-oriented display widget for terminal
  *              emulators and things.
@@ -395,6 +395,9 @@ void terminal_trigger(struct widget *self,long type,union trigparam *param) {
 /* Handle a single key event as received from the server */
 void kbd_event(struct widget *self, int pgkey,int mods) {
   char *rtn;
+  static char chrstr[] = " ";      /* Must be static - if the event is put on
+				      the queue it might be a while before this
+				      is used. */
 
   /****** Modified key translations */
 
@@ -441,16 +444,12 @@ void kbd_event(struct widget *self, int pgkey,int mods) {
     
   else {
     /**** Send an untranslated key */
-    post_event(PG_WE_ACTIVATE,self,pgkey,0);
-    return;
+    *chrstr = pgkey;
+    rtn = chrstr;
   }
 
-  /* After translating a key, send back the string.
-   * For now just emulate multiple individual keys and rely on the
-   * event buffer, but this may be improved later. 
-   */
-  while (*rtn)
-    post_event(PG_WE_ACTIVATE,self,*(rtn++),0); 
+  /* After translating a key, send back the string. */
+  post_event(PG_WE_DATA,self,strlen(rtn),0,rtn); 
 }
 
 /********************************************** Terminal output functions */

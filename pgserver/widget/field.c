@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.16 2000/11/18 06:32:34 micahjd Exp $
+/* $Id: field.c,v 1.17 2001/01/05 06:42:28 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -266,7 +266,7 @@ void field_trigger(struct widget *self,long type,union trigparam *param) {
 
     case PGKEY_RETURN:
       /* Pass on a return to the app */
-      post_event(PG_WE_ACTIVATE,self,0,0);
+      post_event(PG_WE_ACTIVATE,self,0,0,NULL);
       return;
 
     case PGKEY_TAB:

@@ -1,4 +1,4 @@
-/* $Id: scroll.c,v 1.28 2000/12/12 00:51:47 micahjd Exp $
+/* $Id: scroll.c,v 1.29 2001/01/05 06:42:28 micahjd Exp $
  *
  * scroll.c - standard scroll indicator
  *
@@ -97,7 +97,7 @@ void scrollevent(struct widget *self) {
   }
   else {
     /* Send to a client */
-    post_event(PG_WE_ACTIVATE,self,DATA->value,0);
+    post_event(PG_WE_ACTIVATE,self,DATA->value,0,NULL);
   }
 }
 

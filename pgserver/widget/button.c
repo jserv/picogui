@@ -1,4 +1,4 @@
-/* $Id: button.c,v 1.46 2000/12/31 23:18:18 micahjd Exp $
+/* $Id: button.c,v 1.47 2001/01/05 06:42:28 micahjd Exp $
  *
  * button.c - generic button, with a string or a bitmap
  *
@@ -294,7 +294,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     
   case TRIGGER_DOWN:
     if (DATA->extdevents & PG_EXEV_PNTR_DOWN)
-      post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0);
+      post_event(PG_WE_PNTR_DOWN,self,param->mouse.chbtn,0,NULL);
     if (param->mouse.chbtn==1 && !(DATA->extdevents & PG_EXEV_NOCLICK))
       DATA->on=1;
     else
@@ -303,7 +303,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
 
   case TRIGGER_UP:
     if (DATA->extdevents & PG_EXEV_PNTR_UP)
-      post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0);
+      post_event(PG_WE_PNTR_UP,self,param->mouse.chbtn,0,NULL);
     if (DATA->on && param->mouse.chbtn==1) {
       event = 0;
       DATA->on=0;
@@ -323,7 +323,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
   case TRIGGER_DIRECT:
     /* No graphical interaction here, so just
        post the event and get on with it */
-    post_event(PG_WE_ACTIVATE,self,2,0);
+    post_event(PG_WE_ACTIVATE,self,2,0,NULL);
     return;
     
   }
@@ -341,7 +341,7 @@ void button_trigger(struct widget *self,long type,union trigparam *param) {
     if (DATA->event)
       (*DATA->event)(DATA->extra,self);
     else
-      post_event(PG_WE_ACTIVATE,self,event,0);
+      post_event(PG_WE_ACTIVATE,self,event,0,NULL);
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.21 2000/12/31 17:10:27 micahjd Exp $
+/* $Id: dispatch.c,v 1.22 2001/01/05 06:42:28 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -335,6 +335,8 @@ g_error rqh_wait(int owner, struct pgrequest *req,
     rsp.from = htonl(q->from);
     rsp.param = htonl(q->param);
     send(owner,&rsp,sizeof(rsp),0);
+    if (q->event==PG_WE_DATA)
+      send(owner,q->data,q->param,0);
   }
   else {
     /* Nop. Off to the waiting list... */

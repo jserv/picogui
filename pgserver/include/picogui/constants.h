@@ -1,4 +1,4 @@
-/* $Id: constants.h,v 1.29 2000/12/31 16:59:26 micahjd Exp $
+/* $Id: constants.h,v 1.30 2001/01/05 06:42:28 micahjd Exp $
  *
  * picogui/constants.h - various constants needed by client, server,
  *                       and application
@@ -476,6 +476,7 @@ typedef unsigned long pghandle;
 #define PG_WE_CLOSE       3     /* A top-level widget has closed */
 #define PG_WE_PNTR_DOWN   4     /* The "mouse" button is now down */
 #define PG_WE_PNTR_UP     5     /* The "mouse" button is now up */
+#define PG_WE_DATA        6     /* Widget is streaming data to the app */
 
 /* Non-widget events */
 #define PG_NWE_KBD_CHAR    10   /* These are sent if the client has captured the */
