@@ -50,6 +50,9 @@ class Widget(object):
     def addWidget(self, wtype, relationship=None, wrapper_class=None):
         if wrapper_class is None:
             wrapper_class = Widget
+        if callable(wtype) and hasattr(wtype, 'default_type'):
+            wrapper_class = wtype
+            wtype = wtype.default_type
         new_id = self.server.mkWidget(relationship or self.default_relationship, wtype, self.handle)
         new = wrapper_class(self.server, new_id, self, type=wtype)
         self._notify_new_widget(new)
