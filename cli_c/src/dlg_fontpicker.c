@@ -1,10 +1,10 @@
-/* $Id: dlg_fontpicker.c,v 1.5 2001/09/08 22:23:23 micahjd Exp $
+/* $Id: dlg_fontpicker.c,v 1.6 2002/01/06 09:22:56 micahjd Exp $
  *
  * dlg_datepicker.c - Implementation of the pgFontPicker function, allowing
  *                    the user to choose any installed font
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

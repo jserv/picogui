@@ -1,10 +1,10 @@
-/* $Id: memtheme.c,v 1.48 2002/01/05 14:37:55 micahjd Exp $
+/* $Id: memtheme.c,v 1.49 2002/01/06 09:22:59 micahjd Exp $
  * 
  * thobjtab.c - Searches themes already in memory,
  *              and loads themes in memory
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

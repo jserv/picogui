@@ -1,9 +1,9 @@
-/* $Id: pgboard_api.c,v 1.11 2001/12/21 18:00:15 cgrigis Exp $
+/* $Id: pgboard_api.c,v 1.12 2002/01/06 09:22:56 micahjd Exp $
  *
  * pgboard_api.c - high-level API to manipulate the PicoGUI virtual keyboard
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

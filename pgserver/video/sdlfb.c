@@ -1,4 +1,4 @@
-/* $Id: sdlfb.c,v 1.33 2001/12/29 21:49:30 micahjd Exp $
+/* $Id: sdlfb.c,v 1.34 2002/01/06 09:22:59 micahjd Exp $
  *
  * sdlfb.c - This driver provides an interface between the linear VBLs
  *           and a framebuffer provided by the SDL graphics library.
@@ -7,7 +7,7 @@
  *           simulating embedded platforms: low-bpp emulation and Skins.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

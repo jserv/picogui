@@ -1,11 +1,11 @@
-/* $Id: textbox_document.c,v 1.19 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: textbox_document.c,v 1.20 2002/01/06 09:23:00 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
  * of functions for manipulating text represented in a divtree.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

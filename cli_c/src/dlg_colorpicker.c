@@ -1,4 +1,4 @@
-/* $Id: dlg_colorpicker.c,v 1.2 2001/08/06 07:50:06 micahjd Exp $
+/* $Id: dlg_colorpicker.c,v 1.3 2002/01/06 09:22:56 micahjd Exp $
  *
  * dlg_colorpicker.c - Implementation of the pColorPicker() function.
  *                     The current implementation is simple and only allows
@@ -7,7 +7,7 @@
  *                     depending on color depth and user preference.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

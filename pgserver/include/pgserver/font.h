@@ -1,9 +1,9 @@
-/* $Id: font.h,v 1.18 2001/11/24 13:03:19 micahjd Exp $
+/* $Id: font.h,v 1.19 2002/01/06 09:22:58 micahjd Exp $
  *
  * font.h - structures for representing fonts
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

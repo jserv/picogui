@@ -1,10 +1,10 @@
-/* $Id: canvas.c,v 1.33 2002/01/06 01:13:27 micahjd Exp $
+/* $Id: canvas.c,v 1.34 2002/01/06 09:23:00 micahjd Exp $
  *
  * canvas.c - canvas widget, allowing clients to manipulate the groplist
  * and recieve events directly, implementing graphical output or custom widgets
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: client_c.h,v 1.79 2002/01/06 01:28:45 micahjd Exp $
+/* $Id: client_c.h,v 1.80 2002/01/06 09:22:56 micahjd Exp $
  *
  * picogui/client_c.h - The PicoGUI API provided by the C client lib
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.

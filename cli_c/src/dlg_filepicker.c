@@ -1,4 +1,4 @@
-/* $Id: dlg_filepicker.c,v 1.14 2001/11/01 18:32:44 epchristi Exp $
+/* $Id: dlg_filepicker.c,v 1.15 2002/01/06 09:22:56 micahjd Exp $
  *
  * dlg_filepicker.c - Display a dialog box the user can use to select
  *                    a file to open or save. It is customizable with flags
@@ -14,7 +14,7 @@
  *   files for the PG_FILE_MUST* flags
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.

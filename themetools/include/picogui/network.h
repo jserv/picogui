@@ -1,10 +1,10 @@
-/* $Id: network.h,v 1.24 2002/01/04 04:49:52 lonetech Exp $
+/* $Id: network.h,v 1.25 2002/01/06 09:23:00 micahjd Exp $
  *
  * picogui/network.h - Structures and constants needed by the PicoGUI client
  *                     library, but not by the application
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.

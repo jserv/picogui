@@ -1,10 +1,10 @@
-/* $Id: configfile.h,v 1.1 2001/07/04 05:45:19 micahjd Exp $
+/* $Id: configfile.h,v 1.2 2002/01/06 09:22:58 micahjd Exp $
  *
  * pgserver/configfile.h - Header for the configuration file utilities
  *                         in configfile.c
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: panel.c,v 1.69 2001/12/14 22:56:45 micahjd Exp $
+/* $Id: panel.c,v 1.70 2002/01/06 09:23:00 micahjd Exp $
  *
  * panel.c - Holder for applications
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  *  

@@ -1,4 +1,4 @@
-/* $Id: rotate270.c,v 1.4 2002/01/05 06:18:02 micahjd Exp $
+/* $Id: rotate270.c,v 1.5 2002/01/06 09:22:59 micahjd Exp $
  *
  * rotate270.c - Video wrapper to rotate the screen 270 degrees
  *
@@ -6,7 +6,7 @@
  * bog down the drivers when not rotated.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

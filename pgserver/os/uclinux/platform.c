@@ -1,9 +1,9 @@
-/* $Id: platform.c,v 1.9 2001/06/07 15:11:18 pney Exp $
+/* $Id: platform.c,v 1.10 2002/01/06 09:22:58 micahjd Exp $
  *
  * platforms.c - Contains platform-dependant stuff
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micah@homesoftware.com>
+ * Copyright (C) 2000-2002 Micah Dowty <micah@homesoftware.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

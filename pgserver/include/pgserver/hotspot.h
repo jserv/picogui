@@ -1,4 +1,4 @@
-/* $Id: hotspot.h,v 1.4 2001/09/10 10:05:50 micahjd Exp $
+/* $Id: hotspot.h,v 1.5 2002/01/06 09:22:58 micahjd Exp $
  *
  * pgserver/hotspot.h - This is an interface for managing hotspots.
  *                      The divtree is scanned for hotspot divnodes.
@@ -8,7 +8,7 @@
  *                      arrow keys only possible.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: g_malloc.h,v 1.8 2001/09/27 16:28:20 micahjd Exp $
+/* $Id: g_malloc.h,v 1.9 2002/01/06 09:22:58 micahjd Exp $
  *
  * g_malloc.h - malloc wrapper providing error handling
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

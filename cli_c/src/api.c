@@ -1,11 +1,11 @@
-/* $Id: api.c,v 1.35 2001/12/30 22:11:08 micahjd Exp $
+/* $Id: api.c,v 1.36 2002/01/06 09:22:56 micahjd Exp $
  *
  * api.c - PicoGUI application-level functions not directly related
  *                 to the network. Mostly wrappers around the request packets
  *                 to provide the interface described in client_c.h
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.

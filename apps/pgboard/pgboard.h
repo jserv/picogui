@@ -1,9 +1,9 @@
-/* $Id: pgboard.h,v 1.4 2001/11/21 15:17:40 cgrigis Exp $
+/* $Id: pgboard.h,v 1.5 2002/01/06 09:22:56 micahjd Exp $
  *
  * pgboard.h - declarations associated with the virtual keyboard (pgboard)
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

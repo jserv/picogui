@@ -1,11 +1,11 @@
-/* $Id: textbox_main.c,v 1.22 2001/12/15 02:47:14 micahjd Exp $
+/* $Id: textbox_main.c,v 1.23 2002/01/06 09:23:00 micahjd Exp $
  *
  * textbox_main.c - works along with the rendering engine to provide advanced
  * text display and editing capabilities. This file handles the usual widget
  * behaviors, and user interaction.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

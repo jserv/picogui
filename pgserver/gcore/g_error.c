@@ -1,9 +1,9 @@
-/* $Id: g_error.c,v 1.28 2002/01/06 03:47:45 micahjd Exp $
+/* $Id: g_error.c,v 1.29 2002/01/06 09:22:57 micahjd Exp $
  *
  * g_error.h - Defines a format for errors
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

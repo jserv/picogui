@@ -1,4 +1,4 @@
-/* $Id: hotspot.c,v 1.15 2001/12/15 21:48:01 micahjd Exp $
+/* $Id: hotspot.c,v 1.16 2002/01/06 09:22:57 micahjd Exp $
  *
  * hotspot.c - This is an interface for managing hotspots.
  *             The divtree is scanned for hotspot divnodes.
@@ -8,7 +8,7 @@
  *             only arrow keys possible.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,11 +1,11 @@
-/* $Id: pgboard.c,v 1.26 2001/12/21 18:00:15 cgrigis Exp $
+/* $Id: pgboard.c,v 1.27 2002/01/06 09:22:56 micahjd Exp $
  *
  * pgboard.c - Onscreen keyboard for PicoGUI on handheld devices. Loads
  *             a keyboard definition file containing one or more 'patterns'
  *             with key layouts.
  * 
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -1,9 +1,9 @@
-/* $Id: checkbox.c,v 1.5 2001/12/14 22:56:44 micahjd Exp $
+/* $Id: checkbox.c,v 1.6 2002/01/06 09:23:00 micahjd Exp $
  *
  * checkbox.c - a customized button, used for "check boxes"
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

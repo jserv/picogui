@@ -1,4 +1,4 @@
-/* $Id: request.c,v 1.31 2002/01/05 14:19:01 lonetech Exp $
+/* $Id: request.c,v 1.32 2002/01/06 09:22:58 micahjd Exp $
  *
  * request.c - Sends and receives request packets. dispatch.c actually
  *             processes packets once they are received.
@@ -6,7 +6,7 @@
  *             strace is your friend!
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * Thread-safe code added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.

@@ -1,11 +1,11 @@
-/* $Id: widget.h,v 1.43 2001/12/12 03:49:16 epchristi Exp $
+/* $Id: widget.h,v 1.44 2002/01/06 09:22:58 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
  * Property Method Event model.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.   
  * 

@@ -1,11 +1,11 @@
-/* $Id: textbox.h,v 1.10 2001/11/18 00:10:00 micahjd Exp $
+/* $Id: textbox.h,v 1.11 2002/01/06 09:22:58 micahjd Exp $
  *
  * textbox.h - Interface definitions for the textbox widget. This allows
  *             the main textbox widget functions and the text format loaders
  *             to access textbox utility functions.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

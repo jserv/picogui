@@ -1,11 +1,11 @@
-/* $Id: global.c,v 1.50 2001/12/14 22:56:42 micahjd Exp $
+/* $Id: global.c,v 1.51 2002/01/06 09:22:57 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
  * Uses functions in one of the app manager directories.
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  * pgCreateWidget & pgAttachWidget functionality added by RidgeRun Inc.
  * Copyright (C) 2001 RidgeRun, Inc.  All rights reserved.   
  *

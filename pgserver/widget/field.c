@@ -1,9 +1,9 @@
-/* $Id: field.c,v 1.36 2001/12/16 20:23:15 micahjd Exp $
+/* $Id: field.c,v 1.37 2002/01/06 09:23:00 micahjd Exp $
  *
  * field.c - Single-line no-frills text editing box
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

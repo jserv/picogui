@@ -1,9 +1,9 @@
-/* $Id: fillstyle.c,v 1.17 2002/01/05 18:05:07 lonetech Exp $
+/* $Id: fillstyle.c,v 1.18 2002/01/06 09:22:59 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

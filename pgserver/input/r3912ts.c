@@ -1,4 +1,4 @@
-/* $Id: r3912ts.c,v 1.4 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: r3912ts.c,v 1.5 2002/01/06 09:22:58 micahjd Exp $
  *
  * r3912ts.c - input driver for r3912 touch screen found on the VTech Helio
  *             and others. Other touch screens using the same data format should
@@ -8,7 +8,7 @@
  * system, available at vhl-tools.sourceforge.net
  *
  * PicoGUI small and efficient client/server GUI
- * Copyright (C) 2000,2001 Micah Dowty <micahjd@users.sourceforge.net>
+ * Copyright (C) 2000-2002 Micah Dowty <micahjd@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
