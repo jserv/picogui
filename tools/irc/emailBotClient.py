@@ -111,13 +111,10 @@ def applyColorTags(message):
         message = re.sub('{%s}' % color, irc_colors.COLOR_PREFIX + irc_colors.COLORS[color], message)
     return message
 
-logged = False
 def logCommand(cmd):
-    if not logged:
-        f = open(commandLog, "a")
-        f.write(cmd)
-        f.close()
-        logged = True
+    f = open(commandLog, "a")
+    f.write(cmd)
+    f.close()
 
 def setProjectURL(project, url):
     f = open(os.path.join(urlDir, project), "w")
