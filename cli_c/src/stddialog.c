@@ -1,4 +1,4 @@
-/* $Id: stddialog.c,v 1.16 2002/07/28 17:06:48 micahjd Exp $
+/* $Id: stddialog.c,v 1.17 2002/10/24 15:55:12 micahjd Exp $
  *
  * stddialog.c - Various preconstructed dialog boxes the application
  *               may use. These are implemented 100% client-side using
@@ -86,7 +86,7 @@ void dlgicon(pghandle at,int prop) {
   bit = pgThemeLookup(PGTH_O_POPUP_MESSAGEDLG,prop);
   if (bit) {
 
-  pgNewWidget(PG_WIDGET_BITMAP,PG_DERIVE_AFTER,at);
+  pgNewWidget(PG_WIDGET_LABEL,PG_DERIVE_AFTER,at);
   pgSetWidget(PGDEFAULT,
 	      PG_WP_SIDE,PG_S_LEFT,
 	      PG_WP_BITMAP,bit,
