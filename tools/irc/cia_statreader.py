@@ -54,8 +54,10 @@ def readStats():
     channels = []
     channelTemp = {}
     for channelFile in glob.glob(channelBaseFile + ".*"):
-        for channel in open(channelFile).read().strip().split("\n"):
-	    channelTemp[channel] = 1
+        for channel in open(channelFile).read().split("\n"):
+	    channel = channel.strip()
+	    if channel:
+	        channelTemp[channel] = 1
     for key in channelTemp:
         channels += [key]
     channels.sort()
