@@ -1,4 +1,4 @@
-/* $Id: textbox_document.c,v 1.9 2001/10/17 20:44:37 micahjd Exp $
+/* $Id: textbox_document.c,v 1.10 2001/10/18 05:35:11 micahjd Exp $
  *
  * textbox_document.c - works along with the rendering engine to provide
  * advanced text display and editing capabilities. This file provides a set
@@ -178,6 +178,14 @@ g_error text_insert_linebreak(struct textbox_cursor *c) {
   if (c->c_line) {
     struct divnode *newline;
     g_error e;
+
+    /* Nothing in the existing line? Put a blank string in there to
+     * get the height correct, otherwise the line will be invisible
+     */
+    if (!c->c_div) {
+      e = text_insert_string(c,"",HFLAG_NFREE);
+      errorcheck;
+    }
 
     /* Construct a new line node with the same flags & size */
     e = newdiv(&newline, c->widget);

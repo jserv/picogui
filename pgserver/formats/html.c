@@ -1,4 +1,4 @@
-/* $Id: html.c,v 1.5 2001/10/17 22:01:20 micahjd Exp $
+/* $Id: html.c,v 1.6 2001/10/18 05:35:11 micahjd Exp $
  *
  * html.c - Use the textbox_document inferface to load HTML markup
  *
@@ -20,7 +20,7 @@
  *   <ul> *
  *   <ol> *
  *   <dl> *
- *   <pre> *
+ *   <pre>
  *   <div> *
  *   <center> *
  *   <blockquote> *
@@ -32,12 +32,12 @@
  *   <B>
  *   <U>
  *   <STRIKE>
- *   <BIG> *
- *   <SMALL> *
+ *   <BIG>
+ *   <SMALL>
  *   <SUB> *
  *   <SUP> *
- *   <EM> *
- *   <STRONG> *
+ *   <EM>
+ *   <STRONG>
  *   <DFN> *
  *   <CODE> *
  *   <SAMP> *
@@ -84,9 +84,24 @@
 #include <pgserver/common.h>
 #include <pgserver/textbox.h>
 
+/* Font constants. These should probably be incorporated into the theme
+ * system at some point.
+ */
+#define HTML_BIG_DELTA    5    /* Amount to change font for <big> */
+#define HTML_SMALL_DELTA  -5   /* Amount to change font for <small> */
+
 /* Information on the parser state */
 struct html_parse {
+  /* This is the textbox insertion point where text is output to.
+   * Like a rendering context for the textbox.
+   */
   struct textbox_cursor *c;
+
+  /* The function to send text to during parsing.
+   * Normally this is &html_dispatch_text, but it may be changed to 
+   * reflect an alternate parsing mode.
+   */
+  g_error (*parsemode)(struct html_parse *hp, const u8 *start, const u8 *end);
 };
 
 /* Parameters for HTML tags */
@@ -104,6 +119,8 @@ g_error html_dispatch_tag(struct html_parse *hp,
 			  const u8 *start,const u8 *end);
 g_error html_dispatch_text(struct html_parse *hp,
 			   const u8 *start,const u8 *end);
+g_error html_dispatch_pre(struct html_parse *hp,
+			  const u8 *start,const u8 *end);
 g_error html_dispatch_textfragment(struct html_parse *hp,
 				   const u8 *start,const u8 *end);
 char html_findchar(const u8 *charname, int namelen);
@@ -119,7 +136,9 @@ struct html_charname {
   char ch;
 } html_chartable[] = {
 
-  { "nbsp",	32  },	/* no-break space */
+  { "nbsp",	' ' },	/* no-break space */
+  { "lt",       '<' },  /* less-than */
+  { "gt",       '>' },  /* greater-than */
   { "iexcl",	161 },	/* inverted exclamation mark */
   { "cent",	162 },	/* cent sign */
   { "pound",	163 },	/* pound sterling sign */
@@ -226,7 +245,6 @@ g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
   g_error e;
   e = text_insert_linebreak(hp->c);
   errorcheck;
-  e = text_insert_string(hp->c," ",HFLAG_NFREE);
   e = text_insert_linebreak(hp->c);
   errorcheck;
   return sucess;
@@ -234,23 +252,7 @@ g_error html_tag_p(struct html_parse *hp, struct html_tag_params *tag) {
 
 /* Line break */
 g_error html_tag_br(struct html_parse *hp, struct html_tag_params *tag) {
-  g_error e;
-  e = text_insert_linebreak(hp->c);
-  errorcheck;
-  return sucess;
-}
-
-/* One handler for bold, italic, and underline */
-g_error html_tag_b_i_u(struct html_parse *hp, struct html_tag_params *tag) {
-  u32 flag;
-  /* Determine font flag from name character */
-  switch (tolower(tag->tag[0])) {
-  case 'b': flag = PG_FSTYLE_BOLD;      break;
-  case 'i': flag = PG_FSTYLE_ITALIC;    break;
-  case 'u': flag = PG_FSTYLE_UNDERLINE; break;
-  default:  flag = 0;
-  }
-  return text_format_modifyfont(hp->c,flag,0,0);
+  return text_insert_linebreak(hp->c);
 }
 
 /* Pop the most recent font change off the stack */
@@ -259,13 +261,57 @@ g_error html_tag_unformat(struct html_parse *hp, struct html_tag_params *tag) {
   return sucess;
 }
 
-/* Other misc. font changes */
+/* Simple font flags */
+g_error html_tag_b(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,PG_FSTYLE_BOLD,0,0);
+}
+g_error html_tag_i(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,PG_FSTYLE_ITALIC,0,0);
+}
+g_error html_tag_u(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,PG_FSTYLE_UNDERLINE,0,0);
+}
 g_error html_tag_tt(struct html_parse *hp, struct html_tag_params *tag) {
   return text_format_modifyfont(hp->c,PG_FSTYLE_FIXED,0,0);
 }
 g_error html_tag_strike(struct html_parse *hp, struct html_tag_params *tag) {
   return text_format_modifyfont(hp->c,PG_FSTYLE_STRIKEOUT,0,0);
 }
+g_error html_tag_big(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,0,0,HTML_BIG_DELTA);
+}
+g_error html_tag_small(struct html_parse *hp, struct html_tag_params *tag) {
+  return text_format_modifyfont(hp->c,0,0,HTML_SMALL_DELTA);
+}
+
+/* Preformatted text */
+g_error html_tag_pre(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+
+  /* Preformatted text mode */
+  hp->parsemode = &html_dispatch_pre;
+
+  /* New paragraph */
+  e = html_tag_p(hp,tag);
+  errorcheck;
+
+  /* Teletype mode */
+  return html_tag_tt(hp,tag);
+}
+g_error html_tag_end_pre(struct html_parse *hp, struct html_tag_params *tag) {
+  g_error e;
+
+  /* Normal text mode */
+  hp->parsemode = &html_dispatch_text;
+
+  /* Teletype mode off */
+  e = html_tag_unformat(hp,tag);
+  errorcheck;
+
+  /* New paragraph */
+  return html_tag_p(hp,tag);
+}
+  
 
 /*************************************** HTML tag table */
 
@@ -276,16 +322,26 @@ struct html_taghandler {
   
   { "p",       &html_tag_p },
   { "br",      &html_tag_br },
-  { "b",       &html_tag_b_i_u },
+  { "b",       &html_tag_b },
   { "/b",      &html_tag_unformat },
-  { "i",       &html_tag_b_i_u },
+  { "i",       &html_tag_i },
   { "/i",      &html_tag_unformat },
-  { "u",       &html_tag_b_i_u },
+  { "u",       &html_tag_u },
   { "/u",      &html_tag_unformat },
   { "tt",      &html_tag_tt },
   { "/tt",     &html_tag_unformat },
   { "strike",  &html_tag_strike },
   { "/strike", &html_tag_unformat },
+  { "em",      &html_tag_i },
+  { "/em",     &html_tag_unformat },
+  { "strong",  &html_tag_b },
+  { "/strong", &html_tag_unformat },
+  { "big",     &html_tag_big },
+  { "/big",    &html_tag_unformat },
+  { "small",   &html_tag_small },
+  { "/small",  &html_tag_unformat },
+  { "pre",     &html_tag_pre },
+  { "/pre",    &html_tag_end_pre },
 
   { NULL, NULL }
 };
@@ -305,6 +361,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
   /* Fill in parse structure */
   memset(&hp,0,sizeof(hp));
   hp.c = c;
+  hp.parsemode = &html_dispatch_text;
 
   while (*data && datalen) {
     
@@ -318,6 +375,12 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 	e = html_dispatch_tag(&hp,tag_start,data-1);
 	errorcheck;
 	tag_start = NULL;
+
+	/* If the next character is a newline, we're supposed to skip it */
+	if (datalen>1 && data[1]=='\n') {
+	  data++;
+	  datalen--;
+	}
       }
     }
     else {
@@ -328,7 +391,14 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 
  	/* Ending text? */
 	if (text_start) {
-	  e = html_dispatch_text(&hp,text_start,data-1);
+	  
+	  /* We need to ignore newlines occurring immediately before tags.
+	   * If the last character of this string was \n, chop it off.
+	   */
+	  if (data[-1]=='\n')
+	    e = (*hp.parsemode)(&hp,text_start,data-2);
+	  else
+	    e = (*hp.parsemode)(&hp,text_start,data-1);
 	  errorcheck;
 	  text_start = NULL;
 	}
@@ -345,7 +415,7 @@ g_error html_load(struct textbox_cursor *c, const u8 *data, u32 datalen) {
 
   /* Trailing text string */
   if (text_start) {
-    e = html_dispatch_text(&hp,text_start,data-1);
+    e = (*hp.parsemode)(&hp,text_start,data-1);
     errorcheck;
   }
 
@@ -456,6 +526,52 @@ g_error html_dispatch_text(struct html_parse *hp,
   return sucess;
 }
 
+/* Dispatch preformatted text. Each line is translated into one textfragment-
+ * never send wordbreaks, send a line break for '\n'
+ */
+g_error html_dispatch_pre(struct html_parse *hp,
+			  const u8 *start, const u8 *end) {
+  const u8 *fragment;
+  g_error e;
+
+#ifdef DEBUG_HTML
+  /* Debuggativity! */
+  write(1,"html: dispatching preformatted text '",37);
+  write(1,start,end-start+1);
+  write(1,"'\n",2);
+#endif
+
+  for (fragment = NULL;start <= end;start++) {
+    if (fragment) {
+      /* Look for the end */
+
+      if (*start == '\n') {
+	e = html_dispatch_textfragment(hp,fragment,start-1);
+	errorcheck;
+	fragment = NULL;
+
+	e = text_insert_linebreak(hp->c);
+	errorcheck;
+      }
+    }
+    else {
+      /* Look for the beginning */
+
+      if (*start=='\n') {
+	e = text_insert_linebreak(hp->c);
+	errorcheck;
+      }
+      else
+	fragment = start;
+    }
+  }
+  if (fragment) {
+    e = html_dispatch_textfragment(hp,fragment,start-1);
+    errorcheck;
+  }
+  return sucess;
+}
+
 /* Convert characters like &nbsp; to characters, store and send the string
  * to the textbox.
  */
@@ -520,6 +636,8 @@ char html_findchar(const u8 *charname, int namelen) {
 }
 
 /* The End */
+
+
 
 
 
