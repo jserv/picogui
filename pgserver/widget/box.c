@@ -1,4 +1,4 @@
-/* $Id: box.c,v 1.23 2002/03/26 03:47:20 instinc Exp $
+/* $Id: box.c,v 1.24 2002/03/26 17:15:00 instinc Exp $
  *
  * box.c - Generic container for holding a group of widgets. It's sizing and
  *         appearance are defined by the theme.
@@ -29,7 +29,7 @@
 #include <pgserver/common.h>
 #include <pgserver/widget.h>
 
-#define MARGIN_OVERRIDE ((s32)self->data)
+#define MARGIN_OVERRIDE ((long)self->data)
 
 void box_resize(struct widget *self) {
    int m;
