@@ -1,4 +1,4 @@
-/* $Id: global.c,v 1.10 2000/06/10 05:09:14 micahjd Exp $
+/* $Id: global.c,v 1.11 2000/08/02 05:22:49 micahjd Exp $
  *
  * global.c - Handle allocation and management of objects common to
  * all apps: the clipboard, background widget, default font, and containers.
@@ -84,7 +84,7 @@ g_error appmgr_init(void) {
 
   /* Make the background widget */
   e = widget_create(&bgwidget,WIDGET_BITMAP,dts->root,
-		    &dts->root->head->next,0);
+		    &dts->root->head->next,0,-1);
   if (e.type != ERRT_NONE) return e;
   e = widget_set(bgwidget,WP_BITMAP,(glob)background);
   if (e.type != ERRT_NONE) return e;
@@ -163,7 +163,7 @@ g_error appmgr_register(struct app_info *i) {
 
   case APP_TOOLBAR:
     /* Create a simple toolbar as a root widget */
-    e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0);
+    e = widget_create(&w,WIDGET_TOOLBAR,dts->root,&dts->root->head->next,0,i->owner);
     if (e.type != ERRT_NONE) return e;
     w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);
@@ -180,7 +180,7 @@ g_error appmgr_register(struct app_info *i) {
 
   case APP_NORMAL:
     /* Use a panel */
-    e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next,0);
+    e = widget_create(&w,WIDGET_PANEL,dts->root,&dts->root->head->next,0,i->owner);
     if (e.type != ERRT_NONE) return e;
     w->isroot = 1;
     e = mkhandle(&i->rootw,TYPE_WIDGET,i->owner,w);

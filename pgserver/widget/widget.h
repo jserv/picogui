@@ -1,4 +1,4 @@
-/* $Id: widget.h,v 1.26 2000/07/28 10:09:15 micahjd Exp $
+/* $Id: widget.h,v 1.27 2000/08/02 05:22:49 micahjd Exp $
  *
  * widget.h - defines the standard widget interface used by widgets
  * This is an abstract widget framework that loosely follows the
@@ -131,6 +131,11 @@ struct widget {
   */
   handle container;
 
+  /* Connection that created the widget.  Any handles the widget make
+     take on this owner
+  */
+  int owner;
+
   /* Widget's private data (Properties) */
   void *data;
 
@@ -244,13 +249,13 @@ extern int pointer_owner;
 /******* These functions define the 'public' methods for widgets */
      
 /* Special function to generate a popup root widget */
-g_error create_popup(int x,int y,int w,int h,struct widget **wgt);
+g_error create_popup(int x,int y,int w,int h,struct widget **wgt,int owner);
 
 g_error widget_create(struct widget **w,int type,
 		      struct divtree *dt,struct divnode **where,
-		      handle container);
+		      handle container,int owner);
 g_error widget_derive(struct widget **w,int type,struct widget *parent,
-		      handle hparent,int rship);
+		      handle hparent,int rship,int owner);
 void widget_remove(struct widget *w);
 g_error widget_set(struct widget *w, int property, glob data);
 glob widget_get(struct widget *w, int property);

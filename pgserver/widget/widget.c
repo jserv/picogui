@@ -1,4 +1,4 @@
-/* $Id: widget.c,v 1.27 2000/07/28 10:09:15 micahjd Exp $
+/* $Id: widget.c,v 1.28 2000/08/02 05:22:49 micahjd Exp $
  *
  * widget.c - defines the standard widget interface used by widgets, and
  * handles dispatching widget events and triggers.
@@ -65,7 +65,7 @@ int pointer_owner;
 
 g_error widget_create(struct widget **w,int type,
 		      struct divtree *dt,struct divnode **where,
-		      handle container) {
+		      handle container,int owner) {
   g_error e;
 
   if ((type > WIDGETMAX) || (!dt) || (!where)) return 
@@ -75,6 +75,7 @@ g_error widget_create(struct widget **w,int type,
   if (e.type != ERRT_NONE) return e;
   memset(*w,0,sizeof(struct widget));
 
+  (*w)->owner = owner;
   (*w)->type = type;
   (*w)->def = widgettab + type;
   (*w)->dt = dt;
@@ -101,13 +102,13 @@ g_error widget_create(struct widget **w,int type,
 
 g_error widget_derive(struct widget **w,
 		      int type,struct widget *parent,
-		      handle hparent,int rship) {
+		      handle hparent,int rship,int owner) {
   if (rship==DERIVE_INSIDE)
-    return widget_create(w,type,parent->dt,parent->sub,hparent);
+    return widget_create(w,type,parent->dt,parent->sub,hparent,owner);
   else if (rship==DERIVE_AFTER)
-    return widget_create(w,type,parent->dt,parent->out,parent->container);
+    return widget_create(w,type,parent->dt,parent->out,parent->container,owner);
   else if (rship==DERIVE_BEFORE)
-    return widget_create(w,type,parent->dt,parent->where,parent->container);
+    return widget_create(w,type,parent->dt,parent->where,parent->container,owner);
   else
     return mkerror(ERRT_BADPARAM,"widget_derive bad derive constant");
 }

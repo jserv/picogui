@@ -1,4 +1,4 @@
-/* $Id: dispatch.c,v 1.10 2000/08/02 03:23:16 micahjd Exp $
+/* $Id: dispatch.c,v 1.11 2000/08/02 05:22:49 micahjd Exp $
  *
  * dispatch.c - Processes and dispatches raw request packets to PicoGUI
  *              This is the layer of network-transparency between the app
@@ -180,7 +180,7 @@ g_error rqh_mkwidget(int owner, struct uipkt_request *req,
     return mkerror(ERRT_BADPARAM,
 		   "App attempted to derive before or after a root widget");
 
-  e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship));
+  e = widget_derive(&w,ntohs(arg->type),parent,xh,ntohs(arg->rship),owner);
   if (e.type != ERRT_NONE) return e;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);
@@ -418,7 +418,7 @@ g_error rqh_mkpopup(int owner, struct uipkt_request *req,
   if (req->size < (sizeof(struct rqhd_mkpopup))) 
     return mkerror(ERRT_BADPARAM,"rqhd_mkpopup too small");
 
-  e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w);
+  e = create_popup(ntohs(arg->x),ntohs(arg->y),ntohs(arg->w),ntohs(arg->h),&w,owner);
   if (e.type != ERRT_NONE) return e;
 
   e = mkhandle(&h,TYPE_WIDGET,owner,w);

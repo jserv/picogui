@@ -1,4 +1,4 @@
-/* $Id: field.c,v 1.5 2000/08/02 03:23:16 micahjd Exp $
+/* $Id: field.c,v 1.6 2000/08/02 05:22:49 micahjd Exp $
  *
  * Single-line no-frills text editing box
  *
@@ -90,9 +90,6 @@ g_error field_install(struct widget *self) {
   g_error e;
   int owner=-1;
 
-  /* Find connection owner so we can give them the string handle */
-  hlookup(self,&owner);
-
   e = g_malloc(&self->data,sizeof(struct fielddata));
   if (e.type != ERRT_NONE) return e;
   memset(self->data,0,sizeof(struct fielddata));
@@ -104,7 +101,7 @@ g_error field_install(struct widget *self) {
   DATA->bufmax  = FIELDBUF_DEFAULTMAX;
   DATA->bufsize = FIELDBUF_DEFAULTSIZE;
   DATA->bufuse  = 1;
-  e = mkhandle(&DATA->hbuffer,TYPE_STRING | HFLAG_NFREE,owner,DATA->buffer);
+  e = mkhandle(&DATA->hbuffer,TYPE_STRING | HFLAG_NFREE,self->owner,DATA->buffer);
   if (e.type != ERRT_NONE) return e;
 
   e = newdiv(&self->in,self);
