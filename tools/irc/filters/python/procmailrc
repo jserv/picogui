@@ -1,0 +1,8 @@
+VERBOSE=on
+PMDIR=$HOME/.procmail
+LOGFILE=$PMDIR/log
+
+# send python commits to 'filter'
+:0
+* ^Subject: \[Python-checkins\]
+| /home/python_commits/filter.py
