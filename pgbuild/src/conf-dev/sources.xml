@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <!-- 
   Defines the sites and packages for the PicoGUI repository.
 
@@ -7,6 +8,16 @@
   recursively merged. This makes PGBuild's concept of configuration
   'mount points' useful.
 -->
+
+<!--
+  Just for fun, let's provide a client-side style sheet for this,
+  to show one of the neat things XML does for you. If you load this
+  XML file in a browser with XSL support, you should see a spiffy
+  web page listing all the sites and packages.
+  This has the side effect of making sure our code can handle XML
+  processing instructions.
+-->
+<?xml-stylesheet type="text/xsl" href="conf.xsl"?>
 
 <sources>
 
@@ -18,10 +29,10 @@
 
     <!-- Subversion repository, hosted on navi -->
     <site name="picogui-svn">
-      <a href="http://navi.picogui.org/picogui/svn" />
+      <a href="http://navi.picogui.org/svn/picogui" />
     </site>
 
-    <!-- Sourceforge download mirrors -->
+    <!-- Sourceforge download mirrors -->//me
     <site name="sourceforge-download">
       <!-- Multiple URIs can be used to specify mirror sites -->
       <a href="http://umn.dl.sourceforge.net/sourceforge" />
