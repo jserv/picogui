@@ -1,4 +1,4 @@
-/* $Id: managedwindow.c,v 1.13 2002/11/07 11:43:58 micahjd Exp $
+/* $Id: managedwindow.c,v 1.14 2002/11/07 11:45:37 micahjd Exp $
  *
  * managedwindow.c - A root widget representing a window managed by a host GUI
  *
@@ -194,10 +194,10 @@ void managedwindow_resize(struct widget *self) {
     /* Make sure the window size is reasonable */
     maxw = vid->lxres * 80/100;
     maxh = vid->lyres * 80/100;
-    if (w < 100)
-      w = 100;
-    if (h < 100)
-      h = 100;
+    if (w < 10)
+      w = 10;
+    if (h < 10)
+      h = 10;
     if (w > maxw)
       w = maxw;
     if (h > maxh)
