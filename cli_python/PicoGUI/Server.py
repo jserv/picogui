@@ -152,9 +152,9 @@ constants = {
         }),
         'bind':				(16, {
         }),
-        'scroll x':			(17, {	# horizontal and vertical scrolling amount
+        'scroll_x':			(17, {	# horizontal and vertical scrolling amount
         }),
-        'scroll y':			(18, {
+        'scroll_y':			(18, {
         }),
         'scroll':			(17, {	# for backwards compatibility
         }),
@@ -200,39 +200,44 @@ constants = {
         }),
         'lines':			(36, {	# height, in lines
         }),
-        'preferred w':			(37, {	# read only (for now) properties to get any widget's preferred size
+        'preferred_w':			(37, {	# read only (for now) properties to get any widget's preferred size
         }),
-        'preferred h':			(38, {
+        'preferred_h':			(38, {
         }),
         'panelbar':			(39, {	# read-only property for panels returns a handle to its embedded
                                                 # panelbar widget
         }),
-        'auto orientation':		(40, {	# automatically reorient child widgets when side changes
+        'auto_orientation':		(40, {	# automatically reorient child widgets when side changes
         }),
-        'thobj button':			(41, {	# these four theme properties set the theme objects used for the
+        'thobj_button':			(41, {	# these four theme properties set the theme objects used for the
                                               	# three possible states of the button widget.
         }),
-        'thobj button hilight':		(42, {
+        'thobj_button_hilight':		(42, {
         }),
-        'thobj button on':		(43, {
+        'thobj_button_on':		(43, {
         }),
-        'thobj button on nohilight':	(44, {
+        'thobj_button_on_nohilight':	(44, {
         }),
-        'panelbar label':		(45, {	# more read-only panelbar properties to get the built-in panelbar widgets
+        'panelbar_label':		(45, {	# more read-only panelbar properties to get the built-in panelbar widgets
         }),
-        'panelbar close':		(46, {
+        'panelbar_close':		(46, {
         }),
-        'panelbar rotate':		(47, {
+        'panelbar_rotate':		(47, {
         }),
-        'panelbar zoom':		(48, {
+        'panelbar_zoom':		(48, {
         }),
         'bitmapside':			(49, {
+            'top':	(1<<3, {}),	# stick to the top edge
+            'bottom':	(1<<4, {}),	# stick to the bottom edge
+            'left':	(1<<5, {}),	# stick to the left edge
+            'right':	(1<<6, {}),	# stick to the right edge
+            'all':	(1<<11, {}),	# occupy all available space
         }),
         'password':			(50, {
         }),
-        'hotkey flags':			(51, {	# keyboard event flags for the hotkey
+        'hotkey_flags':			(51, {	# keyboard event flags for the hotkey
         }),
-        'hotkey consume':		(52, {	# flag indicating whether to consume the key event when a hotkey comes in
+        'hotkey_consume':		(52, {	# flag indicating whether to consume the key event when a hotkey comes in
         }),
         'width':			(53, {
         }),
