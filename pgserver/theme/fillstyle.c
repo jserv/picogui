@@ -1,4 +1,4 @@
-/* $Id: fillstyle.c,v 1.28 2002/10/18 12:20:23 micahjd Exp $
+/* $Id: fillstyle.c,v 1.29 2002/11/28 12:57:55 micahjd Exp $
  * 
  * fillstyle.c - Interpreter for fillstyle code
  *
@@ -310,8 +310,8 @@ g_error exec_fillstyle_inner(struct gropctxt *ctx,u16 state,
 	p += 2;
 	fsstack[fsstkpos++] = theme_lookup(fsa,fsb);
 
-	/* If it depends on time, turn on the animated flag in the divnode */
-	if (fsb==PGTH_P_TICKS && ctx->owner)
+	/* If it depends on time or randomness, turn on the animated flag in the divnode */
+	if ((fsb==PGTH_P_TICKS || fsb==PGTH_P_RANDOM) && ctx->owner)
 	  ctx->owner->flags |= DIVNODE_ANIMATED;
 	break;
 
@@ -325,8 +325,8 @@ g_error exec_fillstyle_inner(struct gropctxt *ctx,u16 state,
 #endif
 	 fsstack[fsstkpos++] = theme_lookup(state,fsa);
 
-	/* If it depends on time, turn on the animated flag in the divnode */
-	if (fsa==PGTH_P_TICKS && ctx->owner)
+	/* If it depends on time or randomness, turn on the animated flag in the divnode */
+	if ((fsa==PGTH_P_TICKS || fsa==PGTH_P_RANDOM) && ctx->owner)
 	  ctx->owner->flags |= DIVNODE_ANIMATED;
 	break;
 

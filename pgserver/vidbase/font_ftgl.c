@@ -1,4 +1,4 @@
-/* $Id: font_ftgl.c,v 1.4 2002/11/25 06:43:00 micahjd Exp $
+/* $Id: font_ftgl.c,v 1.5 2002/11/28 12:57:55 micahjd Exp $
  *
  * font_ftgl.c - Font engine that uses OpenGL textures prepared with SDL_ttf.
  *                This engine is very minimalistic compared to the freetype engine:
@@ -47,7 +47,7 @@
 /* There must be sufficient spacing between characters so that even in the mipmapped  
  * font textures, there is no bleeding of colors between characters. This should be 
  * one greater than the power of two used in GL_FONT_TEX_SIZE */ 
-#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)+1)   
+#define GL_FONT_SPACING ((GL_FONT_TEX_POWER)/2+1)   
 
 /* This driver doesn't support Unicode! This is the number of glyphs from each font to load */
 #define NUM_GLYPHS 128
