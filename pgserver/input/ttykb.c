@@ -21,7 +21,7 @@
 #include <picogui/pgkeys.h>
 #include <picogui/constants.h>
 
-#define	KEYBOARD	"/dev/tty1"	/* keyboard associated with screen*/
+#define	KEYBOARD	"/dev/tty"	/* keyboard associated with screen*/
 
 static	int    ttykb_fd;		/* file descriptor for keyboard */
 static	struct termios	old;		/* original terminal modes */
@@ -140,6 +140,7 @@ int ttykb_fd_activate(int fd)
 		   * needs to respond to a few keys TRIGGER_CHAR does not,
 		   * like the arrow keys */
 		  dispatch_key(TRIGGER_KEYDOWN,keymap[curkey],0);
+		  dispatch_key(TRIGGER_KEYUP,keymap[curkey],0);
 		}
 		return 1;		/* keypress*/
 	}

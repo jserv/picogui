@@ -1,4 +1,4 @@
-/* $Id: fbdev.c,v 1.14 2001/12/14 22:56:43 micahjd Exp $
+/* $Id: fbdev.c,v 1.15 2001/12/14 23:14:48 lonetech Exp $
  *
  * fbdev.c - Some glue to use the linear VBLs on /dev/fb*
  * 
@@ -150,7 +150,7 @@ g_error fbdev_init(void) {
    /* Put the console into graphics-only mode */
 #ifndef CONFIG_FB_NOGRAPHICS
    {
-      int xx = open("/dev/tty1", O_RDWR);
+      int xx = open("/dev/tty", O_RDWR);
       if (xx >= 0) {
 	 ioctl(xx, KDSETMODE, KD_GRAPHICS);
 	 close(xx);
@@ -218,7 +218,7 @@ void fbdev_close(void) {
    /* Back to text mode */
 #ifndef CONFIG_FB_NOGRAPHICS
    {
-      int xx = open("/dev/tty1", O_RDWR);
+      int xx = open("/dev/tty", O_RDWR);
       if (xx >= 0) {
 	 ioctl(xx, KDSETMODE, KD_TEXT);
 	 close(xx);
