@@ -1490,8 +1490,142 @@ additional data      : pgreqd_handlestruct
  <sect1 id="responses">
   <title>Server Responses</title>
   <para>
-	
+	After each request, or once after a requests batch, the PicoGUI server
+	sends a response. All responses are at least 32bits long from which
+	the first 16bits can be used to identify the type of response
+	received.
   </para>
+
+  <sect2 id="pgresponseerr"><title>PG_RESPONSE_ERR - Error Code</>
+   <para>
+	Sent only if an error occured, the request could not be completed for
+	some reason.  The response include a general error type, the id of the
+	requests for which this packet is sent, as well as a text message.
+	<footnote><para>In the future protocol versions it is expected that
+	the text message will be replaced by a string handle and an error code
+	be returned.</para></footnote>
+   </para>
+   <figure><title>struct pgresponse_err</><programlisting>
+struct pgresponse_err {
+  u16 type;
+  u16 errt;
+  u16 msglen;
+  u16 dummy;
+  u32 id;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>type</> is the <constant>PG_RESPONSE_ERR</>(1) constant
+	identifying the packet as a <structname>pgresponse_err</>.
+   </para>
+   <para>
+	The <structfield>errt</> is a broad error category which value is a
+	<constant>PG_ERRT_*</> constant (see <xref linkend="pgerrtypes"> for
+	a complete listing).
+   </para>
+   <para>
+	The <structfield>msglen</> is the length in bytes of the associated
+	text error message following immediately the
+	<structname>pgresponse_err</>.
+   </para>
+   <para>
+	The <structfield>id</> is the client provided id that was located
+	in the <structname>pgrequest</> causing the error.
+   </para>
+   <table frame=none pgwide=1 id="pgerrtypes"><title>PG_ERRT values</>
+   <tgroup cols=3 align=left>
+   <tbody>
+   <row><entry>PG_ERRT_NONE</><entry>0x0000</><entry>No error condition</></>
+   <row><entry>PG_ERRT_MEMORY</><entry>0x0101</><entry>Error allocating memory</></>
+   <row><entry>PG_ERRT_IO</><entry>0x0200</><entry>Filesystem, operating system, or other IO error</></>
+   <row><entry>PG_ERRT_NETWORK</><entry>0x0300</><entry>Network (or IPC) communication error</></>
+   <row><entry>PG_ERRT_BADPARAM</><entry>0x0400</><entry>Invalid parameters</></>
+   <row><entry>PG_ERRT_HANDLE</><entry>0x0500</><entry>Invalid handle ID, type, or ownership</></>
+   <row><entry>PG_ERRT_INTERNAL</><entry>0x0600</><entry>Shouldn't happen (tell a developer!)</></>
+   <row><entry>PG_ERRT_BUSY</><entry>0x0700</><entry>Try again later?</></>
+   <row><entry>PG_ERRT_FILEFMT</><entry>0x0800</><entry>Error in a loaded file format (theme files, bitmaps)</></>
+   <row><entry>PG_ERRT_CLIENT</><entry>0x8000</><entry>An error caused by the client lib, not the server</></>
+   </tbody>
+   </tgroup>
+   </table>
+  </sect2>
+
+  <sect2 id="pgresponseret"><title>PG_RESPONSE_RET - 32bit Value</>
+   <para>
+	Sent by the server after most requests where a single 32bit value
+	is returned, such as a widget/string handle.
+   </para>
+   <figure><title>struct pgresponse_ret</><programlisting>
+struct pgresponse_ret {
+  u16 type;
+  u16 dummy;
+  u32 id;
+  u32 data;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>type</> is the
+	<constant>PG_RESPONSE_RET</>(2) constant identifying the
+	response as a <structname>pgresponse_ret</>.
+   </para>
+   <para>
+	The <structfield>id</> is the client provided id that was located
+	in the <structname>pgrequest</> for which the value is returned.
+   </para>
+   <para>
+	The <structfield>data</> is a 32bit value specific to the type
+	of request made.  More often than note a widget/string handle.
+   </para>
+  </sect2>
+
+  <sect2 id="pgresponseevent"><title>PG_RESPONSE_EVENT - Event</>
+   <para>
+	This response is returned after a <constant>PGREQ_WAIT</> request.
+   </para>
+   <figure><title>struct pgresponse_event</><programlisting>
+struct pgresponse_event {
+  u16 type;
+  u16 event;
+  u32 from;
+  u32 param;
+};
+   </programlisting></figure>
+   <para>
+	The <structfield>type</> is the 
+	<constant>PG_RESPONSE_EVENT</>(3) constant identifying the
+	response as a <structname>pgresponse_event</>.
+   </para>
+   <para>
+	The <structfield>event</> is a <constant>PG_WE_*</> or
+	<constant>PG_NWE_*</> constant identyfing the type of event
+	received (see <xref linkend="pgwetypes"> and
+	<xref linkend="pgnwetypes"> respectively for complete listings).
+   </para>
+   <para>
+	The <structfield>from</> is a a widget handle if the event is a
+	<constant>PG_WE_*</> or 0 if it's one of the <constant>PG_NWE_*</>.
+   </para>
+   <para>
+	The <structfield>param</> contains the packed data for the event,
+	which varies with the event type.  It is explained in more detail
+	in <xref linkend="eventparam">
+   </para>
+   <sect3 id="eventparam"><title>pgresponse_event.param</title>
+    <para>
+    </para>
+   </sect3>
+  </sect2>
+
+  <sect2 id="pgresponsedata"><title>PG_RESPONSE_DATA - Variable Length Data</>
+   <figure><title>struct pgresponse_data</><programlisting>
+struct pgresponse_data {
+  u16 type;
+  u16 dummy;
+  u32 id;
+  u32 size;
+};
+   </programlisting></figure>
+  </sect2>
  </sect1>
  </chapter>
 
@@ -2191,6 +2325,18 @@ additional data      : pgreqd_handlestruct
    </tbody>
    </tgroup>
    </table>
+  </sect1>
+ </appendix>
+
+ <appendix>
+  <title>Event Constants</>
+  <sect1 id="pgwetypes"><title>Widget Events</>
+   <para>
+   </para>
+  </sect1>
+  <sect1 id="pgnwetypes"><title>Non-Widget Events</>
+   <para>
+   </para>
   </sect1>
  </appendix>
 </book>
