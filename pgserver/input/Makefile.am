@@ -37,6 +37,7 @@ EXTRA_libinput_a_SOURCES = \
 	mgl2input.c \
 	adc7843.c \
 	zaurus.c \
+	rrts.c \
         ericsson_cb.c \
 	ps2mouse.c \
 	jsdev.c \

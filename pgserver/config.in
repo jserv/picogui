@@ -135,6 +135,7 @@ bool 'SVGAlib input driver'                             DRIVER_SVGAINPUT
 bool 'Ncurses input driver'                             DRIVER_NCURSESINPUT
 bool 'GPM input driver'			                DRIVER_GPM
 bool 'ChipSlice touchscreen input driver'               DRIVER_CHIPSLICETS
+bool 'RidgeRun Touchscreen input driver'                DRIVER_RRTS
 bool 'Event broker driver'                              DRIVER_EVENTBROKER
 bool 'Agenda VR3 touchscreen input driver'              DRIVER_VR3TS
 bool 'Compaq iPAQ H3600 touchscreen input driver'	DRIVER_H3600TS
