@@ -1,4 +1,4 @@
-/* $Id: configfile.c,v 1.4 2001/07/25 21:08:21 epchristi Exp $
+/* $Id: configfile.c,v 1.5 2001/11/06 08:14:39 bauermeister Exp $
  *
  * configfile.c - Utilities for loading, storing, and retrieving
  *                configuration options
@@ -159,11 +159,10 @@ void strip_tail(char *s) {
 
 /******** Public functions */
 
-g_error configfile_parse(const char *filename) {
+g_error sub_configfile_parse(const char *filename, struct cfg_section **section) {
   FILE *f;
   char line[LINESIZE];
   char *p,*q;
-  struct cfg_section *section = NULL;
 
   f = fopen(filename,"r");
   if (!f)
@@ -188,12 +187,24 @@ g_error configfile_parse(const char *filename) {
       if (!q)
 	return mkerror(PG_ERRT_BADPARAM,38); /* Missing ']' */
       *q = 0;
-      section = configfile_makesection(p);
+      *section = configfile_makesection(p);
       continue;
     }
 
-    if (!section)
+    if (!*section)
       return mkerror(PG_ERRT_BADPARAM,39);   /* Undefined section */
+
+    /* Want to source another file ? */
+    if (p[0]=='.' && (p[1]==' '||p[1]=='\t')) {
+      g_error err;
+      q = p+2;
+      q = strip_head(q);
+      strip_tail(q);
+      err = sub_configfile_parse(q, section);
+      if (iserror(err))
+	return err;
+      else continue;
+    }
 
     /* If we got this far, it's a key/value line to a defined section */
 
@@ -210,13 +221,18 @@ g_error configfile_parse(const char *filename) {
     /* Chop off trailing whitespace from p and q */
     strip_tail(p);
     strip_tail(q);
-    
+
     /* Set the parameter! */
-    configfile_set(section,p,q);
+    configfile_set(*section,p,q);
   }
 
   fclose(f);
   return sucess;
+}
+
+g_error configfile_parse(const char *filename) {
+  struct cfg_section *section = NULL;
+  return sub_configfile_parse(filename, &section);
 }
 
 void configfile_free(void) {

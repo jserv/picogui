@@ -16,6 +16,7 @@ configuration files, this is represented by the following format
  - Comment lines begin with '#'
  - The current section is set with a "[section]" line
  - Key-value pair lines are in the format "key = value"
+ - A dash, whitespace(s) and a file name instruct to source the given file
  
 For example:
 -----------------------8<------------------------
@@ -24,6 +25,8 @@ For example:
 [pgserver]
 xres = 640
 yres = 480
+
+. /tmp/more-config-in-this-file
 
 [video-sdl]
 caption = Welcome to PicoGUI!
