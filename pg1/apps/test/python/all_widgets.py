@@ -114,4 +114,12 @@ term.size = 100
 app.server.update()
 term.write('terminal\n\rwidget')
 
+def eventwatch(ev):
+    print repr(ev),
+    try:
+        print ev.widget
+    except:
+        print
+app.link(eventwatch)
+
 app.run()
