@@ -1,4 +1,4 @@
-/* $Id: pgstring.c,v 1.17 2003/01/01 03:42:58 micahjd Exp $
+/* $Id: pgstring.c,v 1.18 2003/01/18 21:33:03 micahjd Exp $
  *
  * pgstring.c - String data type to handle various encodings
  *
@@ -649,16 +649,29 @@ void pgstr_utf8_seek(const struct pgstring *str, struct pgstr_iterator *p, s32 c
     break;
 
   case PGSEEK_END:
-    p->offset = str->num_chars - 1;
+    if (str->num_chars < 1)
+      p->offset = 0;
+    else
+      p->offset = str->num_chars - 1;
     break;
   }
 
-  /* FIXME: handle negative char_num */
+  /* We can always identify the first byte of a UTF-8
+   * character as having its high bit 0 (single ASCII-compatible character)
+   * or having its two highest bits 1 (first byte of a multibyte character)
+   */
 
   while (char_num) {
-    if (!pgstring_decode(str,p))
-      return;
-    char_num--;
+    if (char_num > 0)
+      p->offset++;
+    else
+      p->offset--;
+    if (((str->buffer[p->offset] & 0x80) == 0x00) || 
+	((str->buffer[p->offset] & 0xC0) == 0xC0))
+      if (char_num > 0)
+	char_num--;
+      else
+	char_num++;
   }
 }
 

@@ -1,4 +1,4 @@
-/* $Id: textedit_logical.c,v 1.15 2003/01/01 03:43:09 micahjd Exp $
+/* $Id: textedit_logical.c,v 1.16 2003/01/18 21:33:03 micahjd Exp $
  *
  * textedit_logical.c - Backend for multi-line text widget. This
  * defines the behavior of a generic wrapping text widget, and is not
@@ -355,8 +355,8 @@ void text_backend_destroy (  text_widget * widget ) {
  * (Re)build the text backend. This sets the width and height, rewraps,
  * and renders. Simply returns if the widget isn't ready to be drawn. */
 g_error text_backend_build ( text_widget * widget,
-                             u16 w,
-                             u16 h ) {
+                             s16 w,
+                             s16 h ) {
     g_error e;
     LList * ll_b, * ll_p;
     u16 p_offset;
@@ -518,6 +518,9 @@ g_error text_backend_set_selection ( text_widget * widget,
     g_error e;
 #ifdef CONFIG_TEXTEDIT_WCHART
     wchar_t * wBuffer;
+
+    if (!text->buffer || text->num_chars == 0)
+      return success;
 
     SET_FLAG(PARAGRAPH(BLOCK(widget->current)->cursor_paragraph)->flags,
              PARAGRAPH_FLAG_DRAW_ALL);
