@@ -6,12 +6,14 @@
 #include <string.h>
 #include <errno.h>
 
-pghandle wText;
+pghandle wText, wApp;
 char *filename=NULL;
+
+#define APPTITLE "Text Editor"
 
 int evtLoad(struct pgEvent *evt)
  {
-  const char *file;
+  const char *file,*p;
   pghandle hstr;
 
   file = pgFilePicker(NULL,NULL,filename,PG_FILEOPEN,"Load a plain text file");
@@ -23,6 +25,11 @@ int evtLoad(struct pgEvent *evt)
     hstr = pgDataString(pgFromFile(filename));
     pgSetWidget(wText, PG_WP_TEXT, hstr, 0);
     pgDelete(hstr);
+
+    p = strrchr(file,'/');
+    if (p) 
+      file = p+1;  
+    pgReplaceTextFmt(wApp,"%s - %s",file,APPTITLE);
    }
   return 0;
  }
@@ -57,10 +64,10 @@ int evtSave(struct pgEvent *evt)
  }
 
 int main(int argc, char **argv) {
-  pghandle title, app;
+  pghandle title;
 
   pgInit(argc,argv);
-  app=pgRegisterApp(PG_APP_NORMAL,"Textbox Editing Test",0);
+  wApp=pgRegisterApp(PG_APP_NORMAL,APPTITLE,0);
 
   title = pgGetWidget(0, PG_WP_PANELBAR_LABEL);
 
@@ -73,15 +80,11 @@ int main(int argc, char **argv) {
   pgSetWidget(PGDEFAULT, PG_WP_TEXT,pgNewString("Save"),
       PG_WP_SIDE, PG_S_LEFT, 0);
   pgBind(PGDEFAULT,PG_WE_ACTIVATE,&evtSave,NULL);
- 
-  wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, app);
-  pgSetWidget(PGDEFAULT, 
-	      PG_WP_SIDE,PG_S_ALL,
-	      0);
 
-  pgNewWidget(PG_WIDGET_SCROLL,PG_DERIVE_BEFORE,wText);
-  pgSetWidget(PGDEFAULT,PG_WP_BIND,wText,0);
-
+  pgNewWidget(PG_WIDGET_SCROLLBOX, PG_DERIVE_INSIDE, wApp);
+  wText = pgNewWidget(PG_WIDGET_TEXTBOX, PG_DERIVE_INSIDE, 0);
+  pgSetWidget(PGDEFAULT, PG_WP_SIDE, PG_S_ALL, 0);
+   
   pgFocus(PGDEFAULT);
 
   pgEventLoop();
